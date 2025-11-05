@@ -5,6 +5,9 @@ import Dashboard from './pages/Dashboard/Dashboard'
 import Expenses from './pages/Expenses/Expenses'
 import CreateExpense from './pages/CreateExpense/CreateExpense'
 import ExpenseDetail from './pages/ExpenseDetail/ExpenseDetail'
+import IncomeList from './pages/IncomeList/IncomeList'
+import CreateIncome from './pages/CreateIncome/CreateIncome'
+import IncomeDetail from './pages/IncomeDetail/IncomeDetail'
 import './App.css'
 
 function App() {
@@ -22,6 +25,9 @@ function App() {
           <Route path="/expenses" element={<Expenses />} />
           <Route path="/expenses/create" element={<CreateExpense />} />
           <Route path="/expenses/:id" element={<ExpenseDetail />} />
+          <Route path="/income" element={<IncomeList />} />
+          <Route path="/income/create" element={<CreateIncome />} />
+          <Route path="/income/:id" element={<IncomeDetail />} />
         </Routes>
       </Layout>
     </Router>

@@ -13,7 +13,7 @@ const Header: React.FC = () => {
       <div className="container">
         <div className="header-content">
           <Link to="/" className="header-logo">
-            <h1>💰 Expense Manager</h1>
+            <h1>💰 Finance Manager</h1>
           </Link>
           <button
             className="header-menu-toggle"
@@ -32,6 +32,9 @@ const Header: React.FC = () => {
             </Link>
             <Link to="/dashboard" className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
               Dashboard
+            </Link>
+            <Link to="/income" className={`nav-link ${isActive('/income') || location.pathname.startsWith('/income') ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
+              Income
             </Link>
             <Link to="/expenses" className={`nav-link ${isActive('/expenses') || location.pathname.startsWith('/expenses') ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
               Expenses

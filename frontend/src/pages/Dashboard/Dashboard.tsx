@@ -1,29 +1,44 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { expenseService, ExpenseStats, Expense } from '../../services/expenseService'
+import { incomeService, IncomeStats, Income } from '../../services/incomeService'
 import { formatCurrency } from '../../utils/currency'
 import './Dashboard.css'
 
 const Dashboard: React.FC = () => {
-  const [stats, setStats] = useState<ExpenseStats | null>(null)
+  const [expenseStats, setExpenseStats] = useState<ExpenseStats | null>(null)
+  const [incomeStats, setIncomeStats] = useState<IncomeStats | null>(null)
   const [recentExpenses, setRecentExpenses] = useState<Expense[]>([])
+  const [recentIncomes, setRecentIncomes] = useState<Income[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userId = 'default-user' // TODO: Get from auth context
-        const [statsData, expenses] = await Promise.all([
+        const userId = 'default-user'
+        const [expenseStatsData, incomeStatsData, expenses, incomes] = await Promise.all([
           expenseService.getStats(userId),
-          expenseService.getExpenses(userId, undefined, undefined, undefined)
+          incomeService.getStats(userId),
+          expenseService.getExpenses(userId, undefined, undefined, undefined),
+          incomeService.getIncomes(userId, undefined, undefined, undefined)
         ])
-        setStats(statsData)
+        setExpenseStats(expenseStatsData)
+        setIncomeStats(incomeStatsData)
         setRecentExpenses(expenses.slice(0, 5))
+        setRecentIncomes(incomes.slice(0, 5))
       } catch (error: any) {
         console.error('Error fetching dashboard data:', error)
-        // Set empty stats on error to prevent crashes
-        setStats({
+        setExpenseStats({
           totalExpenses: 0,
+          totalCount: 0,
+          byCategory: {},
+          byMonth: [],
+          thisMonth: 0,
+          lastMonth: 0,
+          averagePerDay: 0
+        })
+        setIncomeStats({
+          totalIncome: 0,
           totalCount: 0,
           byCategory: {},
           byMonth: [],
@@ -72,17 +87,22 @@ const Dashboard: React.FC = () => {
       <div className="container" style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div className="dashboard-header">
           <div>
-            <h1>Expense Dashboard</h1>
-            <p className="dashboard-subtitle">Track and manage your expenses</p>
+            <h1>Financial Dashboard</h1>
+            <p className="dashboard-subtitle">Track your income and expenses</p>
           </div>
-          <Link to="/expenses/create" className="btn btn-primary">
-            + Add Expense
-          </Link>
+          <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
+            <Link to="/income/create" className="btn btn-secondary">
+              + Add Income
+            </Link>
+            <Link to="/expenses/create" className="btn btn-primary">
+              + Add Expense
+            </Link>
+          </div>
         </div>
 
-        {!stats ? (
+        {!expenseStats || !incomeStats ? (
           <div className="empty-state">
-            <p>Unable to load statistics. Please check your database connection.</p>
+            <p>Unable to load statistics.</p>
           </div>
         ) : (
           <>
@@ -90,9 +110,42 @@ const Dashboard: React.FC = () => {
               <div className="stat-card primary">
                 <div className="stat-icon">💰</div>
                 <div className="stat-content">
+                  <h3>Net Balance</h3>
+                  <p className="stat-value" style={{ 
+                    color: (incomeStats.totalIncome - expenseStats.totalExpenses) >= 0 ? 'var(--success-color)' : 'var(--error-color)',
+                    WebkitTextFillColor: (incomeStats.totalIncome - expenseStats.totalExpenses) >= 0 ? 'var(--success-color)' : 'var(--error-color)'
+                  }}>
+                    {formatCurrency((incomeStats.totalIncome || 0) - (expenseStats.totalExpenses || 0))}
+                  </p>
+                  <span className="stat-label">Income - Expenses</span>
+                </div>
+              </div>
+
+              <div className="stat-card" style={{ borderLeft: '3px solid var(--success-color)' }}>
+                <div className="stat-icon">📈</div>
+                <div className="stat-content">
+                  <h3>Total Income</h3>
+                  <p className="stat-value" style={{ 
+                    color: 'var(--success-color)',
+                    WebkitTextFillColor: 'var(--success-color)'
+                  }}>
+                    {formatCurrency(incomeStats.totalIncome || 0)}
+                  </p>
+                  <span className="stat-label">{incomeStats.totalCount || 0} transactions</span>
+                </div>
+              </div>
+
+              <div className="stat-card" style={{ borderLeft: '3px solid var(--error-color)' }}>
+                <div className="stat-icon">📉</div>
+                <div className="stat-content">
                   <h3>Total Expenses</h3>
-                  <p className="stat-value">{formatCurrency(stats.totalExpenses || 0)}</p>
-                  <span className="stat-label">{stats.totalCount || 0} transactions</span>
+                  <p className="stat-value" style={{ 
+                    color: 'var(--error-color)',
+                    WebkitTextFillColor: 'var(--error-color)'
+                  }}>
+                    {formatCurrency(expenseStats.totalExpenses || 0)}
+                  </p>
+                  <span className="stat-label">{expenseStats.totalCount || 0} transactions</span>
                 </div>
               </div>
 
@@ -100,32 +153,61 @@ const Dashboard: React.FC = () => {
                 <div className="stat-icon">📅</div>
                 <div className="stat-content">
                   <h3>This Month</h3>
-                  <p className="stat-value">{formatCurrency(stats.thisMonth || 0)}</p>
+                  <p className="stat-value">
+                    {formatCurrency((incomeStats.thisMonth || 0) - (expenseStats.thisMonth || 0))}
+                  </p>
                   <span className="stat-label">
-                    {stats.lastMonth && stats.lastMonth > 0 
-                      ? `${((stats.thisMonth - stats.lastMonth) / stats.lastMonth * 100).toFixed(1)}% vs last month`
+                    {expenseStats.lastMonth && expenseStats.lastMonth > 0 
+                      ? `${(((incomeStats.thisMonth - expenseStats.thisMonth) - (incomeStats.lastMonth - expenseStats.lastMonth)) / Math.abs(incomeStats.lastMonth - expenseStats.lastMonth) * 100).toFixed(1)}% vs last month`
                       : 'First month'
                     }
                   </span>
-                </div>
-              </div>
-
-              <div className="stat-card">
-                <div className="stat-icon">📊</div>
-                <div className="stat-content">
-                  <h3>Daily Average</h3>
-                  <p className="stat-value">{formatCurrency(stats.averagePerDay || 0)}</p>
-                  <span className="stat-label">Per day</span>
                 </div>
               </div>
             </div>
 
             <div className="dashboard-grid">
               <div className="dashboard-card">
+                <h2>Income by Category</h2>
+                <div className="category-list">
+                  {incomeStats.byCategory && Object.keys(incomeStats.byCategory).length > 0 ? (
+                    Object.entries(incomeStats.byCategory)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([category, amount]) => {
+                        const incomeColors: Record<string, string> = {
+                          salary: '#10b981',
+                          freelance: '#3b82f6',
+                          business: '#8b5cf6',
+                          investment: '#f59e0b',
+                          rental: '#ec4899',
+                          gift: '#f472b6',
+                          refund: '#06b6d4',
+                          other: '#6366f1'
+                        }
+                        return (
+                          <div key={category} className="category-item">
+                            <div className="category-info">
+                              <span 
+                                className="category-color" 
+                                style={{ backgroundColor: incomeColors[category] || '#CCCCCC' }}
+                              ></span>
+                              <span className="category-name">{formatCategory(category)}</span>
+                            </div>
+                            <span className="category-amount">{formatCurrency(amount)}</span>
+                          </div>
+                        )
+                      })
+                  ) : (
+                    <p className="empty-state">No income categories yet</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="dashboard-card">
                 <h2>Expenses by Category</h2>
                 <div className="category-list">
-                  {stats.byCategory && Object.keys(stats.byCategory).length > 0 ? (
-                    Object.entries(stats.byCategory)
+                  {expenseStats.byCategory && Object.keys(expenseStats.byCategory).length > 0 ? (
+                    Object.entries(expenseStats.byCategory)
                       .sort(([, a], [, b]) => b - a)
                       .map(([category, amount]) => (
                         <div key={category} className="category-item">
@@ -140,9 +222,64 @@ const Dashboard: React.FC = () => {
                         </div>
                       ))
                   ) : (
-                    <p className="empty-state">No category data available</p>
+                    <p className="empty-state">No expense categories yet</p>
                   )}
                 </div>
+              </div>
+
+              <div className="dashboard-card">
+                <div className="section-header">
+                  <h2>Recent Income</h2>
+                  <Link to="/income" className="view-all-link">View All</Link>
+                </div>
+
+                {recentIncomes.length === 0 ? (
+                  <div className="empty-state">
+                    <p>No income yet. Add your first income!</p>
+                    <Link to="/income/create" className="btn btn-primary btn-sm">
+                      Add Income
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="expenses-list">
+                    {recentIncomes.map((income) => {
+                      const incomeColors: Record<string, string> = {
+                        salary: '#10b981',
+                        freelance: '#3b82f6',
+                        business: '#8b5cf6',
+                        investment: '#f59e0b',
+                        rental: '#ec4899',
+                        gift: '#f472b6',
+                        refund: '#06b6d4',
+                        other: '#6366f1'
+                      }
+                      return (
+                        <Link
+                          key={income.id}
+                          to={`/income/${income.id}`}
+                          className="expense-item"
+                        >
+                          <div className="expense-icon" style={{ backgroundColor: incomeColors[income.category] || '#CCCCCC' }}>
+                            {income.category.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="expense-details">
+                            <div className="expense-title">{income.title}</div>
+                            <div className="expense-meta">
+                              <span className="expense-category">{formatCategory(income.category)}</span>
+                              <span className="expense-date">
+                                {new Date(income.date).toLocaleDateString('en-US', { 
+                                  month: 'short', 
+                                  day: 'numeric' 
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="expense-amount" style={{ color: 'var(--success-color)' }}>{formatCurrency(income.amount)}</div>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
 
               <div className="dashboard-card">
@@ -153,7 +290,7 @@ const Dashboard: React.FC = () => {
 
                 {recentExpenses.length === 0 ? (
                   <div className="empty-state">
-                    <p>No expenses yet. Add your first expense to get started!</p>
+                    <p>No expenses yet. Add your first expense!</p>
                     <Link to="/expenses/create" className="btn btn-primary btn-sm">
                       Add Expense
                     </Link>
