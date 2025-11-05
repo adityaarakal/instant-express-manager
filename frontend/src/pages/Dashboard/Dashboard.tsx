@@ -22,18 +22,15 @@ const Dashboard: React.FC = () => {
       } catch (error: any) {
         console.error('Error fetching dashboard data:', error)
         // Set empty stats on error to prevent crashes
-        if (error.response?.status === 503) {
-          // Database connection error
-          setStats({
-            totalExpenses: 0,
-            totalCount: 0,
-            byCategory: {},
-            byMonth: [],
-            thisMonth: 0,
-            lastMonth: 0,
-            averagePerDay: 0
-          })
-        }
+        setStats({
+          totalExpenses: 0,
+          totalCount: 0,
+          byCategory: {},
+          byMonth: [],
+          thisMonth: 0,
+          lastMonth: 0,
+          averagePerDay: 0
+        })
       } finally {
         setLoading(false)
       }

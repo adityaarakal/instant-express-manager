@@ -21,9 +21,8 @@ const ExpenseDetail: React.FC = () => {
         const data = await expenseService.getExpenseById(id, userId)
         setExpense(data)
       } catch (err: any) {
-        const errorMessage = err.response?.data?.error || 
-                            err.response?.data?.message || 
-                            err.message || 
+        const errorMessage = err.message || 
+                            (err.response?.data?.error || err.response?.data?.message) ||
                             'Failed to load expense. Please try again.'
         setError(errorMessage)
       } finally {
@@ -43,9 +42,8 @@ const ExpenseDetail: React.FC = () => {
       await expenseService.deleteExpense(expense.id, userId)
       navigate('/expenses')
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || 
-                          err.response?.data?.message || 
-                          err.message || 
+      const errorMessage = err.message || 
+                          (err.response?.data?.error || err.response?.data?.message) ||
                           'Failed to delete expense. Please try again.'
       alert(errorMessage)
       console.error('Error deleting expense:', err)

@@ -156,17 +156,10 @@ const CreateExpense: React.FC = () => {
       const expense = await expenseService.createExpense(expenseData)
       navigate(`/expenses/${expense.id}`)
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || 
-                          err.response?.data?.message || 
-                          err.message || 
-                          'Failed to create expense. Please check your connection and try again.'
-      
-      // Check if it's a database connection error
-      if (err.response?.status === 503 || errorMessage.includes('Database not connected')) {
-        setError('⚠️ Database not connected. Please start MongoDB or set MONGODB_URI in backend/.env file. Expenses cannot be saved until database is connected.')
-      } else {
-        setError(errorMessage)
-      }
+      const errorMessage = err.message || 
+                          (err.response?.data?.error || err.response?.data?.message) ||
+                          'Failed to create expense. Please try again.'
+      setError(errorMessage)
       console.error('Error creating expense:', err)
     } finally {
       setLoading(false)

@@ -61,12 +61,8 @@ const Expenses: React.FC = () => {
         setExpenses(data)
       } catch (error: any) {
         console.error('Error fetching expenses:', error)
-        // Show user-friendly error message
-        if (error.response?.status === 503) {
-          // Database connection error - show empty state
-          setExpenses([])
-        }
-        // For other errors, expenses array will remain empty
+        // On error, show empty state
+        setExpenses([])
       } finally {
         setLoading(false)
       }
