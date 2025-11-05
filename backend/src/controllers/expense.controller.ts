@@ -1,7 +1,6 @@
 import { ExpenseModel } from '../models/Expense.model'
 import { CreateExpenseRequest, UpdateExpenseRequest, ExpenseResponse, ExpenseStats } from '../types/expense.types'
 import { isDatabaseConnected } from '../config/database'
-import mongoose from 'mongoose'
 
 export const createExpense = async (
   request: CreateExpenseRequest
