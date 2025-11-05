@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { expenseService, CreateExpenseRequest } from '../../services/expenseService'
 import { CURRENCY_SYMBOL } from '../../utils/currency'
@@ -10,6 +10,7 @@ const CreateExpense: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [currentStep, setCurrentStep] = useState(1)
   const totalSteps = 6
+  const formRef = useRef<HTMLFormElement>(null)
   
   const [formData, setFormData] = useState<CreateExpenseRequest>({
     userId: 'default-user',
@@ -24,6 +25,40 @@ const CreateExpense: React.FC = () => {
   })
 
   const [tagInput, setTagInput] = useState('')
+
+  // Protect form inputs from browser extensions
+  useEffect(() => {
+    const protectInputs = () => {
+      if (!formRef.current) return
+      
+      const inputs = formRef.current.querySelectorAll('input, textarea')
+      inputs.forEach((input) => {
+        const element = input as HTMLElement
+        // Add extension-blocking attributes
+        element.setAttribute('data-lpignore', 'true')
+        element.setAttribute('data-1p-ignore', 'true')
+        element.setAttribute('data-bwignore', 'true')
+        element.setAttribute('data-form-type', 'other')
+        element.setAttribute('autocomplete', 'off')
+        
+        // Temporarily make readonly to prevent extension interference
+        if (document.activeElement !== element) {
+          element.setAttribute('readonly', 'readonly')
+          setTimeout(() => {
+            if (document.activeElement !== element) {
+              element.removeAttribute('readonly')
+            }
+          }, 50)
+        }
+      })
+    }
+
+    // Run on mount and when step changes
+    protectInputs()
+    const interval = setInterval(protectInputs, 200)
+    
+    return () => clearInterval(interval)
+  }, [currentStep])
 
   const categories = [
     { value: 'food', label: 'Food', color: '#FF6B6B', icon: '🍔' },
@@ -222,6 +257,7 @@ const CreateExpense: React.FC = () => {
         </div>
 
         <form 
+          ref={formRef}
           onSubmit={handleSubmit} 
           className="expense-form" 
           data-lpignore="true" 
@@ -229,6 +265,7 @@ const CreateExpense: React.FC = () => {
           data-bwignore="true"
           autoComplete="off"
           data-form-type="other"
+          data-disable-autofill="true"
         >
           {error && (
             <div className="error-message">
@@ -263,9 +300,16 @@ const CreateExpense: React.FC = () => {
                     data-bwignore="true"
                     aria-label="Expense title"
                     onFocus={(e) => {
-                      // Prevent browser extensions from interfering
-                      e.target.setAttribute('readonly', 'readonly')
-                      setTimeout(() => e.target.removeAttribute('readonly'), 100)
+                      // Remove readonly when user focuses
+                      e.target.removeAttribute('readonly')
+                    }}
+                    onBlur={(e) => {
+                      // Add readonly back when user leaves to prevent extension interference
+                      setTimeout(() => {
+                        if (document.activeElement !== e.target) {
+                          e.target.setAttribute('readonly', 'readonly')
+                        }
+                      }, 100)
                     }}
                   />
                 </div>
@@ -306,8 +350,14 @@ const CreateExpense: React.FC = () => {
                     data-bwignore="true"
                     aria-label="Expense amount"
                     onFocus={(e) => {
-                      e.target.setAttribute('readonly', 'readonly')
-                      setTimeout(() => e.target.removeAttribute('readonly'), 100)
+                      e.target.removeAttribute('readonly')
+                    }}
+                    onBlur={(e) => {
+                      setTimeout(() => {
+                        if (document.activeElement !== e.target) {
+                          e.target.setAttribute('readonly', 'readonly')
+                        }
+                      }, 100)
                     }}
                   />
                 </div>
@@ -384,8 +434,14 @@ const CreateExpense: React.FC = () => {
                     data-bwignore="true"
                     aria-label="Expense date"
                     onFocus={(e) => {
-                      e.target.setAttribute('readonly', 'readonly')
-                      setTimeout(() => e.target.removeAttribute('readonly'), 100)
+                      e.target.removeAttribute('readonly')
+                    }}
+                    onBlur={(e) => {
+                      setTimeout(() => {
+                        if (document.activeElement !== e.target) {
+                          e.target.setAttribute('readonly', 'readonly')
+                        }
+                      }, 100)
                     }}
                   />
                 </div>
@@ -514,8 +570,14 @@ const CreateExpense: React.FC = () => {
                     data-bwignore="true"
                     aria-label="Location (optional)"
                     onFocus={(e) => {
-                      e.target.setAttribute('readonly', 'readonly')
-                      setTimeout(() => e.target.removeAttribute('readonly'), 100)
+                      e.target.removeAttribute('readonly')
+                    }}
+                    onBlur={(e) => {
+                      setTimeout(() => {
+                        if (document.activeElement !== e.target) {
+                          e.target.setAttribute('readonly', 'readonly')
+                        }
+                      }, 100)
                     }}
                   />
                 </div>
@@ -549,8 +611,14 @@ const CreateExpense: React.FC = () => {
                     data-bwignore="true"
                     aria-label="Description (optional)"
                     onFocus={(e) => {
-                      e.target.setAttribute('readonly', 'readonly')
-                      setTimeout(() => e.target.removeAttribute('readonly'), 100)
+                      e.target.removeAttribute('readonly')
+                    }}
+                    onBlur={(e) => {
+                      setTimeout(() => {
+                        if (document.activeElement !== e.target) {
+                          e.target.setAttribute('readonly', 'readonly')
+                        }
+                      }, 100)
                     }}
                   />
                 </div>
@@ -574,8 +642,14 @@ const CreateExpense: React.FC = () => {
                       data-bwignore="true"
                       aria-label="Tags (optional)"
                       onFocus={(e) => {
-                        e.target.setAttribute('readonly', 'readonly')
-                        setTimeout(() => e.target.removeAttribute('readonly'), 100)
+                        e.target.removeAttribute('readonly')
+                      }}
+                      onBlur={(e) => {
+                        setTimeout(() => {
+                          if (document.activeElement !== e.target) {
+                            e.target.setAttribute('readonly', 'readonly')
+                          }
+                        }, 100)
                       }}
                     />
                     <button
