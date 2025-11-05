@@ -1,0 +1,218 @@
+.deliveries-page {
+  flex: 1;
+  padding: var(--spacing-xl) 0;
+}
+
+.deliveries-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.deliveries-header h1 {
+  font-size: 2.5rem;
+  margin: 0;
+}
+
+.deliveries-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+}
+
+.filter-tabs {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+  flex-wrap: wrap;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.filter-tab {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s ease;
+}
+
+.filter-tab:hover {
+  color: var(--primary-color);
+}
+
+.filter-tab.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  background: var(--background-alt);
+  border-radius: var(--radius-lg);
+}
+
+.empty-state p {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+  font-size: 1.125rem;
+}
+
+.deliveries-list {
+  display: grid;
+  gap: var(--spacing-lg);
+}
+
+.delivery-card {
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+  display: block;
+}
+
+.delivery-card:hover {
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.delivery-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.delivery-tracking {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.tracking-label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.tracking-number {
+  font-weight: 600;
+  color: var(--primary-color);
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 1.125rem;
+}
+
+.status-badge {
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-md);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.delivery-card-body {
+  margin-bottom: var(--spacing-lg);
+}
+
+.delivery-route {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.route-point {
+  flex: 1;
+  min-width: 200px;
+}
+
+.route-label {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.route-value {
+  display: block;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.route-location {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.route-arrow {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.delivery-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.delivery-meta {
+  display: flex;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.delivery-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+  .deliveries-header h1 {
+    font-size: 2rem;
+  }
+
+  .delivery-route {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .route-arrow {
+    transform: rotate(90deg);
+    margin: var(--spacing-sm) 0;
+  }
+
+  .delivery-card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

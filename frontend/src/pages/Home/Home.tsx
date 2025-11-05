@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import AdBanner from '../../components/AdBanner/AdBanner'
 import PurchaseButton from '../../components/PurchaseButton/PurchaseButton'
 import './Home.css'
@@ -13,8 +14,8 @@ const Home: React.FC = () => {
             Manage your express deliveries and services efficiently
           </p>
           <div className="hero-actions">
-            <button className="btn btn-primary">Get Started</button>
-            <button className="btn btn-secondary">Learn More</button>
+            <Link to="/deliveries/create" className="btn btn-primary">Create Delivery</Link>
+            <Link to="/dashboard" className="btn btn-secondary">View Dashboard</Link>
           </div>
         </section>
 

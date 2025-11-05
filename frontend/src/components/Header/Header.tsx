@@ -1,16 +1,20 @@
 import React, { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import './Header.css'
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const location = useLocation()
+
+  const isActive = (path: string) => location.pathname === path
 
   return (
     <header className="header">
       <div className="container">
         <div className="header-content">
-          <div className="header-logo">
+          <Link to="/" className="header-logo">
             <h1>Instant Express Manager</h1>
-          </div>
+          </Link>
           <button
             className="header-menu-toggle"
             aria-label="Toggle menu"
@@ -23,9 +27,18 @@ const Header: React.FC = () => {
             </span>
           </button>
           <nav className={`header-nav ${isMenuOpen ? 'open' : ''}`}>
-            <a href="/" className="nav-link">Home</a>
-            <a href="/services" className="nav-link">Services</a>
-            <a href="/about" className="nav-link">About</a>
+            <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
+              Home
+            </Link>
+            <Link to="/dashboard" className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
+              Dashboard
+            </Link>
+            <Link to="/deliveries" className={`nav-link ${isActive('/deliveries') || location.pathname.startsWith('/deliveries') ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
+              Deliveries
+            </Link>
+            <Link to="/track" className={`nav-link ${isActive('/track') ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
+              Track
+            </Link>
           </nav>
         </div>
       </div>

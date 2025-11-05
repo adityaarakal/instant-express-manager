@@ -4,6 +4,7 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 import dotenv from 'dotenv'
 import purchaseRoutes from './routes/purchase.routes'
+import deliveryRoutes from './routes/delivery.routes'
 import { errorHandler } from './middleware/errorHandler'
 import { connectDatabase } from './config/database'
 
@@ -39,6 +40,7 @@ app.get('/health', (req: Request, res: Response) => {
 
 // API Routes
 app.use('/api/purchases', purchaseRoutes)
+app.use('/api/deliveries', deliveryRoutes)
 
 // 404 handler
 app.use((req: Request, res: Response) => {
