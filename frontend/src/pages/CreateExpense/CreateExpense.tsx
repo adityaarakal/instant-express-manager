@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { expenseService, CreateExpenseRequest } from '../../services/expenseService'
+import { CURRENCY_SYMBOL } from '../../utils/currency'
 import './CreateExpense.css'
 
 const CreateExpense: React.FC = () => {
@@ -118,15 +119,48 @@ const CreateExpense: React.FC = () => {
     setError(null)
 
     try {
-      const expenseData = {
-        ...formData,
-        date: new Date(formData.date).toISOString()
+      // Ensure date is properly formatted - create date at start of day to avoid timezone issues
+      let dateValue: string
+      if (formData.date) {
+        // Create date from the date string (YYYY-MM-DD format)
+        const dateStr = typeof formData.date === 'string' ? formData.date : formData.date.toString()
+        // Parse the date and set to start of day in local timezone
+        const date = new Date(dateStr)
+        date.setHours(0, 0, 0, 0)
+        dateValue = date.toISOString()
+      } else {
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        dateValue = today.toISOString()
       }
       
+      const expenseData: CreateExpenseRequest = {
+        userId: formData.userId,
+        title: formData.title.trim(),
+        amount: Number(formData.amount),
+        category: formData.category,
+        paymentMethod: formData.paymentMethod,
+        date: dateValue,
+        description: formData.description?.trim() || undefined,
+        location: formData.location?.trim() || undefined,
+        tags: formData.tags && formData.tags.length > 0 ? formData.tags : undefined
+      }
+      
+      // Validate required fields
+      if (!expenseData.title || !expenseData.amount || !expenseData.category || !expenseData.paymentMethod) {
+        setError('Please fill in all required fields')
+        setLoading(false)
+        return
+      }
+
       const expense = await expenseService.createExpense(expenseData)
       navigate(`/expenses/${expense.id}`)
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to create expense. Please try again.')
+      const errorMessage = err.response?.data?.error || 
+                          err.response?.data?.message || 
+                          err.message || 
+                          'Failed to create expense. Please check your connection and try again.'
+      setError(errorMessage)
       console.error('Error creating expense:', err)
     } finally {
       setLoading(false)
@@ -235,7 +269,7 @@ const CreateExpense: React.FC = () => {
               </div>
               <div className="step-body">
                 <div className="form-group-focused amount-group">
-                  <div className="currency-display">$</div>
+                  <div className="currency-display">{CURRENCY_SYMBOL}</div>
                   <input
                     type="number"
                     id="amount"
@@ -256,41 +290,41 @@ const CreateExpense: React.FC = () => {
                     type="button"
                     className="quick-amount-btn"
                     onClick={() => {
-                      setFormData(prev => ({ ...prev, amount: 10 }))
-                      setError(null)
-                    }}
-                  >
-                    $10
-                  </button>
-                  <button
-                    type="button"
-                    className="quick-amount-btn"
-                    onClick={() => {
-                      setFormData(prev => ({ ...prev, amount: 25 }))
-                      setError(null)
-                    }}
-                  >
-                    $25
-                  </button>
-                  <button
-                    type="button"
-                    className="quick-amount-btn"
-                    onClick={() => {
-                      setFormData(prev => ({ ...prev, amount: 50 }))
-                      setError(null)
-                    }}
-                  >
-                    $50
-                  </button>
-                  <button
-                    type="button"
-                    className="quick-amount-btn"
-                    onClick={() => {
                       setFormData(prev => ({ ...prev, amount: 100 }))
                       setError(null)
                     }}
                   >
-                    $100
+                    ₹100
+                  </button>
+                  <button
+                    type="button"
+                    className="quick-amount-btn"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, amount: 500 }))
+                      setError(null)
+                    }}
+                  >
+                    ₹500
+                  </button>
+                  <button
+                    type="button"
+                    className="quick-amount-btn"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, amount: 1000 }))
+                      setError(null)
+                    }}
+                  >
+                    ₹1K
+                  </button>
+                  <button
+                    type="button"
+                    className="quick-amount-btn"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, amount: 5000 }))
+                      setError(null)
+                    }}
+                  >
+                    ₹5K
                   </button>
                 </div>
               </div>
@@ -420,14 +454,14 @@ const CreateExpense: React.FC = () => {
                   ))}
                 </div>
                 <div className="form-group-optional">
-                  <label htmlFor="location">Location (Optional)</label>
+                  <label htmlFor="location">📍 Location (Optional)</label>
                   <input
                     type="text"
                     id="location"
                     name="location"
                     value={formData.location}
                     onChange={handleChange}
-                    placeholder="e.g., Walmart, Downtown"
+                    placeholder="e.g., Big Bazaar, MG Road, Koramangala"
                     className="form-input"
                   />
                 </div>
@@ -445,20 +479,20 @@ const CreateExpense: React.FC = () => {
               </div>
               <div className="step-body">
                 <div className="form-group-optional">
-                  <label htmlFor="description">Description</label>
+                  <label htmlFor="description">📝 Description (Optional)</label>
                   <textarea
                     id="description"
                     name="description"
                     value={formData.description}
                     onChange={handleChange}
-                    placeholder="Add any additional notes..."
+                    placeholder="Add any additional notes about this expense..."
                     rows={4}
                     className="form-input"
                   />
                 </div>
 
                 <div className="form-group-optional">
-                  <label htmlFor="tags">Tags</label>
+                  <label htmlFor="tags">🏷️ Tags (Optional)</label>
                   <div className="tags-input-wrapper">
                     <input
                       type="text"

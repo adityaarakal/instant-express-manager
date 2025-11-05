@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { expenseService, ExpenseStats, Expense } from '../../services/expenseService'
+import { formatCurrency } from '../../utils/currency'
 import './Dashboard.css'
 
 const Dashboard: React.FC = () => {
@@ -45,14 +46,6 @@ const Dashboard: React.FC = () => {
 
   const formatCategory = (category: string) => {
     return category.charAt(0).toUpperCase() + category.slice(1)
-  }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(amount)
   }
 
   if (loading) {

@@ -89,10 +89,16 @@ router.post(
   [
     body('userId').notEmpty().withMessage('User ID is required'),
     body('title').notEmpty().trim().withMessage('Title is required'),
-    body('amount').isFloat({ min: 0 }).withMessage('Amount must be a positive number'),
+    body('amount').isFloat({ min: 0.01 }).withMessage('Amount must be a positive number'),
     body('category').isIn(['food', 'transport', 'shopping', 'bills', 'entertainment', 'health', 'education', 'travel', 'other']).withMessage('Invalid category'),
-    body('paymentMethod').optional().isIn(['cash', 'card', 'digital_wallet', 'bank_transfer', 'other']),
-    body('date').isISO8601().withMessage('Invalid date format')
+    body('paymentMethod').optional().isIn(['cash', 'card', 'digital_wallet', 'bank_transfer', 'other']).withMessage('Invalid payment method'),
+    body('date').notEmpty().withMessage('Date is required').custom((value) => {
+      const date = new Date(value)
+      if (isNaN(date.getTime())) {
+        throw new Error('Invalid date format')
+      }
+      return true
+    })
   ],
   async (req: Request, res: Response) => {
     const errors = validationResult(req)
@@ -104,7 +110,12 @@ router.post(
       const expense = await createExpense(req.body)
       res.status(201).json(expense)
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
+      console.error('Error creating expense:', error)
+      const statusCode = error.message.includes('Validation') || error.message.includes('required') || error.message.includes('Invalid') ? 400 : 500
+      res.status(statusCode).json({ 
+        error: error.message || 'Failed to create expense',
+        message: error.message || 'Failed to create expense'
+      })
     }
   }
 )

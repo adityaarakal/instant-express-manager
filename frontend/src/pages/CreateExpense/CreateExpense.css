@@ -293,6 +293,7 @@
   color: var(--text-secondary);
   font-size: 2rem;
   z-index: 1;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
 .amount-input-large {
@@ -490,14 +491,46 @@
   max-width: 400px;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-md);
 }
 
 .form-group-optional label {
   font-weight: 600;
   color: var(--text-primary);
-  font-size: 0.875rem;
+  font-size: 1rem;
   text-align: left;
+  margin-bottom: var(--spacing-xs);
+}
+
+.form-group-optional .form-input {
+  padding: var(--spacing-lg);
+  border: 2px solid var(--border-color);
+  border-radius: 16px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  background: var(--background-alt);
+  width: 100%;
+}
+
+.form-group-optional .form-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background: white;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  transform: scale(1.01);
+}
+
+.form-group-optional .form-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.form-group-optional textarea.form-input {
+  resize: vertical;
+  min-height: 120px;
+  font-family: inherit;
+  line-height: 1.6;
 }
 
 .step-hint {
@@ -525,6 +558,21 @@
 
 .tags-input-wrapper .form-input {
   flex: 1;
+  padding: var(--spacing-lg);
+  border: 2px solid var(--border-color);
+  border-radius: 16px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  background: var(--background-alt);
+}
+
+.tags-input-wrapper .form-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background: white;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  transform: scale(1.01);
 }
 
 .btn-add-tag {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { expenseService, Expense } from '../../services/expenseService'
+import { formatCurrency } from '../../utils/currency'
 import './ExpenseDetail.css'
 
 const ExpenseDetail: React.FC = () => {
@@ -64,13 +65,6 @@ const ExpenseDetail: React.FC = () => {
     return category.charAt(0).toUpperCase() + category.slice(1)
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(amount)
-  }
 
   const formatPaymentMethod = (method: string) => {
     const methods: Record<string, string> = {

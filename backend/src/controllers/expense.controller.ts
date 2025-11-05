@@ -5,13 +5,49 @@ export const createExpense = async (
   request: CreateExpenseRequest
 ): Promise<ExpenseResponse> => {
   try {
+    // Validate and format the date
+    let expenseDate: Date
+    if (typeof request.date === 'string') {
+      expenseDate = new Date(request.date)
+      if (isNaN(expenseDate.getTime())) {
+        throw new Error('Invalid date format')
+      }
+    } else {
+      expenseDate = request.date
+    }
+
+    // Validate required fields
+    if (!request.title || !request.title.trim()) {
+      throw new Error('Title is required')
+    }
+    if (!request.amount || request.amount <= 0) {
+      throw new Error('Amount must be greater than 0')
+    }
+    if (!request.category) {
+      throw new Error('Category is required')
+    }
+    if (!request.paymentMethod) {
+      throw new Error('Payment method is required')
+    }
+
     const expense = await ExpenseModel.create({
-      ...request,
-      date: new Date(request.date)
+      userId: request.userId,
+      title: request.title.trim(),
+      description: request.description?.trim() || undefined,
+      amount: Number(request.amount),
+      category: request.category,
+      paymentMethod: request.paymentMethod || 'cash',
+      date: expenseDate,
+      tags: request.tags && request.tags.length > 0 ? request.tags : undefined,
+      location: request.location?.trim() || undefined,
+      receiptUrl: request.receiptUrl || undefined
     })
 
     return expenseToResponse(expense)
   } catch (error: any) {
+    if (error.name === 'ValidationError') {
+      throw new Error(`Validation error: ${Object.values(error.errors).map((e: any) => e.message).join(', ')}`)
+    }
     throw new Error(`Failed to create expense: ${error.message}`)
   }
 }
