@@ -35,24 +35,38 @@ const Expenses: React.FC = () => {
         if (filterDate === 'today') {
           const today = new Date()
           today.setHours(0, 0, 0, 0)
+          const endOfToday = new Date()
+          endOfToday.setHours(23, 59, 59, 999)
           startDate = today.toISOString()
-          endDate = new Date().toISOString()
+          endDate = endOfToday.toISOString()
         } else if (filterDate === 'week') {
           const weekAgo = new Date()
           weekAgo.setDate(weekAgo.getDate() - 7)
+          weekAgo.setHours(0, 0, 0, 0)
+          const endOfToday = new Date()
+          endOfToday.setHours(23, 59, 59, 999)
           startDate = weekAgo.toISOString()
-          endDate = new Date().toISOString()
+          endDate = endOfToday.toISOString()
         } else if (filterDate === 'month') {
           const monthAgo = new Date()
           monthAgo.setMonth(monthAgo.getMonth() - 1)
+          monthAgo.setHours(0, 0, 0, 0)
+          const endOfToday = new Date()
+          endOfToday.setHours(23, 59, 59, 999)
           startDate = monthAgo.toISOString()
-          endDate = new Date().toISOString()
+          endDate = endOfToday.toISOString()
         }
 
         const data = await expenseService.getExpenses(userId, category, startDate, endDate)
         setExpenses(data)
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching expenses:', error)
+        // Show user-friendly error message
+        if (error.response?.status === 503) {
+          // Database connection error - show empty state
+          setExpenses([])
+        }
+        // For other errors, expenses array will remain empty
       } finally {
         setLoading(false)
       }

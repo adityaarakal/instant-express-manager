@@ -19,8 +19,21 @@ const Dashboard: React.FC = () => {
         ])
         setStats(statsData)
         setRecentExpenses(expenses.slice(0, 5))
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching dashboard data:', error)
+        // Set empty stats on error to prevent crashes
+        if (error.response?.status === 503) {
+          // Database connection error
+          setStats({
+            totalExpenses: 0,
+            totalCount: 0,
+            byCategory: {},
+            byMonth: [],
+            thisMonth: 0,
+            lastMonth: 0,
+            averagePerDay: 0
+          })
+        }
       } finally {
         setLoading(false)
       }
@@ -70,15 +83,19 @@ const Dashboard: React.FC = () => {
           </Link>
         </div>
 
-        {stats && (
+        {!stats ? (
+          <div className="empty-state">
+            <p>Unable to load statistics. Please check your database connection.</p>
+          </div>
+        ) : (
           <>
             <div className="stats-grid">
               <div className="stat-card primary">
                 <div className="stat-icon">💰</div>
                 <div className="stat-content">
                   <h3>Total Expenses</h3>
-                  <p className="stat-value">{formatCurrency(stats.totalExpenses)}</p>
-                  <span className="stat-label">{stats.totalCount} transactions</span>
+                  <p className="stat-value">{formatCurrency(stats.totalExpenses || 0)}</p>
+                  <span className="stat-label">{stats.totalCount || 0} transactions</span>
                 </div>
               </div>
 
@@ -86,9 +103,9 @@ const Dashboard: React.FC = () => {
                 <div className="stat-icon">📅</div>
                 <div className="stat-content">
                   <h3>This Month</h3>
-                  <p className="stat-value">{formatCurrency(stats.thisMonth)}</p>
+                  <p className="stat-value">{formatCurrency(stats.thisMonth || 0)}</p>
                   <span className="stat-label">
-                    {stats.lastMonth > 0 
+                    {stats.lastMonth && stats.lastMonth > 0 
                       ? `${((stats.thisMonth - stats.lastMonth) / stats.lastMonth * 100).toFixed(1)}% vs last month`
                       : 'First month'
                     }
@@ -100,7 +117,7 @@ const Dashboard: React.FC = () => {
                 <div className="stat-icon">📊</div>
                 <div className="stat-content">
                   <h3>Daily Average</h3>
-                  <p className="stat-value">{formatCurrency(stats.averagePerDay)}</p>
+                  <p className="stat-value">{formatCurrency(stats.averagePerDay || 0)}</p>
                   <span className="stat-label">Per day</span>
                 </div>
               </div>
@@ -110,20 +127,24 @@ const Dashboard: React.FC = () => {
               <div className="dashboard-card">
                 <h2>Expenses by Category</h2>
                 <div className="category-list">
-                  {Object.entries(stats.byCategory)
-                    .sort(([, a], [, b]) => b - a)
-                    .map(([category, amount]) => (
-                      <div key={category} className="category-item">
-                        <div className="category-info">
-                          <span 
-                            className="category-color" 
-                            style={{ backgroundColor: getCategoryColor(category) }}
-                          ></span>
-                          <span className="category-name">{formatCategory(category)}</span>
+                  {stats.byCategory && Object.keys(stats.byCategory).length > 0 ? (
+                    Object.entries(stats.byCategory)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([category, amount]) => (
+                        <div key={category} className="category-item">
+                          <div className="category-info">
+                            <span 
+                              className="category-color" 
+                              style={{ backgroundColor: getCategoryColor(category) }}
+                            ></span>
+                            <span className="category-name">{formatCategory(category)}</span>
+                          </div>
+                          <span className="category-amount">{formatCurrency(amount)}</span>
                         </div>
-                        <span className="category-amount">{formatCurrency(amount)}</span>
-                      </div>
-                    ))}
+                      ))
+                  ) : (
+                    <p className="empty-state">No category data available</p>
+                  )}
                 </div>
               </div>
 

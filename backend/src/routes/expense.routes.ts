@@ -156,7 +156,13 @@ router.put(
       
       res.json(expense)
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
+      console.error('Error updating expense:', error)
+      const statusCode = error.message.includes('Validation') || error.message.includes('required') || error.message.includes('Invalid') ? 400 : 
+                        error.message.includes('Database not connected') || error.message.includes('Database connection') ? 503 : 500
+      res.status(statusCode).json({ 
+        error: error.message || 'Failed to update expense',
+        message: error.message || 'Failed to update expense'
+      })
     }
   }
 )
@@ -181,7 +187,12 @@ router.delete(
       
       res.json({ message: 'Expense deleted successfully' })
     } catch (error: any) {
-      res.status(500).json({ error: error.message })
+      console.error('Error deleting expense:', error)
+      const statusCode = error.message.includes('Database not connected') || error.message.includes('Database connection') ? 503 : 500
+      res.status(statusCode).json({ 
+        error: error.message || 'Failed to delete expense',
+        message: error.message || 'Failed to delete expense'
+      })
     }
   }
 )

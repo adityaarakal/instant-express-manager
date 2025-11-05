@@ -21,7 +21,11 @@ const ExpenseDetail: React.FC = () => {
         const data = await expenseService.getExpenseById(id, userId)
         setExpense(data)
       } catch (err: any) {
-        setError(err.response?.data?.error || 'Expense not found')
+        const errorMessage = err.response?.data?.error || 
+                            err.response?.data?.message || 
+                            err.message || 
+                            'Failed to load expense. Please try again.'
+        setError(errorMessage)
       } finally {
         setLoading(false)
       }
@@ -39,7 +43,11 @@ const ExpenseDetail: React.FC = () => {
       await expenseService.deleteExpense(expense.id, userId)
       navigate('/expenses')
     } catch (err: any) {
-      alert('Failed to delete expense. Please try again.')
+      const errorMessage = err.response?.data?.error || 
+                          err.response?.data?.message || 
+                          err.message || 
+                          'Failed to delete expense. Please try again.'
+      alert(errorMessage)
       console.error('Error deleting expense:', err)
     } finally {
       setDeleting(false)
@@ -106,7 +114,7 @@ const ExpenseDetail: React.FC = () => {
           </button>
           <div className="header-actions">
             <button
-              onClick={() => navigate(`/expenses/${expense.id}/edit`)}
+              onClick={() => navigate(`/expenses/create?edit=${expense.id}`)}
               className="btn btn-secondary"
             >
               Edit
