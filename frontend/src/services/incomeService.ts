@@ -1,5 +1,7 @@
 // LocalStorage-based income service (no backend required)
 
+import { calculateNextOccurrence, generateRecurringOccurrences, RecurrenceType } from '../utils/recurringTransactions'
+
 const STORAGE_KEY = 'expense-manager-incomes'
 
 export interface Income {
@@ -16,6 +18,13 @@ export interface Income {
   location?: string
   createdAt: string
   updatedAt: string
+  // Recurring transaction fields
+  isRecurring?: boolean
+  recurrenceType?: 'weekly' | 'monthly' | 'yearly'
+  recurrenceInterval?: number
+  parentTransactionId?: string
+  nextOccurrence?: string
+  endDate?: string
 }
 
 export interface CreateIncomeRequest {
@@ -29,6 +38,11 @@ export interface CreateIncomeRequest {
   tags?: string[]
   receiptUrl?: string
   location?: string
+  // Recurring transaction fields
+  isRecurring?: boolean
+  recurrenceType?: 'weekly' | 'monthly' | 'yearly'
+  recurrenceInterval?: number
+  endDate?: string
 }
 
 export interface IncomeStats {
@@ -63,6 +77,132 @@ const saveIncomesToStorage = (incomes: Income[]): void => {
 
 const generateId = (): string => {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+}
+
+// Helper function to generate and save recurring incomes
+const generateAndSaveRecurringIncomes = (
+  parentIncome: Income,
+  existingIncomes: Income[],
+  recurrenceType: RecurrenceType,
+  interval: number,
+  endDate?: string
+): void => {
+  const occurrences = generateRecurringOccurrences(
+    parentIncome.date,
+    recurrenceType,
+    interval,
+    endDate,
+    100 // Max 100 occurrences
+  )
+  
+  // Skip the first occurrence (already created)
+  const futureOccurrences = occurrences.slice(1)
+  
+  futureOccurrences.forEach(occurrenceDate => {
+    const recurringIncome: Income = {
+      ...parentIncome,
+      id: generateId(),
+      date: occurrenceDate,
+      parentTransactionId: parentIncome.id,
+      nextOccurrence: calculateNextOccurrence(occurrenceDate, recurrenceType, interval),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+    existingIncomes.push(recurringIncome)
+  })
+  
+  saveIncomesToStorage(existingIncomes)
+}
+
+// Function to check and generate missing recurring transactions
+export const checkAndGenerateRecurringIncomes = (): void => {
+  try {
+    const incomes = getIncomesFromStorage()
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+    
+    // Find all parent recurring transactions (those without parentTransactionId)
+    const recurringParents = incomes.filter(
+      inc => inc.isRecurring && !inc.parentTransactionId && (!inc.endDate || new Date(inc.endDate) >= now)
+    )
+    
+    recurringParents.forEach(parent => {
+      if (!parent.recurrenceType) return
+      
+      // Find the last occurrence for this parent
+      const relatedIncomes = incomes.filter(
+        inc => inc.parentTransactionId === parent.id || inc.id === parent.id
+      )
+      const lastOccurrence = relatedIncomes
+        .map(inc => new Date(inc.date))
+        .sort((a, b) => b.getTime() - a.getTime())[0]
+      
+      if (!lastOccurrence) return
+      
+      // Check if we need to generate more occurrences
+      const nextExpected = calculateNextOccurrence(
+        lastOccurrence.toISOString(),
+        parent.recurrenceType,
+        parent.recurrenceInterval || 1
+      )
+      const nextExpectedDate = new Date(nextExpected)
+      nextExpectedDate.setHours(0, 0, 0, 0)
+      
+      // Generate occurrences up to 3 months ahead
+      const threeMonthsAhead = new Date()
+      threeMonthsAhead.setMonth(threeMonthsAhead.getMonth() + 3)
+      
+      if (nextExpectedDate <= threeMonthsAhead) {
+        const missingOccurrences: Income[] = []
+        let currentDate = new Date(nextExpected)
+        
+        while (currentDate <= threeMonthsAhead && missingOccurrences.length < 12) {
+          // Check if this occurrence already exists
+          const exists = incomes.some(
+            inc => inc.parentTransactionId === parent.id && 
+            new Date(inc.date).toISOString().split('T')[0] === currentDate.toISOString().split('T')[0]
+          )
+          
+          if (!exists && (!parent.endDate || currentDate <= new Date(parent.endDate))) {
+            const newOccurrence: Income = {
+              ...parent,
+              id: generateId(),
+              date: currentDate.toISOString(),
+              parentTransactionId: parent.id,
+              nextOccurrence: calculateNextOccurrence(
+                currentDate.toISOString(),
+                parent.recurrenceType,
+                parent.recurrenceInterval || 1
+              ),
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            }
+            missingOccurrences.push(newOccurrence)
+          }
+          
+          // Calculate next occurrence
+          switch (parent.recurrenceType) {
+            case 'weekly':
+              currentDate = new Date(currentDate.setDate(currentDate.getDate() + (7 * (parent.recurrenceInterval || 1))))
+              break
+            case 'monthly':
+              currentDate = new Date(currentDate.setMonth(currentDate.getMonth() + (parent.recurrenceInterval || 1)))
+              break
+            case 'yearly':
+              currentDate = new Date(currentDate.setFullYear(currentDate.getFullYear() + (parent.recurrenceInterval || 1)))
+              break
+          }
+        }
+        
+        if (missingOccurrences.length > 0) {
+          incomes.push(...missingOccurrences)
+          saveIncomesToStorage(incomes)
+        }
+      }
+    })
+  } catch (error) {
+    console.error('Error checking recurring incomes:', error)
+  }
 }
 
 const filterIncomes = (
@@ -213,11 +353,26 @@ export const incomeService = {
             location: data.location?.trim(),
             receiptUrl: data.receiptUrl,
             createdAt: now,
-            updatedAt: now
+            updatedAt: now,
+            // Recurring transaction fields
+            isRecurring: data.isRecurring || false,
+            recurrenceType: data.recurrenceType,
+            recurrenceInterval: data.recurrenceInterval || 1,
+            endDate: data.endDate,
+            nextOccurrence: data.isRecurring && data.recurrenceType 
+              ? calculateNextOccurrence(data.date, data.recurrenceType, data.recurrenceInterval || 1)
+              : undefined,
+            parentTransactionId: undefined // First occurrence is the parent (no parent)
           }
 
           incomes.push(newIncome)
           saveIncomesToStorage(incomes)
+          
+          // If recurring, generate future occurrences
+          if (data.isRecurring && data.recurrenceType) {
+            generateAndSaveRecurringIncomes(newIncome, incomes, data.recurrenceType, data.recurrenceInterval || 1, data.endDate)
+          }
+          
           resolve(newIncome)
         } catch (error: any) {
           reject(new Error(error.message || 'Failed to create income'))
@@ -297,9 +452,53 @@ export const incomeService = {
   getStats: async (userId?: string, startDate?: string, endDate?: string): Promise<IncomeStats> => {
     return new Promise((resolve) => {
       setTimeout(() => {
+        // Check and generate recurring incomes before calculating stats
+        checkAndGenerateRecurringIncomes()
         const incomes = getIncomesFromStorage()
         const stats = calculateStats(incomes, userId, startDate, endDate)
         resolve(stats)
+      }, 0)
+    })
+  },
+
+  // Get recurring income templates (parent transactions)
+  getRecurringIncomes: async (userId?: string): Promise<Income[]> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        checkAndGenerateRecurringIncomes()
+        const incomes = getIncomesFromStorage()
+        const recurring = incomes.filter(
+          inc => inc.isRecurring && !inc.parentTransactionId && (!userId || inc.userId === userId)
+        )
+        resolve(recurring)
+      }, 0)
+    })
+  },
+
+  // Delete recurring transaction and all its occurrences
+  deleteRecurringIncome: async (parentId: string, userId?: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        try {
+          const incomes = getIncomesFromStorage()
+          
+          // Find parent transaction
+          const parent = incomes.find(inc => inc.id === parentId)
+          if (!parent || (userId && parent.userId !== userId)) {
+            reject(new Error('Recurring income not found'))
+            return
+          }
+          
+          // Remove parent and all related occurrences
+          const filtered = incomes.filter(
+            inc => inc.id !== parentId && inc.parentTransactionId !== parentId
+          )
+          
+          saveIncomesToStorage(filtered)
+          resolve()
+        } catch (error: any) {
+          reject(new Error(error.message || 'Failed to delete recurring income'))
+        }
       }, 0)
     })
   }

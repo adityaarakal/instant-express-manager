@@ -1,6 +1,9 @@
 // LocalStorage-based expense service (no backend required)
 
+import { calculateNextOccurrence, generateRecurringOccurrences, RecurrenceType } from '../utils/recurringTransactions'
+
 const STORAGE_KEY = 'expense-manager-expenses'
+const RECURRING_TEMPLATE_KEY = 'expense-manager-recurring-templates'
 
 export interface Expense {
   id: string
@@ -16,6 +19,13 @@ export interface Expense {
   location?: string
   createdAt: string
   updatedAt: string
+  // Recurring transaction fields
+  isRecurring?: boolean
+  recurrenceType?: 'weekly' | 'monthly' | 'yearly'
+  recurrenceInterval?: number // e.g., every 2 weeks, every 3 months
+  parentTransactionId?: string // ID of the original recurring transaction
+  nextOccurrence?: string // Next date when this should occur
+  endDate?: string // Optional end date for recurring transactions
 }
 
 export interface CreateExpenseRequest {
@@ -29,6 +39,11 @@ export interface CreateExpenseRequest {
   tags?: string[]
   receiptUrl?: string
   location?: string
+  // Recurring transaction fields
+  isRecurring?: boolean
+  recurrenceType?: 'weekly' | 'monthly' | 'yearly'
+  recurrenceInterval?: number
+  endDate?: string
 }
 
 export interface ExpenseStats {
@@ -63,6 +78,132 @@ const saveExpensesToStorage = (expenses: Expense[]): void => {
 
 const generateId = (): string => {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+}
+
+// Helper function to generate and save recurring expenses
+const generateAndSaveRecurringExpenses = (
+  parentExpense: Expense,
+  existingExpenses: Expense[],
+  recurrenceType: RecurrenceType,
+  interval: number,
+  endDate?: string
+): void => {
+  const occurrences = generateRecurringOccurrences(
+    parentExpense.date,
+    recurrenceType,
+    interval,
+    endDate,
+    100 // Max 100 occurrences
+  )
+  
+  // Skip the first occurrence (already created)
+  const futureOccurrences = occurrences.slice(1)
+  
+  futureOccurrences.forEach(occurrenceDate => {
+    const recurringExpense: Expense = {
+      ...parentExpense,
+      id: generateId(),
+      date: occurrenceDate,
+      parentTransactionId: parentExpense.id,
+      nextOccurrence: calculateNextOccurrence(occurrenceDate, recurrenceType, interval),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+    existingExpenses.push(recurringExpense)
+  })
+  
+  saveExpensesToStorage(existingExpenses)
+}
+
+// Function to check and generate missing recurring transactions
+export const checkAndGenerateRecurringExpenses = (): void => {
+  try {
+    const expenses = getExpensesFromStorage()
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+    
+    // Find all parent recurring transactions (those without parentTransactionId)
+    const recurringParents = expenses.filter(
+      exp => exp.isRecurring && !exp.parentTransactionId && (!exp.endDate || new Date(exp.endDate) >= now)
+    )
+    
+    recurringParents.forEach(parent => {
+      if (!parent.recurrenceType) return
+      
+      // Find the last occurrence for this parent
+      const relatedExpenses = expenses.filter(
+        exp => exp.parentTransactionId === parent.id || exp.id === parent.id
+      )
+      const lastOccurrence = relatedExpenses
+        .map(exp => new Date(exp.date))
+        .sort((a, b) => b.getTime() - a.getTime())[0]
+      
+      if (!lastOccurrence) return
+      
+      // Check if we need to generate more occurrences
+      const nextExpected = calculateNextOccurrence(
+        lastOccurrence.toISOString(),
+        parent.recurrenceType,
+        parent.recurrenceInterval || 1
+      )
+      const nextExpectedDate = new Date(nextExpected)
+      nextExpectedDate.setHours(0, 0, 0, 0)
+      
+      // Generate occurrences up to 3 months ahead
+      const threeMonthsAhead = new Date()
+      threeMonthsAhead.setMonth(threeMonthsAhead.getMonth() + 3)
+      
+      if (nextExpectedDate <= threeMonthsAhead) {
+        const missingOccurrences: Expense[] = []
+        let currentDate = new Date(nextExpected)
+        
+        while (currentDate <= threeMonthsAhead && missingOccurrences.length < 12) {
+          // Check if this occurrence already exists
+          const exists = expenses.some(
+            exp => exp.parentTransactionId === parent.id && 
+            new Date(exp.date).toISOString().split('T')[0] === currentDate.toISOString().split('T')[0]
+          )
+          
+          if (!exists && (!parent.endDate || currentDate <= new Date(parent.endDate))) {
+            const newOccurrence: Expense = {
+              ...parent,
+              id: generateId(),
+              date: currentDate.toISOString(),
+              parentTransactionId: parent.id,
+              nextOccurrence: calculateNextOccurrence(
+                currentDate.toISOString(),
+                parent.recurrenceType,
+                parent.recurrenceInterval || 1
+              ),
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            }
+            missingOccurrences.push(newOccurrence)
+          }
+          
+          // Calculate next occurrence
+          switch (parent.recurrenceType) {
+            case 'weekly':
+              currentDate = new Date(currentDate.setDate(currentDate.getDate() + (7 * (parent.recurrenceInterval || 1))))
+              break
+            case 'monthly':
+              currentDate = new Date(currentDate.setMonth(currentDate.getMonth() + (parent.recurrenceInterval || 1)))
+              break
+            case 'yearly':
+              currentDate = new Date(currentDate.setFullYear(currentDate.getFullYear() + (parent.recurrenceInterval || 1)))
+              break
+          }
+        }
+        
+        if (missingOccurrences.length > 0) {
+          expenses.push(...missingOccurrences)
+          saveExpensesToStorage(expenses)
+        }
+      }
+    })
+  } catch (error) {
+    console.error('Error checking recurring expenses:', error)
+  }
 }
 
 const filterExpenses = (
@@ -214,11 +355,26 @@ export const expenseService = {
             location: data.location?.trim(),
             receiptUrl: data.receiptUrl,
             createdAt: now,
-            updatedAt: now
+            updatedAt: now,
+            // Recurring transaction fields
+            isRecurring: data.isRecurring || false,
+            recurrenceType: data.recurrenceType,
+            recurrenceInterval: data.recurrenceInterval || 1,
+            endDate: data.endDate,
+            nextOccurrence: data.isRecurring && data.recurrenceType 
+              ? calculateNextOccurrence(data.date, data.recurrenceType, data.recurrenceInterval || 1)
+              : undefined,
+            parentTransactionId: undefined // First occurrence is the parent (no parent)
           }
 
           expenses.push(newExpense)
           saveExpensesToStorage(expenses)
+          
+          // If recurring, generate future occurrences
+          if (data.isRecurring && data.recurrenceType) {
+            generateAndSaveRecurringExpenses(newExpense, expenses, data.recurrenceType, data.recurrenceInterval || 1, data.endDate)
+          }
+          
           resolve(newExpense)
         } catch (error: any) {
           reject(new Error(error.message || 'Failed to create expense'))
@@ -298,9 +454,53 @@ export const expenseService = {
   getStats: async (userId?: string, startDate?: string, endDate?: string): Promise<ExpenseStats> => {
     return new Promise((resolve) => {
       setTimeout(() => {
+        // Check and generate recurring expenses before calculating stats
+        checkAndGenerateRecurringExpenses()
         const expenses = getExpensesFromStorage()
         const stats = calculateStats(expenses, userId, startDate, endDate)
         resolve(stats)
+      }, 0)
+    })
+  },
+
+  // Get recurring expense templates (parent transactions)
+  getRecurringExpenses: async (userId?: string): Promise<Expense[]> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        checkAndGenerateRecurringExpenses()
+        const expenses = getExpensesFromStorage()
+        const recurring = expenses.filter(
+          exp => exp.isRecurring && !exp.parentTransactionId && (!userId || exp.userId === userId)
+        )
+        resolve(recurring)
+      }, 0)
+    })
+  },
+
+  // Delete recurring transaction and all its occurrences
+  deleteRecurringExpense: async (parentId: string, userId?: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        try {
+          const expenses = getExpensesFromStorage()
+          
+          // Find parent transaction
+          const parent = expenses.find(exp => exp.id === parentId)
+          if (!parent || (userId && parent.userId !== userId)) {
+            reject(new Error('Recurring expense not found'))
+            return
+          }
+          
+          // Remove parent and all related occurrences
+          const filtered = expenses.filter(
+            exp => exp.id !== parentId && exp.parentTransactionId !== parentId
+          )
+          
+          saveExpensesToStorage(filtered)
+          resolve()
+        } catch (error: any) {
+          reject(new Error(error.message || 'Failed to delete recurring expense'))
+        }
       }, 0)
     })
   }

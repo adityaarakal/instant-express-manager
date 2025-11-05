@@ -21,7 +21,11 @@ const CreateExpense: React.FC = () => {
     paymentMethod: 'cash',
     date: new Date().toISOString().split('T')[0],
     tags: [],
-    location: ''
+    location: '',
+    isRecurring: false,
+    recurrenceType: undefined,
+    recurrenceInterval: 1,
+    endDate: undefined
   })
 
   const [tagInput, setTagInput] = useState('')
@@ -178,7 +182,11 @@ const CreateExpense: React.FC = () => {
         date: dateValue,
         description: formData.description?.trim() || undefined,
         location: formData.location?.trim() || undefined,
-        tags: formData.tags && formData.tags.length > 0 ? formData.tags : undefined
+        tags: formData.tags && formData.tags.length > 0 ? formData.tags : undefined,
+        isRecurring: formData.isRecurring || false,
+        recurrenceType: formData.isRecurring ? formData.recurrenceType : undefined,
+        recurrenceInterval: formData.isRecurring ? formData.recurrenceInterval : undefined,
+        endDate: formData.endDate || undefined
       }
       
       // Validate required fields
@@ -675,6 +683,100 @@ const CreateExpense: React.FC = () => {
                           </button>
                         </span>
                       ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="form-group-optional">
+                  <label htmlFor="isRecurring" style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      id="isRecurring"
+                      checked={formData.isRecurring || false}
+                      onChange={(e) => {
+                        setFormData(prev => ({
+                          ...prev,
+                          isRecurring: e.target.checked,
+                          recurrenceType: e.target.checked ? prev.recurrenceType || 'monthly' : undefined,
+                          recurrenceInterval: e.target.checked ? prev.recurrenceInterval || 1 : undefined
+                        }))
+                      }}
+                      style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                    />
+                    <span>🔄 Make this a recurring expense</span>
+                  </label>
+                  
+                  {formData.isRecurring && (
+                    <div style={{ marginTop: 'var(--spacing-md)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
+                      <div>
+                        <label htmlFor="recurrenceType" style={{ display: 'block', marginBottom: 'var(--spacing-xs)', fontWeight: 600 }}>
+                          Frequency
+                        </label>
+                        <select
+                          id="recurrenceType"
+                          value={formData.recurrenceType || 'monthly'}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              recurrenceType: e.target.value as 'weekly' | 'monthly' | 'yearly'
+                            }))
+                          }}
+                          className="form-input"
+                          style={{ width: '100%' }}
+                        >
+                          <option value="weekly">Weekly</option>
+                          <option value="monthly">Monthly</option>
+                          <option value="yearly">Yearly</option>
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="recurrenceInterval" style={{ display: 'block', marginBottom: 'var(--spacing-xs)', fontWeight: 600 }}>
+                          Every (interval)
+                        </label>
+                        <input
+                          type="number"
+                          id="recurrenceInterval"
+                          min="1"
+                          max="12"
+                          value={formData.recurrenceInterval || 1}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              recurrenceInterval: parseInt(e.target.value) || 1
+                            }))
+                          }}
+                          className="form-input"
+                          style={{ width: '100%' }}
+                          placeholder="1"
+                        />
+                        <small style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: 'var(--spacing-xs)', display: 'block' }}>
+                          e.g., Every 2 weeks, Every 3 months
+                        </small>
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="endDate" style={{ display: 'block', marginBottom: 'var(--spacing-xs)', fontWeight: 600 }}>
+                          End Date (Optional)
+                        </label>
+                        <input
+                          type="date"
+                          id="endDate"
+                          value={formData.endDate || ''}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              endDate: e.target.value || undefined
+                            }))
+                          }}
+                          className="form-input"
+                          style={{ width: '100%' }}
+                          min={formData.date}
+                        />
+                        <small style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: 'var(--spacing-xs)', display: 'block' }}>
+                          Leave empty for recurring indefinitely
+                        </small>
+                      </div>
                     </div>
                   )}
                 </div>
