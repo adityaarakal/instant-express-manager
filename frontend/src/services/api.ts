@@ -37,8 +37,13 @@ apiClient.interceptors.response.use(
       // Handle unauthorized access
       localStorage.removeItem('authToken')
       window.location.href = '/login'
+    } else if (error.response?.status === 503) {
+      // Service Unavailable - usually database connection issues
+      const serverMessage = error.response?.data?.error || error.response?.data?.message
+      error.message = serverMessage || 'Database connection error. Please ensure MongoDB is running.'
     } else if (error.response?.status >= 500) {
-      error.message = 'Server error. Please try again later.'
+      const serverMessage = error.response?.data?.error || error.response?.data?.message
+      error.message = serverMessage || 'Server error. Please try again later.'
     }
     return Promise.reject(error)
   }

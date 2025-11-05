@@ -111,7 +111,16 @@ router.post(
       res.status(201).json(expense)
     } catch (error: any) {
       console.error('Error creating expense:', error)
-      const statusCode = error.message.includes('Validation') || error.message.includes('required') || error.message.includes('Invalid') ? 400 : 500
+      console.error('Error stack:', error.stack)
+      
+      // Determine status code based on error type
+      let statusCode = 500
+      if (error.message.includes('Validation') || error.message.includes('required') || error.message.includes('Invalid')) {
+        statusCode = 400
+      } else if (error.message.includes('Database not connected') || error.message.includes('Database connection')) {
+        statusCode = 503 // Service Unavailable
+      }
+      
       res.status(statusCode).json({ 
         error: error.message || 'Failed to create expense',
         message: error.message || 'Failed to create expense'
