@@ -61,14 +61,37 @@ npm run install:all
 ```
 
 2. Set up environment variables:
-   - Copy `frontend/.env.example` to `frontend/.env`
-   - Copy `backend/.env.example` to `backend/.env`
-   - Fill in your configuration values
+   - Create `backend/.env` file with:
+     ```env
+     PORT=3000
+     NODE_ENV=development
+     MONGODB_URI=mongodb://localhost:27017/expense-manager
+     # Or for MongoDB Atlas:
+     # MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/expense-manager
+     FRONTEND_URL=http://localhost:5173
+     ```
+   - Create `frontend/.env` file with:
+     ```env
+     VITE_API_BASE_URL=http://localhost:3000/api
+     ```
 
-3. Start development servers:
+3. **Start MongoDB** (choose one):
+   - **Local MongoDB**: Start MongoDB service on your machine
+     ```bash
+     # macOS with Homebrew:
+     brew services start mongodb-community
+     
+     # Or using Docker:
+     docker run -d -p 27017:27017 --name mongodb mongo
+     ```
+   - **MongoDB Atlas (Cloud)**: Get connection string from [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) and set `MONGODB_URI` in `backend/.env`
+
+4. Start development servers:
 ```bash
 npm run dev
 ```
+
+**Note**: The app will run even without MongoDB, but you'll see "Database not connected" errors when trying to create expenses. Make sure MongoDB is running to save expenses.
 
 This will start:
 - Frontend dev server on `http://localhost:5173` (or configured port)

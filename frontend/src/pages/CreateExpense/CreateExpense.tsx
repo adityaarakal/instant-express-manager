@@ -160,7 +160,13 @@ const CreateExpense: React.FC = () => {
                           err.response?.data?.message || 
                           err.message || 
                           'Failed to create expense. Please check your connection and try again.'
-      setError(errorMessage)
+      
+      // Check if it's a database connection error
+      if (err.response?.status === 503 || errorMessage.includes('Database not connected')) {
+        setError('⚠️ Database not connected. Please start MongoDB or set MONGODB_URI in backend/.env file. Expenses cannot be saved until database is connected.')
+      } else {
+        setError(errorMessage)
+      }
       console.error('Error creating expense:', err)
     } finally {
       setLoading(false)
@@ -222,7 +228,15 @@ const CreateExpense: React.FC = () => {
           })}
         </div>
 
-        <form onSubmit={handleSubmit} className="expense-form" data-lpignore="true" autoComplete="off">
+        <form 
+          onSubmit={handleSubmit} 
+          className="expense-form" 
+          data-lpignore="true" 
+          data-1p-ignore="true"
+          data-bwignore="true"
+          autoComplete="off"
+          data-form-type="other"
+        >
           {error && (
             <div className="error-message">
               {error}
@@ -252,7 +266,14 @@ const CreateExpense: React.FC = () => {
                     autoComplete="off"
                     data-lpignore="true"
                     data-form-type="other"
+                    data-1p-ignore="true"
+                    data-bwignore="true"
                     aria-label="Expense title"
+                    onFocus={(e) => {
+                      // Prevent browser extensions from interfering
+                      e.target.setAttribute('readonly', 'readonly')
+                      setTimeout(() => e.target.removeAttribute('readonly'), 100)
+                    }}
                   />
                 </div>
                 <div className="step-hint">
@@ -288,7 +309,13 @@ const CreateExpense: React.FC = () => {
                     autoComplete="off"
                     data-lpignore="true"
                     data-form-type="other"
+                    data-1p-ignore="true"
+                    data-bwignore="true"
                     aria-label="Expense amount"
+                    onFocus={(e) => {
+                      e.target.setAttribute('readonly', 'readonly')
+                      setTimeout(() => e.target.removeAttribute('readonly'), 100)
+                    }}
                   />
                 </div>
                 <div className="quick-amounts">
@@ -360,7 +387,13 @@ const CreateExpense: React.FC = () => {
                     autoComplete="off"
                     data-lpignore="true"
                     data-form-type="other"
+                    data-1p-ignore="true"
+                    data-bwignore="true"
                     aria-label="Expense date"
+                    onFocus={(e) => {
+                      e.target.setAttribute('readonly', 'readonly')
+                      setTimeout(() => e.target.removeAttribute('readonly'), 100)
+                    }}
                   />
                 </div>
                 <div className="quick-dates">
@@ -484,7 +517,13 @@ const CreateExpense: React.FC = () => {
                     autoComplete="off"
                     data-lpignore="true"
                     data-form-type="other"
+                    data-1p-ignore="true"
+                    data-bwignore="true"
                     aria-label="Location (optional)"
+                    onFocus={(e) => {
+                      e.target.setAttribute('readonly', 'readonly')
+                      setTimeout(() => e.target.removeAttribute('readonly'), 100)
+                    }}
                   />
                 </div>
               </div>
@@ -513,7 +552,13 @@ const CreateExpense: React.FC = () => {
                     autoComplete="off"
                     data-lpignore="true"
                     data-form-type="other"
+                    data-1p-ignore="true"
+                    data-bwignore="true"
                     aria-label="Description (optional)"
+                    onFocus={(e) => {
+                      e.target.setAttribute('readonly', 'readonly')
+                      setTimeout(() => e.target.removeAttribute('readonly'), 100)
+                    }}
                   />
                 </div>
 
@@ -532,7 +577,13 @@ const CreateExpense: React.FC = () => {
                       autoComplete="off"
                       data-lpignore="true"
                       data-form-type="other"
+                      data-1p-ignore="true"
+                      data-bwignore="true"
                       aria-label="Tags (optional)"
+                      onFocus={(e) => {
+                        e.target.setAttribute('readonly', 'readonly')
+                        setTimeout(() => e.target.removeAttribute('readonly'), 100)
+                      }}
                     />
                     <button
                       type="button"
