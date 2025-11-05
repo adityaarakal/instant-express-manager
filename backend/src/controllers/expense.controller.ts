@@ -1,10 +1,17 @@
 import { ExpenseModel } from '../models/Expense.model'
 import { CreateExpenseRequest, UpdateExpenseRequest, ExpenseResponse, ExpenseStats } from '../types/expense.types'
+import { isDatabaseConnected } from '../config/database'
+import mongoose from 'mongoose'
 
 export const createExpense = async (
   request: CreateExpenseRequest
 ): Promise<ExpenseResponse> => {
   try {
+    // Check if database is connected
+    if (!isDatabaseConnected()) {
+      throw new Error('Database not connected. Please ensure MongoDB is running or set MONGODB_URI in environment variables.')
+    }
+
     // Validate and format the date
     let expenseDate: Date
     if (typeof request.date === 'string') {
@@ -48,6 +55,9 @@ export const createExpense = async (
     if (error.name === 'ValidationError') {
       throw new Error(`Validation error: ${Object.values(error.errors).map((e: any) => e.message).join(', ')}`)
     }
+    if (error.name === 'MongoServerError' || error.message.includes('buffering') || error.message.includes('timeout')) {
+      throw new Error('Database connection error. Please ensure MongoDB is running and accessible.')
+    }
     throw new Error(`Failed to create expense: ${error.message}`)
   }
 }
@@ -57,6 +67,10 @@ export const getExpenseById = async (
   userId?: string
 ): Promise<ExpenseResponse | null> => {
   try {
+    if (!isDatabaseConnected()) {
+      throw new Error('Database not connected')
+    }
+
     const query: any = { _id: expenseId }
     if (userId) {
       query.userId = userId
@@ -65,6 +79,9 @@ export const getExpenseById = async (
     const expense = await ExpenseModel.findOne(query)
     return expense ? expenseToResponse(expense) : null
   } catch (error: any) {
+    if (error.message.includes('not connected') || error.message.includes('buffering') || error.message.includes('timeout')) {
+      throw new Error('Database connection error. Please ensure MongoDB is running.')
+    }
     throw new Error(`Failed to get expense: ${error.message}`)
   }
 }
@@ -78,6 +95,11 @@ export const getUserExpenses = async (
   skip: number = 0
 ): Promise<ExpenseResponse[]> => {
   try {
+    if (!isDatabaseConnected()) {
+      console.warn('Database not connected, returning empty array')
+      return []
+    }
+
     const query: any = { userId }
     
     if (category) {
@@ -97,6 +119,10 @@ export const getUserExpenses = async (
 
     return expenses.map(expenseToResponse)
   } catch (error: any) {
+    if (error.message.includes('buffering') || error.message.includes('timeout')) {
+      console.warn('Database operation timed out, returning empty array')
+      return []
+    }
     throw new Error(`Failed to get expenses: ${error.message}`)
   }
 }
@@ -107,6 +133,10 @@ export const updateExpense = async (
   updates: UpdateExpenseRequest
 ): Promise<ExpenseResponse | null> => {
   try {
+    if (!isDatabaseConnected()) {
+      throw new Error('Database not connected')
+    }
+
     const updateData: any = { ...updates }
     
     if (updates.date) {
@@ -121,6 +151,9 @@ export const updateExpense = async (
 
     return expense ? expenseToResponse(expense) : null
   } catch (error: any) {
+    if (error.message.includes('not connected') || error.message.includes('buffering') || error.message.includes('timeout')) {
+      throw new Error('Database connection error. Please ensure MongoDB is running.')
+    }
     throw new Error(`Failed to update expense: ${error.message}`)
   }
 }
@@ -130,15 +163,35 @@ export const deleteExpense = async (
   userId: string
 ): Promise<boolean> => {
   try {
+    if (!isDatabaseConnected()) {
+      throw new Error('Database not connected')
+    }
+
     const result = await ExpenseModel.findOneAndDelete({ _id: expenseId, userId })
     return !!result
   } catch (error: any) {
+    if (error.message.includes('not connected') || error.message.includes('buffering') || error.message.includes('timeout')) {
+      throw new Error('Database connection error. Please ensure MongoDB is running.')
+    }
     throw new Error(`Failed to delete expense: ${error.message}`)
   }
 }
 
 export const getExpenseStats = async (userId: string, startDate?: Date, endDate?: Date): Promise<ExpenseStats> => {
   try {
+    if (!isDatabaseConnected()) {
+      // Return empty stats if database not connected
+      return {
+        totalExpenses: 0,
+        totalCount: 0,
+        byCategory: {},
+        byMonth: [],
+        thisMonth: 0,
+        lastMonth: 0,
+        averagePerDay: 0
+      }
+    }
+
     const query: any = { userId }
     
     if (startDate || endDate) {
@@ -198,6 +251,18 @@ export const getExpenseStats = async (userId: string, startDate?: Date, endDate?
       averagePerDay: Math.round(averagePerDay * 100) / 100
     }
   } catch (error: any) {
+    if (error.message.includes('buffering') || error.message.includes('timeout')) {
+      // Return empty stats on timeout
+      return {
+        totalExpenses: 0,
+        totalCount: 0,
+        byCategory: {},
+        byMonth: [],
+        thisMonth: 0,
+        lastMonth: 0,
+        averagePerDay: 0
+      }
+    }
     throw new Error(`Failed to get expense stats: ${error.message}`)
   }
 }

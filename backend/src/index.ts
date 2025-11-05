@@ -6,7 +6,7 @@ import dotenv from 'dotenv'
 import purchaseRoutes from './routes/purchase.routes'
 import expenseRoutes from './routes/expense.routes'
 import { errorHandler } from './middleware/errorHandler'
-import { connectDatabase } from './config/database'
+import { connectDatabase, isDatabaseConnected } from './config/database'
 
 // Load environment variables
 dotenv.config()
@@ -14,10 +14,10 @@ dotenv.config()
 const app: Express = express()
 const PORT = process.env.PORT || 3000
 
-// Connect to database
-if (process.env.MONGODB_URI) {
-  connectDatabase()
-}
+// Connect to database (non-blocking)
+connectDatabase().catch(err => {
+  console.warn('Database connection will be retried automatically')
+})
 
 // Middleware
 app.use(helmet())
@@ -34,6 +34,7 @@ app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({ 
     status: 'ok', 
     message: 'Expense Manager API is running',
+    database: isDatabaseConnected() ? 'connected' : 'disconnected',
     timestamp: new Date().toISOString()
   })
 })
