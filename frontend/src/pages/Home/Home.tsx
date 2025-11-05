@@ -9,12 +9,12 @@ const Home: React.FC = () => {
     <div className="home">
       <div className="container">
         <section className="hero">
-          <h1>Welcome to Instant Express Manager</h1>
+          <h1>💰 Expense Manager</h1>
           <p className="hero-subtitle">
-            Manage your express deliveries and services efficiently
+            Track, manage, and analyze your expenses with ease
           </p>
           <div className="hero-actions">
-            <Link to="/deliveries/create" className="btn btn-primary">Create Delivery</Link>
+            <Link to="/expenses/create" className="btn btn-primary">Add Expense</Link>
             <Link to="/dashboard" className="btn btn-secondary">View Dashboard</Link>
           </div>
         </section>
@@ -25,16 +25,16 @@ const Home: React.FC = () => {
           <h2>Features</h2>
           <div className="features-grid">
             <div className="feature-card">
-              <h3>Fast Delivery</h3>
-              <p>Express delivery services at your fingertips</p>
+              <h3>📊 Smart Tracking</h3>
+              <p>Track all your expenses by category and date</p>
             </div>
             <div className="feature-card">
-              <h3>Real-time Tracking</h3>
-              <p>Track your packages in real-time</p>
+              <h3>📈 Analytics</h3>
+              <p>View detailed insights and spending patterns</p>
             </div>
             <div className="feature-card">
-              <h3>Secure Payments</h3>
-              <p>Safe and secure payment processing</p>
+              <h3>🏷️ Categories</h3>
+              <p>Organize expenses with tags and categories</p>
             </div>
           </div>
         </section>

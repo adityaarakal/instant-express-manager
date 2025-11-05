@@ -1,6 +1,6 @@
-# Instant Express Manager
+# Expense Manager
 
-A full-stack React PWA TypeScript application with Node.js/Express backend for managing express deliveries and services.
+A full-stack React PWA TypeScript application with Node.js/Express backend for tracking and managing personal expenses.
 
 ## Features
 
@@ -8,16 +8,23 @@ A full-stack React PWA TypeScript application with Node.js/Express backend for m
 - 📱 Fully responsive design for mobile and desktop
 - 💰 Monetization via ads and in-app purchases
 - 🔒 Secure backend API with TypeScript
-- 🎨 Modern UI/UX with responsive layouts
+- 🎨 Modern pixel-perfect UI/UX with responsive layouts
+- 📊 Expense tracking by categories
+- 📈 Analytics and insights dashboard
+- 🏷️ Tags and categorization system
 
 ## Project Structure
 
 ```
-instant-express-manager/
+expense-manager/
 ├── frontend/                    # React PWA TypeScript frontend
 │   ├── src/
 │   │   ├── components/         # Reusable React components
 │   │   ├── pages/              # Page components
+│   │   │   ├── Dashboard/     # Dashboard with stats
+│   │   │   ├── Expenses/      # Expenses list
+│   │   │   ├── CreateExpense/ # Add expense form
+│   │   │   └── ExpenseDetail/ # Expense details
 │   │   ├── services/           # API services
 │   │   └── App.tsx             # Main app component
 │   ├── public/                 # Static assets
@@ -28,7 +35,7 @@ instant-express-manager/
 │   ├── src/
 │   │   ├── config/             # Configuration files
 │   │   ├── controllers/        # Request handlers
-│   │   ├── models/             # Database models
+│   │   ├── models/             # Database models (Expense)
 │   │   ├── routes/             # API routes
 │   │   ├── middleware/         # Express middleware
 │   │   └── index.ts            # Server entry point
@@ -80,13 +87,43 @@ npm run build
 - TypeScript
 - Vite (build tool)
 - PWA capabilities (Service Worker, Web App Manifest)
-- Responsive CSS/UI framework
+- Responsive CSS with modern design
 
 ### Backend
 - Node.js
 - Express
 - TypeScript
 - MongoDB (or your database of choice)
+
+## Expense Categories
+
+The app supports the following expense categories:
+- 🍔 Food
+- 🚗 Transport
+- 🛍️ Shopping
+- 💳 Bills
+- 🎬 Entertainment
+- 🏥 Health
+- 📚 Education
+- ✈️ Travel
+- 📦 Other
+
+## API Endpoints
+
+### Health Check
+- `GET /health` - Server health status
+
+### Expenses
+- `GET /api/expenses` - Get all expenses (with filters)
+- `GET /api/expenses/stats` - Get expense statistics
+- `GET /api/expenses/:id` - Get expense by ID
+- `POST /api/expenses` - Create new expense
+- `PUT /api/expenses/:id` - Update expense
+- `DELETE /api/expenses/:id` - Delete expense
+
+### Purchases
+- `POST /api/purchases/premium` - Purchase premium subscription
+- `GET /api/purchases/status/:userId` - Check user's purchase status
 
 ## Monetization
 
@@ -133,19 +170,10 @@ VITE_APP_ENV=development
 NODE_ENV=development
 PORT=3000
 FRONTEND_URL=http://localhost:5173
-MONGODB_URI=mongodb://localhost:27017/instant-express-manager
+MONGODB_URI=mongodb://localhost:27017/expense-manager
 STRIPE_SECRET_KEY=your_stripe_secret_key
 JWT_SECRET=your_jwt_secret
 ```
-
-## API Endpoints
-
-### Health Check
-- `GET /health` - Server health status
-
-### Purchases
-- `POST /api/purchases/premium` - Purchase premium subscription
-- `GET /api/purchases/status/:userId` - Check user's purchase status
 
 ## Next Steps
 
@@ -153,7 +181,7 @@ JWT_SECRET=your_jwt_secret
 2. **Authentication**: Add user authentication system
 3. **Payment Integration**: Connect Stripe or PayPal
 4. **Ad Integration**: Add Google AdSense or other ad providers
-5. **Features**: Implement core express delivery management features
+5. **Features**: Add expense export, budget limits, recurring expenses
 6. **Testing**: Add unit and integration tests
 
 ## Deployment

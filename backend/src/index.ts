@@ -4,7 +4,7 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 import dotenv from 'dotenv'
 import purchaseRoutes from './routes/purchase.routes'
-import deliveryRoutes from './routes/delivery.routes'
+import expenseRoutes from './routes/expense.routes'
 import { errorHandler } from './middleware/errorHandler'
 import { connectDatabase } from './config/database'
 
@@ -33,14 +33,14 @@ app.use(express.urlencoded({ extended: true }))
 app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({ 
     status: 'ok', 
-    message: 'Instant Express Manager API is running',
+    message: 'Expense Manager API is running',
     timestamp: new Date().toISOString()
   })
 })
 
 // API Routes
 app.use('/api/purchases', purchaseRoutes)
-app.use('/api/deliveries', deliveryRoutes)
+app.use('/api/expenses', expenseRoutes)
 
 // 404 handler
 app.use((req: Request, res: Response) => {

@@ -3,10 +3,9 @@ import { useEffect } from 'react'
 import Layout from './components/Layout/Layout'
 import Home from './pages/Home/Home'
 import Dashboard from './pages/Dashboard/Dashboard'
-import Deliveries from './pages/Deliveries/Deliveries'
-import CreateDelivery from './pages/CreateDelivery/CreateDelivery'
-import TrackDelivery from './pages/TrackDelivery/TrackDelivery'
-import DeliveryDetail from './pages/DeliveryDetail/DeliveryDetail'
+import Expenses from './pages/Expenses/Expenses'
+import CreateExpense from './pages/CreateExpense/CreateExpense'
+import ExpenseDetail from './pages/ExpenseDetail/ExpenseDetail'
 import './App.css'
 
 function App() {
@@ -31,10 +30,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/deliveries" element={<Deliveries />} />
-          <Route path="/deliveries/create" element={<CreateDelivery />} />
-          <Route path="/deliveries/:id" element={<DeliveryDetail />} />
-          <Route path="/track" element={<TrackDelivery />} />
+          <Route path="/expenses" element={<Expenses />} />
+          <Route path="/expenses/create" element={<CreateExpense />} />
+          <Route path="/expenses/:id" element={<ExpenseDetail />} />
         </Routes>
       </Layout>
     </Router>
