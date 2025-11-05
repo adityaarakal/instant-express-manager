@@ -1,8 +1,31 @@
 .expense-detail {
-  flex: 1;
-  padding: var(--spacing-xl) 0;
-  background: var(--background-alt);
-  min-height: 100vh;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-lg) 0;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.expense-detail::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.expense-detail > * {
+  position: relative;
+  z-index: 1;
 }
 
 .expense-detail-loading,
@@ -17,7 +40,7 @@
 
 .expense-detail-loading p,
 .expense-detail-error p {
-  font-size: 1.125rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
 }
 
@@ -29,9 +52,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-md);
   flex-wrap: wrap;
   gap: var(--spacing-md);
+  flex-shrink: 0;
 }
 
 .back-button {
@@ -54,49 +78,53 @@
   gap: var(--spacing-md);
 }
 
-.btn-danger {
-  background-color: var(--error-color);
-  color: white;
-  border: none;
-  padding: var(--spacing-md) var(--spacing-xl);
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.btn-danger:hover:not(:disabled) {
-  background-color: #dc2626;
-}
-
-.btn-danger:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+/* Button styles are now in index.css - uniform across app */
 
 .expense-detail-card {
-  background: white;
-  border-radius: 16px;
-  padding: var(--spacing-2xl);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  background: var(--glass-bg);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-radius: var(--radius-2xl);
+  padding: var(--spacing-xl);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-2xl), var(--shadow-glow);
   max-width: 800px;
   margin: 0 auto;
+  flex-shrink: 0;
+  transition: all var(--transition-base);
+  animation: fadeIn var(--transition-base);
+}
+
+.expense-detail-card:hover {
+  box-shadow: var(--shadow-2xl), 0 0 40px rgba(99, 102, 241, 0.3);
 }
 
 .expense-header-detail {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xl);
-  margin-bottom: var(--spacing-2xl);
-  padding-bottom: var(--spacing-xl);
-  border-bottom: 2px solid var(--border-color);
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 2px solid var(--glass-border);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.expense-header-detail::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  border-radius: var(--radius-full);
 }
 
 .expense-icon-large {
-  width: 80px;
-  height: 80px;
-  border-radius: 20px;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-xl);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -104,6 +132,22 @@
   font-size: 2rem;
   color: white;
   flex-shrink: 0;
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.expense-icon-large::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, transparent 100%);
+}
+
+.expense-icon-large:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: var(--shadow-xl);
 }
 
 .expense-title-section {
@@ -112,28 +156,50 @@
 
 .expense-title-section h1 {
   font-size: 2rem;
-  font-weight: 700;
+  font-weight: 800;
   margin: 0 0 var(--spacing-sm) 0;
-  color: var(--text-primary);
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary-color) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
 }
 
 .expense-amount-large {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--primary-color);
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
   margin: 0;
 }
 
 .expense-details-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--spacing-xl);
+  gap: var(--spacing-md);
 }
 
 .detail-item {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+  transition: all var(--transition-base);
+}
+
+.detail-item:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(99, 102, 241, 0.3);
 }
 
 .detail-item.full-width {
@@ -141,27 +207,40 @@
 }
 
 .detail-label {
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
   color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, var(--text-secondary) 0%, var(--primary-color) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .detail-value {
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   color: var(--text-primary);
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .category-badge {
   display: inline-block;
-  padding: var(--spacing-xs) var(--spacing-md);
-  border-radius: 20px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
   color: white;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.875rem;
   text-transform: capitalize;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-base);
+}
+
+.category-badge:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-lg);
 }
 
 .tags-list {
@@ -172,12 +251,19 @@
 
 .tags-list .tag {
   display: inline-block;
-  padding: var(--spacing-xs) var(--spacing-md);
-  background: var(--primary-color);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
   color: white;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+}
+
+.tags-list .tag:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: var(--shadow-md);
 }
 
 @media (max-width: 768px) {

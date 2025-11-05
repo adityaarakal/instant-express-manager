@@ -69,7 +69,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard">
-      <div className="container">
+      <div className="container" style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div className="dashboard-header">
           <div>
             <h1>Expense Dashboard</h1>

@@ -214,7 +214,7 @@ const CreateExpense: React.FC = () => {
 
   return (
     <div className="create-expense">
-      <div className="container">
+      <div className="container" style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div className="page-header">
           <div>
             <h1>Add New Expense</h1>

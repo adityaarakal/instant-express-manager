@@ -112,7 +112,7 @@ const Expenses: React.FC = () => {
 
   return (
     <div className="expenses-page">
-      <div className="container">
+      <div className="container" style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div className="expenses-header">
           <div>
             <h1>My Expenses</h1>

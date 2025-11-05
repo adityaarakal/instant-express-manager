@@ -1,16 +1,20 @@
 .layout {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .layout-main {
   flex: 1;
-  padding: var(--spacing-lg) 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--spacing-sm) 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 @media (max-width: 768px) {
   .layout-main {
-    padding: var(--spacing-md) 0;
+    padding: var(--spacing-xs) 0;
   }
 }
