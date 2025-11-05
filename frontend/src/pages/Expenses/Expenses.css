@@ -182,11 +182,61 @@
 .expenses-list {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xl);
   overflow-y: auto;
   flex: 1;
   min-height: 0;
   padding-right: var(--spacing-xs);
+}
+
+.month-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.month-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin-bottom: var(--spacing-sm);
+}
+
+.month-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.01em;
+}
+
+.month-total {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.month-expenses {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
 }
 
 .expense-card {
