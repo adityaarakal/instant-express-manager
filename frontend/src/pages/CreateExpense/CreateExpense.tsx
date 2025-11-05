@@ -7,6 +7,8 @@ const CreateExpense: React.FC = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [currentStep, setCurrentStep] = useState(1)
+  const totalSteps = 6
   
   const [formData, setFormData] = useState<CreateExpenseRequest>({
     userId: 'default-user',
@@ -23,31 +25,32 @@ const CreateExpense: React.FC = () => {
   const [tagInput, setTagInput] = useState('')
 
   const categories = [
-    { value: 'food', label: '🍔 Food', color: '#FF6B6B' },
-    { value: 'transport', label: '🚗 Transport', color: '#4ECDC4' },
-    { value: 'shopping', label: '🛍️ Shopping', color: '#95E1D3' },
-    { value: 'bills', label: '💳 Bills', color: '#F38181' },
-    { value: 'entertainment', label: '🎬 Entertainment', color: '#AA96DA' },
-    { value: 'health', label: '🏥 Health', color: '#FCBAD3' },
-    { value: 'education', label: '📚 Education', color: '#FDFFAB' },
-    { value: 'travel', label: '✈️ Travel', color: '#A8E6CF' },
-    { value: 'other', label: '📦 Other', color: '#FFD3A5' }
+    { value: 'food', label: 'Food', color: '#FF6B6B', icon: '🍔' },
+    { value: 'transport', label: 'Transport', color: '#4ECDC4', icon: '🚗' },
+    { value: 'shopping', label: 'Shopping', color: '#95E1D3', icon: '🛍️' },
+    { value: 'bills', label: 'Bills', color: '#F38181', icon: '💳' },
+    { value: 'entertainment', label: 'Entertainment', color: '#AA96DA', icon: '🎬' },
+    { value: 'health', label: 'Health', color: '#FCBAD3', icon: '🏥' },
+    { value: 'education', label: 'Education', color: '#FDFFAB', icon: '📚' },
+    { value: 'travel', label: 'Travel', color: '#A8E6CF', icon: '✈️' },
+    { value: 'other', label: 'Other', color: '#FFD3A5', icon: '📦' }
   ]
 
   const paymentMethods = [
-    { value: 'cash', label: '💵 Cash' },
-    { value: 'card', label: '💳 Card' },
-    { value: 'digital_wallet', label: '📱 Digital Wallet' },
-    { value: 'bank_transfer', label: '🏦 Bank Transfer' },
-    { value: 'other', label: '🔀 Other' }
+    { value: 'cash', label: 'Cash', icon: '💵' },
+    { value: 'card', label: 'Card', icon: '💳' },
+    { value: 'digital_wallet', label: 'Digital Wallet', icon: '📱' },
+    { value: 'bank_transfer', label: 'Bank Transfer', icon: '🏦' },
+    { value: 'other', label: 'Other', icon: '🔀' }
   ]
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
       [name]: name === 'amount' ? parseFloat(value) || 0 : value
     }))
+    setError(null)
   }
 
   const handleAddTag = () => {
@@ -67,8 +70,50 @@ const CreateExpense: React.FC = () => {
     }))
   }
 
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 1:
+        return !!formData.title.trim()
+      case 2:
+        return formData.amount > 0
+      case 3:
+        return !!formData.date
+      case 4:
+        return !!formData.category
+      case 5:
+        return !!formData.paymentMethod
+      case 6:
+        return true // Optional step
+      default:
+        return false
+    }
+  }
+
+  const handleNext = () => {
+    if (validateStep(currentStep)) {
+      if (currentStep < totalSteps) {
+        setCurrentStep(currentStep + 1)
+        setError(null)
+      }
+    } else {
+      setError('Please fill in this field to continue')
+    }
+  }
+
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1)
+      setError(null)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!validateStep(1) || !validateStep(2) || !validateStep(3) || !validateStep(4) || !validateStep(5)) {
+      setError('Please complete all required steps')
+      return
+    }
+
     setLoading(true)
     setError(null)
 
@@ -88,7 +133,16 @@ const CreateExpense: React.FC = () => {
     }
   }
 
-  const selectedCategory = categories.find(c => c.value === formData.category)
+  const stepTitles = [
+    'What did you spend on?',
+    'How much?',
+    'When?',
+    'Category',
+    'Payment Method',
+    'Additional Details'
+  ]
+
+  const stepIcons = ['✍️', '💰', '📅', '🏷️', '💳', '📝']
 
   return (
     <div className="create-expense">
@@ -96,11 +150,42 @@ const CreateExpense: React.FC = () => {
         <div className="page-header">
           <div>
             <h1>Add New Expense</h1>
-            <p className="page-subtitle">Track your spending easily</p>
+            <p className="page-subtitle">Quick and simple expense tracking</p>
           </div>
-          <button onClick={() => navigate(-1)} className="btn btn-secondary">
-            ← Back
+          <button onClick={() => navigate(-1)} className="btn btn-secondary btn-icon">
+            ✕
           </button>
+        </div>
+
+        {/* Stepper Progress */}
+        <div className="stepper-container">
+          {stepTitles.map((title, index) => {
+            const stepNumber = index + 1
+            const isActive = currentStep === stepNumber
+            const isCompleted = currentStep > stepNumber
+            const isClickable = isCompleted
+
+            return (
+              <React.Fragment key={stepNumber}>
+                <div
+                  className={`stepper-step ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''} ${isClickable ? 'clickable' : ''}`}
+                  onClick={() => isClickable && setCurrentStep(stepNumber)}
+                >
+                  <div className="stepper-circle">
+                    {isCompleted ? (
+                      <span className="stepper-check">✓</span>
+                    ) : (
+                      <span className="stepper-icon">{stepIcons[index]}</span>
+                    )}
+                  </div>
+                  <div className="stepper-label">{stepNumber}</div>
+                </div>
+                {stepNumber < totalSteps && (
+                  <div className={`stepper-line ${isCompleted ? 'completed' : ''}`} />
+                )}
+              </React.Fragment>
+            )
+          })}
         </div>
 
         <form onSubmit={handleSubmit} className="expense-form">
@@ -110,28 +195,47 @@ const CreateExpense: React.FC = () => {
             </div>
           )}
 
-          <div className="form-section">
-            <div className="form-row">
-              <div className="form-group full-width">
-                <label htmlFor="title">Expense Title *</label>
-                <input
-                  type="text"
-                  id="title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  placeholder="e.g., Grocery Shopping"
-                  required
-                  className="form-input"
-                />
+          {/* Step 1: Title */}
+          {currentStep === 1 && (
+            <div className="step-content">
+              <div className="step-icon-large">✍️</div>
+              <div className="step-header">
+                <h2>What did you spend on?</h2>
+                <p>Give your expense a clear title</p>
+              </div>
+              <div className="step-body">
+                <div className="form-group-focused">
+                  <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleChange}
+                    placeholder="e.g., Grocery Shopping, Lunch at Restaurant"
+                    required
+                    className="form-input-focused"
+                    autoFocus
+                    autoComplete="off"
+                  />
+                </div>
+                <div className="step-hint">
+                  <span>💡 Tip:</span> Be specific to track your spending better
+                </div>
               </div>
             </div>
+          )}
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="amount">Amount *</label>
-                <div className="amount-input-wrapper">
-                  <span className="currency-symbol">$</span>
+          {/* Step 2: Amount */}
+          {currentStep === 2 && (
+            <div className="step-content">
+              <div className="step-icon-large">💰</div>
+              <div className="step-header">
+                <h2>How much did you spend?</h2>
+                <p>Enter the amount</p>
+              </div>
+              <div className="step-body">
+                <div className="form-group-focused amount-group">
+                  <div className="currency-display">$</div>
                   <input
                     type="number"
                     id="amount"
@@ -142,154 +246,288 @@ const CreateExpense: React.FC = () => {
                     step="0.01"
                     placeholder="0.00"
                     required
-                    className="form-input amount-input"
+                    className="form-input-focused amount-input-large"
+                    autoFocus
+                    autoComplete="off"
                   />
                 </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="date">Date *</label>
-                <input
-                  type="date"
-                  id="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleChange}
-                  max={new Date().toISOString().split('T')[0]}
-                  required
-                  className="form-input"
-                />
+                <div className="quick-amounts">
+                  <button
+                    type="button"
+                    className="quick-amount-btn"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, amount: 10 }))
+                      setError(null)
+                    }}
+                  >
+                    $10
+                  </button>
+                  <button
+                    type="button"
+                    className="quick-amount-btn"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, amount: 25 }))
+                      setError(null)
+                    }}
+                  >
+                    $25
+                  </button>
+                  <button
+                    type="button"
+                    className="quick-amount-btn"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, amount: 50 }))
+                      setError(null)
+                    }}
+                  >
+                    $50
+                  </button>
+                  <button
+                    type="button"
+                    className="quick-amount-btn"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, amount: 100 }))
+                      setError(null)
+                    }}
+                  >
+                    $100
+                  </button>
+                </div>
               </div>
             </div>
+          )}
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="category">Category *</label>
-                <div className="category-grid">
+          {/* Step 3: Date */}
+          {currentStep === 3 && (
+            <div className="step-content">
+              <div className="step-icon-large">📅</div>
+              <div className="step-header">
+                <h2>When did this happen?</h2>
+                <p>Select the date</p>
+              </div>
+              <div className="step-body">
+                <div className="form-group-focused">
+                  <input
+                    type="date"
+                    id="date"
+                    name="date"
+                    value={formData.date}
+                    onChange={handleChange}
+                    max={new Date().toISOString().split('T')[0]}
+                    required
+                    className="form-input-focused date-input-large"
+                    autoFocus
+                  />
+                </div>
+                <div className="quick-dates">
+                  <button
+                    type="button"
+                    className="quick-date-btn"
+                    onClick={() => {
+                      const today = new Date().toISOString().split('T')[0]
+                      setFormData(prev => ({ ...prev, date: today }))
+                      setError(null)
+                    }}
+                  >
+                    Today
+                  </button>
+                  <button
+                    type="button"
+                    className="quick-date-btn"
+                    onClick={() => {
+                      const yesterday = new Date()
+                      yesterday.setDate(yesterday.getDate() - 1)
+                      setFormData(prev => ({ ...prev, date: yesterday.toISOString().split('T')[0] }))
+                      setError(null)
+                    }}
+                  >
+                    Yesterday
+                  </button>
+                  <button
+                    type="button"
+                    className="quick-date-btn"
+                    onClick={() => {
+                      const weekAgo = new Date()
+                      weekAgo.setDate(weekAgo.getDate() - 7)
+                      setFormData(prev => ({ ...prev, date: weekAgo.toISOString().split('T')[0] }))
+                      setError(null)
+                    }}
+                  >
+                    Last Week
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Category */}
+          {currentStep === 4 && (
+            <div className="step-content">
+              <div className="step-icon-large">🏷️</div>
+              <div className="step-header">
+                <h2>What category?</h2>
+                <p>Select the category that fits best</p>
+              </div>
+              <div className="step-body">
+                <div className="category-grid-large">
                   {categories.map(category => (
                     <button
                       key={category.value}
                       type="button"
-                      className={`category-option ${formData.category === category.value ? 'active' : ''}`}
+                      className={`category-option-large ${formData.category === category.value ? 'active' : ''}`}
                       style={{
                         borderColor: formData.category === category.value ? category.color : 'var(--border-color)',
-                        backgroundColor: formData.category === category.value ? `${category.color}15` : 'transparent'
+                        backgroundColor: formData.category === category.value ? `${category.color}15` : 'transparent',
+                        '--category-color': category.color
+                      } as React.CSSProperties}
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, category: category.value as any }))
+                        setError(null)
                       }}
-                      onClick={() => setFormData(prev => ({ ...prev, category: category.value as any }))}
                     >
-                      {category.label}
+                      <span className="category-icon-large">{category.icon}</span>
+                      <span className="category-text-large">{category.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
             </div>
+          )}
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="paymentMethod">Payment Method *</label>
-                <select
-                  id="paymentMethod"
-                  name="paymentMethod"
-                  value={formData.paymentMethod}
-                  onChange={handleChange}
-                  required
-                  className="form-input"
-                >
+          {/* Step 5: Payment Method */}
+          {currentStep === 5 && (
+            <div className="step-content">
+              <div className="step-icon-large">💳</div>
+              <div className="step-header">
+                <h2>How did you pay?</h2>
+                <p>Select your payment method</p>
+              </div>
+              <div className="step-body">
+                <div className="payment-methods-grid-large">
                   {paymentMethods.map(method => (
-                    <option key={method.value} value={method.value}>
-                      {method.label}
-                    </option>
+                    <button
+                      key={method.value}
+                      type="button"
+                      className={`payment-method-option-large ${formData.paymentMethod === method.value ? 'active' : ''}`}
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, paymentMethod: method.value as any }))
+                        setError(null)
+                      }}
+                    >
+                      <span className="payment-icon-large">{method.icon}</span>
+                      <span className="payment-text-large">{method.label}</span>
+                    </button>
                   ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="location">Location</label>
-                <input
-                  type="text"
-                  id="location"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  placeholder="e.g., Walmart, Downtown"
-                  className="form-input"
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group full-width">
-                <label htmlFor="description">Description</label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  placeholder="Add any additional notes..."
-                  rows={3}
-                  className="form-input"
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group full-width">
-                <label htmlFor="tags">Tags</label>
-                <div className="tags-input-wrapper">
+                </div>
+                <div className="form-group-optional">
+                  <label htmlFor="location">Location (Optional)</label>
                   <input
                     type="text"
-                    id="tags"
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                    placeholder="Press Enter to add tag"
+                    id="location"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleChange}
+                    placeholder="e.g., Walmart, Downtown"
                     className="form-input"
                   />
-                  <button
-                    type="button"
-                    onClick={handleAddTag}
-                    className="btn-add-tag"
-                    disabled={!tagInput.trim()}
-                  >
-                    Add
-                  </button>
                 </div>
-                {formData.tags && formData.tags.length > 0 && (
-                  <div className="tags-list">
-                    {formData.tags.map(tag => (
-                      <span key={tag} className="tag">
-                        {tag}
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveTag(tag)}
-                          className="tag-remove"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
-          </div>
+          )}
 
-          <div className="form-actions">
+          {/* Step 6: Additional Details */}
+          {currentStep === 6 && (
+            <div className="step-content">
+              <div className="step-icon-large">📝</div>
+              <div className="step-header">
+                <h2>Anything else?</h2>
+                <p>Add optional details to help you remember</p>
+              </div>
+              <div className="step-body">
+                <div className="form-group-optional">
+                  <label htmlFor="description">Description</label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    placeholder="Add any additional notes..."
+                    rows={4}
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-group-optional">
+                  <label htmlFor="tags">Tags</label>
+                  <div className="tags-input-wrapper">
+                    <input
+                      type="text"
+                      id="tags"
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                      placeholder="Press Enter to add tag"
+                      className="form-input"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddTag}
+                      className="btn-add-tag"
+                      disabled={!tagInput.trim()}
+                    >
+                      Add
+                    </button>
+                  </div>
+                  {formData.tags && formData.tags.length > 0 && (
+                    <div className="tags-list">
+                      {formData.tags.map(tag => (
+                        <span key={tag} className="tag">
+                          {tag}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveTag(tag)}
+                            className="tag-remove"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Navigation Buttons */}
+          <div className="step-navigation">
             <button
               type="button"
-              onClick={() => navigate(-1)}
-              className="btn btn-secondary"
-              disabled={loading}
+              onClick={handlePrevious}
+              className="btn btn-secondary btn-nav"
+              disabled={currentStep === 1 || loading}
             >
-              Cancel
+              ← Previous
             </button>
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={loading || !formData.title || !formData.amount}
-            >
-              {loading ? 'Adding...' : 'Add Expense'}
-            </button>
+
+            {currentStep < totalSteps ? (
+              <button
+                type="button"
+                onClick={handleNext}
+                className="btn btn-primary btn-nav"
+                disabled={loading}
+              >
+                Next →
+              </button>
+            ) : (
+              <button
+                type="submit"
+                className="btn btn-primary btn-nav"
+                disabled={loading}
+              >
+                {loading ? 'Creating...' : '✨ Create Expense'}
+              </button>
+            )}
           </div>
         </form>
       </div>
