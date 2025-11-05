@@ -1,16 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { expenseService, CreateExpenseRequest } from '../../services/expenseService'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { expenseService, CreateExpenseRequest, Expense } from '../../services/expenseService'
 import { CURRENCY_SYMBOL } from '../../utils/currency'
 import './CreateExpense.css'
 
 const CreateExpense: React.FC = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const editId = searchParams.get('edit')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentStep, setCurrentStep] = useState(1)
   const totalSteps = 6
   const formRef = useRef<HTMLFormElement>(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [loadingExpense, setLoadingExpense] = useState(!!editId)
   
   const [formData, setFormData] = useState<CreateExpenseRequest>({
     userId: 'default-user',
@@ -29,6 +33,47 @@ const CreateExpense: React.FC = () => {
   })
 
   const [tagInput, setTagInput] = useState('')
+
+  // Load expense data when editing
+  useEffect(() => {
+    const loadExpenseData = async () => {
+      if (!editId) return
+
+      setLoadingExpense(true)
+      try {
+        const userId = 'default-user'
+        const expense = await expenseService.getExpenseById(editId, userId)
+        
+        // Convert date from ISO string to YYYY-MM-DD format for date input
+        const expenseDate = new Date(expense.date)
+        const formattedDate = expenseDate.toISOString().split('T')[0]
+        
+        setFormData({
+          userId: expense.userId,
+          title: expense.title,
+          description: expense.description || '',
+          amount: expense.amount,
+          category: expense.category,
+          paymentMethod: expense.paymentMethod,
+          date: formattedDate,
+          tags: expense.tags || [],
+          location: expense.location || '',
+          isRecurring: expense.isRecurring || false,
+          recurrenceType: expense.recurrenceType,
+          recurrenceInterval: expense.recurrenceInterval || 1,
+          endDate: expense.endDate ? new Date(expense.endDate).toISOString().split('T')[0] : undefined
+        })
+        setIsEditing(true)
+      } catch (err: any) {
+        setError(err.message || 'Failed to load expense data')
+        console.error('Error loading expense:', err)
+      } finally {
+        setLoadingExpense(false)
+      }
+    }
+
+    loadExpenseData()
+  }, [editId])
 
   // Protect form inputs from browser extensions
   useEffect(() => {
@@ -121,21 +166,36 @@ const CreateExpense: React.FC = () => {
       case 4:
         return !!formData.category
       case 5:
-        return !!formData.paymentMethod
+        return !!formData.paymentMethod // Has default value 'cash', so should always pass
       case 6:
-        return true // Optional step
+        return true // Optional step - always allow navigation
       default:
         return false
     }
   }
 
-  const handleNext = () => {
+  const handleNext = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    
+    console.log('handleNext called, currentStep:', currentStep)
+    
+    // Allow moving to step 6 from step 5 since step 6 is optional
+    if (currentStep === 5) {
+      console.log('Moving from step 5 to step 6')
+      setCurrentStep(6)
+      setError(null)
+      return
+    }
+
     if (validateStep(currentStep)) {
-      if (currentStep < totalSteps) {
-        setCurrentStep(currentStep + 1)
-        setError(null)
-      }
+      console.log('Validation passed, moving to step', currentStep + 1)
+      setCurrentStep(currentStep + 1)
+      setError(null)
     } else {
+      console.log('Validation failed for step', currentStep)
       setError('Please fill in this field to continue')
     }
   }
@@ -196,8 +256,15 @@ const CreateExpense: React.FC = () => {
         return
       }
 
-      const expense = await expenseService.createExpense(expenseData)
-      navigate(`/expenses/${expense.id}`)
+      if (isEditing && editId) {
+        // Update existing expense
+        const updatedExpense = await expenseService.updateExpense(editId, expenseData, formData.userId)
+        navigate(`/expenses/${updatedExpense.id}`)
+      } else {
+        // Create new expense
+        const expense = await expenseService.createExpense(expenseData)
+        navigate(`/expenses/${expense.id}`)
+      }
     } catch (err: any) {
       const errorMessage = err.message || 
                           (err.response?.data?.error || err.response?.data?.message) ||
@@ -220,13 +287,24 @@ const CreateExpense: React.FC = () => {
 
   const stepIcons = ['✍️', '💰', '📅', '🏷️', '💳', '📝']
 
+  if (loadingExpense) {
+    return (
+      <div className="create-expense">
+        <div className="container" style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+          <div className="loading-spinner"></div>
+          <p>Loading expense data...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="create-expense">
       <div className="container" style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div className="page-header">
           <div>
-            <h1>Add New Expense</h1>
-            <p className="page-subtitle">Quick and simple expense tracking</p>
+            <h1>{isEditing ? 'Edit Expense' : 'Add New Expense'}</h1>
+            <p className="page-subtitle">{isEditing ? 'Update your expense details' : 'Quick and simple expense tracking'}</p>
           </div>
           <button onClick={() => navigate(-1)} className="btn btn-secondary btn-icon">
             ✕
@@ -798,9 +876,13 @@ const CreateExpense: React.FC = () => {
             {currentStep < totalSteps ? (
               <button
                 type="button"
-                onClick={handleNext}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleNext(e)
+                }}
                 className="btn btn-primary btn-nav"
-                disabled={loading}
+                disabled={loading || loadingExpense}
               >
                 Next →
               </button>
@@ -808,9 +890,9 @@ const CreateExpense: React.FC = () => {
               <button
                 type="submit"
                 className="btn btn-primary btn-nav"
-                disabled={loading}
+                disabled={loading || loadingExpense}
               >
-                {loading ? 'Creating...' : '✨ Create Expense'}
+                {loading ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? '✨ Update Expense' : '✨ Create Expense')}
               </button>
             )}
           </div>

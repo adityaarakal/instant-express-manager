@@ -6,9 +6,11 @@ import './IncomeList.css'
 
 const IncomeList: React.FC = () => {
   const [incomes, setIncomes] = useState<Income[]>([])
+  const [recurringIncomes, setRecurringIncomes] = useState<Income[]>([])
   const [loading, setLoading] = useState(true)
   const [filterCategory, setFilterCategory] = useState<string>('all')
   const [filterDate, setFilterDate] = useState<string>('all')
+  const [showRecurring, setShowRecurring] = useState(false)
 
   const categories = [
     { value: 'all', label: 'All Categories' },
@@ -56,11 +58,16 @@ const IncomeList: React.FC = () => {
           endDate = endOfToday.toISOString()
         }
 
-        const data = await incomeService.getIncomes(userId, category, startDate, endDate)
+        const [data, recurring] = await Promise.all([
+          incomeService.getIncomes(userId, category, startDate, endDate),
+          incomeService.getRecurringIncomes(userId)
+        ])
         setIncomes(data)
+        setRecurringIncomes(recurring)
       } catch (error: any) {
         console.error('Error fetching incomes:', error)
         setIncomes([])
+        setRecurringIncomes([])
       } finally {
         setLoading(false)
       }
@@ -96,7 +103,8 @@ const IncomeList: React.FC = () => {
     })
   }
 
-  const totalAmount = incomes.reduce((sum, inc) => sum + inc.amount, 0)
+  const displayIncomes = showRecurring ? recurringIncomes : incomes
+  const totalAmount = displayIncomes.reduce((sum, inc) => sum + inc.amount, 0)
 
   if (loading) {
     return (
@@ -115,9 +123,20 @@ const IncomeList: React.FC = () => {
             <h1>My Income</h1>
             <p className="income-list-subtitle">View and manage all your income sources</p>
           </div>
-          <Link to="/income/create" className="btn btn-primary">
-            + Add Income
-          </Link>
+          <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center' }}>
+            {recurringIncomes.length > 0 && (
+              <button
+                onClick={() => setShowRecurring(!showRecurring)}
+                className={`btn ${showRecurring ? 'btn-primary' : 'btn-secondary'}`}
+                style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}
+              >
+                🔄 {showRecurring ? 'Show All' : `Recurring (${recurringIncomes.length})`}
+              </button>
+            )}
+            <Link to="/income/create" className="btn btn-primary">
+              + Add Income
+            </Link>
+          </div>
         </div>
 
         <div className="filters-section">
@@ -154,17 +173,17 @@ const IncomeList: React.FC = () => {
           </div>
         </div>
 
-        {incomes.length === 0 ? (
+        {displayIncomes.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">💰</div>
-            <p>No income found.</p>
+            <p>{showRecurring ? 'No recurring income found.' : 'No income found.'}</p>
             <Link to="/income/create" className="btn btn-primary">
-              Add Your First Income
+              {showRecurring ? 'Create Recurring Income' : 'Add Your First Income'}
             </Link>
           </div>
         ) : (
           <div className="income-list">
-            {incomes.map((income) => (
+            {displayIncomes.map((income) => (
               <Link
                 key={income.id}
                 to={`/income/${income.id}`}
@@ -179,6 +198,14 @@ const IncomeList: React.FC = () => {
                     <span className="income-amount">{formatCurrency(income.amount)}</span>
                   </div>
                   <div className="income-meta">
+                    {income.isRecurring && !income.parentTransactionId && (
+                      <>
+                        <span className="income-recurring" style={{ color: 'var(--success-color)', fontWeight: 600 }}>
+                          🔄 Recurring ({income.recurrenceType})
+                        </span>
+                        <span className="income-separator">•</span>
+                      </>
+                    )}
                     <span className="income-category">{formatCategory(income.category)}</span>
                     <span className="income-separator">•</span>
                     <span className="income-date">{formatDate(income.date)}</span>

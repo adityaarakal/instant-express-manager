@@ -6,9 +6,11 @@ import './Expenses.css'
 
 const Expenses: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([])
+  const [recurringExpenses, setRecurringExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
   const [filterCategory, setFilterCategory] = useState<string>('all')
   const [filterDate, setFilterDate] = useState<string>('all')
+  const [showRecurring, setShowRecurring] = useState(false)
 
   const categories = [
     { value: 'all', label: 'All Categories' },
@@ -57,12 +59,16 @@ const Expenses: React.FC = () => {
           endDate = endOfToday.toISOString()
         }
 
-        const data = await expenseService.getExpenses(userId, category, startDate, endDate)
+        const [data, recurring] = await Promise.all([
+          expenseService.getExpenses(userId, category, startDate, endDate),
+          expenseService.getRecurringExpenses(userId)
+        ])
         setExpenses(data)
+        setRecurringExpenses(recurring)
       } catch (error: any) {
         console.error('Error fetching expenses:', error)
-        // On error, show empty state
         setExpenses([])
+        setRecurringExpenses([])
       } finally {
         setLoading(false)
       }
@@ -99,7 +105,8 @@ const Expenses: React.FC = () => {
     })
   }
 
-  const totalAmount = expenses.reduce((sum, exp) => sum + exp.amount, 0)
+  const displayExpenses = showRecurring ? recurringExpenses : expenses
+  const totalAmount = displayExpenses.reduce((sum, exp) => sum + exp.amount, 0)
 
   if (loading) {
     return (
@@ -118,9 +125,20 @@ const Expenses: React.FC = () => {
             <h1>My Expenses</h1>
             <p className="expenses-subtitle">View and manage all your expenses</p>
           </div>
-          <Link to="/expenses/create" className="btn btn-primary">
-            + Add Expense
-          </Link>
+          <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center' }}>
+            {recurringExpenses.length > 0 && (
+              <button
+                onClick={() => setShowRecurring(!showRecurring)}
+                className={`btn ${showRecurring ? 'btn-primary' : 'btn-secondary'}`}
+                style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}
+              >
+                🔄 {showRecurring ? 'Show All' : `Recurring (${recurringExpenses.length})`}
+              </button>
+            )}
+            <Link to="/expenses/create" className="btn btn-primary">
+              + Add Expense
+            </Link>
+          </div>
         </div>
 
         <div className="filters-section">
@@ -157,17 +175,17 @@ const Expenses: React.FC = () => {
           </div>
         </div>
 
-        {expenses.length === 0 ? (
+        {displayExpenses.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">💰</div>
-            <p>No expenses found.</p>
+            <p>{showRecurring ? 'No recurring expenses found.' : 'No expenses found.'}</p>
             <Link to="/expenses/create" className="btn btn-primary">
-              Add Your First Expense
+              {showRecurring ? 'Create Recurring Expense' : 'Add Your First Expense'}
             </Link>
           </div>
         ) : (
           <div className="expenses-list">
-            {expenses.map((expense) => (
+            {displayExpenses.map((expense) => (
               <Link
                 key={expense.id}
                 to={`/expenses/${expense.id}`}
@@ -182,6 +200,14 @@ const Expenses: React.FC = () => {
                     <span className="expense-amount">{formatCurrency(expense.amount)}</span>
                   </div>
                   <div className="expense-meta">
+                    {expense.isRecurring && !expense.parentTransactionId && (
+                      <>
+                        <span className="expense-recurring" style={{ color: 'var(--primary-color)', fontWeight: 600 }}>
+                          🔄 Recurring ({expense.recurrenceType})
+                        </span>
+                        <span className="expense-separator">•</span>
+                      </>
+                    )}
                     <span className="expense-category">{formatCategory(expense.category)}</span>
                     <span className="expense-separator">•</span>
                     <span className="expense-date">{formatDate(expense.date)}</span>

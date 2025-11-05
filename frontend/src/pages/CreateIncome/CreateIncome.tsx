@@ -1,16 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { incomeService, CreateIncomeRequest } from '../../services/incomeService'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { incomeService, CreateIncomeRequest, Income } from '../../services/incomeService'
 import { CURRENCY_SYMBOL } from '../../utils/currency'
 import './CreateIncome.css'
 
 const CreateIncome: React.FC = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const editId = searchParams.get('edit')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentStep, setCurrentStep] = useState(1)
   const totalSteps = 6
   const formRef = useRef<HTMLFormElement>(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [loadingIncome, setLoadingIncome] = useState(!!editId)
   
   const [formData, setFormData] = useState<CreateIncomeRequest>({
     userId: 'default-user',
@@ -29,6 +33,47 @@ const CreateIncome: React.FC = () => {
   })
 
   const [tagInput, setTagInput] = useState('')
+
+  // Load income data when editing
+  useEffect(() => {
+    const loadIncomeData = async () => {
+      if (!editId) return
+
+      setLoadingIncome(true)
+      try {
+        const userId = 'default-user'
+        const income = await incomeService.getIncomeById(editId, userId)
+        
+        // Convert date from ISO string to YYYY-MM-DD format for date input
+        const incomeDate = new Date(income.date)
+        const formattedDate = incomeDate.toISOString().split('T')[0]
+        
+        setFormData({
+          userId: income.userId,
+          title: income.title,
+          description: income.description || '',
+          amount: income.amount,
+          category: income.category,
+          paymentMethod: income.paymentMethod,
+          date: formattedDate,
+          tags: income.tags || [],
+          location: income.location || '',
+          isRecurring: income.isRecurring || false,
+          recurrenceType: income.recurrenceType,
+          recurrenceInterval: income.recurrenceInterval || 1,
+          endDate: income.endDate ? new Date(income.endDate).toISOString().split('T')[0] : undefined
+        })
+        setIsEditing(true)
+      } catch (err: any) {
+        setError(err.message || 'Failed to load income data')
+        console.error('Error loading income:', err)
+      } finally {
+        setLoadingIncome(false)
+      }
+    }
+
+    loadIncomeData()
+  }, [editId])
 
   // Protect form inputs from browser extensions
   useEffect(() => {
@@ -117,21 +162,36 @@ const CreateIncome: React.FC = () => {
       case 4:
         return !!formData.category
       case 5:
-        return !!formData.paymentMethod
+        return !!formData.paymentMethod // Has default value 'cash', so should always pass
       case 6:
-        return true
+        return true // Optional step - always allow navigation
       default:
         return false
     }
   }
 
-  const handleNext = () => {
+  const handleNext = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    
+    console.log('handleNext called, currentStep:', currentStep)
+    
+    // Allow moving to step 6 from step 5 since step 6 is optional
+    if (currentStep === 5) {
+      console.log('Moving from step 5 to step 6')
+      setCurrentStep(6)
+      setError(null)
+      return
+    }
+
     if (validateStep(currentStep)) {
-      if (currentStep < totalSteps) {
-        setCurrentStep(currentStep + 1)
-        setError(null)
-      }
+      console.log('Validation passed, moving to step', currentStep + 1)
+      setCurrentStep(currentStep + 1)
+      setError(null)
     } else {
+      console.log('Validation failed for step', currentStep)
       setError('Please fill in this field to continue')
     }
   }
@@ -188,8 +248,15 @@ const CreateIncome: React.FC = () => {
         return
       }
 
-      const income = await incomeService.createIncome(incomeData)
-      navigate(`/income/${income.id}`)
+      if (isEditing && editId) {
+        // Update existing income
+        const updatedIncome = await incomeService.updateIncome(editId, incomeData, formData.userId)
+        navigate(`/income/${updatedIncome.id}`)
+      } else {
+        // Create new income
+        const income = await incomeService.createIncome(incomeData)
+        navigate(`/income/${income.id}`)
+      }
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to create income. Please try again.'
       setError(errorMessage)
@@ -210,13 +277,24 @@ const CreateIncome: React.FC = () => {
 
   const stepIcons = ['✍️', '💰', '📅', '🏷️', '💳', '📝']
 
+  if (loadingIncome) {
+    return (
+      <div className="create-income">
+        <div className="container" style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+          <div className="loading-spinner"></div>
+          <p>Loading income data...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="create-income">
       <div className="container" style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div className="page-header">
           <div>
-            <h1>Add New Income</h1>
-            <p className="page-subtitle">Track your income sources</p>
+            <h1>{isEditing ? 'Edit Income' : 'Add New Income'}</h1>
+            <p className="page-subtitle">{isEditing ? 'Update your income details' : 'Track your income sources'}</p>
           </div>
           <button onClick={() => navigate(-1)} className="btn btn-secondary btn-icon">
             ✕
@@ -786,9 +864,13 @@ const CreateIncome: React.FC = () => {
             {currentStep < totalSteps ? (
               <button
                 type="button"
-                onClick={handleNext}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleNext(e)
+                }}
                 className="btn btn-primary btn-nav"
-                disabled={loading}
+                disabled={loading || loadingIncome}
               >
                 Next →
               </button>
@@ -796,9 +878,9 @@ const CreateIncome: React.FC = () => {
               <button
                 type="submit"
                 className="btn btn-primary btn-nav"
-                disabled={loading}
+                disabled={loading || loadingIncome}
               >
-                {loading ? 'Creating...' : '✨ Create Income'}
+                {loading ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? '✨ Update Income' : '✨ Create Income')}
               </button>
             )}
           </div>
