@@ -222,7 +222,7 @@ const CreateExpense: React.FC = () => {
           })}
         </div>
 
-        <form onSubmit={handleSubmit} className="expense-form">
+        <form onSubmit={handleSubmit} className="expense-form" data-lpignore="true" autoComplete="off">
           {error && (
             <div className="error-message">
               {error}
@@ -250,6 +250,9 @@ const CreateExpense: React.FC = () => {
                     className="form-input-focused"
                     autoFocus
                     autoComplete="off"
+                    data-lpignore="true"
+                    data-form-type="other"
+                    aria-label="Expense title"
                   />
                 </div>
                 <div className="step-hint">
@@ -283,6 +286,9 @@ const CreateExpense: React.FC = () => {
                     className="form-input-focused amount-input-large"
                     autoFocus
                     autoComplete="off"
+                    data-lpignore="true"
+                    data-form-type="other"
+                    aria-label="Expense amount"
                   />
                 </div>
                 <div className="quick-amounts">
@@ -351,6 +357,10 @@ const CreateExpense: React.FC = () => {
                     required
                     className="form-input-focused date-input-large"
                     autoFocus
+                    autoComplete="off"
+                    data-lpignore="true"
+                    data-form-type="other"
+                    aria-label="Expense date"
                   />
                 </div>
                 <div className="quick-dates">
@@ -418,6 +428,10 @@ const CreateExpense: React.FC = () => {
                         setFormData(prev => ({ ...prev, category: category.value as any }))
                         setError(null)
                       }}
+                      role="button"
+                      aria-label={`Select ${category.label} category`}
+                      aria-pressed={formData.category === category.value}
+                      data-lpignore="true"
                     >
                       <span className="category-icon-large">{category.icon}</span>
                       <span className="category-text-large">{category.label}</span>
@@ -447,6 +461,10 @@ const CreateExpense: React.FC = () => {
                         setFormData(prev => ({ ...prev, paymentMethod: method.value as any }))
                         setError(null)
                       }}
+                      role="button"
+                      aria-label={`Select ${method.label} payment method`}
+                      aria-pressed={formData.paymentMethod === method.value}
+                      data-lpignore="true"
                     >
                       <span className="payment-icon-large">{method.icon}</span>
                       <span className="payment-text-large">{method.label}</span>
@@ -463,6 +481,10 @@ const CreateExpense: React.FC = () => {
                     onChange={handleChange}
                     placeholder="e.g., Big Bazaar, MG Road, Koramangala"
                     className="form-input"
+                    autoComplete="off"
+                    data-lpignore="true"
+                    data-form-type="other"
+                    aria-label="Location (optional)"
                   />
                 </div>
               </div>
@@ -488,6 +510,10 @@ const CreateExpense: React.FC = () => {
                     placeholder="Add any additional notes about this expense..."
                     rows={4}
                     className="form-input"
+                    autoComplete="off"
+                    data-lpignore="true"
+                    data-form-type="other"
+                    aria-label="Description (optional)"
                   />
                 </div>
 
@@ -497,11 +523,16 @@ const CreateExpense: React.FC = () => {
                     <input
                       type="text"
                       id="tags"
+                      name="tags"
                       value={tagInput}
                       onChange={(e) => setTagInput(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
                       placeholder="Press Enter to add tag"
                       className="form-input"
+                      autoComplete="off"
+                      data-lpignore="true"
+                      data-form-type="other"
+                      aria-label="Tags (optional)"
                     />
                     <button
                       type="button"
