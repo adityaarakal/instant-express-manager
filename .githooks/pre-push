@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# Pre-push hook to prevent pushing directly to main branch
+# This encourages using feature branches and pull requests
+
+# Get the branch being pushed to
+protected_branch='main'
+current_branch=$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,')
+
+# Get the remote and branch from the push command
+while read local_ref local_sha remote_ref remote_sha
+do
+    # Extract branch name from the remote ref
+    branch=$(echo $remote_ref | sed -e 's,.*/\(.*\),\1,')
+    
+    # Check if trying to push to main branch
+    if [ "$branch" = "$protected_branch" ]; then
+        echo "❌ ERROR: You are trying to push directly to the '$protected_branch' branch!"
+        echo ""
+        echo "This is not allowed. Please follow these steps:"
+        echo ""
+        echo "1. Create a feature branch:"
+        echo "   git checkout -b feature/your-feature-name"
+        echo ""
+        echo "2. Push your feature branch:"
+        echo "   git push origin feature/your-feature-name"
+        echo ""
+        echo "3. Create a Pull Request on GitHub to merge into main"
+        echo ""
+        echo "If you really need to push to main (emergency only), use:"
+        echo "   git push origin main --no-verify"
+        echo ""
+        exit 1
+    fi
+done
+
+exit 0

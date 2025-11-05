@@ -60,12 +60,17 @@ expense-manager/
 npm run install:all
 ```
 
-2. Set up environment variables:
+2. Install git hooks (prevents direct pushes to main branch):
+```bash
+npm run install:hooks
+```
+
+4. Set up environment variables:
    - Copy `frontend/.env.example` to `frontend/.env`
    - Copy `backend/.env.example` to `backend/.env`
    - Fill in your configuration values
 
-3. Start development servers:
+5. Start development servers:
 ```bash
 npm run dev
 ```
@@ -174,6 +179,27 @@ MONGODB_URI=mongodb://localhost:27017/expense-manager
 STRIPE_SECRET_KEY=your_stripe_secret_key
 JWT_SECRET=your_jwt_secret
 ```
+
+## Git Hooks
+
+This project includes a pre-push hook that prevents direct pushes to the `main` branch. This encourages using feature branches and pull requests.
+
+### Setup
+
+After cloning the repository, install the hooks:
+
+```bash
+npm run install:hooks
+```
+
+### Workflow
+
+1. Create a feature branch: `git checkout -b feature/your-feature-name`
+2. Make changes and commit
+3. Push to your feature branch: `git push origin feature/your-feature-name`
+4. Create a Pull Request on GitHub to merge into main
+
+The hook will block any direct pushes to main. See `.githooks/README.md` for more details.
 
 ## Next Steps
 
