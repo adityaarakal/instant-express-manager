@@ -333,9 +333,14 @@
   box-shadow: var(--shadow-sm);
 }
 
+.form-input-focused:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: var(--shadow-md);
+}
+
 .form-input-focused:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border: 2px solid var(--primary-color);
   background: white;
   box-shadow: var(--shadow-lg), 0 0 0 4px rgba(99, 102, 241, 0.15), var(--shadow-glow);
   transform: scale(1.02);
@@ -471,24 +476,36 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: var(--category-color);
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
   transform: scaleX(0);
-  transition: transform 0.3s ease;
+  transform-origin: left;
+  transition: transform var(--transition-base);
 }
 
 .category-option-large:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-xl), var(--shadow-glow);
+  border-color: var(--primary-color);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .category-option-large:hover::before {
   transform: scaleX(1);
 }
 
+.category-option-large:focus {
+  outline: none;
+  box-shadow: var(--shadow-xl), var(--shadow-glow), 0 0 0 3px rgba(99, 102, 241, 0.2);
+  border-color: var(--primary-color);
+}
+
 .category-option-large.active {
   font-weight: 700;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  transform: translateY(-4px) scale(1.03);
+  box-shadow: var(--shadow-xl), 0 0 25px rgba(99, 102, 241, 0.4);
+  transform: translateY(-4px) scale(1.05);
+  border-color: var(--primary-color);
+  border-width: 2px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
 }
 
 .category-option-large.active::before {
@@ -534,13 +551,38 @@
   min-height: 80px;
   justify-content: center;
   box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.payment-method-option-large::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition-base);
 }
 
 .payment-method-option-large:hover {
-  transform: translateY(-4px) scale(1.05);
+  transform: translateY(-4px) scale(1.02);
   box-shadow: var(--shadow-xl), var(--shadow-glow);
   border-color: var(--primary-color);
   background: rgba(255, 255, 255, 0.95);
+}
+
+.payment-method-option-large:hover::before {
+  transform: scaleX(1);
+}
+
+.payment-method-option-large:focus {
+  outline: none;
+  box-shadow: var(--shadow-xl), var(--shadow-glow), 0 0 0 3px rgba(99, 102, 241, 0.2);
+  border-color: var(--primary-color);
 }
 
 .payment-method-option-large.active {
@@ -549,7 +591,11 @@
   font-weight: 700;
   box-shadow: var(--shadow-xl), 0 0 25px rgba(99, 102, 241, 0.4);
   transform: translateY(-4px) scale(1.05);
-  border-width: 3px;
+  border-width: 2px;
+}
+
+.payment-method-option-large.active::before {
+  transform: scaleX(1);
 }
 
 .payment-icon-large {
@@ -720,9 +766,9 @@
   display: flex;
   justify-content: space-between;
   gap: var(--spacing-md);
-  margin-top: var(--spacing-md);
-  padding-top: var(--spacing-md);
-  border-top: 1px solid var(--border-color);
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--glass-border);
   flex-shrink: 0;
 }
 
@@ -735,19 +781,18 @@
   transition: all 0.2s ease;
 }
 
-/* Ensure btn-secondary maintains all borders including left - override any conflicting styles */
+/* Ensure btn-secondary maintains consistent borders */
 .btn-secondary.btn-nav {
-  border-top: 1px solid var(--primary-color) !important;
-  border-right: 1px solid var(--primary-color) !important;
-  border-bottom: 1px solid var(--primary-color) !important;
-  border-left: 1px solid var(--primary-color) !important;
+  border: 1px solid var(--primary-color) !important;
 }
 
 .btn-secondary.btn-nav:hover:not(:disabled) {
-  border-top: 1px solid var(--primary-color) !important;
-  border-right: 1px solid var(--primary-color) !important;
-  border-bottom: 1px solid var(--primary-color) !important;
-  border-left: 1px solid var(--primary-color) !important;
+  border: 1px solid var(--primary-color) !important;
+}
+
+.btn-secondary.btn-nav:focus:not(:disabled) {
+  border: 1px solid var(--primary-color) !important;
+  box-shadow: var(--shadow-md), 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
 }
 
 .btn-nav:disabled {

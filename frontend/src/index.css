@@ -190,6 +190,12 @@ html {
   border: none;
 }
 
+.btn-primary:focus:not(:disabled) {
+  outline: none;
+  box-shadow: var(--shadow-lg), var(--shadow-glow), 0 0 0 3px rgba(255, 255, 255, 0.3);
+  border: none;
+}
+
 .btn-primary:active:not(:disabled) {
   transform: translateY(0);
 }
@@ -199,7 +205,7 @@ html {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: var(--primary-color);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--primary-color);
   box-shadow: var(--shadow-sm);
 }
 
@@ -208,10 +214,13 @@ html {
   color: var(--primary-color);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
-  border-top: 1px solid var(--primary-color);
-  border-right: 1px solid var(--primary-color);
-  border-bottom: 1px solid var(--primary-color);
-  border-left: 1px solid var(--primary-color);
+  border: 1px solid var(--primary-color);
+}
+
+.btn-secondary:focus:not(:disabled) {
+  outline: none;
+  box-shadow: var(--shadow-md), 0 0 0 3px rgba(99, 102, 241, 0.2);
+  border: 1px solid var(--primary-color);
 }
 
 .btn-danger {

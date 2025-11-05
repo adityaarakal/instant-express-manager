@@ -125,13 +125,23 @@
 .stat-card:hover {
   transform: translateY(-4px) scale(1.02);
   box-shadow: var(--shadow-xl), var(--shadow-glow);
-  border-color: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.stat-card:focus {
+  outline: none;
+  box-shadow: var(--shadow-xl), var(--shadow-glow), 0 0 0 3px rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .stat-card.primary {
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.9) 0%, rgba(139, 92, 246, 0.9) 100%);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-card.primary:hover {
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .stat-card.primary::before {
@@ -296,7 +306,13 @@
   background: rgba(255, 255, 255, 0.8);
   transform: translateX(4px);
   box-shadow: var(--shadow-md);
-  border-color: rgba(99, 102, 241, 0.3);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+}
+
+.category-item:focus {
+  outline: none;
+  box-shadow: var(--shadow-md), 0 0 0 3px rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.4);
 }
 
 .category-info {
@@ -342,7 +358,7 @@
   text-decoration: none;
   color: inherit;
   transition: all var(--transition-base);
-  border: 1px solid transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -365,13 +381,19 @@
 
 .expense-item:hover {
   background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(99, 102, 241, 0.3);
+  border: 1px solid rgba(99, 102, 241, 0.4);
   transform: translateX(4px);
   box-shadow: var(--shadow-md);
 }
 
 .expense-item:hover::before {
   transform: scaleY(1);
+}
+
+.expense-item:focus {
+  outline: none;
+  box-shadow: var(--shadow-md), 0 0 0 3px rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.4);
 }
 
 .expense-icon {

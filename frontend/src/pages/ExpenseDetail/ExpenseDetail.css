@@ -199,7 +199,12 @@
   background: rgba(255, 255, 255, 0.8);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
-  border-color: rgba(99, 102, 241, 0.3);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+}
+
+.detail-item:focus-within {
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  box-shadow: var(--shadow-md), 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .detail-item.full-width {
