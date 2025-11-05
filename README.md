@@ -1,13 +1,13 @@
 # Expense Manager
 
-A full-stack React PWA TypeScript application with Node.js/Express backend for tracking and managing personal expenses.
+A React PWA TypeScript application for tracking and managing personal expenses using localStorage.
 
 ## Features
 
 - 🚀 Progressive Web App (PWA) with offline support
 - 📱 Fully responsive design for mobile and desktop
 - 💰 Monetization via ads and in-app purchases
-- 🔒 Secure backend API with TypeScript
+- 💾 LocalStorage-based data persistence (no backend required)
 - 🎨 Modern pixel-perfect UI/UX with responsive layouts
 - 📊 Expense tracking by categories
 - 📈 Analytics and insights dashboard
@@ -25,25 +25,14 @@ expense-manager/
 │   │   │   ├── Expenses/      # Expenses list
 │   │   │   ├── CreateExpense/ # Add expense form
 │   │   │   └── ExpenseDetail/ # Expense details
-│   │   ├── services/           # API services
+│   │   ├── services/           # Service layer (localStorage)
 │   │   └── App.tsx             # Main app component
 │   ├── public/                 # Static assets
 │   ├── index.html              # HTML entry point
 │   ├── vite.config.ts          # Vite configuration
 │   └── package.json
-├── backend/                     # Node.js Express TypeScript backend
-│   ├── src/
-│   │   ├── config/             # Configuration files
-│   │   ├── controllers/        # Request handlers
-│   │   ├── models/             # Database models (Expense)
-│   │   ├── routes/             # API routes
-│   │   ├── middleware/         # Express middleware
-│   │   └── index.ts            # Server entry point
-│   ├── package.json
-│   └── tsconfig.json
 ├── package.json                 # Root workspace configuration
-├── README.md
-└── DEPLOYMENT.md               # Deployment guide
+└── README.md
 ```
 
 ## Getting Started
@@ -51,7 +40,6 @@ expense-manager/
 ### Prerequisites
 
 - Node.js 18+ and npm
-- MongoDB (or your preferred database)
 
 ### Installation
 
@@ -60,42 +48,12 @@ expense-manager/
 npm run install:all
 ```
 
-2. Set up environment variables:
-   - Create `backend/.env` file with:
-     ```env
-     PORT=3000
-     NODE_ENV=development
-     MONGODB_URI=mongodb://localhost:27017/expense-manager
-     # Or for MongoDB Atlas:
-     # MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/expense-manager
-     FRONTEND_URL=http://localhost:5173
-     ```
-   - Create `frontend/.env` file with:
-     ```env
-     VITE_API_BASE_URL=http://localhost:3000/api
-     ```
-
-3. **Start MongoDB** (choose one):
-   - **Local MongoDB**: Start MongoDB service on your machine
-     ```bash
-     # macOS with Homebrew:
-     brew services start mongodb-community
-     
-     # Or using Docker:
-     docker run -d -p 27017:27017 --name mongodb mongo
-     ```
-   - **MongoDB Atlas (Cloud)**: Get connection string from [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) and set `MONGODB_URI` in `backend/.env`
-
-4. Start development servers:
+2. Start development server:
 ```bash
 npm run dev
 ```
 
-**Note**: The app will run even without MongoDB, but you'll see "Database not connected" errors when trying to create expenses. Make sure MongoDB is running to save expenses.
-
-This will start:
-- Frontend dev server on `http://localhost:5173` (or configured port)
-- Backend API server on `http://localhost:3000` (or configured port)
+This will start the frontend dev server on `http://localhost:5173` (or configured port).
 
 ### Building for Production
 
@@ -111,12 +69,15 @@ npm run build
 - Vite (build tool)
 - PWA capabilities (Service Worker, Web App Manifest)
 - Responsive CSS with modern design
+- localStorage for data persistence
 
-### Backend
-- Node.js
-- Express
-- TypeScript
-- MongoDB (or your database of choice)
+## Data Storage
+
+All expenses are stored in the browser's localStorage:
+- **Storage Key**: `expense-manager-expenses`
+- **Location**: Browser localStorage
+- **Persistence**: Data persists across page refreshes
+- **No Backend Required**: Everything runs client-side
 
 ## Expense Categories
 
@@ -131,22 +92,17 @@ The app supports the following expense categories:
 - ✈️ Travel
 - 📦 Other
 
-## API Endpoints
+## Development Scripts
 
-### Health Check
-- `GET /health` - Server health status
+### Root Level
+- `npm run dev` - Start frontend in development mode
+- `npm run build` - Build frontend for production
+- `npm run install:all` - Install dependencies for all workspaces
 
-### Expenses
-- `GET /api/expenses` - Get all expenses (with filters)
-- `GET /api/expenses/stats` - Get expense statistics
-- `GET /api/expenses/:id` - Get expense by ID
-- `POST /api/expenses` - Create new expense
-- `PUT /api/expenses/:id` - Update expense
-- `DELETE /api/expenses/:id` - Delete expense
-
-### Purchases
-- `POST /api/purchases/premium` - Purchase premium subscription
-- `GET /api/purchases/status/:userId` - Check user's purchase status
+### Frontend
+- `npm run dev` - Start Vite dev server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
 
 ## Monetization
 
@@ -158,58 +114,14 @@ The application includes:
 
 - **In-App Purchases**: Premium subscription system
   - Purchase button component
-  - Backend API for processing purchases
-  - Database models for tracking purchases
-  - Payment processor integration ready (Stripe, PayPal)
-
-## Development Scripts
-
-### Root Level
-- `npm run dev` - Start both frontend and backend in development mode
-- `npm run build` - Build both frontend and backend for production
-- `npm run install:all` - Install dependencies for all workspaces
-
-### Frontend
-- `npm run dev` - Start Vite dev server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-
-### Backend
-- `npm run dev` - Start with hot reload (tsx watch)
-- `npm run build` - Compile TypeScript
-- `npm start` - Run production build
-
-## Environment Variables
-
-### Frontend (.env)
-```env
-VITE_API_BASE_URL=http://localhost:3000/api
-VITE_ADS_CLIENT_ID=your-ads-client-id
-VITE_APP_ENV=development
-```
-
-### Backend (.env)
-```env
-NODE_ENV=development
-PORT=3000
-FRONTEND_URL=http://localhost:5173
-MONGODB_URI=mongodb://localhost:27017/expense-manager
-STRIPE_SECRET_KEY=your_stripe_secret_key
-JWT_SECRET=your_jwt_secret
-```
+  - Purchase tracking (ready for payment processor integration)
 
 ## Next Steps
 
-1. **Database Setup**: Configure MongoDB connection
-2. **Authentication**: Add user authentication system
-3. **Payment Integration**: Connect Stripe or PayPal
+1. **Features**: Add expense export, budget limits, recurring expenses
+2. **Testing**: Add unit and integration tests
+3. **Payment Integration**: Connect Stripe or PayPal for purchases
 4. **Ad Integration**: Add Google AdSense or other ad providers
-5. **Features**: Add expense export, budget limits, recurring expenses
-6. **Testing**: Add unit and integration tests
-
-## Deployment
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 
 ## License
 
