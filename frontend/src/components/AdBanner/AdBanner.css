@@ -1,0 +1,28 @@
+.ad-banner {
+  width: 100%;
+  margin: var(--spacing-xl) 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100px;
+}
+
+.ad-placeholder {
+  width: 100%;
+  max-width: 728px;
+  height: 90px;
+  background-color: var(--background-alt);
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .ad-placeholder {
+    height: 50px;
+    max-width: 320px;
+  }
+}
