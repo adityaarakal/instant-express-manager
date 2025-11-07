@@ -1,16 +1,70 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { expenseService, ExpenseStats, Expense } from '../../services/expenseService'
 import { incomeService, IncomeStats, Income } from '../../services/incomeService'
 import { formatCurrency } from '../../utils/currency'
 import './Dashboard.css'
 
+interface MonthlyFinancialData {
+  monthKey: string
+  monthLabel: string
+  income: number
+  expenses: number
+  balance: number
+}
+
 const Dashboard: React.FC = () => {
   const [expenseStats, setExpenseStats] = useState<ExpenseStats | null>(null)
   const [incomeStats, setIncomeStats] = useState<IncomeStats | null>(null)
   const [recentExpenses, setRecentExpenses] = useState<Expense[]>([])
   const [recentIncomes, setRecentIncomes] = useState<Income[]>([])
+  const [allExpenses, setAllExpenses] = useState<Expense[]>([])
+  const [allIncomes, setAllIncomes] = useState<Income[]>([])
+  const [monthlyFinancialData, setMonthlyFinancialData] = useState<MonthlyFinancialData[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Calculate monthly financial data for current and future months
+  const calculateMonthlyFinancialData = (expenses: Expense[], incomes: Income[]): MonthlyFinancialData[] => {
+    const monthlyData: MonthlyFinancialData[] = []
+    const now = new Date()
+    
+    // Calculate for next 12 months
+    for (let i = 0; i < 12; i++) {
+      const targetDate = new Date(now.getFullYear(), now.getMonth() + i, 1)
+      const year = targetDate.getFullYear()
+      const month = targetDate.getMonth()
+      const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`
+      const monthLabel = targetDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+      
+      // Calculate income for this month
+      const monthIncome = incomes
+        .filter(income => {
+          const incomeDate = new Date(income.date)
+          return incomeDate.getFullYear() === year && incomeDate.getMonth() === month
+        })
+        .reduce((sum, income) => sum + income.amount, 0)
+      
+      // Calculate expenses for this month
+      const monthExpenses = expenses
+        .filter(expense => {
+          const expenseDate = new Date(expense.date)
+          return expenseDate.getFullYear() === year && expenseDate.getMonth() === month
+        })
+        .reduce((sum, expense) => sum + expense.amount, 0)
+      
+      const balance = monthIncome - monthExpenses
+      
+      monthlyData.push({
+        monthKey,
+        monthLabel,
+        income: monthIncome,
+        expenses: monthExpenses,
+        balance
+      })
+    }
+    
+    return monthlyData
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,6 +80,12 @@ const Dashboard: React.FC = () => {
         setIncomeStats(incomeStatsData)
         setRecentExpenses(expenses.slice(0, 5))
         setRecentIncomes(incomes.slice(0, 5))
+        setAllExpenses(expenses)
+        setAllIncomes(incomes)
+        
+        // Calculate monthly financial data
+        const monthlyData = calculateMonthlyFinancialData(expenses, incomes)
+        setMonthlyFinancialData(monthlyData)
       } catch (error: any) {
         console.error('Error fetching dashboard data:', error)
         setExpenseStats({
@@ -72,6 +132,11 @@ const Dashboard: React.FC = () => {
   const formatCategory = (category: string) => {
     return category.charAt(0).toUpperCase() + category.slice(1)
   }
+
+  const currentMonthKey = useMemo(() => {
+    const now = new Date()
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  }, [])
 
   if (loading) {
     return (
@@ -163,6 +228,42 @@ const Dashboard: React.FC = () => {
                     }
                   </span>
                 </div>
+              </div>
+            </div>
+
+            <div className="dashboard-card monthly-financial-table">
+              <h2>Monthly Financial Overview</h2>
+              <div className="table-container">
+                <table className="financial-table">
+                  <thead>
+                    <tr>
+                      <th>Month/Year</th>
+                      <th>Income</th>
+                      <th>Expenses</th>
+                      <th>Balance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {monthlyFinancialData.map((data) => {
+                      const isCurrentMonth = data.monthKey === currentMonthKey
+                      return (
+                        <tr key={data.monthKey} className={isCurrentMonth ? 'current-month' : ''}>
+                          <td className="month-cell">
+                            {isCurrentMonth && (
+                              <span className="current-badge">Current</span>
+                            )}
+                            {data.monthLabel}
+                          </td>
+                        <td className="income-cell">{formatCurrency(data.income)}</td>
+                        <td className="expense-cell">{formatCurrency(data.expenses)}</td>
+                        <td className={`balance-cell ${data.balance >= 0 ? 'positive' : 'negative'}`}>
+                          {formatCurrency(data.balance)}
+                        </td>
+                      </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
               </div>
             </div>
 
