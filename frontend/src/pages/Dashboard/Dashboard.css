@@ -313,21 +313,31 @@
   font-weight: 600;
 }
 
-.expense-cell {
+.paid-expense-cell {
   color: var(--error-color);
   font-weight: 600;
 }
 
-.balance-cell {
+.pending-expense-cell {
+  color: var(--warning-color);
+  font-weight: 600;
+}
+
+.account-balance-cell {
+  color: var(--info-color);
+  font-weight: 600;
+}
+
+.final-balance-cell {
   font-weight: 700;
   font-size: 1rem;
 }
 
-.balance-cell.positive {
+.final-balance-cell.positive {
   color: var(--success-color);
 }
 
-.balance-cell.negative {
+.final-balance-cell.negative {
   color: var(--error-color);
 }
 

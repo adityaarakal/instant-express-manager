@@ -18,6 +18,8 @@ export interface Income {
   location?: string
   createdAt: string
   updatedAt: string
+  // Payment status
+  paymentStatus: 'paid' | 'pending'
   // Recurring transaction fields
   isRecurring?: boolean
   recurrenceType?: 'weekly' | 'monthly' | 'yearly'
@@ -38,6 +40,8 @@ export interface CreateIncomeRequest {
   tags?: string[]
   receiptUrl?: string
   location?: string
+  // Payment status
+  paymentStatus?: 'paid' | 'pending'
   // Recurring transaction fields
   isRecurring?: boolean
   recurrenceType?: 'weekly' | 'monthly' | 'yearly'
@@ -59,7 +63,14 @@ export interface IncomeStats {
 const getIncomesFromStorage = (): Income[] => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
-    return stored ? JSON.parse(stored) : []
+    const incomes = stored ? JSON.parse(stored) : []
+    // Migrate old incomes without paymentStatus to have 'paid' by default (backward compatibility)
+    return incomes.map((inc: Income) => {
+      if (!inc.paymentStatus) {
+        inc.paymentStatus = 'paid' // Old incomes default to paid
+      }
+      return inc
+    })
   } catch (error) {
     console.error('Error reading from localStorage:', error)
     return []
@@ -104,6 +115,7 @@ const generateAndSaveRecurringIncomes = (
       id: generateId(),
       date: occurrenceDate,
       parentTransactionId: parentIncome.id,
+      paymentStatus: 'pending', // Recurring income defaults to pending
       nextOccurrence: calculateNextOccurrence(occurrenceDate, recurrenceType, interval),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -169,6 +181,7 @@ export const checkAndGenerateRecurringIncomes = (): void => {
               id: generateId(),
               date: currentDate.toISOString(),
               parentTransactionId: parent.id,
+              paymentStatus: 'pending', // Generated recurring income defaults to pending
               nextOccurrence: calculateNextOccurrence(
                 currentDate.toISOString(),
                 parent.recurrenceType,
@@ -354,6 +367,8 @@ export const incomeService = {
             receiptUrl: data.receiptUrl,
             createdAt: now,
             updatedAt: now,
+            // Payment status - default to pending for new income
+            paymentStatus: data.paymentStatus || 'pending',
             // Recurring transaction fields
             isRecurring: data.isRecurring || false,
             recurrenceType: data.recurrenceType,

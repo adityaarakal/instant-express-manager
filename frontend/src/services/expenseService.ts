@@ -19,6 +19,8 @@ export interface Expense {
   location?: string
   createdAt: string
   updatedAt: string
+  // Payment status
+  paymentStatus: 'paid' | 'pending'
   // Recurring transaction fields
   isRecurring?: boolean
   recurrenceType?: 'weekly' | 'monthly' | 'yearly'
@@ -39,6 +41,8 @@ export interface CreateExpenseRequest {
   tags?: string[]
   receiptUrl?: string
   location?: string
+  // Payment status
+  paymentStatus?: 'paid' | 'pending'
   // Recurring transaction fields
   isRecurring?: boolean
   recurrenceType?: 'weekly' | 'monthly' | 'yearly'
@@ -60,7 +64,14 @@ export interface ExpenseStats {
 const getExpensesFromStorage = (): Expense[] => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
-    return stored ? JSON.parse(stored) : []
+    const expenses = stored ? JSON.parse(stored) : []
+    // Migrate old expenses without paymentStatus to have 'paid' by default (backward compatibility)
+    return expenses.map((exp: Expense) => {
+      if (!exp.paymentStatus) {
+        exp.paymentStatus = 'paid' // Old expenses default to paid
+      }
+      return exp
+    })
   } catch (error) {
     console.error('Error reading from localStorage:', error)
     return []
@@ -105,6 +116,7 @@ const generateAndSaveRecurringExpenses = (
       id: generateId(),
       date: occurrenceDate,
       parentTransactionId: parentExpense.id,
+      paymentStatus: 'pending', // Recurring expenses default to pending
       nextOccurrence: calculateNextOccurrence(occurrenceDate, recurrenceType, interval),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -170,6 +182,7 @@ export const checkAndGenerateRecurringExpenses = (): void => {
               id: generateId(),
               date: currentDate.toISOString(),
               parentTransactionId: parent.id,
+              paymentStatus: 'pending', // Generated recurring expenses default to pending
               nextOccurrence: calculateNextOccurrence(
                 currentDate.toISOString(),
                 parent.recurrenceType,
@@ -356,6 +369,8 @@ export const expenseService = {
             receiptUrl: data.receiptUrl,
             createdAt: now,
             updatedAt: now,
+            // Payment status - default to pending for new expenses
+            paymentStatus: data.paymentStatus || 'pending',
             // Recurring transaction fields
             isRecurring: data.isRecurring || false,
             recurrenceType: data.recurrenceType,

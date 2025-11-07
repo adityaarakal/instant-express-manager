@@ -2,15 +2,18 @@ import React, { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { expenseService, ExpenseStats, Expense } from '../../services/expenseService'
 import { incomeService, IncomeStats, Income } from '../../services/incomeService'
+import { bankAccountService } from '../../services/bankAccountService'
 import { formatCurrency } from '../../utils/currency'
 import './Dashboard.css'
 
 interface MonthlyFinancialData {
   monthKey: string
   monthLabel: string
-  income: number
-  expenses: number
-  balance: number
+  income: number // Paid income
+  paidExpenses: number
+  pendingExpenses: number // Planned expenses
+  accountBalances: number
+  finalBalance: number // Account Balances - Pending Expenses
 }
 
 const Dashboard: React.FC = () => {
@@ -21,10 +24,15 @@ const Dashboard: React.FC = () => {
   const [allExpenses, setAllExpenses] = useState<Expense[]>([])
   const [allIncomes, setAllIncomes] = useState<Income[]>([])
   const [monthlyFinancialData, setMonthlyFinancialData] = useState<MonthlyFinancialData[]>([])
+  const [totalAccountBalance, setTotalAccountBalance] = useState<number>(0)
   const [loading, setLoading] = useState(true)
 
   // Calculate monthly financial data for current and future months
-  const calculateMonthlyFinancialData = (expenses: Expense[], incomes: Income[]): MonthlyFinancialData[] => {
+  const calculateMonthlyFinancialData = (
+    expenses: Expense[], 
+    incomes: Income[], 
+    accountBalance: number
+  ): MonthlyFinancialData[] => {
     const monthlyData: MonthlyFinancialData[] = []
     const now = new Date()
     
@@ -36,30 +44,51 @@ const Dashboard: React.FC = () => {
       const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`
       const monthLabel = targetDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
       
-      // Calculate income for this month
+      // Calculate paid income for this month (only paid income affects balance)
       const monthIncome = incomes
         .filter(income => {
           const incomeDate = new Date(income.date)
-          return incomeDate.getFullYear() === year && incomeDate.getMonth() === month
+          return incomeDate.getFullYear() === year && 
+                 incomeDate.getMonth() === month &&
+                 income.paymentStatus === 'paid'
         })
         .reduce((sum, income) => sum + income.amount, 0)
       
-      // Calculate expenses for this month
-      const monthExpenses = expenses
+      // Calculate paid expenses for this month
+      const monthPaidExpenses = expenses
         .filter(expense => {
           const expenseDate = new Date(expense.date)
-          return expenseDate.getFullYear() === year && expenseDate.getMonth() === month
+          return expenseDate.getFullYear() === year && 
+                 expenseDate.getMonth() === month &&
+                 expense.paymentStatus === 'paid'
         })
         .reduce((sum, expense) => sum + expense.amount, 0)
       
-      const balance = monthIncome - monthExpenses
+      // Calculate pending expenses (planned expenses) for this month
+      const monthPendingExpenses = expenses
+        .filter(expense => {
+          const expenseDate = new Date(expense.date)
+          return expenseDate.getFullYear() === year && 
+                 expenseDate.getMonth() === month &&
+                 expense.paymentStatus === 'pending'
+        })
+        .reduce((sum, expense) => sum + expense.amount, 0)
+      
+      // Account balances (currently same for all months - manual updates only)
+      // In the future, this could be calculated based on transactions
+      const accountBalances = accountBalance
+      
+      // Final balance = Account Balances - Pending Expenses
+      const finalBalance = accountBalances - monthPendingExpenses
       
       monthlyData.push({
         monthKey,
         monthLabel,
         income: monthIncome,
-        expenses: monthExpenses,
-        balance
+        paidExpenses: monthPaidExpenses,
+        pendingExpenses: monthPendingExpenses,
+        accountBalances: accountBalances,
+        finalBalance: finalBalance
       })
     }
     
@@ -70,11 +99,12 @@ const Dashboard: React.FC = () => {
     const fetchData = async () => {
       try {
         const userId = 'default-user'
-        const [expenseStatsData, incomeStatsData, expenses, incomes] = await Promise.all([
+        const [expenseStatsData, incomeStatsData, expenses, incomes, accountBalance] = await Promise.all([
           expenseService.getStats(userId),
           incomeService.getStats(userId),
           expenseService.getExpenses(userId, undefined, undefined, undefined),
-          incomeService.getIncomes(userId, undefined, undefined, undefined)
+          incomeService.getIncomes(userId, undefined, undefined, undefined),
+          bankAccountService.getTotalBalance(userId)
         ])
         setExpenseStats(expenseStatsData)
         setIncomeStats(incomeStatsData)
@@ -82,9 +112,10 @@ const Dashboard: React.FC = () => {
         setRecentIncomes(incomes.slice(0, 5))
         setAllExpenses(expenses)
         setAllIncomes(incomes)
+        setTotalAccountBalance(accountBalance)
         
         // Calculate monthly financial data
-        const monthlyData = calculateMonthlyFinancialData(expenses, incomes)
+        const monthlyData = calculateMonthlyFinancialData(expenses, incomes, accountBalance)
         setMonthlyFinancialData(monthlyData)
       } catch (error: any) {
         console.error('Error fetching dashboard data:', error)
@@ -239,8 +270,10 @@ const Dashboard: React.FC = () => {
                     <tr>
                       <th>Month/Year</th>
                       <th>Income</th>
-                      <th>Expenses</th>
-                      <th>Balance</th>
+                      <th>Paid Expenses</th>
+                      <th>Pending Expenses</th>
+                      <th>Account Balances</th>
+                      <th>Final Balance</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -254,12 +287,14 @@ const Dashboard: React.FC = () => {
                             )}
                             {data.monthLabel}
                           </td>
-                        <td className="income-cell">{formatCurrency(data.income)}</td>
-                        <td className="expense-cell">{formatCurrency(data.expenses)}</td>
-                        <td className={`balance-cell ${data.balance >= 0 ? 'positive' : 'negative'}`}>
-                          {formatCurrency(data.balance)}
-                        </td>
-                      </tr>
+                          <td className="income-cell">{formatCurrency(data.income)}</td>
+                          <td className="paid-expense-cell">{formatCurrency(data.paidExpenses)}</td>
+                          <td className="pending-expense-cell">{formatCurrency(data.pendingExpenses)}</td>
+                          <td className="account-balance-cell">{formatCurrency(data.accountBalances)}</td>
+                          <td className={`final-balance-cell ${data.finalBalance >= 0 ? 'positive' : 'negative'}`}>
+                            {formatCurrency(data.finalBalance)}
+                          </td>
+                        </tr>
                       )
                     })}
                   </tbody>

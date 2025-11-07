@@ -26,6 +26,7 @@ const CreateExpense: React.FC = () => {
     date: new Date().toISOString().split('T')[0],
     tags: [],
     location: '',
+    paymentStatus: 'pending',
     isRecurring: false,
     recurrenceType: undefined,
     recurrenceInterval: 1,
@@ -58,6 +59,7 @@ const CreateExpense: React.FC = () => {
           date: formattedDate,
           tags: expense.tags || [],
           location: expense.location || '',
+          paymentStatus: expense.paymentStatus || 'pending',
           isRecurring: expense.isRecurring || false,
           recurrenceType: expense.recurrenceType,
           recurrenceInterval: expense.recurrenceInterval || 1,
@@ -243,6 +245,7 @@ const CreateExpense: React.FC = () => {
         description: formData.description?.trim() || undefined,
         location: formData.location?.trim() || undefined,
         tags: formData.tags && formData.tags.length > 0 ? formData.tags : undefined,
+        paymentStatus: formData.paymentStatus || 'pending',
         isRecurring: formData.isRecurring || false,
         recurrenceType: formData.isRecurring ? formData.recurrenceType : undefined,
         recurrenceInterval: formData.isRecurring ? formData.recurrenceInterval : undefined,
@@ -666,6 +669,32 @@ const CreateExpense: React.FC = () => {
                       }, 100)
                     }}
                   />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="paymentStatus">💳 Payment Status</label>
+                  <div className="payment-status-buttons">
+                    <button
+                      type="button"
+                      className={`payment-status-option ${formData.paymentStatus === 'paid' ? 'active' : ''}`}
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, paymentStatus: 'paid' }))
+                        setError(null)
+                      }}
+                    >
+                      <span>✅ Paid</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`payment-status-option ${formData.paymentStatus === 'pending' ? 'active' : ''}`}
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, paymentStatus: 'pending' }))
+                        setError(null)
+                      }}
+                    >
+                      <span>⏳ Pending</span>
+                    </button>
+                  </div>
+                  <p className="form-help-text">Select if this expense has been paid or is planned for the future</p>
                 </div>
               </div>
             </div>
