@@ -111,17 +111,26 @@ const generateAndSaveRecurringExpenses = (
   const futureOccurrences = occurrences.slice(1)
   
   futureOccurrences.forEach(occurrenceDate => {
-    const recurringExpense: Expense = {
-      ...parentExpense,
-      id: generateId(),
-      date: occurrenceDate,
-      parentTransactionId: parentExpense.id,
-      paymentStatus: 'pending', // Recurring expenses default to pending
-      nextOccurrence: calculateNextOccurrence(occurrenceDate, recurrenceType, interval),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+    // Check if this occurrence already exists (by date and parent ID)
+    const exists = existingExpenses.some(
+      exp => exp.parentTransactionId === parentExpense.id && 
+      new Date(exp.date).toISOString().split('T')[0] === new Date(occurrenceDate).toISOString().split('T')[0]
+    )
+    
+    // Only create if it doesn't exist
+    if (!exists) {
+      const recurringExpense: Expense = {
+        ...parentExpense,
+        id: generateId(),
+        date: occurrenceDate,
+        parentTransactionId: parentExpense.id,
+        paymentStatus: 'pending', // Recurring expenses default to pending
+        nextOccurrence: calculateNextOccurrence(occurrenceDate, recurrenceType, interval),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+      existingExpenses.push(recurringExpense)
     }
-    existingExpenses.push(recurringExpense)
   })
   
   saveExpensesToStorage(existingExpenses)
@@ -422,10 +431,64 @@ export const expenseService = {
             ...expense,
             ...data,
             id: expense.id, // Don't allow ID change
+            userId: expense.userId, // Don't allow userId change
             updatedAt: new Date().toISOString()
           }
 
           expenses[index] = updatedExpense
+
+          // If this is a parent recurring transaction, update all child occurrences
+          if (expense.isRecurring && !expense.parentTransactionId) {
+            // Find all child occurrences
+            const childOccurrences = expenses.filter(exp => exp.parentTransactionId === expense.id)
+            
+            // Update each child occurrence with the new data (except dates and IDs)
+            childOccurrences.forEach(child => {
+              const childIndex = expenses.findIndex(exp => exp.id === child.id)
+              if (childIndex !== -1) {
+                expenses[childIndex] = {
+                  ...child,
+                  // Update fields that should be synced from parent
+                  title: updatedExpense.title,
+                  description: updatedExpense.description,
+                  amount: updatedExpense.amount,
+                  category: updatedExpense.category,
+                  paymentMethod: updatedExpense.paymentMethod,
+                  tags: updatedExpense.tags,
+                  location: updatedExpense.location,
+                  isRecurring: updatedExpense.isRecurring,
+                  recurrenceType: updatedExpense.recurrenceType,
+                  recurrenceInterval: updatedExpense.recurrenceInterval,
+                  endDate: updatedExpense.endDate,
+                  // Keep child-specific fields
+                  id: child.id,
+                  date: child.date,
+                  parentTransactionId: child.parentTransactionId,
+                  nextOccurrence: child.nextOccurrence,
+                  createdAt: child.createdAt,
+                  updatedAt: new Date().toISOString(),
+                  // Keep payment status of child (don't override)
+                  paymentStatus: child.paymentStatus
+                }
+              }
+            })
+
+            // Regenerate missing occurrences if still recurring
+            if (updatedExpense.isRecurring && updatedExpense.recurrenceType) {
+              // First, generate occurrences from parent date (if any are missing)
+              generateAndSaveRecurringExpenses(
+                updatedExpense,
+                expenses,
+                updatedExpense.recurrenceType,
+                updatedExpense.recurrenceInterval || 1,
+                updatedExpense.endDate
+              )
+              
+              // Then, check and generate any missing occurrences from current date forward
+              checkAndGenerateRecurringExpenses()
+            }
+          }
+
           saveExpensesToStorage(expenses)
           resolve(updatedExpense)
         } catch (error: any) {

@@ -110,17 +110,26 @@ const generateAndSaveRecurringIncomes = (
   const futureOccurrences = occurrences.slice(1)
   
   futureOccurrences.forEach(occurrenceDate => {
-    const recurringIncome: Income = {
-      ...parentIncome,
-      id: generateId(),
-      date: occurrenceDate,
-      parentTransactionId: parentIncome.id,
-      paymentStatus: 'pending', // Recurring income defaults to pending
-      nextOccurrence: calculateNextOccurrence(occurrenceDate, recurrenceType, interval),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+    // Check if this occurrence already exists (by date and parent ID)
+    const exists = existingIncomes.some(
+      inc => inc.parentTransactionId === parentIncome.id && 
+      new Date(inc.date).toISOString().split('T')[0] === new Date(occurrenceDate).toISOString().split('T')[0]
+    )
+    
+    // Only create if it doesn't exist
+    if (!exists) {
+      const recurringIncome: Income = {
+        ...parentIncome,
+        id: generateId(),
+        date: occurrenceDate,
+        parentTransactionId: parentIncome.id,
+        paymentStatus: 'pending', // Recurring income defaults to pending
+        nextOccurrence: calculateNextOccurrence(occurrenceDate, recurrenceType, interval),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+      existingIncomes.push(recurringIncome)
     }
-    existingIncomes.push(recurringIncome)
   })
   
   saveIncomesToStorage(existingIncomes)
@@ -420,10 +429,64 @@ export const incomeService = {
             ...income,
             ...data,
             id: income.id, // Don't allow ID change
+            userId: income.userId, // Don't allow userId change
             updatedAt: new Date().toISOString()
           }
 
           incomes[index] = updatedIncome
+
+          // If this is a parent recurring transaction, update all child occurrences
+          if (income.isRecurring && !income.parentTransactionId) {
+            // Find all child occurrences
+            const childOccurrences = incomes.filter(inc => inc.parentTransactionId === income.id)
+            
+            // Update each child occurrence with the new data (except dates and IDs)
+            childOccurrences.forEach(child => {
+              const childIndex = incomes.findIndex(inc => inc.id === child.id)
+              if (childIndex !== -1) {
+                incomes[childIndex] = {
+                  ...child,
+                  // Update fields that should be synced from parent
+                  title: updatedIncome.title,
+                  description: updatedIncome.description,
+                  amount: updatedIncome.amount,
+                  category: updatedIncome.category,
+                  paymentMethod: updatedIncome.paymentMethod,
+                  tags: updatedIncome.tags,
+                  location: updatedIncome.location,
+                  isRecurring: updatedIncome.isRecurring,
+                  recurrenceType: updatedIncome.recurrenceType,
+                  recurrenceInterval: updatedIncome.recurrenceInterval,
+                  endDate: updatedIncome.endDate,
+                  // Keep child-specific fields
+                  id: child.id,
+                  date: child.date,
+                  parentTransactionId: child.parentTransactionId,
+                  nextOccurrence: child.nextOccurrence,
+                  createdAt: child.createdAt,
+                  updatedAt: new Date().toISOString(),
+                  // Keep payment status of child (don't override)
+                  paymentStatus: child.paymentStatus
+                }
+              }
+            })
+
+            // Regenerate missing occurrences if still recurring
+            if (updatedIncome.isRecurring && updatedIncome.recurrenceType) {
+              // First, generate occurrences from parent date (if any are missing)
+              generateAndSaveRecurringIncomes(
+                updatedIncome,
+                incomes,
+                updatedIncome.recurrenceType,
+                updatedIncome.recurrenceInterval || 1,
+                updatedIncome.endDate
+              )
+              
+              // Then, check and generate any missing occurrences from current date forward
+              checkAndGenerateRecurringIncomes()
+            }
+          }
+
           saveIncomesToStorage(incomes)
           resolve(updatedIncome)
         } catch (error: any) {
