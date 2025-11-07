@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { expenseService, Expense } from '../../services/expenseService'
 import { formatCurrency } from '../../utils/currency'
@@ -12,6 +12,8 @@ const Expenses: React.FC = () => {
   const [filterCategory, setFilterCategory] = useState<string>('all')
   const [filterDate, setFilterDate] = useState<string>('all')
   const [showRecurring, setShowRecurring] = useState(false)
+  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set())
+  const hasInitialized = useRef(false)
 
   const categories = [
     { value: 'all', label: 'All Categories' },
@@ -119,6 +121,27 @@ const Expenses: React.FC = () => {
     )
   }, [displayExpenses])
 
+  // Initialize expanded months (expand first month by default)
+  useEffect(() => {
+    if (expensesByMonth.length > 0 && !hasInitialized.current) {
+      const firstMonthKey = expensesByMonth[0].monthKey
+      setExpandedMonths(new Set([firstMonthKey]))
+      hasInitialized.current = true
+    }
+  }, [expensesByMonth])
+
+  const toggleMonth = (monthKey: string) => {
+    setExpandedMonths(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(monthKey)) {
+        newSet.delete(monthKey)
+      } else {
+        newSet.add(monthKey)
+      }
+      return newSet
+    })
+  }
+
   if (loading) {
     return (
       <div className="expenses-loading">
@@ -196,62 +219,79 @@ const Expenses: React.FC = () => {
           </div>
         ) : (
           <div className="expenses-list">
-            {expensesByMonth.map((monthGroup) => (
-              <div key={monthGroup.monthKey} className="month-group">
-                <div className="month-header">
-                  <h2 className="month-title">{formatMonthLabel(monthGroup.monthKey)}</h2>
-                  <span className="month-total">{formatCurrency(monthGroup.total)}</span>
-                </div>
-                <div className="month-expenses">
-                  {monthGroup.items.map((expense) => (
-                    <Link
-                      key={expense.id}
-                      to={`/expenses/${expense.id}`}
-                      className="expense-card"
-                    >
-                      <div className="expense-icon" style={{ backgroundColor: getCategoryColor(expense.category) }}>
-                        {expense.category.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="expense-content">
-                        <div className="expense-header">
-                          <h3>{expense.title}</h3>
-                          <span className="expense-amount">{formatCurrency(expense.amount)}</span>
-                        </div>
-                        <div className="expense-meta">
-                          {expense.isRecurring && !expense.parentTransactionId && (
-                            <>
-                              <span className="expense-recurring" style={{ color: 'var(--primary-color)', fontWeight: 600 }}>
-                                🔄 Recurring ({expense.recurrenceType})
-                              </span>
-                              <span className="expense-separator">•</span>
-                            </>
-                          )}
-                          <span className="expense-category">{formatCategory(expense.category)}</span>
-                          <span className="expense-separator">•</span>
-                          <span className="expense-date">{formatDate(expense.date)}</span>
-                          {expense.location && (
-                            <>
-                              <span className="expense-separator">•</span>
-                              <span className="expense-location">{expense.location}</span>
-                            </>
-                          )}
-                        </div>
-                        {expense.description && (
-                          <p className="expense-description">{expense.description}</p>
-                        )}
-                        {expense.tags && expense.tags.length > 0 && (
-                          <div className="expense-tags">
-                            {expense.tags.map(tag => (
-                              <span key={tag} className="tag">{tag}</span>
-                            ))}
+            {expensesByMonth.map((monthGroup) => {
+              const isExpanded = expandedMonths.has(monthGroup.monthKey)
+              return (
+                <div key={monthGroup.monthKey} className="month-group">
+                  <button
+                    type="button"
+                    className={`month-header ${isExpanded ? 'expanded' : ''}`}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      toggleMonth(monthGroup.monthKey)
+                    }}
+                    aria-expanded={isExpanded}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
+                      <span className="month-chevron">▶</span>
+                      <h2 className="month-title">{formatMonthLabel(monthGroup.monthKey)}</h2>
+                    </div>
+                    <span className="month-total">{formatCurrency(monthGroup.total)}</span>
+                  </button>
+                  <div className={`month-expenses ${isExpanded ? 'expanded' : ''}`}>
+                    <div className="month-expenses-content">
+                      {monthGroup.items.map((expense) => (
+                        <Link
+                          key={expense.id}
+                          to={`/expenses/${expense.id}`}
+                          className="expense-card"
+                        >
+                          <div className="expense-icon" style={{ backgroundColor: getCategoryColor(expense.category) }}>
+                            {expense.category.charAt(0).toUpperCase()}
                           </div>
-                        )}
-                      </div>
-                    </Link>
-                  ))}
+                          <div className="expense-content">
+                            <div className="expense-header">
+                              <h3>{expense.title}</h3>
+                              <span className="expense-amount">{formatCurrency(expense.amount)}</span>
+                            </div>
+                            <div className="expense-meta">
+                              {expense.isRecurring && !expense.parentTransactionId && (
+                                <>
+                                  <span className="expense-recurring" style={{ color: 'var(--primary-color)', fontWeight: 600 }}>
+                                    🔄 Recurring ({expense.recurrenceType})
+                                  </span>
+                                  <span className="expense-separator">•</span>
+                                </>
+                              )}
+                              <span className="expense-category">{formatCategory(expense.category)}</span>
+                              <span className="expense-separator">•</span>
+                              <span className="expense-date">{formatDate(expense.date)}</span>
+                              {expense.location && (
+                                <>
+                                  <span className="expense-separator">•</span>
+                                  <span className="expense-location">{expense.location}</span>
+                                </>
+                              )}
+                            </div>
+                            {expense.description && (
+                              <p className="expense-description">{expense.description}</p>
+                            )}
+                            {expense.tags && expense.tags.length > 0 && (
+                              <div className="expense-tags">
+                                {expense.tags.map(tag => (
+                                  <span key={tag} className="tag">{tag}</span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

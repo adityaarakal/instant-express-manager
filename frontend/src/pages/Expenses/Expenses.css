@@ -182,7 +182,7 @@
 .expenses-list {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xl);
+  gap: 0;
   overflow-y: auto;
   flex: 1;
   min-height: 0;
@@ -192,7 +192,12 @@
 .month-group {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: 0;
+  margin-bottom: var(--spacing-md);
+}
+
+.month-group:last-child {
+  margin-bottom: 0;
 }
 
 .month-header {
@@ -210,6 +215,42 @@
   top: 0;
   z-index: 10;
   margin-bottom: var(--spacing-sm);
+  width: 100%;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-align: left;
+  font-family: inherit;
+}
+
+.month-header:hover {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.month-header:focus {
+  outline: none;
+  box-shadow: var(--shadow-lg), 0 0 0 3px rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+}
+
+.month-header.expanded {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-bottom: 0;
+}
+
+.month-chevron {
+  font-size: 0.75rem;
+  color: var(--primary-color);
+  transition: transform var(--transition-base);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.month-header.expanded .month-chevron {
+  transform: rotate(90deg);
 }
 
 .month-title {
@@ -234,6 +275,31 @@
 }
 
 .month-expenses {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.3s ease, margin 0.3s ease;
+  opacity: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  visibility: hidden;
+}
+
+.month-expenses.expanded {
+  max-height: 5000px;
+  opacity: 1;
+  padding: var(--spacing-md);
+  margin: 0;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-top: none;
+  visibility: visible;
+}
+
+.month-expenses-content {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);

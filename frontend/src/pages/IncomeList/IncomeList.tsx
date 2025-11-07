@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { incomeService, Income } from '../../services/incomeService'
 import { formatCurrency } from '../../utils/currency'
@@ -12,6 +12,8 @@ const IncomeList: React.FC = () => {
   const [filterCategory, setFilterCategory] = useState<string>('all')
   const [filterDate, setFilterDate] = useState<string>('all')
   const [showRecurring, setShowRecurring] = useState(false)
+  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set())
+  const hasInitialized = useRef(false)
 
   const categories = [
     { value: 'all', label: 'All Categories' },
@@ -117,6 +119,27 @@ const IncomeList: React.FC = () => {
     )
   }, [displayIncomes])
 
+  // Initialize expanded months (expand first month by default)
+  useEffect(() => {
+    if (incomesByMonth.length > 0 && !hasInitialized.current) {
+      const firstMonthKey = incomesByMonth[0].monthKey
+      setExpandedMonths(new Set([firstMonthKey]))
+      hasInitialized.current = true
+    }
+  }, [incomesByMonth])
+
+  const toggleMonth = (monthKey: string) => {
+    setExpandedMonths(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(monthKey)) {
+        newSet.delete(monthKey)
+      } else {
+        newSet.add(monthKey)
+      }
+      return newSet
+    })
+  }
+
   if (loading) {
     return (
       <div className="income-list-loading">
@@ -194,62 +217,79 @@ const IncomeList: React.FC = () => {
           </div>
         ) : (
           <div className="income-list">
-            {incomesByMonth.map((monthGroup) => (
-              <div key={monthGroup.monthKey} className="month-group">
-                <div className="month-header">
-                  <h2 className="month-title">{formatMonthLabel(monthGroup.monthKey)}</h2>
-                  <span className="month-total">{formatCurrency(monthGroup.total)}</span>
-                </div>
-                <div className="month-incomes">
-                  {monthGroup.items.map((income) => (
-                    <Link
-                      key={income.id}
-                      to={`/income/${income.id}`}
-                      className="income-card"
-                    >
-                      <div className="income-icon" style={{ backgroundColor: getCategoryColor(income.category) }}>
-                        {income.category.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="income-content">
-                        <div className="income-header">
-                          <h3>{income.title}</h3>
-                          <span className="income-amount">{formatCurrency(income.amount)}</span>
-                        </div>
-                        <div className="income-meta">
-                          {income.isRecurring && !income.parentTransactionId && (
-                            <>
-                              <span className="income-recurring" style={{ color: 'var(--success-color)', fontWeight: 600 }}>
-                                🔄 Recurring ({income.recurrenceType})
-                              </span>
-                              <span className="income-separator">•</span>
-                            </>
-                          )}
-                          <span className="income-category">{formatCategory(income.category)}</span>
-                          <span className="income-separator">•</span>
-                          <span className="income-date">{formatDate(income.date)}</span>
-                          {income.location && (
-                            <>
-                              <span className="income-separator">•</span>
-                              <span className="income-location">{income.location}</span>
-                            </>
-                          )}
-                        </div>
-                        {income.description && (
-                          <p className="income-description">{income.description}</p>
-                        )}
-                        {income.tags && income.tags.length > 0 && (
-                          <div className="income-tags">
-                            {income.tags.map(tag => (
-                              <span key={tag} className="tag">{tag}</span>
-                            ))}
+            {incomesByMonth.map((monthGroup) => {
+              const isExpanded = expandedMonths.has(monthGroup.monthKey)
+              return (
+                <div key={monthGroup.monthKey} className="month-group">
+                  <button
+                    type="button"
+                    className={`month-header ${isExpanded ? 'expanded' : ''}`}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      toggleMonth(monthGroup.monthKey)
+                    }}
+                    aria-expanded={isExpanded}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
+                      <span className="month-chevron">▶</span>
+                      <h2 className="month-title">{formatMonthLabel(monthGroup.monthKey)}</h2>
+                    </div>
+                    <span className="month-total">{formatCurrency(monthGroup.total)}</span>
+                  </button>
+                  <div className={`month-incomes ${isExpanded ? 'expanded' : ''}`}>
+                    <div className="month-incomes-content">
+                      {monthGroup.items.map((income) => (
+                        <Link
+                          key={income.id}
+                          to={`/income/${income.id}`}
+                          className="income-card"
+                        >
+                          <div className="income-icon" style={{ backgroundColor: getCategoryColor(income.category) }}>
+                            {income.category.charAt(0).toUpperCase()}
                           </div>
-                        )}
-                      </div>
-                    </Link>
-                  ))}
+                          <div className="income-content">
+                            <div className="income-header">
+                              <h3>{income.title}</h3>
+                              <span className="income-amount">{formatCurrency(income.amount)}</span>
+                            </div>
+                            <div className="income-meta">
+                              {income.isRecurring && !income.parentTransactionId && (
+                                <>
+                                  <span className="income-recurring" style={{ color: 'var(--success-color)', fontWeight: 600 }}>
+                                    🔄 Recurring ({income.recurrenceType})
+                                  </span>
+                                  <span className="income-separator">•</span>
+                                </>
+                              )}
+                              <span className="income-category">{formatCategory(income.category)}</span>
+                              <span className="income-separator">•</span>
+                              <span className="income-date">{formatDate(income.date)}</span>
+                              {income.location && (
+                                <>
+                                  <span className="income-separator">•</span>
+                                  <span className="income-location">{income.location}</span>
+                                </>
+                              )}
+                            </div>
+                            {income.description && (
+                              <p className="income-description">{income.description}</p>
+                            )}
+                            {income.tags && income.tags.length > 0 && (
+                              <div className="income-tags">
+                                {income.tags.map(tag => (
+                                  <span key={tag} className="tag">{tag}</span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
