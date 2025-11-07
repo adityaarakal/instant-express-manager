@@ -77,6 +77,17 @@ const IncomeDetail: React.FC = () => {
     return methods[method] || method
   }
 
+  const formatRecurrenceType = (type?: string, interval?: number) => {
+    if (!type) return ''
+    const intervalText = interval && interval > 1 ? `Every ${interval} ` : 'Every '
+    const typeText = type === 'weekly' ? 'Week(s)' : type === 'monthly' ? 'Month(s)' : 'Year(s)'
+    return `${intervalText}${typeText}`
+  }
+
+  const formatPaymentStatus = (status: string) => {
+    return status === 'paid' ? '✅ Paid' : '⏳ Pending'
+  }
+
   if (loading) {
     return (
       <div className="income-detail-loading">
@@ -158,6 +169,63 @@ const IncomeDetail: React.FC = () => {
               <span className="detail-label">Payment Method</span>
               <span className="detail-value">{formatPaymentMethod(income.paymentMethod)}</span>
             </div>
+
+            <div className="detail-item">
+              <span className="detail-label">Payment Status</span>
+              <span className="detail-value">
+                <span className={`payment-status-badge ${income.paymentStatus === 'paid' ? 'paid' : 'pending'}`}>
+                  {formatPaymentStatus(income.paymentStatus)}
+                </span>
+              </span>
+            </div>
+
+            {income.isRecurring && (
+              <div className="detail-item full-width recurring-details-section">
+                <span className="detail-label">🔄 Recurring Transaction</span>
+                <div className="recurring-details">
+                  <div className="recurring-detail-row">
+                    <span className="recurring-label">Type:</span>
+                    <span className="recurring-value">{formatRecurrenceType(income.recurrenceType, income.recurrenceInterval)}</span>
+                  </div>
+                  {income.nextOccurrence && (
+                    <div className="recurring-detail-row">
+                      <span className="recurring-label">Next Occurrence:</span>
+                      <span className="recurring-value">
+                        {new Date(income.nextOccurrence).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </span>
+                    </div>
+                  )}
+                  {income.endDate && (
+                    <div className="recurring-detail-row">
+                      <span className="recurring-label">Ends On:</span>
+                      <span className="recurring-value">
+                        {new Date(income.endDate).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </span>
+                    </div>
+                  )}
+                  {income.parentTransactionId ? (
+                    <div className="recurring-detail-row">
+                      <span className="recurring-label">Status:</span>
+                      <span className="recurring-value">This is an occurrence of a recurring transaction</span>
+                    </div>
+                  ) : (
+                    <div className="recurring-detail-row">
+                      <span className="recurring-label">Status:</span>
+                      <span className="recurring-value">Parent recurring transaction</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {income.location && (
               <div className="detail-item">
