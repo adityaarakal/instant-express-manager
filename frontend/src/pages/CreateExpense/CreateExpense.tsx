@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react'
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { expenseService, CreateExpenseRequest } from '../../services/expenseService'
 import { bankAccountService, BankAccount } from '../../services/bankAccountService'
@@ -93,19 +93,29 @@ const CreateExpense: React.FC = () => {
 
   const totalSteps = stepTitles.length
 
+  const loadBankAccounts = useCallback(async () => {
+    try {
+      const userId = 'default-user'
+      const accounts = await bankAccountService.getAccounts(userId)
+      setBankAccounts(accounts)
+    } catch (err) {
+      console.error('Error loading bank accounts:', err)
+    }
+  }, [])
+
   // Load bank accounts
   useEffect(() => {
-    const loadBankAccounts = async () => {
-      try {
-        const userId = 'default-user'
-        const accounts = await bankAccountService.getAccounts(userId)
-        setBankAccounts(accounts)
-      } catch (err) {
-        console.error('Error loading bank accounts:', err)
-      }
-    }
     loadBankAccounts()
-  }, [])
+  }, [loadBankAccounts])
+
+  useEffect(() => {
+    const handleFocus = () => {
+      loadBankAccounts()
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [loadBankAccounts])
 
   // Load expense data when editing
   useEffect(() => {
@@ -160,6 +170,12 @@ const CreateExpense: React.FC = () => {
 
     loadExpenseData()
   }, [editId])
+
+  useEffect(() => {
+    if (formData.isRecurring && currentStep === 9) {
+      loadBankAccounts()
+    }
+  }, [currentStep, formData.isRecurring, loadBankAccounts])
 
   // Protect form inputs from browser extensions
   useEffect(() => {
@@ -1082,6 +1098,22 @@ const CreateExpense: React.FC = () => {
         <p>Select the bank or cash account the EMI will be deducted from</p>
       </div>
       <div className="step-body">
+        <div className="account-management-actions">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => navigate('/accounts', { state: { from: 'create-expense' } })}
+          >
+            Manage accounts
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={loadBankAccounts}
+          >
+            Refresh list
+          </button>
+        </div>
         <div className="account-options-grid">
           {bankAccounts.length > 0 ? (
             bankAccounts.map(account => (
@@ -1129,7 +1161,7 @@ const CreateExpense: React.FC = () => {
         </div>
         {bankAccounts.length === 0 && (
           <p className="form-help-text">
-            Tip: Create bank or cash accounts to keep balances in sync with your transactions.
+            No accounts yet? Add your bank or cash accounts so you can assign EMI deductions easily.
           </p>
         )}
       </div>

@@ -8,6 +8,7 @@ import ExpenseDetail from './pages/ExpenseDetail/ExpenseDetail'
 import IncomeList from './pages/IncomeList/IncomeList'
 import CreateIncome from './pages/CreateIncome/CreateIncome'
 import IncomeDetail from './pages/IncomeDetail/IncomeDetail'
+import BankAccounts from './pages/BankAccounts/BankAccounts'
 import './App.css'
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/accounts" element={<BankAccounts />} />
           <Route path="/expenses" element={<Expenses />} />
           <Route path="/expenses/create" element={<CreateExpense />} />
           <Route path="/expenses/:id" element={<ExpenseDetail />} />

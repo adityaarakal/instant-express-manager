@@ -33,6 +33,13 @@ const Header: React.FC = () => {
             <Link to="/dashboard" className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
               Dashboard
             </Link>
+            <Link
+              to="/accounts"
+              className={`nav-link ${isActive('/accounts') || location.pathname.startsWith('/accounts') ? 'active' : ''}`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Accounts
+            </Link>
             <Link to="/income" className={`nav-link ${isActive('/income') || location.pathname.startsWith('/income') ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
               Income
             </Link>

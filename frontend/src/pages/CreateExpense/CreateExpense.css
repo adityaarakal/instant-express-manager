@@ -538,6 +538,14 @@
   margin: 0;
 }
 
+.account-management-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 /* Focused Form Input */
 .form-group-focused {
   width: 100%;
