@@ -28,6 +28,19 @@ export interface Expense {
   parentTransactionId?: string // ID of the original recurring transaction
   nextOccurrence?: string // Next date when this should occur
   endDate?: string // Optional end date for recurring transactions
+  // EMI/Recurring expense specific fields
+  actualAmount?: number // Actual amount spent (for one-time purchase that converts to EMI)
+  emiAmount?: number // Monthly EMI amount
+  emiStartDate?: string // Start date of EMI
+  emiEndDate?: string // End date of EMI
+  accountId?: string // Account ID for EMI deduction
+  creditCardId?: string // Credit card ID if EMI is attached to credit card
+  creditCardInfo?: {
+    cardNumber?: string // Last 4 digits or full number
+    cardName?: string // Name on card
+    bankName?: string // Bank name
+    cardType?: string // Visa, Mastercard, etc.
+  }
 }
 
 export interface CreateExpenseRequest {
@@ -48,6 +61,19 @@ export interface CreateExpenseRequest {
   recurrenceType?: 'weekly' | 'monthly' | 'yearly'
   recurrenceInterval?: number
   endDate?: string
+  // EMI/Recurring expense specific fields
+  actualAmount?: number
+  emiAmount?: number
+  emiStartDate?: string
+  emiEndDate?: string
+  accountId?: string
+  creditCardId?: string
+  creditCardInfo?: {
+    cardNumber?: string
+    cardName?: string
+    bankName?: string
+    cardType?: string
+  }
 }
 
 export interface ExpenseStats {
@@ -129,6 +155,9 @@ const generateAndSaveRecurringExpenses = (
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }
+      if (parentExpense.creditCardInfo) {
+        recurringExpense.creditCardInfo = { ...parentExpense.creditCardInfo }
+      }
       existingExpenses.push(recurringExpense)
     }
   })
@@ -199,6 +228,9 @@ export const checkAndGenerateRecurringExpenses = (): void => {
               ),
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
+            }
+            if (parent.creditCardInfo) {
+              newOccurrence.creditCardInfo = { ...parent.creditCardInfo }
             }
             missingOccurrences.push(newOccurrence)
           }
@@ -385,6 +417,13 @@ export const expenseService = {
             recurrenceType: data.recurrenceType,
             recurrenceInterval: data.recurrenceInterval || 1,
             endDate: data.endDate,
+            actualAmount: data.actualAmount !== undefined ? Number(data.actualAmount) : undefined,
+            emiAmount: data.isRecurring ? (data.emiAmount !== undefined ? Number(data.emiAmount) : Number(data.amount)) : undefined,
+            emiStartDate: data.emiStartDate,
+            emiEndDate: data.emiEndDate,
+            accountId: data.accountId,
+            creditCardId: data.creditCardId,
+            creditCardInfo: data.creditCardInfo ? { ...data.creditCardInfo } : undefined,
             nextOccurrence: data.isRecurring && data.recurrenceType 
               ? calculateNextOccurrence(data.date, data.recurrenceType, data.recurrenceInterval || 1)
               : undefined,
@@ -435,6 +474,18 @@ export const expenseService = {
             updatedAt: new Date().toISOString()
           }
 
+          if (updatedExpense.actualAmount !== undefined) {
+            updatedExpense.actualAmount = Number(updatedExpense.actualAmount)
+          }
+
+          if (updatedExpense.emiAmount !== undefined) {
+            updatedExpense.emiAmount = Number(updatedExpense.emiAmount)
+          }
+
+          if (updatedExpense.creditCardInfo) {
+            updatedExpense.creditCardInfo = { ...updatedExpense.creditCardInfo }
+          }
+ 
           expenses[index] = updatedExpense
 
           // If this is a parent recurring transaction, update all child occurrences
@@ -460,6 +511,13 @@ export const expenseService = {
                   recurrenceType: updatedExpense.recurrenceType,
                   recurrenceInterval: updatedExpense.recurrenceInterval,
                   endDate: updatedExpense.endDate,
+                  actualAmount: updatedExpense.actualAmount,
+                  emiAmount: updatedExpense.emiAmount,
+                  emiStartDate: updatedExpense.emiStartDate,
+                  emiEndDate: updatedExpense.emiEndDate,
+                  accountId: updatedExpense.accountId,
+                  creditCardId: updatedExpense.creditCardId,
+                  creditCardInfo: updatedExpense.creditCardInfo ? { ...updatedExpense.creditCardInfo } : undefined,
                   // Keep child-specific fields
                   id: child.id,
                   date: child.date,

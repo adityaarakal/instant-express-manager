@@ -311,6 +311,233 @@
   min-height: 0;
 }
 
+.step-subtle {
+  margin-top: var(--spacing-xs);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.recurring-choice-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  width: 100%;
+  max-width: 720px;
+  justify-content: center;
+}
+
+.recurring-choice-option {
+  flex: 1 1 260px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-lg);
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  transition: all var(--transition-base);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.recurring-choice-option:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.recurring-choice-option.selected {
+  border-color: var(--primary-color);
+  background: rgba(99, 102, 241, 0.12);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+}
+
+.choice-icon {
+  font-size: 2rem;
+}
+
+.choice-title {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--text-primary);
+}
+
+.choice-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.form-group {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+}
+
+.form-group label {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.form-group .form-input,
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all var(--transition-base);
+  background: white;
+  box-shadow: var(--shadow-xs);
+}
+
+.form-group .form-input:focus,
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-sm), 0 0 0 4px rgba(99, 102, 241, 0.12);
+}
+
+.form-group-split {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  width: 100%;
+  max-width: 520px;
+}
+
+.form-group-split .form-group {
+  flex: 1 1 240px;
+}
+
+.account-options-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.account-option {
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  transition: all var(--transition-base);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.account-option:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.account-option.active {
+  border-color: var(--primary-color);
+  background: rgba(99, 102, 241, 0.12);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+}
+
+.account-option-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.account-option-name {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.account-option-type {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.account-option-balance {
+  font-weight: 600;
+  color: var(--success-color);
+  font-size: 0.95rem;
+}
+
+.account-option-description {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.account-option-empty {
+  padding: var(--spacing-lg);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-lg);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.credit-card-toggle {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.credit-card-toggle-option {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.credit-card-toggle-option:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.credit-card-toggle-option.active {
+  border-color: var(--primary-color);
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--primary-color);
+  box-shadow: var(--shadow-sm), 0 8px 16px rgba(99, 102, 241, 0.15);
+}
+
+.credit-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  width: 100%;
+  margin-top: var(--spacing-md);
+}
+
+.credit-card-details .form-group {
+  max-width: 520px;
+}
+
+.account-option-empty p {
+  margin: 0;
+}
+
 /* Focused Form Input */
 .form-group-focused {
   width: 100%;
@@ -1001,5 +1228,15 @@
 
   .amount-input-large {
     font-size: 2rem;
+  }
+}
+
+@media (max-width: 680px) {
+  .recurring-choice-option {
+    flex: 1 1 100%;
+  }
+
+  .form-group-split {
+    flex-direction: column;
   }
 }
