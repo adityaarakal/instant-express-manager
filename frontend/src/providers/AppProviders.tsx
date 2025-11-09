@@ -1,20 +1,24 @@
-import { PropsWithChildren } from 'react'
-import { CacheProvider } from '@emotion/react'
-import createCache from '@emotion/cache'
-import { CssBaseline, StyledEngineProvider, ThemeProvider } from '@mui/material'
-import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClient } from '../lib/queryClient'
-import { muiTheme } from '../theme'
+import { type ReactNode, useState } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const emotionCache = createCache({ key: 'mui', prepend: true })
+type AppProvidersProps = {
+  children: ReactNode;
+};
 
-export const AppProviders = ({ children }: PropsWithChildren) => (
-  <CacheProvider value={emotionCache}>
-    <StyledEngineProvider injectFirst>
-      <ThemeProvider theme={muiTheme}>
-        <CssBaseline />
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-      </ThemeProvider>
-    </StyledEngineProvider>
-  </CacheProvider>
-)
+function createQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        refetchOnWindowFocus: false,
+        retry: 1,
+      },
+    },
+  });
+}
+
+export function AppProviders({ children }: AppProvidersProps) {
+  const [queryClient] = useState(() => createQueryClient());
+
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+}
+

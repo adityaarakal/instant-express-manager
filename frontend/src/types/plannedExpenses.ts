@@ -1,91 +1,55 @@
-export type AllocationStatus = 'pending' | 'paid'
+export type AllocationStatus = 'pending' | 'paid';
 
-export type PlannedBucketKey =
-  | 'fixedFactor'
-  | 'savings'
-  | 'balance'
-  | 'investmentA'
-  | 'investmentB'
-  | 'expense'
-
-export interface PlannedBucketDefinition {
-  key: PlannedBucketKey
-  label: string
-  color: string
-  description?: string
+export interface Account {
+  id: string;
+  name: string;
+  type: 'salary' | 'savings' | 'credit-card' | 'investment' | 'other';
+  defaultFixedBalance?: number;
 }
 
-export interface BucketStatus {
-  key: PlannedBucketKey
-  status: AllocationStatus
+export interface Bucket {
+  id: string;
+  name: string;
+  color: string;
+  defaultStatus: AllocationStatus;
 }
 
-export type AccountType = 'bank' | 'wallet' | 'credit-card'
-
-export interface AccountDefinition {
-  id: string
-  name: string
-  type: AccountType
-  description?: string
-  defaultFixedBalance?: number
-}
-
-export interface AllocationAmounts {
-  fixedBalance: number
-  savings: number
-  balance: number
-  investmentA: number
-  investmentB: number
-  expense: number
-}
-
-export interface AllocationRecord extends AllocationAmounts {
-  id: string
-  accountId: string
-  notes?: string
-}
-
-export interface MonthDueDates {
-  fixedFactor?: string
-  savings?: string
-  balance?: string
-  investmentA?: string
-  investmentB?: string
-  expense?: string
+export interface Allocation {
+  id: string;
+  plannedMonthId: string;
+  accountId: string;
+  bucketId: string;
+  dueDate: string | null;
+  status: AllocationStatus;
+  fixedFactor: number;
+  fixedBalance: number;
+  savingsTarget: number;
+  actualBalance: number;
+  sip1: number;
+  sip2: number;
+  billAmount: number;
+  remainingCash: number;
 }
 
 export interface PlannedMonth {
-  id: string
-  monthStart: string // ISO string (YYYY-MM-01)
-  salary: number
-  fixedFactor: number
-  notes?: string
-  dueDates: MonthDueDates
-  bucketStatuses: BucketStatus[]
-  allocations: AllocationRecord[]
+  id: string;
+  monthStartDate: string;
+  salary: number;
+  notes?: string;
+  allocations: Allocation[];
 }
 
-export interface PlannedExpensesState {
-  accounts: AccountDefinition[]
-  buckets: PlannedBucketDefinition[]
-  months: PlannedMonth[]
-  selectedMonthId?: string
+export interface Reminder {
+  id: string;
+  allocationId: string;
+  dueDate: string;
+  isActive: boolean;
 }
 
-export interface PlannedExpensesActions {
-  seedSampleData: () => void
-  selectMonth: (monthId: string) => void
-  addMonth: (month: PlannedMonth) => void
-  updateMonth: (monthId: string, updater: (month: PlannedMonth) => PlannedMonth) => void
-  updateBucketStatus: (monthId: string, bucketKey: PlannedBucketKey, status: AllocationStatus) => void
-  updateAllocation: (
-    monthId: string,
-    allocationId: string,
-    updater: (allocation: AllocationRecord) => AllocationRecord
-  ) => void
-  replaceAccounts: (accounts: AccountDefinition[]) => void
-  replaceBuckets: (buckets: PlannedBucketDefinition[]) => void
-  reset: () => void
+export interface Settings {
+  theme: 'light' | 'dark' | 'system';
+  currency: string;
+  defaultBuckets: Bucket[];
+  fixedFactor: number;
 }
 
-export type PlannedExpensesStore = PlannedExpensesState & PlannedExpensesActions
