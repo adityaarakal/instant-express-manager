@@ -34,6 +34,15 @@ const Header: React.FC = () => {
               Dashboard
             </Link>
             <Link
+              to="/planned-expenses"
+              className={`nav-link ${
+                isActive('/planned-expenses') || location.pathname.startsWith('/planned-expenses') ? 'active' : ''
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Planned
+            </Link>
+            <Link
               to="/accounts"
               className={`nav-link ${isActive('/accounts') || location.pathname.startsWith('/accounts') ? 'active' : ''}`}
               onClick={() => setIsMenuOpen(false)}

@@ -1,0 +1,100 @@
+.planned-expenses-page {
+  min-height: 100%;
+  padding: var(--spacing-2xl) var(--spacing-xl);
+  background: var(--background-gradient-vibrant);
+}
+
+.planned-expenses-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xl);
+}
+
+.planned-expenses-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  align-items: flex-start;
+}
+
+.planned-expenses-month-select {
+  min-width: 220px;
+}
+
+.planned-expenses-empty-card {
+  border-radius: var(--radius-2xl);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow-xl);
+}
+
+.planned-expenses-card {
+  border-radius: var(--radius-2xl);
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.summary-card {
+  border-radius: var(--radius-2xl);
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.summary-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-glow);
+}
+
+.planned-expenses-table th,
+.planned-expenses-table td {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.planned-expenses-table th {
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.planned-expenses-total-row td {
+  font-weight: 600;
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.bucket-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  display: inline-block;
+}
+
+.bucket-status-chip {
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.due-date-card {
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.planned-expenses-divider {
+  margin: var(--spacing-md) 0 var(--spacing-lg);
+}
+
+@media (min-width: 768px) {
+  .planned-expenses-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
