@@ -30,10 +30,10 @@ This document lists every major task required to deliver the Planned Expenses au
 - Lock final interfaces in `src/types/plannedExpenses.ts` (SIP splits, adjustments, raw references). ✅
 - Capture bucket metadata (display names, colors, order) in a shared config file. ✅
 
-### Task 5 – Build Persistence & Stores
-- Implement Zustand stores (`usePlannedMonthsStore`, `usePlannerStore`, settings/accounts slices).
-- Add localforage persistence, hydration, and schema migration utilities.
-- Seed demo data from exported JSON; expose selectors for derived totals and reminders.
+### Task 5 – Build Persistence & Stores *(In Progress)*
+- ✅ Implemented core Zustand stores (`usePlannedMonthsStore`, `usePlannerStore`, `useSettingsStore`) with localforage persistence.
+- ✅ Added reusable storage helper for localforage-backed persistence.
+- Seed demo data from exported JSON; expose selectors for derived totals and reminders (next).
 
 ### Task 6 – Implement Formula Utilities
 - Translate Excel formulas into TypeScript helpers (`calculateRemaining`, `aggregateTotals`, `applyDueDateRule`, serial conversions).
