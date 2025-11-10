@@ -28,7 +28,7 @@ This document lists every major task required to deliver the Planned Expenses au
 
 ### Task 4 – Finalise TypeScript Models
 - Lock final interfaces in `src/types/plannedExpenses.ts` (SIP splits, adjustments, raw references). ✅
-- Capture bucket metadata (display names, colors, order) in a shared config file.
+- Capture bucket metadata (display names, colors, order) in a shared config file. ✅
 
 ### Task 5 – Build Persistence & Stores
 - Implement Zustand stores (`usePlannedMonthsStore`, `usePlannerStore`, settings/accounts slices).
