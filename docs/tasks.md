@@ -13,14 +13,14 @@ This document lists every major task required to deliver the Planned Expenses au
 
 ### Task 2 – Validate Export Parity *(In Progress)*
 - Spot-check totals (remaining cash, bucket sums, pending vs paid) against Excel for representative months.
-  - Bucket totals match for Jan–May 2023.
-  - Pending vs paid totals now align after treating blank status cells as “Pending”.
-  - Remaining cash aligns for 77/95 months; 18 months still need inflow/remaining backfill because source formulas resolve to `#REF!`.
+  - ✅ Bucket totals match for Jan–May 2023.
+  - ✅ Pending vs paid totals align once blank status cells default to “Pending”.
+  - ⏳ Remaining cash aligns for 77/95 months; 18 months (2023-04 → 2024-09) still need inflow/remaining backfill because source formulas resolve to `#REF!`.
 - Document discrepancies and remediation steps (missing projections, broken references, manual overrides).
 
-### Task 3 – Catalogue Supporting Data Sources
-- Identify required inputs from auxiliary sheets (`Projections`, `CC Outstanding`, EMIs, bills). (See `docs/planned-expenses-analysis/05-supporting-data-sources.md`.)
-- Decide what must be present for MVP vs deferred modules; record mapping notes.
+### Task 3 – Catalogue Supporting Data Sources *(Completed)*
+- ✅ Identify required inputs from auxiliary sheets (`Projections`, `CC Outstanding`, EMIs, bills`). See `docs/planned-expenses-analysis/05-supporting-data-sources.md`.
+- ✅ Decide what must be present for MVP vs deferred modules; mapping notes captured in the supporting data sources document.
 
 ---
 
