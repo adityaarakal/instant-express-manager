@@ -11,7 +11,7 @@ This document lists every major task required to deliver the Planned Expenses au
 - Detect `#REF!` cells and capture raw formulas for manual adjustments. ✅
 - Generate canonical JSON/CSV seeds under `data/seeds/` and snapshot results. ✅
 
-### Task 2 – Validate Export Parity *(In Progress)*
+### Task 2 – Validate Export Parity *(On Hold)*
 - Spot-check totals (remaining cash, bucket sums, pending vs paid) against Excel for representative months.
   - ✅ Bucket totals match for Jan–May 2023.
   - ✅ Pending vs paid totals align once blank status cells default to “Pending”.
