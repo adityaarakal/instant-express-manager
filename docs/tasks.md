@@ -26,7 +26,7 @@ This document lists every major task required to deliver the Planned Expenses au
 
 ## Phase 2 — Domain & State Layer
 
-### Task 4 – Finalise TypeScript Models
+### Task 4 – Finalise TypeScript Models *(Completed)*
 - Lock final interfaces in `src/types/plannedExpenses.ts` (SIP splits, adjustments, raw references). ✅
 - Capture bucket metadata (display names, colors, order) in a shared config file. ✅
 
