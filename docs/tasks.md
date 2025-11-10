@@ -6,13 +6,15 @@ This document lists every major task required to deliver the Planned Expenses au
 
 ## Phase 1 — Data Foundations
 
-### Task 1 – Finalise Workbook Export
-- Extend `scripts/export_planned_expenses.py` to cover all months without manual limits.
-- Detect `#REF!` cells and capture raw formulas for manual adjustments.
-- Generate canonical JSON/CSV seeds under `data/seeds/` and snapshot results.
+### Task 1 – Finalise Workbook Export *(Completed)*
+- Extend `scripts/export_planned_expenses.py` to cover all months without manual limits. ✅
+- Detect `#REF!` cells and capture raw formulas for manual adjustments. ✅
+- Generate canonical JSON/CSV seeds under `data/seeds/` and snapshot results. ✅
 
-### Task 2 – Validate Export Parity
+### Task 2 – Validate Export Parity *(In Progress)*
 - Spot-check totals (remaining cash, bucket sums, pending vs paid) against Excel for representative months.
+  - Bucket totals match for Jan–May 2023; remaining cash aligns for 77/95 months (others blocked by `#REF!`).
+  - Pending vs paid totals need rule clarification because Excel leaves some status cells blank.
 - Document discrepancies and remediation steps (missing projections, broken references, manual overrides).
 
 ### Task 3 – Catalogue Supporting Data Sources

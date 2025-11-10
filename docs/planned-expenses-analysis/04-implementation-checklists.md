@@ -6,16 +6,16 @@ This document provides detailed checklists to track execution across data migrat
 
 ## 1. Data Migration Checklist
 
-- [ ] Install Python dependencies (`openpyxl`) via project-local environment (`.pydeps`).
-- [ ] Implement `scripts/export_planned_expenses.py`.
-- [ ] Export Jan–Jun 2023 monthly blocks to `data/seeds/planned-expenses.json`.
+- [x] Install Python dependencies (`openpyxl`) via project-local environment (`.pydeps`).
+- [x] Implement `scripts/export_planned_expenses.py`.
+- [x] Export Jan–Jun 2023 monthly blocks to `data/seeds/planned-expenses.json`.
 - [ ] Validate totals against Excel:
-  - [ ] Remaining cash per account.
-  - [ ] Bucket totals (Balance, Mutual Funds, CC Bill, Maintenance).
-  - [ ] Pending vs paid sums.
-- [ ] Catalogue all `#REF!` occurrences and map to source data.
+  - [ ] Remaining cash per account _(matches for 77/95 months; remaining blocked by `#REF!` values to be backfilled)_.
+  - [x] Bucket totals (Balance, Mutual Funds, CC Bill, Maintenance).
+  - [ ] Pending vs paid sums _(Excel leaves balance column status blank; exporter defaults to `Pending`—needs reconciliation)_.
+- [x] Catalogue all `#REF!` occurrences and map to source data.
 - [ ] Document manual adjustments and rationale.
-- [ ] Store conversion utility for Excel serial → ISO date.
+- [x] Store conversion utility for Excel serial → ISO date.
 - [ ] Create README instructions for rerunning export.
 
 ---
