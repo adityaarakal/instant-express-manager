@@ -19,7 +19,7 @@ This document lists every major task required to deliver the Planned Expenses au
 - Document discrepancies and remediation steps (missing projections, broken references, manual overrides).
 
 ### Task 3 – Catalogue Supporting Data Sources
-- Identify required inputs from auxiliary sheets (`Projections`, `CC Outstanding`, EMIs, bills).
+- Identify required inputs from auxiliary sheets (`Projections`, `CC Outstanding`, EMIs, bills). (See `docs/planned-expenses-analysis/05-supporting-data-sources.md`.)
 - Decide what must be present for MVP vs deferred modules; record mapping notes.
 
 ---
