@@ -18,6 +18,7 @@ This document provides detailed checklists to track execution across data migrat
 - [x] Store conversion utility for Excel serial → ISO date.
 - [ ] Create README instructions for rerunning export.
 - [ ] Backfill inflow & remaining cash values for `#REF!` months (18 instances) and re-run remaining cash parity.
+  - Affected months: 2023-04-01 → 2024-09-01 (inclusive, 18 consecutive months).
 
 ---
 
