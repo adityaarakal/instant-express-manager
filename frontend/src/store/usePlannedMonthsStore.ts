@@ -2,18 +2,13 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
 import type {
-  AllocationStatus,
   ManualAdjustment,
   PlannedMonthSnapshot,
   Reminder,
 } from '../types/plannedExpenses';
 import { getLocalforageStorage } from '../utils/storage';
-
-type BucketTotals = {
-  pending: Record<string, number>;
-  paid: Record<string, number>;
-  all: Record<string, number>;
-};
+import { calculateBucketTotals, type BucketTotals } from '../utils/totals';
+import { plannedMonthsSeed } from '../data/plannedMonthsSeed';
 
 type PlannedMonthsState = {
   months: PlannedMonthSnapshot[];
@@ -31,43 +26,12 @@ const DEFAULT_STATE: Omit<PlannedMonthsState, keyof PlannedMonthsState> = {} as 
 
 const storage = getLocalforageStorage('planned-months');
 
-const hydrateTotals = (
-  month: PlannedMonthSnapshot,
-): BucketTotals => {
-  const totals: BucketTotals = {
-    pending: {},
-    paid: {},
-    all: {},
-  };
-
-  for (const account of month.accounts) {
-    for (const [bucketId, amount] of Object.entries(account.bucketAmounts)) {
-      if (amount === null || amount === undefined) {
-        continue;
-      }
-
-      const status: AllocationStatus =
-        month.statusByBucket[bucketId] ?? 'pending';
-
-      totals.all[bucketId] = (totals.all[bucketId] ?? 0) + amount;
-
-      if (status === 'pending') {
-        totals.pending[bucketId] = (totals.pending[bucketId] ?? 0) + amount;
-      } else if (status === 'paid') {
-        totals.paid[bucketId] = (totals.paid[bucketId] ?? 0) + amount;
-      }
-    }
-  }
-
-  return totals;
-};
-
 export const usePlannedMonthsStore = create<PlannedMonthsState>()(
   devtools(
     persist(
       (set, get) => ({
-        months: [],
-        lastHydratedAt: null,
+        months: plannedMonthsSeed,
+        lastHydratedAt: new Date().toISOString(),
         seedMonths: (months) =>
           set(() => ({
             months,
@@ -127,7 +91,7 @@ export const usePlannedMonthsStore = create<PlannedMonthsState>()(
             };
           }
 
-          return hydrateTotals(month);
+          return calculateBucketTotals(month);
         },
         getReminders: (monthId) => {
           const month = get().months.find((item) => item.id === monthId);
