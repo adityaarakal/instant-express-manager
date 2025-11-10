@@ -13,8 +13,9 @@ This document lists every major task required to deliver the Planned Expenses au
 
 ### Task 2 – Validate Export Parity *(In Progress)*
 - Spot-check totals (remaining cash, bucket sums, pending vs paid) against Excel for representative months.
-  - Bucket totals match for Jan–May 2023; remaining cash aligns for 77/95 months (others blocked by `#REF!`).
-  - Pending vs paid totals need rule clarification because Excel leaves some status cells blank.
+  - Bucket totals match for Jan–May 2023.
+  - Pending vs paid totals now align after treating blank status cells as “Pending”.
+  - Remaining cash aligns for 77/95 months; 18 months still need inflow/remaining backfill because source formulas resolve to `#REF!`.
 - Document discrepancies and remediation steps (missing projections, broken references, manual overrides).
 
 ### Task 3 – Catalogue Supporting Data Sources

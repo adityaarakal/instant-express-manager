@@ -10,13 +10,14 @@ This document provides detailed checklists to track execution across data migrat
 - [x] Implement `scripts/export_planned_expenses.py`.
 - [x] Export Jan–Jun 2023 monthly blocks to `data/seeds/planned-expenses.json`.
 - [ ] Validate totals against Excel:
-  - [ ] Remaining cash per account _(matches for 77/95 months; remaining blocked by `#REF!` values to be backfilled)_.
+  - [ ] Remaining cash per account _(matches for 77/95 months; 18 months still require inflow/remaining backfill due to `#REF!` formulas)_.
   - [x] Bucket totals (Balance, Mutual Funds, CC Bill, Maintenance).
-  - [ ] Pending vs paid sums _(Excel leaves balance column status blank; exporter defaults to `Pending`—needs reconciliation)_.
+  - [x] Pending vs paid sums _(parity confirmed when blank status cells default to “Pending”)._
 - [x] Catalogue all `#REF!` occurrences and map to source data.
 - [ ] Document manual adjustments and rationale.
 - [x] Store conversion utility for Excel serial → ISO date.
 - [ ] Create README instructions for rerunning export.
+- [ ] Backfill inflow & remaining cash values for `#REF!` months (18 instances) and re-run remaining cash parity.
 
 ---
 
