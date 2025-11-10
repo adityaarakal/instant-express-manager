@@ -37,9 +37,9 @@ This document lists every major task required to deliver the Planned Expenses au
 - ✅ Added reusable storage helper for localforage-backed persistence.
 - ✅ Seeded demo data from exported JSON and exposed selectors for derived totals/reminders.
 
-### Task 6 – Implement Formula Utilities
-- Translate Excel formulas into TypeScript helpers (`calculateRemaining`, `aggregateTotals`, `applyDueDateRule`, serial conversions).
-- Cover utilities with Vitest unit tests using exported fixtures.
+### Task 6 – Implement Formula Utilities *(Completed)*
+- ✅ Added formula helpers (`calculateRemainingCash`, `sumBucketByStatus`, `applyDueDateRule`, `convertExcelSerialToIso`) in `src/utils/formulas.ts`.
+- ✅ Added derived totals helper and tests with Vitest fixtures.
 
 ---
 
