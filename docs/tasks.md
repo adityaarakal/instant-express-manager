@@ -45,9 +45,9 @@ This document lists every major task required to deliver the Planned Expenses au
 
 ## Phase 3 — UI Foundations
 
-### Task 7 – Complete Layout & Navigation
-- Finish the shared layout shell, theming, and navigation scaffolding.
-- Ensure responsive behaviour and route placeholders for upcoming features.
+### Task 7 – Complete Layout & Navigation *(Completed)*
+- ✅ Upgraded responsive layout with mobile drawer, desktop nav, and theme toggle.
+- ✅ Connected the MUI theme to persisted settings with light/dark/system support.
 
 ### Task 8 – Planner Month View (Read-Only)
 - Render month header, status ribbon, account table, and totals footer from seed data.

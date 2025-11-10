@@ -1,43 +1,56 @@
 import { createTheme } from '@mui/material/styles';
+import type { PaletteMode } from '@mui/material';
 
-export const appTheme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#2563eb', // Tailwind blue-600
+export const createAppTheme = (mode: PaletteMode = 'light') =>
+  createTheme({
+    palette: {
+      mode,
+      primary: {
+        main: '#2563eb',
+      },
+      secondary: {
+        main: '#9333ea',
+      },
+      background: {
+        default: mode === 'dark' ? '#0f172a' : '#f8fafc',
+        paper: mode === 'dark' ? '#111827' : '#ffffff',
+      },
     },
-    secondary: {
-      main: '#9333ea', // Tailwind purple-600
+    components: {
+      MuiAppBar: {
+        defaultProps: {
+          color: 'default',
+        },
+        styleOverrides: {
+          root: {
+            backgroundImage: 'none',
+          },
+        },
+      },
     },
-    background: {
-      default: '#f8fafc', // Tailwind slate-50
-      paper: '#ffffff',
+    typography: {
+      fontFamily: [
+        'Inter',
+        'system-ui',
+        '-apple-system',
+        'BlinkMacSystemFont',
+        '"Segoe UI"',
+        'sans-serif',
+      ].join(','),
+      h1: {
+        fontSize: '2.75rem',
+        fontWeight: 600,
+      },
+      h2: {
+        fontSize: '2.25rem',
+        fontWeight: 600,
+      },
+      h3: {
+        fontSize: '1.75rem',
+        fontWeight: 600,
+      },
     },
-  },
-  typography: {
-    fontFamily: [
-      'Inter',
-      'system-ui',
-      '-apple-system',
-      'BlinkMacSystemFont',
-      '"Segoe UI"',
-      'sans-serif',
-    ].join(','),
-    h1: {
-      fontSize: '2.75rem',
-      fontWeight: 600,
+    shape: {
+      borderRadius: 12,
     },
-    h2: {
-      fontSize: '2.25rem',
-      fontWeight: 600,
-    },
-    h3: {
-      fontSize: '1.75rem',
-      fontWeight: 600,
-    },
-  },
-  shape: {
-    borderRadius: 12,
-  },
-});
-
+  });
