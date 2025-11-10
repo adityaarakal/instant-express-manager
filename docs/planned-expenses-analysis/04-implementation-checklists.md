@@ -4,7 +4,9 @@ This document provides detailed checklists to track execution across data migrat
 
 ---
 
-## 1. Data Migration Checklist
+## 1. Data Migration Checklist *(One-time workbook reference)*
+
+These items were used to bootstrap the app from the legacy spreadsheet. They can stay parked unless we explicitly revisit historical imports.
 
 - [x] Install Python dependencies (`openpyxl`) via project-local environment (`.pydeps`).
 - [x] Implement `scripts/export_planned_expenses.py`.
@@ -14,10 +16,10 @@ This document provides detailed checklists to track execution across data migrat
   - [x] Bucket totals (Balance, Mutual Funds, CC Bill, Maintenance).
   - [x] Pending vs paid sums _(parity confirmed when blank status cells default to “Pending”)._
 - [x] Catalogue all `#REF!` occurrences and map to source data.
-- [ ] Document manual adjustments and rationale.
+- [ ] Document manual adjustments and rationale (optional/backlog).
 - [x] Store conversion utility for Excel serial → ISO date.
-- [ ] Create README instructions for rerunning export.
-- [ ] Backfill inflow & remaining cash values for `#REF!` months (18 instances) and re-run remaining cash parity.
+- [ ] Create README instructions for rerunning export (optional/backlog).
+- [ ] Backfill inflow & remaining cash values for `#REF!` months (18 instances) and re-run remaining cash parity *(optional, parked for post-MVP)*.
   - Affected months: 2023-04-01 → 2024-09-01 (inclusive, 18 consecutive months).
 
 ---

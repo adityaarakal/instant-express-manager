@@ -1,6 +1,6 @@
 # Supporting Data Sources Inventory
 
-This document enumerates every workbook sheet that feeds the `Planned Expenses` tab, the fields we need to replicate in the React application, and whether the data is required for the MVP. Use it to guide Task 3 (“Catalogue Supporting Data Sources”) and future migration scripts.
+This document enumerates every workbook sheet that fed the legacy `Planned Expenses` spreadsheet. It is kept as reference material while we finish reproducing the workflow in the React application. The new app is the source of truth going forward; Excel import/export is optional.
 
 ---
 

@@ -1,5 +1,7 @@
 # Planned Expenses React App – Execution Tasks
 
+> **Note:** The original Excel workbook now serves only as a design reference. Ongoing data entry and management will happen inside this application. Any Excel export/import workflows are optional backlog items, kept for historical parity but not required for daily use.
+
 This document lists every major task required to deliver the Planned Expenses automation project. Tasks are ordered sequentially; each phase builds on the previous one. Work through them in order unless priorities change explicitly.
 
 ---
@@ -59,14 +61,14 @@ This document lists every major task required to deliver the Planned Expenses au
 
 ## Phase 4 — Import/Export & Sync
 
-### Task 10 – Import Flow
-- Build workbook upload UI (SheetJS or script invocation).
-- Map imported data to internal stores; surface warnings for unknown mappings or `#REF!`.
-- Provide preview/diff before commit.
+### Task 10 – Import Flow *(Future / Optional)*
+- (Optional) Build workbook upload UI if historical spreadsheets ever need to be imported again.
+- (Optional) Map imported data to internal stores; surface warnings for unknown mappings or `#REF!`.
+- (Optional) Provide preview/diff before commit.
 
-### Task 11 – Export & Backups
-- Allow exporting months back to JSON/CSV for backups.
-- Document round-trip procedure (Excel → app → export).
+### Task 11 – Export & Backups *(Future / Optional)*
+- Allow exporting months to JSON/CSV for backups or offline storage.
+- Document round-trip procedure (App → backup) if needed.
 
 ---
 
