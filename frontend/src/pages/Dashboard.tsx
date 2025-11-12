@@ -4,13 +4,16 @@ import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import SavingsIcon from '@mui/icons-material/Savings';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import { usePlannedMonthsStore } from '../store/usePlannedMonthsStore';
+import { usePlannerStore } from '../store/usePlannerStore';
 import { calculateDashboardMetrics } from '../utils/dashboard';
 import { SummaryCard } from '../components/dashboard/SummaryCard';
 import { DueSoonReminders } from '../components/dashboard/DueSoonReminders';
 import { SavingsTrendChart } from '../components/dashboard/SavingsTrendChart';
+import { BudgetVsActual } from '../components/dashboard/BudgetVsActual';
 
 export function Dashboard() {
   const { months } = usePlannedMonthsStore();
+  const { activeMonthId } = usePlannerStore();
 
   const metrics = useMemo(() => {
     if (months.length === 0) {
@@ -72,6 +75,8 @@ export function Dashboard() {
       <DueSoonReminders reminders={metrics.upcomingDueDates} />
 
       <SavingsTrendChart trend={metrics.savingsTrend} />
+
+      <BudgetVsActual monthId={activeMonthId} />
     </Stack>
   );
 }
