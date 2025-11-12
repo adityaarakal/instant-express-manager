@@ -248,7 +248,7 @@ git push
 - [x] Export functionality (JSON/CSV) ✅
 - [x] Import flow for Excel workbooks ✅
 - [x] Manual adjustments UI ✅
-- [ ] Recurring allocations
+- [x] Recurring allocations ✅
 - [ ] Budget vs actual comparisons
 
 ## License
