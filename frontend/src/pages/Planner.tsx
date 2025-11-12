@@ -21,6 +21,7 @@ import { AccountTable } from '../components/planner/AccountTable';
 import { TotalsFooter } from '../components/planner/TotalsFooter';
 import { ImportDialog } from '../components/planner/ImportDialog';
 import { ExportDialog } from '../components/planner/ExportDialog';
+import { ManualAdjustmentsDialog } from '../components/planner/ManualAdjustmentsDialog';
 import type { PlannedMonthSnapshot } from '../types/plannedExpenses';
 
 const formatMonthDate = (dateString: string): string => {
@@ -36,6 +37,7 @@ export function Planner() {
   const { activeMonthId, setActiveMonth } = usePlannerStore();
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [adjustmentsDialogOpen, setAdjustmentsDialogOpen] = useState(false);
 
   // Auto-select first month if none selected
   useEffect(() => {
@@ -117,7 +119,10 @@ export function Planner() {
 
       {activeMonth && totals ? (
         <Stack spacing={3}>
-          <MonthViewHeader month={activeMonth} />
+          <MonthViewHeader
+            month={activeMonth}
+            onAdjustmentsClick={() => setAdjustmentsDialogOpen(true)}
+          />
           <StatusRibbon month={activeMonth} />
           <AccountTable month={activeMonth} />
           <TotalsFooter month={activeMonth} totals={totals} />
@@ -140,6 +145,13 @@ export function Planner() {
         onClose={() => setExportDialogOpen(false)}
         months={months}
       />
+      {activeMonth && (
+        <ManualAdjustmentsDialog
+          open={adjustmentsDialogOpen}
+          onClose={() => setAdjustmentsDialogOpen(false)}
+          month={activeMonth}
+        />
+      )}
     </Stack>
   );
 }

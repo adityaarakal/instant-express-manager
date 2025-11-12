@@ -1,12 +1,14 @@
-import { Box, Chip, Paper, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Chip, Paper, Stack, TextField, Typography } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import TuneIcon from '@mui/icons-material/Tune';
 import type { PlannedMonthSnapshot } from '../../types/plannedExpenses';
 import { usePlannedMonthsStore } from '../../store/usePlannedMonthsStore';
 import { toNumber } from '../../utils/formulas';
 
 interface MonthViewHeaderProps {
   month: PlannedMonthSnapshot;
+  onAdjustmentsClick?: () => void;
 }
 
 const formatCurrency = (value: number | null | undefined): string => {
@@ -29,8 +31,13 @@ const formatMonthDate = (dateString: string): string => {
   }).format(date);
 };
 
-export function MonthViewHeader({ month }: MonthViewHeaderProps) {
+export function MonthViewHeader({ month, onAdjustmentsClick }: MonthViewHeaderProps) {
   const { updateMonthMetadata } = usePlannedMonthsStore();
+  
+  const totalAdjustments = (month.manualAdjustments ?? []).reduce(
+    (sum, adj) => sum + adj.amount,
+    0,
+  );
 
   const handleInflowChange = (value: string) => {
     const numValue = toNumber(value);
@@ -99,6 +106,25 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
               color="error"
               variant="outlined"
             />
+          )}
+          {onAdjustmentsClick && (
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<TuneIcon />}
+              onClick={onAdjustmentsClick}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              Adjustments
+              {totalAdjustments !== 0 && (
+                <Chip
+                  label={formatCurrency(Math.abs(totalAdjustments))}
+                  size="small"
+                  color={totalAdjustments >= 0 ? 'success' : 'error'}
+                  sx={{ ml: 1, height: 20 }}
+                />
+              )}
+            </Button>
           )}
         </Stack>
       </Stack>

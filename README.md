@@ -247,7 +247,7 @@ git push
 - [x] Visual charts for savings trends (using recharts) ✅
 - [x] Export functionality (JSON/CSV) ✅
 - [x] Import flow for Excel workbooks ✅
-- [ ] Manual adjustments UI
+- [x] Manual adjustments UI ✅
 - [ ] Recurring allocations
 - [ ] Budget vs actual comparisons
 
