@@ -81,9 +81,13 @@ This document lists every major task required to deliver the Planned Expenses au
 
 ## Phase 5 — Insights & Settings
 
-### Task 12 – Dashboard Metrics
-- Implement summary cards (pending allocations, savings progress, CC bills).
-- Add due-soon reminders and trend charts powered by aggregated data.
+### Task 12 – Dashboard Metrics *(Completed)*
+- ✅ Implement summary cards (pending allocations, savings progress, CC bills).
+- ✅ Add due-soon reminders and trend charts powered by aggregated data.
+- ✅ Created `calculateDashboardMetrics` utility to aggregate data across all months.
+- ✅ Built `SummaryCard` component for displaying key metrics with icons.
+- ✅ Built `DueSoonReminders` component showing upcoming due dates with urgency indicators.
+- ✅ Added savings trend summary with totals and averages.
 
 ### Task 13 – Settings & Configuration
 - Manage currency, default fixed factor, bucket definitions, and theme toggles.
