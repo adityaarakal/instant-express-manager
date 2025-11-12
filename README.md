@@ -244,9 +244,9 @@ git push
 
 ## Roadmap
 
-- [ ] Visual charts for savings trends (using recharts)
-- [ ] Export functionality (JSON/CSV)
-- [ ] Import flow for Excel workbooks
+- [x] Visual charts for savings trends (using recharts) ✅
+- [x] Export functionality (JSON/CSV) ✅
+- [x] Import flow for Excel workbooks ✅
 - [ ] Manual adjustments UI
 - [ ] Recurring allocations
 - [ ] Budget vs actual comparisons
