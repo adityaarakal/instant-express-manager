@@ -2,6 +2,7 @@ import { useMemo, useCallback, memo } from 'react';
 import {
   Box,
   Paper,
+  Stack,
   Table,
   TableBody,
   TableCell,

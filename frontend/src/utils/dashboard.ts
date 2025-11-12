@@ -38,7 +38,7 @@ export const calculateDashboardMetrics = (
     const monthDate = new Date(month.monthStart);
 
     // Sum pending allocations across all buckets
-    for (const [bucketId, amount] of Object.entries(totals.pending)) {
+    for (const amount of Object.values(totals.pending)) {
       totalPendingAllocations += amount;
     }
 

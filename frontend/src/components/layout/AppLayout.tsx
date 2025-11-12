@@ -34,9 +34,9 @@ type AppLayoutProps = {
 const drawerWidth = 240;
 
 const navItems = [
-  { label: 'Dashboard', to: '/', icon: <DashboardOutlinedIcon fontSize="small" />, end: true },
-  { label: 'Planner', to: '/planner', icon: <EventNoteOutlinedIcon fontSize="small" /> },
-  { label: 'Settings', to: '/settings', icon: <SettingsOutlinedIcon fontSize="small" /> },
+  { label: 'Dashboard', to: '/', icon: <DashboardOutlinedIcon fontSize="small" />, end: true as const },
+  { label: 'Planner', to: '/planner', icon: <EventNoteOutlinedIcon fontSize="small" />, end: false as const },
+  { label: 'Settings', to: '/settings', icon: <SettingsOutlinedIcon fontSize="small" />, end: false as const },
 ] as const;
 
 export function AppLayout({ children }: AppLayoutProps) {
@@ -58,11 +58,11 @@ export function AppLayout({ children }: AppLayoutProps) {
       </Toolbar>
       <Divider />
       <List sx={{ px: 1 }}>
-        {navItems.map(({ label, to, icon, end }) => (
+        {navItems.map(({ label, to, icon, end: navEnd }) => (
           <NavLink
             key={label}
             to={to}
-            end={end}
+            end={navEnd}
             style={{ textDecoration: 'none', color: 'inherit' }}
           >
             {({ isActive }) => (
@@ -122,11 +122,11 @@ export function AppLayout({ children }: AppLayoutProps) {
           </Stack>
           <Stack direction="row" spacing={1} alignItems="center">
             {isDesktop &&
-              navItems.map(({ label, to, end }) => (
+              navItems.map(({ label, to, end: navEnd }) => (
                 <NavLink
                   key={label}
                   to={to}
-                  end={end}
+                  end={navEnd}
                   style={{ textDecoration: 'none' }}
                 >
                   {({ isActive }) => (

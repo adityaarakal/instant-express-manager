@@ -44,7 +44,7 @@ export const exportToCSV = (months: PlannedMonthSnapshot[]): string => {
         '',
         '',
         '',
-        ...bucketIds.map(() => ''),
+        ...Array.from(bucketIds).map(() => ''),
       ];
       rows.push(row);
     } else {
@@ -57,7 +57,7 @@ export const exportToCSV = (months: PlannedMonthSnapshot[]): string => {
           String(account.fixedBalance ?? ''),
           String(account.savingsTransfer ?? ''),
           String(account.remainingCash ?? ''),
-          ...bucketIds.map((bucketId) => String(account.bucketAmounts[bucketId] ?? '')),
+          ...Array.from(bucketIds).map((bucketId) => String(account.bucketAmounts[bucketId] ?? '')),
         ];
         rows.push(row);
       });

@@ -41,7 +41,7 @@ type PlannedMonthsState = {
   getReminders: (monthId: string) => Reminder[];
 };
 
-const DEFAULT_STATE: Omit<PlannedMonthsState, keyof PlannedMonthsState> = {} as never;
+// Removed unused DEFAULT_STATE
 
 const storage = getLocalforageStorage('planned-months');
 
@@ -87,14 +87,17 @@ export const usePlannedMonthsStore = create<PlannedMonthsState>()(
                 ...month,
                 manualAdjustments: [
                   ...existing,
-                  ...adjustments.map((adjustment) => ({
-                    id:
-                      adjustment.id ??
-                      (typeof crypto !== 'undefined' && 'randomUUID' in crypto
-                        ? crypto.randomUUID()
-                        : `adj_${Math.random().toString(36).slice(2)}`),
-                    ...adjustment,
-                  })),
+                  ...adjustments.map((adjustment) => {
+                    const { id: existingId, ...rest } = adjustment;
+                    return {
+                      id:
+                        existingId ??
+                        (typeof crypto !== 'undefined' && 'randomUUID' in crypto
+                          ? crypto.randomUUID()
+                          : `adj_${Math.random().toString(36).slice(2)}`),
+                      ...rest,
+                    };
+                  }),
                 ],
               };
             }),
@@ -247,7 +250,7 @@ export const usePlannedMonthsStore = create<PlannedMonthsState>()(
         name: 'planned-months',
         storage,
         version: 1,
-        onRehydrateStorage: () => (state, error) => {
+        onRehydrateStorage: () => (_state, error) => {
           if (error) {
             console.error('Error rehydrating planned months store:', error);
           }

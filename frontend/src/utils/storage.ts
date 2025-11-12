@@ -1,9 +1,9 @@
 import localforage from 'localforage';
-import { createJSONStorage, type StateStorage } from 'zustand/middleware';
+import { createJSONStorage } from 'zustand/middleware';
 
-const storageInstances: Record<string, StateStorage> = {};
+const storageInstances: Record<string, ReturnType<typeof createJSONStorage>> = {};
 
-export const getLocalforageStorage = (name: string): StateStorage => {
+export const getLocalforageStorage = (name: string) => {
   if (storageInstances[name]) {
     return storageInstances[name];
   }

@@ -29,7 +29,7 @@ const storage = getLocalforageStorage('planner-settings');
 export const useSettingsStore = create<SettingsState>()(
   devtools(
     persist(
-      (set, get) => ({
+      (set) => ({
         settings: createDefaultSettings(),
         updateSettings: (partial) =>
           set((state) => ({
