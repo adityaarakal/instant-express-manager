@@ -1,37 +1,54 @@
-# Expense Manager
+# Planned Expenses Manager
 
-A React PWA TypeScript application for tracking and managing personal expenses using localStorage.
+A React PWA (Progressive Web App) that replicates and enhances the functionality of the "Planned Expenses" Excel spreadsheet. This application serves as the primary system for managing monthly expense allocations, tracking savings, and monitoring bucket-based financial planning.
 
 ## Features
 
-- 🚀 Progressive Web App (PWA) with offline support
-- 📱 Fully responsive design for mobile and desktop
-- 💰 Monetization via ads and in-app purchases
-- 💾 LocalStorage-based data persistence (no backend required)
-- 🎨 Modern pixel-perfect UI/UX with responsive layouts
-- 📊 Expense tracking by categories
-- 📈 Analytics and insights dashboard
-- 🏷️ Tags and categorization system
+- 📅 **Monthly Planning**: Plan and manage expenses across multiple months with full historical data
+- 💰 **Account Allocations**: Allocate funds across multiple accounts (salary, savings, credit cards)
+- 🪣 **Bucket System**: Organize expenses by buckets (Balance, Savings, Mutual Funds, CC Bills, Maintenance)
+- ✅ **Status Tracking**: Track pending vs paid status for each allocation
+- 📊 **Dashboard Metrics**: View aggregated metrics including pending allocations, savings progress, and CC bills
+- 🔔 **Due Date Reminders**: Get reminders for upcoming due dates within 30 days
+- ⚙️ **Configurable Settings**: Customize currency, fixed factor, bucket definitions, and theme
+- 💾 **Offline Support**: Full PWA capabilities with offline data persistence using IndexedDB
+- 🎨 **Modern UI**: Material UI components with dark/light theme support
 
 ## Project Structure
 
 ```
-expense-manager/
+instant-express-manager/
 ├── frontend/                    # React PWA TypeScript frontend
 │   ├── src/
 │   │   ├── components/         # Reusable React components
+│   │   │   ├── dashboard/      # Dashboard components
+│   │   │   ├── layout/         # Layout components (AppBar, ThemeToggle)
+│   │   │   └── planner/        # Planner components (MonthView, AccountTable, etc.)
 │   │   ├── pages/              # Page components
-│   │   │   ├── Dashboard/     # Dashboard with stats
-│   │   │   ├── Expenses/      # Expenses list
-│   │   │   ├── CreateExpense/ # Add expense form
-│   │   │   └── ExpenseDetail/ # Expense details
-│   │   ├── services/           # Service layer (localStorage)
-│   │   └── App.tsx             # Main app component
+│   │   │   ├── Dashboard.tsx   # Dashboard with metrics
+│   │   │   ├── Planner.tsx     # Month planner view
+│   │   │   └── Settings.tsx    # Settings page
+│   │   ├── store/              # Zustand stores
+│   │   │   ├── usePlannedMonthsStore.ts
+│   │   │   ├── usePlannerStore.ts
+│   │   │   └── useSettingsStore.ts
+│   │   ├── utils/              # Utility functions
+│   │   │   ├── formulas.ts     # Excel formula translations
+│   │   │   ├── totals.ts       # Bucket totals calculations
+│   │   │   └── dashboard.ts    # Dashboard metrics
+│   │   ├── types/              # TypeScript types
+│   │   ├── config/             # Configuration (buckets, etc.)
+│   │   └── data/               # Seed data
 │   ├── public/                 # Static assets
-│   ├── index.html              # HTML entry point
-│   ├── vite.config.ts          # Vite configuration
 │   └── package.json
-├── package.json                 # Root workspace configuration
+├── scripts/                    # Python scripts for data migration
+│   └── export_planned_expenses.py
+├── data/                       # Seed data
+│   └── seeds/
+│       └── planned-expenses.json
+├── docs/                       # Documentation
+│   ├── tasks.md                # Task tracker
+│   └── planned-expenses-analysis/
 └── README.md
 ```
 
@@ -40,89 +57,207 @@ expense-manager/
 ### Prerequisites
 
 - Node.js 18+ and npm
+- Python 3.8+ (optional, for data export scripts)
 
 ### Installation
 
-1. Install all dependencies:
+1. Clone the repository:
 ```bash
-npm run install:all
+git clone <repository-url>
+cd instant-express-manager
 ```
 
-2. Start development server:
+2. Install dependencies:
+```bash
+cd frontend
+npm install
+```
+
+3. Start development server:
 ```bash
 npm run dev
 ```
 
-This will start the frontend dev server on `http://localhost:5173` (or configured port).
+The app will be available at `http://localhost:5173`
 
 ### Building for Production
 
 ```bash
+cd frontend
 npm run build
 ```
+
+The production build will be in `frontend/dist/`. For GitHub Pages deployment, copy the contents to the `docs/` folder in the repo root.
+
+## Data Import
+
+### Initial Data Migration
+
+The app comes pre-seeded with data exported from the Excel spreadsheet. The seed data is located in:
+- `data/seeds/planned-expenses.json`
+- Loaded automatically via `frontend/src/data/plannedMonthsSeed.ts`
+
+### Exporting from Excel
+
+To export new data from the Excel spreadsheet:
+
+```bash
+cd scripts
+python3 export_planned_expenses.py
+```
+
+This will generate/update `data/seeds/planned-expenses.json` with all months from the spreadsheet.
+
+## Usage
+
+### Dashboard
+
+The Dashboard provides an overview of your financial planning:
+- **Pending Allocations**: Total pending amounts across all buckets
+- **Total Savings**: Aggregated savings transfers across all months
+- **Credit Card Bills**: Total CC bill amounts
+- **Upcoming Due Dates**: Reminders for due dates within the next 30 days
+- **Savings Trend**: Monthly savings summary for the last 12 months
+
+### Planner
+
+The Planner allows you to:
+- **Select a Month**: Use the dropdown to navigate between months
+- **View Month Details**: See month header with inflow and fixed factor
+- **Toggle Status**: Click bucket status chips to toggle between Pending/Paid
+- **Edit Allocations**: Click on any editable cell (Fixed, Savings, Bucket amounts) to edit inline
+- **View Totals**: See bucket totals broken down by pending/paid status
+
+### Settings
+
+Configure your preferences:
+- **Theme**: Light, Dark, or System preference
+- **Currency**: Select base currency (INR, USD, EUR, GBP)
+- **Default Fixed Factor**: Set default fixed factor for new months
+- **Bucket Definitions**: Customize bucket names and default statuses
+- **Reminders**: Enable/disable due date reminders
+
+## Data Storage
+
+All data is stored locally in the browser using:
+- **IndexedDB** (via localforage): For planned months, planner state, and settings
+- **Storage Keys**:
+  - `planned-months`: Planned months data
+  - `planner-preferences`: UI preferences (active month, filters)
+  - `planner-settings`: User settings (theme, currency, etc.)
+
+Data persists across page refreshes and browser sessions. No backend required.
 
 ## Tech Stack
 
 ### Frontend
-- React 18+
-- TypeScript
-- Vite (build tool)
-- PWA capabilities (Service Worker, Web App Manifest)
-- Responsive CSS with modern design
-- localStorage for data persistence
+- **React 18+** with TypeScript
+- **Vite** for build tooling
+- **Material UI (MUI)** for UI components
+- **Zustand** for state management
+- **localforage** for IndexedDB persistence
+- **React Router** for navigation
+- **Vitest** for testing
 
-## Data Storage
+### PWA Features
+- Service Worker for offline support
+- Web App Manifest
+- Installable on mobile/desktop
+- Offline-first architecture
 
-All expenses are stored in the browser's localStorage:
-- **Storage Key**: `expense-manager-expenses`
-- **Location**: Browser localStorage
-- **Persistence**: Data persists across page refreshes
-- **No Backend Required**: Everything runs client-side
+## Development
 
-## Expense Categories
+### Running Tests
 
-The app supports the following expense categories:
-- 🍔 Food
-- 🚗 Transport
-- 🛍️ Shopping
-- 💳 Bills
-- 🎬 Entertainment
-- 🏥 Health
-- 📚 Education
-- ✈️ Travel
-- 📦 Other
+```bash
+cd frontend
+npm test
+```
 
-## Development Scripts
+### Code Structure
 
-### Root Level
-- `npm run dev` - Start frontend in development mode
-- `npm run build` - Build frontend for production
-- `npm run install:all` - Install dependencies for all workspaces
+- **Components**: Reusable UI components in `src/components/`
+- **Pages**: Page-level components in `src/pages/`
+- **Stores**: Zustand stores for state management in `src/store/`
+- **Utils**: Utility functions and helpers in `src/utils/`
+- **Types**: TypeScript type definitions in `src/types/`
 
-### Frontend
-- `npm run dev` - Start Vite dev server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
+### Key Concepts
 
-## Monetization
+- **Planned Month**: Represents a single month's planned expenses
+- **Account Allocation**: Per-account allocations (fixed balance, savings, bucket amounts)
+- **Bucket**: Category for organizing expenses (Balance, Savings, Mutual Funds, etc.)
+- **Status**: Pending or Paid status for each bucket
+- **Remaining Cash**: Calculated field = Inflow - Fixed Balance - Savings Transfer
 
-The application includes:
-- **Ad Integration**: Infrastructure for displaying ads (Google AdSense ready)
-  - Ad banner component with placeholder
-  - Configurable ad slots
-  - Environment variable support for ad client IDs
+## Troubleshooting
 
-- **In-App Purchases**: Premium subscription system
-  - Purchase button component
-  - Purchase tracking (ready for payment processor integration)
+### Build Issues
 
-## Next Steps
+If you encounter PWA service-worker build failures:
+- PWA is disabled in dev mode by default
+- Service worker is only generated in production builds
+- Check `vite.config.ts` for PWA configuration
 
-1. **Features**: Add expense export, budget limits, recurring expenses
-2. **Testing**: Add unit and integration tests
-3. **Payment Integration**: Connect Stripe or PayPal for purchases
-4. **Ad Integration**: Add Google AdSense or other ad providers
+### Data Not Loading
+
+- Check browser console for errors
+- Verify IndexedDB is enabled in browser settings
+- Clear browser storage and reload if data appears corrupted
+
+### npm Install Issues
+
+If you encounter permission errors:
+```bash
+sudo chown -R "$USER" ~/.npm
+sudo chown -R "$USER" node_modules
+```
+
+## Deployment
+
+### GitHub Pages
+
+1. Build the frontend:
+```bash
+cd frontend
+npm run build
+```
+
+2. Copy `dist/` contents to `docs/` folder:
+```bash
+cp -r frontend/dist/* docs/
+```
+
+3. Configure GitHub Pages to serve from `/docs` folder on `main` branch
+
+4. Commit and push:
+```bash
+git add docs/
+git commit -m "Deploy to GitHub Pages"
+git push
+```
+
+## Known Issues
+
+- **#REF! Errors**: Some months (Apr 2023 - Sep 2024) have `#REF!` errors in the original Excel. These are documented and deferred to post-MVP cleanup.
+- **Remaining Cash**: For REF-affected months, remaining cash calculations may be incomplete.
+
+## Roadmap
+
+- [ ] Visual charts for savings trends (using recharts)
+- [ ] Export functionality (JSON/CSV)
+- [ ] Import flow for Excel workbooks
+- [ ] Manual adjustments UI
+- [ ] Recurring allocations
+- [ ] Budget vs actual comparisons
 
 ## License
 
 MIT
+
+## Contributing
+
+1. Check `docs/tasks.md` for current task status
+2. Follow the existing code structure and patterns
+3. Add tests for new features
+4. Update documentation as needed

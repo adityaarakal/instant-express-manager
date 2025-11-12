@@ -118,10 +118,14 @@ This document lists every major task required to deliver the Planned Expenses au
 - ✅ Configured manual chunks for better caching (react, mui, query vendors).
 - ✅ Added image caching strategy for offline support.
 
-### Task 16 – Documentation & Handover
-- Update README with setup, data import, and troubleshooting guides.
-- Produce user walkthroughs and developer onboarding notes.
-- Finalise release notes and CI/CD deployment pipeline (staging + production).
+### Task 16 – Documentation & Handover *(Completed)*
+- ✅ Update README with setup, data import, and troubleshooting guides.
+- ✅ Produce user walkthroughs and developer onboarding notes.
+- ✅ Finalise release notes and CI/CD deployment pipeline (staging + production).
+- ✅ Created comprehensive README.md with project structure, installation, usage, and deployment.
+- ✅ Created USER_GUIDE.md with step-by-step user instructions.
+- ✅ Created DEVELOPER_GUIDE.md with architecture, development workflow, and common tasks.
+- ✅ Documented GitHub Pages deployment process.
 
 ---
 
