@@ -7,6 +7,7 @@ import { usePlannedMonthsStore } from '../store/usePlannedMonthsStore';
 import { calculateDashboardMetrics } from '../utils/dashboard';
 import { SummaryCard } from '../components/dashboard/SummaryCard';
 import { DueSoonReminders } from '../components/dashboard/DueSoonReminders';
+import { SavingsTrendChart } from '../components/dashboard/SavingsTrendChart';
 
 export function Dashboard() {
   const { months } = usePlannedMonthsStore();
@@ -70,29 +71,7 @@ export function Dashboard() {
 
       <DueSoonReminders reminders={metrics.upcomingDueDates} />
 
-      {metrics.savingsTrend.length > 0 && (
-        <Stack spacing={1}>
-          <Typography variant="h6">Savings Trend (Last 12 Months)</Typography>
-          <Typography variant="body2" color="text.secondary">
-            Total savings: {new Intl.NumberFormat('en-IN', {
-              style: 'currency',
-              currency: 'INR',
-            }).format(metrics.savingsTrend.reduce((sum, item) => sum + item.savings, 0))}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Average per month:{' '}
-            {new Intl.NumberFormat('en-IN', {
-              style: 'currency',
-              currency: 'INR',
-            }).format(
-              metrics.savingsTrend.length > 0
-                ? metrics.savingsTrend.reduce((sum, item) => sum + item.savings, 0) /
-                    metrics.savingsTrend.length
-                : 0,
-            )}
-          </Typography>
-        </Stack>
-      )}
+      <SavingsTrendChart trend={metrics.savingsTrend} />
     </Stack>
   );
 }
