@@ -247,11 +247,11 @@ export const usePlannedMonthsStore = create<PlannedMonthsState>()(
         name: 'planned-months',
         storage,
         version: 1,
-        onRehydrateStorage: () => () => {
-          const state = get();
-          if (!state.lastHydratedAt) {
-            set({ lastHydratedAt: new Date().toISOString() });
+        onRehydrateStorage: () => (state, error) => {
+          if (error) {
+            console.error('Error rehydrating planned months store:', error);
           }
+          // lastHydratedAt is set in initial state and updated on actions
         },
       },
     ),

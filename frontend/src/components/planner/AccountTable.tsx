@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, memo } from 'react';
 import {
   Box,
   Paper,
