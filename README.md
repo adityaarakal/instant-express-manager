@@ -249,7 +249,7 @@ git push
 - [x] Import flow for Excel workbooks ✅
 - [x] Manual adjustments UI ✅
 - [x] Recurring allocations ✅
-- [ ] Budget vs actual comparisons
+- [x] Budget vs actual comparisons ✅
 
 ## License
 
