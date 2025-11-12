@@ -22,6 +22,7 @@ import { TotalsFooter } from '../components/planner/TotalsFooter';
 import { ImportDialog } from '../components/planner/ImportDialog';
 import { ExportDialog } from '../components/planner/ExportDialog';
 import { ManualAdjustmentsDialog } from '../components/planner/ManualAdjustmentsDialog';
+import { TemplatesDialog } from '../components/planner/TemplatesDialog';
 import type { PlannedMonthSnapshot } from '../types/plannedExpenses';
 
 const formatMonthDate = (dateString: string): string => {
@@ -38,6 +39,7 @@ export function Planner() {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [adjustmentsDialogOpen, setAdjustmentsDialogOpen] = useState(false);
+  const [templatesDialogOpen, setTemplatesDialogOpen] = useState(false);
 
   // Auto-select first month if none selected
   useEffect(() => {
@@ -114,6 +116,14 @@ export function Planner() {
           >
             Export
           </Button>
+          <Button
+            variant="outlined"
+            startIcon={<ContentCopyIcon />}
+            onClick={() => setTemplatesDialogOpen(true)}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            Templates
+          </Button>
         </Stack>
       </Paper>
 
@@ -146,11 +156,22 @@ export function Planner() {
         months={months}
       />
       {activeMonth && (
-        <ManualAdjustmentsDialog
-          open={adjustmentsDialogOpen}
-          onClose={() => setAdjustmentsDialogOpen(false)}
-          month={activeMonth}
-        />
+        <>
+          <ManualAdjustmentsDialog
+            open={adjustmentsDialogOpen}
+            onClose={() => setAdjustmentsDialogOpen(false)}
+            month={activeMonth}
+          />
+          <TemplatesDialog
+            open={templatesDialogOpen}
+            onClose={() => setTemplatesDialogOpen(false)}
+            month={activeMonth}
+            onApplyTemplate={(templateId) => {
+              // Template applied, refresh view
+              setTemplatesDialogOpen(false);
+            }}
+          />
+        </>
       )}
     </Stack>
   );
