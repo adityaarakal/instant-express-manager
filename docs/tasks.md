@@ -89,9 +89,13 @@ This document lists every major task required to deliver the Planned Expenses au
 - ✅ Built `DueSoonReminders` component showing upcoming due dates with urgency indicators.
 - ✅ Added savings trend summary with totals and averages.
 
-### Task 13 – Settings & Configuration
-- Manage currency, default fixed factor, bucket definitions, and theme toggles.
-- Persist preferences globally and apply across components.
+### Task 13 – Settings & Configuration *(Completed)*
+- ✅ Manage currency, default fixed factor, bucket definitions, and theme toggles.
+- ✅ Persist preferences globally and apply across components.
+- ✅ Built comprehensive Settings page with currency selector, fixed factor input, and theme toggle.
+- ✅ Added bucket definitions management (names, colors, default statuses).
+- ✅ Added reminders toggle and save/reset functionality.
+- ✅ All settings persist via Zustand store with localforage.
 
 ---
 
