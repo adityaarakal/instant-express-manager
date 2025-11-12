@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -10,6 +10,8 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import DownloadIcon from '@mui/icons-material/Download';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import { usePlannedMonthsStore } from '../store/usePlannedMonthsStore';
 import { usePlannerStore } from '../store/usePlannerStore';
@@ -17,6 +19,9 @@ import { MonthViewHeader } from '../components/planner/MonthViewHeader';
 import { StatusRibbon } from '../components/planner/StatusRibbon';
 import { AccountTable } from '../components/planner/AccountTable';
 import { TotalsFooter } from '../components/planner/TotalsFooter';
+import { ImportDialog } from '../components/planner/ImportDialog';
+import { ExportDialog } from '../components/planner/ExportDialog';
+import type { PlannedMonthSnapshot } from '../types/plannedExpenses';
 
 const formatMonthDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -27,8 +32,10 @@ const formatMonthDate = (dateString: string): string => {
 };
 
 export function Planner() {
-  const { months, getMonth, getBucketTotals } = usePlannedMonthsStore();
+  const { months, getMonth, getBucketTotals, seedMonths } = usePlannedMonthsStore();
   const { activeMonthId, setActiveMonth } = usePlannerStore();
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   // Auto-select first month if none selected
   useEffect(() => {
@@ -39,6 +46,13 @@ export function Planner() {
 
   const activeMonth = activeMonthId ? getMonth(activeMonthId) : null;
   const totals = activeMonth ? getBucketTotals(activeMonthId!) : null;
+
+  const handleImport = (importedMonths: PlannedMonthSnapshot[]) => {
+    seedMonths(importedMonths);
+    if (importedMonths.length > 0) {
+      setActiveMonth(importedMonths[0].id);
+    }
+  };
 
   if (months.length === 0) {
     return (
@@ -65,21 +79,40 @@ export function Planner() {
   return (
     <Stack spacing={3}>
       <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
-        <FormControl fullWidth size="small">
-          <InputLabel id="month-select-label">Select Month</InputLabel>
-          <Select
-            labelId="month-select-label"
-            value={activeMonthId ?? ''}
-            label="Select Month"
-            onChange={(e) => setActiveMonth(e.target.value)}
+        <Stack direction="row" spacing={2} alignItems="center">
+          <FormControl fullWidth size="small">
+            <InputLabel id="month-select-label">Select Month</InputLabel>
+            <Select
+              labelId="month-select-label"
+              value={activeMonthId ?? ''}
+              label="Select Month"
+              onChange={(e) => setActiveMonth(e.target.value)}
+            >
+              {months.map((month) => (
+                <MenuItem key={month.id} value={month.id}>
+                  {formatMonthDate(month.monthStart)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Button
+            variant="outlined"
+            startIcon={<UploadFileIcon />}
+            onClick={() => setImportDialogOpen(true)}
+            sx={{ whiteSpace: 'nowrap' }}
           >
-            {months.map((month) => (
-              <MenuItem key={month.id} value={month.id}>
-                {formatMonthDate(month.monthStart)}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+            Import
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<DownloadIcon />}
+            onClick={() => setExportDialogOpen(true)}
+            sx={{ whiteSpace: 'nowrap' }}
+            disabled={months.length === 0}
+          >
+            Export
+          </Button>
+        </Stack>
       </Paper>
 
       {activeMonth && totals ? (
@@ -96,6 +129,17 @@ export function Planner() {
           </Typography>
         </Paper>
       )}
+
+      <ImportDialog
+        open={importDialogOpen}
+        onClose={() => setImportDialogOpen(false)}
+        onImport={handleImport}
+      />
+      <ExportDialog
+        open={exportDialogOpen}
+        onClose={() => setExportDialogOpen(false)}
+        months={months}
+      />
     </Stack>
   );
 }

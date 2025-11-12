@@ -68,14 +68,23 @@ This document lists every major task required to deliver the Planned Expenses au
 
 ## Phase 4 — Import/Export & Sync
 
-### Task 10 – Import Flow *(Future / Optional)*
-- (Optional) Build workbook upload UI if historical spreadsheets ever need to be imported again.
-- (Optional) Map imported data to internal stores; surface warnings for unknown mappings or `#REF!`.
-- (Optional) Provide preview/diff before commit.
+### Task 10 – Import Flow *(Completed)*
+- ✅ Build workbook upload UI if historical spreadsheets ever need to be imported again.
+- ✅ Map imported data to internal stores; surface warnings for unknown mappings or `#REF!`.
+- ✅ Provide preview/diff before commit.
+- ✅ Created ImportDialog component with file upload and JSON parsing.
+- ✅ Added preview with summary (months, accounts, ref errors).
+- ✅ Surface warnings for #REF! errors and validation issues.
+- ✅ Import button in Planner page to trigger import flow.
 
-### Task 11 – Export & Backups *(Future / Optional)*
-- Allow exporting months to JSON/CSV for backups or offline storage.
-- Document round-trip procedure (App → backup) if needed.
+### Task 11 – Export & Backups *(Completed)*
+- ✅ Allow exporting months to JSON/CSV for backups or offline storage.
+- ✅ Document round-trip procedure (App → backup) if needed.
+- ✅ Created export utilities for JSON and CSV formats.
+- ✅ Built ExportDialog component with format selection.
+- ✅ Added Export button in Planner page.
+- ✅ JSON exports can be re-imported (round-trip support).
+- ✅ CSV exports suitable for spreadsheet applications.
 
 ---
 
