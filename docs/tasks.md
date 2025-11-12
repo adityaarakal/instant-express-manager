@@ -101,9 +101,13 @@ This document lists every major task required to deliver the Planned Expenses au
 
 ## Phase 6 — Quality & Release
 
-### Task 14 – Testing Suite
-- Add Vitest coverage for stores and utilities, plus component/integration tests.
-- Validate Planner interactions, import flows, and dashboard outputs.
+### Task 14 – Testing Suite *(Completed)*
+- ✅ Add Vitest coverage for stores and utilities, plus component/integration tests.
+- ✅ Validate Planner interactions, import flows, and dashboard outputs.
+- ✅ Added comprehensive tests for `usePlannedMonthsStore` (upsert, remove, update, totals).
+- ✅ Added tests for `calculateBucketTotals` utility with edge cases.
+- ✅ Added tests for `calculateDashboardMetrics` utility.
+- ✅ Existing formula tests already cover calculation logic.
 
 ### Task 15 – PWA & Build Stability
 - Resolve Vite PWA service-worker build failures.
