@@ -1,3 +1,4 @@
+import { useMemo, useCallback } from 'react';
 import {
   Box,
   Paper,
@@ -8,11 +9,14 @@ import {
   TableHead,
   TableRow,
   Typography,
+  Tooltip,
 } from '@mui/material';
+import InfoIcon from '@mui/icons-material/Info';
 import type { PlannedMonthSnapshot } from '../../types/plannedExpenses';
 import { DEFAULT_BUCKETS } from '../../config/plannedExpenses';
 import { usePlannedMonthsStore } from '../../store/usePlannedMonthsStore';
 import { EditableCell } from './EditableCell';
+import { EmptyState } from '../common/EmptyState';
 
 interface AccountTableProps {
   month: PlannedMonthSnapshot;
@@ -30,19 +34,26 @@ const formatCurrency = (value: number | null | undefined): string => {
   }).format(value);
 };
 
-export function AccountTable({ month }: AccountTableProps) {
+export const AccountTable = memo(function AccountTable({ month }: AccountTableProps) {
   const { updateAccountAllocation } = usePlannedMonthsStore();
-  const buckets = DEFAULT_BUCKETS.filter((bucket) =>
-    month.bucketOrder.includes(bucket.id),
+  const buckets = useMemo(
+    () => DEFAULT_BUCKETS.filter((bucket) => month.bucketOrder.includes(bucket.id)),
+    [month.bucketOrder],
+  );
+
+  const handleUpdate = useCallback(
+    (accountId: string, updates: Parameters<typeof updateAccountAllocation>[2]) => {
+      updateAccountAllocation(month.id, accountId, updates);
+    },
+    [month.id, updateAccountAllocation],
   );
 
   if (month.accounts.length === 0) {
     return (
-      <Paper elevation={1} sx={{ p: 4, borderRadius: 2, textAlign: 'center' }}>
-        <Typography variant="body1" color="text.secondary">
-          No accounts found for this month.
-        </Typography>
-      </Paper>
+      <EmptyState
+        title="No Accounts"
+        description="No accounts found for this month. Add accounts or import data to get started."
+      />
     );
   }
 
@@ -57,9 +68,14 @@ export function AccountTable({ month }: AccountTableProps) {
               </Typography>
             </TableCell>
             <TableCell align="right">
-              <Typography variant="subtitle2" fontWeight="bold">
-                Remaining
-              </Typography>
+              <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="flex-end">
+                <Typography variant="subtitle2" fontWeight="bold">
+                  Remaining
+                </Typography>
+                <Tooltip title="Calculated as: Inflow - Fixed Balance - Savings Transfer + Manual Adjustments">
+                  <InfoIcon fontSize="small" sx={{ color: 'text.secondary', fontSize: 16 }} />
+                </Tooltip>
+              </Stack>
             </TableCell>
             <TableCell align="right">
               <Typography variant="subtitle2" fontWeight="bold">
@@ -116,22 +132,14 @@ export function AccountTable({ month }: AccountTableProps) {
               <TableCell align="right">
                 <EditableCell
                   value={account.fixedBalance}
-                  onSave={(value) =>
-                    updateAccountAllocation(month.id, account.id, {
-                      fixedBalance: value,
-                    })
-                  }
+                  onSave={(value) => handleUpdate(account.id, { fixedBalance: value })}
                   align="right"
                 />
               </TableCell>
               <TableCell align="right">
                 <EditableCell
                   value={account.savingsTransfer}
-                  onSave={(value) =>
-                    updateAccountAllocation(month.id, account.id, {
-                      savingsTransfer: value,
-                    })
-                  }
+                  onSave={(value) => handleUpdate(account.id, { savingsTransfer: value })}
                   align="right"
                 />
               </TableCell>
@@ -142,7 +150,7 @@ export function AccountTable({ month }: AccountTableProps) {
                     <EditableCell
                       value={amount}
                       onSave={(value) =>
-                        updateAccountAllocation(month.id, account.id, {
+                        handleUpdate(account.id, {
                           bucketAmounts: {
                             [bucket.id]: value,
                           },
@@ -159,5 +167,5 @@ export function AccountTable({ month }: AccountTableProps) {
       </Table>
     </TableContainer>
   );
-}
+});
 

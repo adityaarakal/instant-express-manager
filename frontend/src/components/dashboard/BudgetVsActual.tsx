@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { Card, CardContent, Stack, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Box } from '@mui/material';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
@@ -24,7 +24,7 @@ interface BudgetVsActualProps {
   monthId: string | null;
 }
 
-export function BudgetVsActual({ monthId }: BudgetVsActualProps) {
+export const BudgetVsActual = memo(function BudgetVsActual({ monthId }: BudgetVsActualProps) {
   const { getMonth, getBucketTotals } = usePlannedMonthsStore();
 
   const comparison = useMemo(() => {
@@ -252,5 +252,5 @@ export function BudgetVsActual({ monthId }: BudgetVsActualProps) {
       </CardContent>
     </Card>
   );
-}
+});
 

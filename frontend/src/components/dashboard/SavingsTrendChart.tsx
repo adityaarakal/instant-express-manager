@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react';
 import { Card, CardContent, Stack, Typography } from '@mui/material';
 import {
   LineChart,
@@ -45,13 +46,21 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-export function SavingsTrendChart({ trend }: SavingsTrendChartProps) {
+export const SavingsTrendChart = memo(function SavingsTrendChart({
+  trend,
+}: SavingsTrendChartProps) {
+  const { totalSavings, averageSavings } = useMemo(() => {
+    if (trend.length === 0) {
+      return { totalSavings: 0, averageSavings: 0 };
+    }
+    const total = trend.reduce((sum, item) => sum + item.savings, 0);
+    const average = total / trend.length;
+    return { totalSavings: total, averageSavings: average };
+  }, [trend]);
+
   if (trend.length === 0) {
     return null;
   }
-
-  const totalSavings = trend.reduce((sum, item) => sum + item.savings, 0);
-  const averageSavings = trend.length > 0 ? totalSavings / trend.length : 0;
 
   return (
     <Card elevation={1} sx={{ borderRadius: 3 }}>
@@ -97,5 +106,5 @@ export function SavingsTrendChart({ trend }: SavingsTrendChartProps) {
       </CardContent>
     </Card>
   );
-}
+});
 

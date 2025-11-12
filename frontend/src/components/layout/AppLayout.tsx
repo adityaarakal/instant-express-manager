@@ -22,8 +22,10 @@ import MenuIcon from '@mui/icons-material/Menu';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 import { ThemeModeToggle } from './ThemeModeToggle';
+import { KeyboardShortcutsHelp } from '../common/KeyboardShortcutsHelp';
 
 type AppLayoutProps = {
   children: ReactNode;
@@ -41,6 +43,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen((prev) => !prev);
@@ -136,10 +139,21 @@ export function AppLayout({ children }: AppLayoutProps) {
                   )}
                 </NavLink>
               ))}
+            <IconButton
+              size="small"
+              onClick={() => setShortcutsHelpOpen(true)}
+              title="Keyboard Shortcuts (?)"
+            >
+              <HelpOutlineIcon fontSize="small" />
+            </IconButton>
             <ThemeModeToggle />
           </Stack>
         </Toolbar>
       </AppBar>
+      <KeyboardShortcutsHelp
+        open={shortcutsHelpOpen}
+        onClose={() => setShortcutsHelpOpen(false)}
+      />
 
       <Box
         component="nav"

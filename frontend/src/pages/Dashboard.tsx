@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { Stack, Typography } from '@mui/material';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import SavingsIcon from '@mui/icons-material/Savings';
@@ -11,7 +11,7 @@ import { DueSoonReminders } from '../components/dashboard/DueSoonReminders';
 import { SavingsTrendChart } from '../components/dashboard/SavingsTrendChart';
 import { BudgetVsActual } from '../components/dashboard/BudgetVsActual';
 
-export function Dashboard() {
+export const Dashboard = memo(function Dashboard() {
   const { months } = usePlannedMonthsStore();
   const { activeMonthId } = usePlannerStore();
 
@@ -79,5 +79,5 @@ export function Dashboard() {
       <BudgetVsActual monthId={activeMonthId} />
     </Stack>
   );
-}
+});
 

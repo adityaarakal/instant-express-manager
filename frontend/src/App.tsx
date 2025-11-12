@@ -5,6 +5,7 @@ import { AppLayout } from './components/layout/AppLayout';
 import { createAppTheme } from './theme';
 import { AppRoutes } from './routes/AppRoutes';
 import { AppProviders } from './providers/AppProviders';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { useSettingsStore } from './store/useSettingsStore';
 
 function App() {
@@ -21,11 +22,13 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AppProviders>
-        <AppLayout>
-          <AppRoutes />
-        </AppLayout>
-      </AppProviders>
+      <ErrorBoundary>
+        <AppProviders>
+          <AppLayout>
+            <AppRoutes />
+          </AppLayout>
+        </AppProviders>
+      </ErrorBoundary>
     </ThemeProvider>
   );
 }

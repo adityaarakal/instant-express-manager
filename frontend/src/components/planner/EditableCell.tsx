@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo, useCallback } from 'react';
 import { TextField, InputAdornment } from '@mui/material';
 import { toNumber } from '../../utils/formulas';
 
@@ -10,7 +10,7 @@ interface EditableCellProps {
   placeholder?: string;
 }
 
-export function EditableCell({
+export const EditableCell = memo(function EditableCell({
   value,
   onSave,
   align = 'right',
@@ -40,26 +40,29 @@ export function EditableCell({
     }).format(val);
   };
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     if (disabled) return;
     setIsEditing(true);
     setEditValue(value !== null && value !== undefined ? value.toString() : '');
-  };
+  }, [disabled, value]);
 
-  const handleBlur = () => {
+  const handleBlur = useCallback(() => {
     setIsEditing(false);
     const numValue = toNumber(editValue);
     onSave(numValue === 0 && editValue.trim() === '' ? null : numValue);
-  };
+  }, [editValue, onSave]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleBlur();
-    } else if (e.key === 'Escape') {
-      setIsEditing(false);
-      setEditValue(value !== null && value !== undefined ? value.toString() : '');
-    }
-  };
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleBlur();
+      } else if (e.key === 'Escape') {
+        setIsEditing(false);
+        setEditValue(value !== null && value !== undefined ? value.toString() : '');
+      }
+    },
+    [handleBlur, value],
+  );
 
   if (isEditing) {
     return (
@@ -111,5 +114,5 @@ export function EditableCell({
       {formatDisplay(value)}
     </span>
   );
-}
+});
 

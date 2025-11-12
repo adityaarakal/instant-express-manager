@@ -23,6 +23,9 @@ import { ImportDialog } from '../components/planner/ImportDialog';
 import { ExportDialog } from '../components/planner/ExportDialog';
 import { ManualAdjustmentsDialog } from '../components/planner/ManualAdjustmentsDialog';
 import { TemplatesDialog } from '../components/planner/TemplatesDialog';
+import { MonthSearchFilter } from '../components/planner/MonthSearchFilter';
+import { EmptyState } from '../components/common/EmptyState';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import type { PlannedMonthSnapshot } from '../types/plannedExpenses';
 
 const formatMonthDate = (dateString: string): string => {
@@ -33,13 +36,36 @@ const formatMonthDate = (dateString: string): string => {
   }).format(date);
 };
 
-export function Planner() {
+export const Planner = memo(function Planner() {
   const { months, getMonth, getBucketTotals, seedMonths } = usePlannedMonthsStore();
   const { activeMonthId, setActiveMonth } = usePlannerStore();
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [adjustmentsDialogOpen, setAdjustmentsDialogOpen] = useState(false);
   const [templatesDialogOpen, setTemplatesDialogOpen] = useState(false);
+  const [filteredMonths, setFilteredMonths] = useState<PlannedMonthSnapshot[]>(months);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts([
+    {
+      key: 'i',
+      ctrl: true,
+      handler: () => setImportDialogOpen(true),
+      description: 'Import data',
+    },
+    {
+      key: 'e',
+      ctrl: true,
+      handler: () => setExportDialogOpen(true),
+      description: 'Export data',
+    },
+    {
+      key: 't',
+      ctrl: true,
+      handler: () => setTemplatesDialogOpen(true),
+      description: 'Open templates',
+    },
+  ]);
 
   // Auto-select first month if none selected
   useEffect(() => {
@@ -51,31 +77,29 @@ export function Planner() {
   const activeMonth = activeMonthId ? getMonth(activeMonthId) : null;
   const totals = activeMonth ? getBucketTotals(activeMonthId!) : null;
 
-  const handleImport = (importedMonths: PlannedMonthSnapshot[]) => {
-    seedMonths(importedMonths);
-    if (importedMonths.length > 0) {
-      setActiveMonth(importedMonths[0].id);
-    }
-  };
+  const handleImport = useCallback(
+    (importedMonths: PlannedMonthSnapshot[]) => {
+      seedMonths(importedMonths);
+      if (importedMonths.length > 0) {
+        setActiveMonth(importedMonths[0].id);
+      }
+    },
+    [seedMonths, setActiveMonth],
+  );
 
   if (months.length === 0) {
     return (
       <Stack spacing={3}>
-        <Paper elevation={1} sx={{ p: 4, borderRadius: 3 }}>
-          <Stack spacing={2}>
-            <Typography variant="h4">No Planned Months</Typography>
-            <Typography variant="body1" color="text.secondary">
-              No planned expense data is available. Import data or create a new month plan.
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<EditCalendarIcon />}
-              sx={{ alignSelf: 'flex-start' }}
-            >
-              Create Month Manually
-            </Button>
-          </Stack>
-        </Paper>
+        <EmptyState
+          icon={<EditCalendarIcon sx={{ fontSize: 48 }} />}
+          title="No Planned Months"
+          description="No planned expense data is available. Import data or create a new month plan to get started."
+          action={{
+            label: 'Import Data',
+            onClick: () => setImportDialogOpen(true),
+            icon: <UploadFileIcon />,
+          }}
+        />
       </Stack>
     );
   }
@@ -83,6 +107,7 @@ export function Planner() {
   return (
     <Stack spacing={3}>
       <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
+        <MonthSearchFilter months={months} onFilterChange={setFilteredMonths} />
         <Stack direction="row" spacing={2} alignItems="center">
           <FormControl fullWidth size="small">
             <InputLabel id="month-select-label">Select Month</InputLabel>
@@ -92,7 +117,7 @@ export function Planner() {
               label="Select Month"
               onChange={(e) => setActiveMonth(e.target.value)}
             >
-              {months.map((month) => (
+              {filteredMonths.map((month) => (
                 <MenuItem key={month.id} value={month.id}>
                   {formatMonthDate(month.monthStart)}
                 </MenuItem>
