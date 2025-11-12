@@ -109,9 +109,14 @@ This document lists every major task required to deliver the Planned Expenses au
 - ✅ Added tests for `calculateDashboardMetrics` utility.
 - ✅ Existing formula tests already cover calculation logic.
 
-### Task 15 – PWA & Build Stability
-- Resolve Vite PWA service-worker build failures.
-- Run Lighthouse, confirm offline support, and optimise performance.
+### Task 15 – PWA & Build Stability *(Completed)*
+- ✅ Resolve Vite PWA service-worker build failures.
+- ✅ Run Lighthouse, confirm offline support, and optimise performance.
+- ✅ Updated PWA configuration with better workbox settings (skipWaiting, clientsClaim).
+- ✅ Disabled PWA in dev mode to avoid build issues during development.
+- ✅ Added build optimizations: code splitting, minification, console removal.
+- ✅ Configured manual chunks for better caching (react, mui, query vendors).
+- ✅ Added image caching strategy for offline support.
 
 ### Task 16 – Documentation & Handover
 - Update README with setup, data import, and troubleshooting guides.
