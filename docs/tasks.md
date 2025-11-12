@@ -49,9 +49,11 @@ This document lists every major task required to deliver the Planned Expenses au
 - ✅ Upgraded responsive layout with mobile drawer, desktop nav, and theme toggle.
 - ✅ Connected the MUI theme to persisted settings with light/dark/system support.
 
-### Task 8 – Planner Month View (Read-Only)
-- Render month header, status ribbon, account table, and totals footer from seed data.
-- Display due dates, remaining cash, and bucket statuses accurately.
+### Task 8 – Planner Month View (Read-Only) *(Completed)*
+- ✅ Render month header, status ribbon, account table, and totals footer from seed data.
+- ✅ Display due dates, remaining cash, and bucket statuses accurately.
+- ✅ Added month selector dropdown to switch between available months.
+- ✅ Created reusable components: `MonthViewHeader`, `StatusRibbon`, `AccountTable`, `TotalsFooter`.
 
 ### Task 9 – Planner Interactions (Editable)
 - Enable inline editing for balances, savings, allocations, and status toggles.

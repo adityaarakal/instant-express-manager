@@ -1,46 +1,101 @@
-import { Button, Paper, Stack, Typography } from '@mui/material';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
+import { useEffect } from 'react';
+import {
+  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  Typography,
+} from '@mui/material';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
+import { usePlannedMonthsStore } from '../store/usePlannedMonthsStore';
+import { usePlannerStore } from '../store/usePlannerStore';
+import { MonthViewHeader } from '../components/planner/MonthViewHeader';
+import { StatusRibbon } from '../components/planner/StatusRibbon';
+import { AccountTable } from '../components/planner/AccountTable';
+import { TotalsFooter } from '../components/planner/TotalsFooter';
+
+const formatMonthDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('en-IN', {
+    month: 'short',
+    year: 'numeric',
+  }).format(date);
+};
 
 export function Planner() {
-  return (
-    <Stack spacing={3}>
-      <Paper elevation={1} sx={{ p: 4, borderRadius: 3 }}>
-        <Stack spacing={2}>
-          <Typography variant="h4">Excel Automation Setup</Typography>
-          <Typography variant="body1" color="text.secondary">
-            Bring the Planned Expenses spreadsheet to life by creating a month plan. Start
-            by importing the Excel data or draft a fresh allocation directly in the app.
-          </Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+  const { months, getMonth, getBucketTotals } = usePlannedMonthsStore();
+  const { activeMonthId, setActiveMonth } = usePlannerStore();
+
+  // Auto-select first month if none selected
+  useEffect(() => {
+    if (!activeMonthId && months.length > 0) {
+      setActiveMonth(months[0].id);
+    }
+  }, [activeMonthId, months, setActiveMonth]);
+
+  const activeMonth = activeMonthId ? getMonth(activeMonthId) : null;
+  const totals = activeMonth ? getBucketTotals(activeMonthId!) : null;
+
+  if (months.length === 0) {
+    return (
+      <Stack spacing={3}>
+        <Paper elevation={1} sx={{ p: 4, borderRadius: 3 }}>
+          <Stack spacing={2}>
+            <Typography variant="h4">No Planned Months</Typography>
+            <Typography variant="body1" color="text.secondary">
+              No planned expense data is available. Import data or create a new month plan.
+            </Typography>
             <Button
               variant="contained"
-              startIcon={<UploadFileIcon />}
-              sx={{ flexBasis: 'fit-content' }}
-            >
-              Import Planned Expenses Sheet
-            </Button>
-            <Button
-              variant="outlined"
               startIcon={<EditCalendarIcon />}
-              sx={{ flexBasis: 'fit-content' }}
+              sx={{ alignSelf: 'flex-start' }}
             >
               Create Month Manually
             </Button>
           </Stack>
-        </Stack>
+        </Paper>
+      </Stack>
+    );
+  }
+
+  return (
+    <Stack spacing={3}>
+      <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
+        <FormControl fullWidth size="small">
+          <InputLabel id="month-select-label">Select Month</InputLabel>
+          <Select
+            labelId="month-select-label"
+            value={activeMonthId ?? ''}
+            label="Select Month"
+            onChange={(e) => setActiveMonth(e.target.value)}
+          >
+            {months.map((month) => (
+              <MenuItem key={month.id} value={month.id}>
+                {formatMonthDate(month.monthStart)}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </Paper>
-      <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: 1, borderColor: 'divider' }}>
-        <Stack spacing={1.5}>
-          <Typography variant="h6">Next steps</Typography>
-          <Typography variant="body2" color="text.secondary">
-            • Define month-level metadata like salary, notes, and fixed factor.<br />
-            • Add account allocations mapped to Excel columns (Fixed, Savings, SIPs, Bills).<br />
-            • Track Pending vs Paid status for each allocation to mirror Excel logic.
+
+      {activeMonth && totals ? (
+        <Stack spacing={3}>
+          <MonthViewHeader month={activeMonth} />
+          <StatusRibbon month={activeMonth} />
+          <AccountTable month={activeMonth} />
+          <TotalsFooter month={activeMonth} totals={totals} />
+        </Stack>
+      ) : (
+        <Paper elevation={1} sx={{ p: 4, borderRadius: 3, textAlign: 'center' }}>
+          <Typography variant="body1" color="text.secondary">
+            Select a month to view its planned expenses.
           </Typography>
-        </Stack>
-      </Paper>
+        </Paper>
+      )}
     </Stack>
   );
 }
-
