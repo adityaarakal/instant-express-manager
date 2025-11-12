@@ -11,6 +11,8 @@ import {
 } from '@mui/material';
 import type { PlannedMonthSnapshot } from '../../types/plannedExpenses';
 import { DEFAULT_BUCKETS } from '../../config/plannedExpenses';
+import { usePlannedMonthsStore } from '../../store/usePlannedMonthsStore';
+import { EditableCell } from './EditableCell';
 
 interface AccountTableProps {
   month: PlannedMonthSnapshot;
@@ -29,6 +31,7 @@ const formatCurrency = (value: number | null | undefined): string => {
 };
 
 export function AccountTable({ month }: AccountTableProps) {
+  const { updateAccountAllocation } = usePlannedMonthsStore();
   const buckets = DEFAULT_BUCKETS.filter((bucket) =>
     month.bucketOrder.includes(bucket.id),
   );
@@ -102,25 +105,51 @@ export function AccountTable({ month }: AccountTableProps) {
                       ? 'error'
                       : 'text.primary'
                   }
+                  sx={{ fontStyle: 'italic' }}
                 >
                   {formatCurrency(account.remainingCash)}
                 </Typography>
-              </TableCell>
-              <TableCell align="right">
-                <Typography variant="body2">
-                  {formatCurrency(account.fixedBalance)}
+                <Typography variant="caption" color="text.secondary">
+                  (calculated)
                 </Typography>
               </TableCell>
               <TableCell align="right">
-                <Typography variant="body2">
-                  {formatCurrency(account.savingsTransfer)}
-                </Typography>
+                <EditableCell
+                  value={account.fixedBalance}
+                  onSave={(value) =>
+                    updateAccountAllocation(month.id, account.id, {
+                      fixedBalance: value,
+                    })
+                  }
+                  align="right"
+                />
+              </TableCell>
+              <TableCell align="right">
+                <EditableCell
+                  value={account.savingsTransfer}
+                  onSave={(value) =>
+                    updateAccountAllocation(month.id, account.id, {
+                      savingsTransfer: value,
+                    })
+                  }
+                  align="right"
+                />
               </TableCell>
               {buckets.map((bucket) => {
                 const amount = account.bucketAmounts[bucket.id] ?? null;
                 return (
                   <TableCell key={bucket.id} align="right">
-                    <Typography variant="body2">{formatCurrency(amount)}</Typography>
+                    <EditableCell
+                      value={amount}
+                      onSave={(value) =>
+                        updateAccountAllocation(month.id, account.id, {
+                          bucketAmounts: {
+                            [bucket.id]: value,
+                          },
+                        })
+                      }
+                      align="right"
+                    />
                   </TableCell>
                 );
               })}

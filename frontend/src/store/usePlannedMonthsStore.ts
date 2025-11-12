@@ -2,12 +2,14 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
 import type {
+  AllocationStatus,
   ManualAdjustment,
   PlannedMonthSnapshot,
   Reminder,
 } from '../types/plannedExpenses';
 import { getLocalforageStorage } from '../utils/storage';
 import { calculateBucketTotals, type BucketTotals } from '../utils/totals';
+import { calculateRemainingCash } from '../utils/formulas';
 import { plannedMonthsSeed } from '../data/plannedMonthsSeed';
 
 type PlannedMonthsState = {
@@ -17,6 +19,23 @@ type PlannedMonthsState = {
   upsertMonth: (month: PlannedMonthSnapshot) => void;
   removeMonth: (monthId: string) => void;
   appendAdjustments: (monthId: string, adjustments: ManualAdjustment[]) => void;
+  updateAccountAllocation: (
+    monthId: string,
+    accountId: string,
+    updates: {
+      fixedBalance?: number | null;
+      savingsTransfer?: number | null;
+      bucketAmounts?: Record<string, number | null>;
+    },
+  ) => void;
+  updateBucketStatus: (monthId: string, bucketId: string, status: AllocationStatus) => void;
+  updateMonthMetadata: (
+    monthId: string,
+    updates: {
+      fixedFactor?: number | null;
+      inflowTotal?: number | null;
+    },
+  ) => void;
   getMonth: (monthId: string) => PlannedMonthSnapshot | undefined;
   getBucketTotals: (monthId: string) => BucketTotals;
   getReminders: (monthId: string) => Reminder[];
@@ -78,6 +97,112 @@ export const usePlannedMonthsStore = create<PlannedMonthsState>()(
                   })),
                 ],
               };
+            }),
+          })),
+        updateAccountAllocation: (monthId, accountId, updates) =>
+          set((state) => ({
+            months: state.months.map((month) => {
+              if (month.id !== monthId) {
+                return month;
+              }
+
+              return {
+                ...month,
+                accounts: month.accounts.map((account) => {
+                  if (account.id !== accountId) {
+                    return account;
+                  }
+
+                  const updatedAccount = { ...account };
+
+                  if (updates.fixedBalance !== undefined) {
+                    updatedAccount.fixedBalance = updates.fixedBalance;
+                  }
+                  if (updates.savingsTransfer !== undefined) {
+                    updatedAccount.savingsTransfer = updates.savingsTransfer;
+                  }
+                  if (updates.bucketAmounts) {
+                    updatedAccount.bucketAmounts = {
+                      ...account.bucketAmounts,
+                      ...updates.bucketAmounts,
+                    };
+                  }
+
+                  // Recalculate remaining cash
+                  const baseValue = month.inflowTotal ?? 0;
+                  const fixedBalances = updatedAccount.fixedBalance ?? 0;
+                  const savingsTransfers = updatedAccount.savingsTransfer ?? 0;
+                  const manualAdjustments =
+                    month.manualAdjustments
+                      ?.filter((adj) => adj.accountId === accountId)
+                      .map((adj) => adj.amount) ?? [];
+
+                  updatedAccount.remainingCash = calculateRemainingCash({
+                    baseValue,
+                    fixedBalances,
+                    savingsTransfers,
+                    manualAdjustments,
+                  });
+
+                  return updatedAccount;
+                }),
+              };
+            }),
+          })),
+        updateBucketStatus: (monthId, bucketId, status) =>
+          set((state) => ({
+            months: state.months.map((month) => {
+              if (month.id !== monthId) {
+                return month;
+              }
+
+              return {
+                ...month,
+                statusByBucket: {
+                  ...month.statusByBucket,
+                  [bucketId]: status,
+                },
+              };
+            }),
+          })),
+        updateMonthMetadata: (monthId, updates) =>
+          set((state) => ({
+            months: state.months.map((month) => {
+              if (month.id !== monthId) {
+                return month;
+              }
+
+              const updatedMonth = { ...month };
+
+              if (updates.fixedFactor !== undefined) {
+                updatedMonth.fixedFactor = updates.fixedFactor;
+              }
+              if (updates.inflowTotal !== undefined) {
+                updatedMonth.inflowTotal = updates.inflowTotal;
+
+                // Recalculate remaining cash for all accounts when inflow changes
+                updatedMonth.accounts = month.accounts.map((account) => {
+                  const baseValue = updates.inflowTotal ?? 0;
+                  const fixedBalances = account.fixedBalance ?? 0;
+                  const savingsTransfers = account.savingsTransfer ?? 0;
+                  const manualAdjustments =
+                    month.manualAdjustments
+                      ?.filter((adj) => adj.accountId === account.id)
+                      .map((adj) => adj.amount) ?? [];
+
+                  return {
+                    ...account,
+                    remainingCash: calculateRemainingCash({
+                      baseValue,
+                      fixedBalances,
+                      savingsTransfers,
+                      manualAdjustments,
+                    }),
+                  };
+                });
+              }
+
+              return updatedMonth;
             }),
           })),
         getMonth: (monthId) => get().months.find((month) => month.id === monthId),

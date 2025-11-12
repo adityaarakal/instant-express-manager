@@ -1,7 +1,9 @@
-import { Box, Chip, Paper, Stack, Typography } from '@mui/material';
+import { Box, Chip, Paper, Stack, TextField, Typography } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import type { PlannedMonthSnapshot } from '../../types/plannedExpenses';
+import { usePlannedMonthsStore } from '../../store/usePlannedMonthsStore';
+import { toNumber } from '../../utils/formulas';
 
 interface MonthViewHeaderProps {
   month: PlannedMonthSnapshot;
@@ -28,6 +30,22 @@ const formatMonthDate = (dateString: string): string => {
 };
 
 export function MonthViewHeader({ month }: MonthViewHeaderProps) {
+  const { updateMonthMetadata } = usePlannedMonthsStore();
+
+  const handleInflowChange = (value: string) => {
+    const numValue = toNumber(value);
+    updateMonthMetadata(month.id, {
+      inflowTotal: numValue === 0 && value.trim() === '' ? null : numValue,
+    });
+  };
+
+  const handleFixedFactorChange = (value: string) => {
+    const numValue = toNumber(value);
+    updateMonthMetadata(month.id, {
+      fixedFactor: numValue === 0 && value.trim() === '' ? null : numValue,
+    });
+  };
+
   return (
     <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
       <Stack spacing={2}>
@@ -38,30 +56,41 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
           </Typography>
         </Stack>
 
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 200 }}>
             <AccountBalanceIcon fontSize="small" color="action" />
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ minWidth: 60 }}>
               Inflow:
             </Typography>
-            <Typography variant="body1" fontWeight="medium">
-              {formatCurrency(month.inflowTotal)}
-            </Typography>
+            <TextField
+              value={month.inflowTotal ?? ''}
+              onChange={(e) => handleInflowChange(e.target.value)}
+              size="small"
+              type="number"
+              InputProps={{
+                startAdornment: <Typography sx={{ mr: 1 }}>₹</Typography>,
+              }}
+              sx={{ width: 150 }}
+              placeholder="0.00"
+            />
           </Box>
 
-          {month.fixedFactor !== null && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="body2" color="text.secondary">
-                Fixed Factor:
-              </Typography>
-              <Chip
-                label={formatCurrency(month.fixedFactor)}
-                size="small"
-                variant="outlined"
-                color="primary"
-              />
-            </Box>
-          )}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 200 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ minWidth: 90 }}>
+              Fixed Factor:
+            </Typography>
+            <TextField
+              value={month.fixedFactor ?? ''}
+              onChange={(e) => handleFixedFactorChange(e.target.value)}
+              size="small"
+              type="number"
+              InputProps={{
+                startAdornment: <Typography sx={{ mr: 1 }}>₹</Typography>,
+              }}
+              sx={{ width: 150 }}
+              placeholder="0.00"
+            />
+          </Box>
 
           {month.refErrors.length > 0 && (
             <Chip

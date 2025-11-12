@@ -55,9 +55,14 @@ This document lists every major task required to deliver the Planned Expenses au
 - ✅ Added month selector dropdown to switch between available months.
 - ✅ Created reusable components: `MonthViewHeader`, `StatusRibbon`, `AccountTable`, `TotalsFooter`.
 
-### Task 9 – Planner Interactions (Editable)
-- Enable inline editing for balances, savings, allocations, and status toggles.
-- Add manual adjustment handling and real-time derived totals.
+### Task 9 – Planner Interactions (Editable) *(Completed)*
+- ✅ Enable inline editing for balances, savings, allocations, and status toggles.
+- ✅ Add manual adjustment handling and real-time derived totals.
+- ✅ Created EditableCell component for inline editing with currency formatting.
+- ✅ Made StatusRibbon clickable to toggle pending/paid status.
+- ✅ Made AccountTable editable for fixed balance, savings, and bucket amounts.
+- ✅ Made MonthViewHeader editable for inflow and fixed factor.
+- ✅ Added store methods to update allocations with automatic remaining cash recalculation.
 
 ---
 
