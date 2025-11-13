@@ -11,6 +11,7 @@ import { useSavingsInvestmentEMIsStore } from './useSavingsInvestmentEMIsStore';
 import { useRecurringIncomesStore } from './useRecurringIncomesStore';
 import { useRecurringExpensesStore } from './useRecurringExpensesStore';
 import { useRecurringSavingsInvestmentsStore } from './useRecurringSavingsInvestmentsStore';
+import { useBanksStore } from './useBanksStore';
 
 type BankAccountsState = {
   accounts: BankAccount[];
@@ -49,6 +50,12 @@ export const useBankAccountsStore = create<BankAccountsState>()(
       (set, get) => ({
         accounts: [],
         createAccount: (accountData) => {
+          // Validate bankId exists
+          const bank = useBanksStore.getState().getBank(accountData.bankId);
+          if (!bank) {
+            throw new Error(`Bank with id ${accountData.bankId} does not exist`);
+          }
+          
           // Validate account data
           const amountValidation = validateAmount(accountData.currentBalance, 'Balance');
           const balanceValidation = validateAccountBalance(accountData as BankAccount);
@@ -79,6 +86,14 @@ export const useBankAccountsStore = create<BankAccountsState>()(
           set((state) => {
             const account = state.accounts.find((a) => a.id === id);
             if (!account) return state;
+
+            // Validate bankId if being updated
+            if (updates.bankId) {
+              const bank = useBanksStore.getState().getBank(updates.bankId);
+              if (!bank) {
+                throw new Error(`Bank with id ${updates.bankId} does not exist`);
+              }
+            }
 
             // Validate balance if being updated
             if (updates.currentBalance !== undefined) {

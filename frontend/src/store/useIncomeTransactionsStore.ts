@@ -3,6 +3,7 @@ import { devtools, persist } from 'zustand/middleware';
 import type { IncomeTransaction } from '../types/transactions';
 import { getLocalforageStorage } from '../utils/storage';
 import { useRecurringIncomesStore } from './useRecurringIncomesStore';
+import { useBankAccountsStore } from './useBankAccountsStore';
 
 type IncomeTransactionsState = {
   transactions: IncomeTransaction[];
@@ -27,6 +28,12 @@ export const useIncomeTransactionsStore = create<IncomeTransactionsState>()(
       (set, get) => ({
         transactions: [],
         createTransaction: (transactionData) => {
+          // Validate accountId exists
+          const account = useBankAccountsStore.getState().getAccount(transactionData.accountId);
+          if (!account) {
+            throw new Error(`Account with id ${transactionData.accountId} does not exist`);
+          }
+          
           // Validate recurringTemplateId if provided
           if (transactionData.recurringTemplateId) {
             const template = useRecurringIncomesStore.getState().getTemplate(transactionData.recurringTemplateId);
@@ -49,6 +56,14 @@ export const useIncomeTransactionsStore = create<IncomeTransactionsState>()(
           }));
         },
         updateTransaction: (id, updates) => {
+          // Validate accountId if being updated
+          if (updates.accountId) {
+            const account = useBankAccountsStore.getState().getAccount(updates.accountId);
+            if (!account) {
+              throw new Error(`Account with id ${updates.accountId} does not exist`);
+            }
+          }
+          
           // Validate recurringTemplateId if being updated
           if (updates.recurringTemplateId !== undefined) {
             if (updates.recurringTemplateId) {

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type { RecurringSavingsInvestment } from '../types/recurring';
 import { useSavingsInvestmentTransactionsStore } from './useSavingsInvestmentTransactionsStore';
+import { useBankAccountsStore } from './useBankAccountsStore';
 import { getLocalforageStorage } from '../utils/storage';
 
 type RecurringSavingsInvestmentsState = {
@@ -52,6 +53,12 @@ export const useRecurringSavingsInvestmentsStore = create<RecurringSavingsInvest
       (set, get) => ({
         templates: [],
         createTemplate: (templateData) => {
+          // Validate accountId exists
+          const account = useBankAccountsStore.getState().getAccount(templateData.accountId);
+          if (!account) {
+            throw new Error(`Account with id ${templateData.accountId} does not exist`);
+          }
+          
           const now = new Date().toISOString();
           const nextDueDate = templateData.startDate;
           const newTemplate: RecurringSavingsInvestment = {
@@ -70,6 +77,14 @@ export const useRecurringSavingsInvestmentsStore = create<RecurringSavingsInvest
           get().checkAndGenerateTransactions();
         },
         updateTemplate: (id, updates) => {
+          // Validate accountId if being updated
+          if (updates.accountId) {
+            const account = useBankAccountsStore.getState().getAccount(updates.accountId);
+            if (!account) {
+              throw new Error(`Account with id ${updates.accountId} does not exist`);
+            }
+          }
+          
           set((state) => ({
             templates: state.templates.map((template) =>
               template.id === id

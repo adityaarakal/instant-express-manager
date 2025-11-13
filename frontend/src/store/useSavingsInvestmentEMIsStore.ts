@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type { SavingsInvestmentEMI } from '../types/emis';
 import { useSavingsInvestmentTransactionsStore } from './useSavingsInvestmentTransactionsStore';
+import { useBankAccountsStore } from './useBankAccountsStore';
 import { getLocalforageStorage } from '../utils/storage';
 
 type SavingsInvestmentEMIsState = {
@@ -38,6 +39,12 @@ export const useSavingsInvestmentEMIsStore = create<SavingsInvestmentEMIsState>(
       (set, get) => ({
         emis: [],
         createEMI: (emiData) => {
+          // Validate accountId exists
+          const account = useBankAccountsStore.getState().getAccount(emiData.accountId);
+          if (!account) {
+            throw new Error(`Account with id ${emiData.accountId} does not exist`);
+          }
+          
           const now = new Date().toISOString();
           const newEMI: SavingsInvestmentEMI = {
             ...emiData,
@@ -55,6 +62,14 @@ export const useSavingsInvestmentEMIsStore = create<SavingsInvestmentEMIsState>(
           get().checkAndGenerateTransactions();
         },
         updateEMI: (id, updates) => {
+          // Validate accountId if being updated
+          if (updates.accountId) {
+            const account = useBankAccountsStore.getState().getAccount(updates.accountId);
+            if (!account) {
+              throw new Error(`Account with id ${updates.accountId} does not exist`);
+            }
+          }
+          
           set((state) => ({
             emis: state.emis.map((emi) =>
               emi.id === id

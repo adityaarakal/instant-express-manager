@@ -4,6 +4,7 @@ import type { ExpenseTransaction } from '../types/transactions';
 import { getLocalforageStorage } from '../utils/storage';
 import { useRecurringExpensesStore } from './useRecurringExpensesStore';
 import { useExpenseEMIsStore } from './useExpenseEMIsStore';
+import { useBankAccountsStore } from './useBankAccountsStore';
 
 type ExpenseTransactionsState = {
   transactions: ExpenseTransaction[];
@@ -32,6 +33,12 @@ export const useExpenseTransactionsStore = create<ExpenseTransactionsState>()(
       (set, get) => ({
         transactions: [],
         createTransaction: (transactionData) => {
+          // Validate accountId exists
+          const account = useBankAccountsStore.getState().getAccount(transactionData.accountId);
+          if (!account) {
+            throw new Error(`Account with id ${transactionData.accountId} does not exist`);
+          }
+          
           // Validate recurringTemplateId if provided
           if (transactionData.recurringTemplateId) {
             const template = useRecurringExpensesStore.getState().getTemplate(transactionData.recurringTemplateId);
@@ -62,6 +69,14 @@ export const useExpenseTransactionsStore = create<ExpenseTransactionsState>()(
           }));
         },
         updateTransaction: (id, updates) => {
+          // Validate accountId if being updated
+          if (updates.accountId) {
+            const account = useBankAccountsStore.getState().getAccount(updates.accountId);
+            if (!account) {
+              throw new Error(`Account with id ${updates.accountId} does not exist`);
+            }
+          }
+          
           // Validate recurringTemplateId if being updated
           if (updates.recurringTemplateId !== undefined) {
             if (updates.recurringTemplateId) {

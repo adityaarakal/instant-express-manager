@@ -323,6 +323,40 @@ Bank
 - **Location**: `frontend/src/store/useExpenseTransactionsStore.ts`, `useSavingsInvestmentTransactionsStore.ts`
 - **Result**: Prevents creating/updating transactions with invalid `emiId` references
 
+#### 7. **Transaction AccountId Validation** ✅ **COMPLETED**
+- **Status**: ✅ Implemented
+- **Implementation**: Added validation in all transaction stores to check `accountId` references exist
+  - `useIncomeTransactionsStore.createTransaction()` / `updateTransaction()`
+  - `useExpenseTransactionsStore.createTransaction()` / `updateTransaction()`
+  - `useSavingsInvestmentTransactionsStore.createTransaction()` / `updateTransaction()`
+- **Location**: `frontend/src/store/useIncomeTransactionsStore.ts`, `useExpenseTransactionsStore.ts`, `useSavingsInvestmentTransactionsStore.ts`
+- **Result**: Prevents creating/updating transactions with invalid `accountId` references
+
+#### 8. **BankAccount BankId Validation** ✅ **COMPLETED**
+- **Status**: ✅ Implemented
+- **Implementation**: Added validation in `useBankAccountsStore` to check `bankId` references exist
+  - `useBankAccountsStore.createAccount()` - Validates `bankId` exists
+  - `useBankAccountsStore.updateAccount()` - Validates `bankId` exists if being updated
+- **Location**: `frontend/src/store/useBankAccountsStore.ts`
+- **Result**: Prevents creating/updating bank accounts with invalid `bankId` references
+
+#### 9. **EMI AccountId Validation** ✅ **COMPLETED**
+- **Status**: ✅ Implemented
+- **Implementation**: Added validation in all EMI stores to check `accountId` references exist
+  - `useExpenseEMIsStore.createEMI()` / `updateEMI()` - Already had validation
+  - `useSavingsInvestmentEMIsStore.createEMI()` / `updateEMI()` - Added validation
+- **Location**: `frontend/src/store/useSavingsInvestmentEMIsStore.ts`
+- **Result**: Prevents creating/updating EMIs with invalid `accountId` references
+
+#### 10. **Recurring Template AccountId Validation** ✅ **COMPLETED**
+- **Status**: ✅ Implemented
+- **Implementation**: Added validation in all recurring template stores to check `accountId` references exist
+  - `useRecurringIncomesStore.createTemplate()` / `updateTemplate()`
+  - `useRecurringExpensesStore.createTemplate()` / `updateTemplate()`
+  - `useRecurringSavingsInvestmentsStore.createTemplate()` / `updateTemplate()`
+- **Location**: `frontend/src/store/useRecurringIncomesStore.ts`, `useRecurringExpensesStore.ts`, `useRecurringSavingsInvestmentsStore.ts`
+- **Result**: Prevents creating/updating recurring templates with invalid `accountId` references
+
 ---
 
 ## Store Methods for Relationship Queries
@@ -432,7 +466,13 @@ Bank
 - **Core Connections**: 100% ✅
 - **Deletion Validations**: 100% ✅ (Bank, BankAccount)
 - **Health Checks**: 100% ✅ (All entity types checked)
-- **Reference Validations**: 100% ✅ (CreditCard ✅, Transaction references ✅)
+- **Reference Validations**: 100% ✅
+  - ✅ CreditCard validation in ExpenseEMI
+  - ✅ Transaction `recurringTemplateId` and `emiId` validation
+  - ✅ Transaction `accountId` validation (all transaction types)
+  - ✅ BankAccount `bankId` validation
+  - ✅ EMI `accountId` validation (all EMI types)
+  - ✅ Recurring template `accountId` validation (all recurring types)
 - **Relationship Queries**: 100% ✅ (All queries implemented)
 
 ---
@@ -462,6 +502,30 @@ All validations, health checks, and relationship queries have been implemented. 
   - `Bank → BankAccounts Count` - `useBanksStore.getAccountsCount(bankId)`
   - `BankAccount → Total Transactions Count` - `useBankAccountsStore.getTotalTransactionsCount(accountId)`
   - `BankAccount → Total Balance Impact` - `useBankAccountsStore.getTotalBalanceImpact(accountId)`
+
+---
+
+## Critical Reference Validations (All Implemented ✅)
+
+### Transaction Stores
+- ✅ **IncomeTransaction**: Validates `accountId` and `recurringTemplateId` (if provided)
+- ✅ **ExpenseTransaction**: Validates `accountId`, `recurringTemplateId` (if provided), and `emiId` (if provided)
+- ✅ **SavingsInvestmentTransaction**: Validates `accountId`, `recurringTemplateId` (if provided), and `emiId` (if provided)
+
+### BankAccount Store
+- ✅ **createAccount**: Validates `bankId` exists
+- ✅ **updateAccount**: Validates `bankId` exists if being updated
+
+### EMI Stores
+- ✅ **ExpenseEMI**: Validates `accountId` and `creditCardId` (if CCEMI)
+- ✅ **SavingsInvestmentEMI**: Validates `accountId`
+
+### Recurring Template Stores
+- ✅ **RecurringIncome**: Validates `accountId`
+- ✅ **RecurringExpense**: Validates `accountId`
+- ✅ **RecurringSavingsInvestment**: Validates `accountId`
+
+**All foreign key references are now validated at creation and update time, preventing orphaned records and ensuring data integrity.**
 
 ---
 
