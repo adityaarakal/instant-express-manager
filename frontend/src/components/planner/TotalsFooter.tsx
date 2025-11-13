@@ -1,7 +1,6 @@
 import { Box, Paper, Stack, Typography } from '@mui/material';
-import type { AggregatedMonth } from '../../types/plannedExpensesAggregated';
+import type { AggregatedMonth, BucketTotals } from '../../types/plannedExpensesAggregated';
 import { DEFAULT_BUCKETS } from '../../config/plannedExpenses';
-import type { BucketTotals } from '../../utils/totals';
 
 interface TotalsFooterProps {
   month: AggregatedMonth;

@@ -67,6 +67,10 @@ export interface ManualAdjustment {
   createdBy?: string;
 }
 
+/**
+ * @deprecated This type is deprecated. Use AggregatedMonth from plannedExpensesAggregated.ts instead.
+ * This type is kept for backward compatibility only and will be removed in a future version.
+ */
 export interface PlannedMonthSnapshot {
   id: string;
   monthStart: string;

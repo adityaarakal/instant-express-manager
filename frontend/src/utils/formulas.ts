@@ -41,6 +41,10 @@ export const calculateRemainingCash = ({
   return Number((baseValue - totalFixed - totalSavings + totalAdjustments).toFixed(2));
 };
 
+/**
+ * @deprecated This function is deprecated. Use calculateAggregatedBucketTotals from aggregation.ts instead.
+ * This function is kept for backward compatibility only and will be removed in a future version.
+ */
 export const sumBucketByStatus = (
   month: PlannedMonthSnapshot,
   status: AllocationStatus | 'all',
