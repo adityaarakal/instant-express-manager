@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type { ExpenseEMI } from '../types/emis';
 import { useExpenseTransactionsStore } from './useExpenseTransactionsStore';
+import { useBankAccountsStore } from './useBankAccountsStore';
 import { getLocalforageStorage } from '../utils/storage';
 
 type ExpenseEMIsState = {
@@ -38,6 +39,23 @@ export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
       (set, get) => ({
         emis: [],
         createEMI: (emiData) => {
+          // Validate accountId exists
+          const account = useBankAccountsStore.getState().getAccount(emiData.accountId);
+          if (!account) {
+            throw new Error(`Account with id ${emiData.accountId} does not exist`);
+          }
+          
+          // Validate creditCardId if provided (for CC EMIs)
+          if (emiData.category === 'CCEMI' && emiData.creditCardId) {
+            const creditCard = useBankAccountsStore.getState().getAccount(emiData.creditCardId);
+            if (!creditCard) {
+              throw new Error(`Credit card account with id ${emiData.creditCardId} does not exist`);
+            }
+            if (creditCard.accountType !== 'CreditCard') {
+              throw new Error(`creditCardId must reference a CreditCard account, but found ${creditCard.accountType}`);
+            }
+          }
+          
           const now = new Date().toISOString();
           const newEMI: ExpenseEMI = {
             ...emiData,
@@ -55,6 +73,27 @@ export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
           get().checkAndGenerateTransactions();
         },
         updateEMI: (id, updates) => {
+          // Validate accountId if being updated
+          if (updates.accountId) {
+            const account = useBankAccountsStore.getState().getAccount(updates.accountId);
+            if (!account) {
+              throw new Error(`Account with id ${updates.accountId} does not exist`);
+            }
+          }
+          
+          // Validate creditCardId if being updated
+          if (updates.creditCardId !== undefined) {
+            if (updates.creditCardId) {
+              const creditCard = useBankAccountsStore.getState().getAccount(updates.creditCardId);
+              if (!creditCard) {
+                throw new Error(`Credit card account with id ${updates.creditCardId} does not exist`);
+              }
+              if (creditCard.accountType !== 'CreditCard') {
+                throw new Error(`creditCardId must reference a CreditCard account, but found ${creditCard.accountType}`);
+              }
+            }
+          }
+          
           set((state) => ({
             emis: state.emis.map((emi) =>
               emi.id === id

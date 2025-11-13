@@ -3,6 +3,14 @@ import { devtools, persist } from 'zustand/middleware';
 import type { BankAccount } from '../types/bankAccounts';
 import { getLocalforageStorage } from '../utils/storage';
 import { validateAccountBalance, validateAmount } from '../utils/validation';
+import { useIncomeTransactionsStore } from './useIncomeTransactionsStore';
+import { useExpenseTransactionsStore } from './useExpenseTransactionsStore';
+import { useSavingsInvestmentTransactionsStore } from './useSavingsInvestmentTransactionsStore';
+import { useExpenseEMIsStore } from './useExpenseEMIsStore';
+import { useSavingsInvestmentEMIsStore } from './useSavingsInvestmentEMIsStore';
+import { useRecurringIncomesStore } from './useRecurringIncomesStore';
+import { useRecurringExpensesStore } from './useRecurringExpensesStore';
+import { useRecurringSavingsInvestmentsStore } from './useRecurringSavingsInvestmentsStore';
 
 type BankAccountsState = {
   accounts: BankAccount[];
@@ -83,6 +91,41 @@ export const useBankAccountsStore = create<BankAccountsState>()(
           });
         },
         deleteAccount: (id) => {
+          // Check all references to this account
+          const incomeCount = useIncomeTransactionsStore.getState().getTransactionsByAccount(id).length;
+          const expenseCount = useExpenseTransactionsStore.getState().getTransactionsByAccount(id).length;
+          const savingsCount = useSavingsInvestmentTransactionsStore.getState().getTransactionsByAccount(id).length;
+          const expenseEMIs = useExpenseEMIsStore.getState().getEMIsByAccount(id).length;
+          const savingsEMIs = useSavingsInvestmentEMIsStore.getState().getEMIsByAccount(id).length;
+          const recurringIncomes = useRecurringIncomesStore.getState().getTemplatesByAccount(id).length;
+          const recurringExpenses = useRecurringExpensesStore.getState().getTemplatesByAccount(id).length;
+          const recurringSavings = useRecurringSavingsInvestmentsStore.getState().getTemplatesByAccount(id).length;
+          
+          // Also check if this account is referenced as creditCardId in ExpenseEMIs
+          const creditCardEMIs = useExpenseEMIsStore.getState().emis.filter((emi) => emi.creditCardId === id).length;
+          
+          const totalReferences = incomeCount + expenseCount + savingsCount + expenseEMIs + savingsEMIs + 
+                                 recurringIncomes + recurringExpenses + recurringSavings + creditCardEMIs;
+          
+          if (totalReferences > 0) {
+            const details = [];
+            if (incomeCount > 0) details.push(`${incomeCount} income transaction(s)`);
+            if (expenseCount > 0) details.push(`${expenseCount} expense transaction(s)`);
+            if (savingsCount > 0) details.push(`${savingsCount} savings transaction(s)`);
+            if (expenseEMIs > 0) details.push(`${expenseEMIs} expense EMI(s)`);
+            if (savingsEMIs > 0) details.push(`${savingsEMIs} savings EMI(s)`);
+            if (recurringIncomes > 0) details.push(`${recurringIncomes} recurring income template(s)`);
+            if (recurringExpenses > 0) details.push(`${recurringExpenses} recurring expense template(s)`);
+            if (recurringSavings > 0) details.push(`${recurringSavings} recurring savings template(s)`);
+            if (creditCardEMIs > 0) details.push(`${creditCardEMIs} credit card EMI reference(s)`);
+            
+            throw new Error(
+              `Cannot delete account: ${totalReferences} record(s) still reference it.\n` +
+              `Details: ${details.join(', ')}\n` +
+              `Please delete or reassign these records first.`
+            );
+          }
+          
           set((state) => ({
             accounts: state.accounts.filter((account) => account.id !== id),
           }));

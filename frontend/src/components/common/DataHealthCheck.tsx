@@ -6,6 +6,11 @@ import { useBankAccountsStore } from '../../store/useBankAccountsStore';
 import { useIncomeTransactionsStore } from '../../store/useIncomeTransactionsStore';
 import { useExpenseTransactionsStore } from '../../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../../store/useSavingsInvestmentTransactionsStore';
+import { useExpenseEMIsStore } from '../../store/useExpenseEMIsStore';
+import { useSavingsInvestmentEMIsStore } from '../../store/useSavingsInvestmentEMIsStore';
+import { useRecurringIncomesStore } from '../../store/useRecurringIncomesStore';
+import { useRecurringExpensesStore } from '../../store/useRecurringExpensesStore';
+import { useRecurringSavingsInvestmentsStore } from '../../store/useRecurringSavingsInvestmentsStore';
 import { checkDataInconsistencies } from '../../utils/validation';
 
 export function DataHealthCheck() {
@@ -14,6 +19,11 @@ export function DataHealthCheck() {
   const incomeTransactions = useIncomeTransactionsStore((state) => state.transactions);
   const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
   const savingsTransactions = useSavingsInvestmentTransactionsStore((state) => state.transactions);
+  const expenseEMIs = useExpenseEMIsStore((state) => state.emis);
+  const savingsEMIs = useSavingsInvestmentEMIsStore((state) => state.emis);
+  const recurringIncomes = useRecurringIncomesStore((state) => state.templates);
+  const recurringExpenses = useRecurringExpensesStore((state) => state.templates);
+  const recurringSavings = useRecurringSavingsInvestmentsStore((state) => state.templates);
 
   const healthCheck = useMemo(() => {
     return checkDataInconsistencies(
@@ -21,8 +31,25 @@ export function DataHealthCheck() {
       incomeTransactions,
       expenseTransactions,
       savingsTransactions,
+      expenseEMIs,
+      savingsEMIs,
+      recurringIncomes,
+      recurringExpenses,
+      recurringSavings,
+      banks,
     );
-  }, [accounts, incomeTransactions, expenseTransactions, savingsTransactions]);
+  }, [
+    accounts,
+    incomeTransactions,
+    expenseTransactions,
+    savingsTransactions,
+    expenseEMIs,
+    savingsEMIs,
+    recurringIncomes,
+    recurringExpenses,
+    recurringSavings,
+    banks,
+  ]);
 
   if (healthCheck.errors.length === 0 && healthCheck.warnings.length === 0) {
     return (

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type { Bank } from '../types/banks';
 import { getLocalforageStorage } from '../utils/storage';
+import { useBankAccountsStore } from './useBankAccountsStore';
 
 type BanksState = {
   banks: Bank[];
@@ -44,6 +45,13 @@ export const useBanksStore = create<BanksState>()(
           }));
         },
         deleteBank: (id) => {
+          // Check if any accounts reference this bank
+          const accounts = useBankAccountsStore.getState().getAccountsByBank(id);
+          if (accounts.length > 0) {
+            throw new Error(
+              `Cannot delete bank: ${accounts.length} account(s) still reference it. Please delete or reassign the accounts first.`
+            );
+          }
           set((state) => ({
             banks: state.banks.filter((bank) => bank.id !== id),
           }));

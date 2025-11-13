@@ -8,6 +8,13 @@ import type {
   ExpenseTransaction,
   SavingsInvestmentTransaction,
 } from '../types/transactions';
+import type { ExpenseEMI, SavingsInvestmentEMI } from '../types/emis';
+import type {
+  RecurringIncome,
+  RecurringExpense,
+  RecurringSavingsInvestment,
+} from '../types/recurring';
+import type { Bank } from '../types/banks';
 import { calculateRemainingCash } from './formulas';
 
 export type ValidationResult = {
@@ -331,15 +338,34 @@ export function applyDueDateZeroing(
 
 /**
  * Check for data inconsistencies
+ * Extended to check all entity types and their relationships
  */
 export function checkDataInconsistencies(
   accounts: BankAccount[],
   incomeTransactions: IncomeTransaction[],
   expenseTransactions: ExpenseTransaction[],
   savingsTransactions: SavingsInvestmentTransaction[],
+  expenseEMIs?: ExpenseEMI[],
+  savingsEMIs?: SavingsInvestmentEMI[],
+  recurringIncomes?: RecurringIncome[],
+  recurringExpenses?: RecurringExpense[],
+  recurringSavings?: RecurringSavingsInvestment[],
+  banks?: Bank[],
 ): ValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
+
+  const accountIds = new Set(accounts.map((a) => a.id));
+  const bankIds = banks ? new Set(banks.map((b) => b.id)) : new Set<string>();
+
+  // Check for accounts with invalid bank references
+  if (banks) {
+    accounts.forEach((account) => {
+      if (!bankIds.has(account.bankId)) {
+        errors.push(`Account "${account.name}" references non-existent bank: ${account.bankId}`);
+      }
+    });
+  }
 
   // Check for accounts with negative balances (non-credit cards)
   accounts.forEach((account) => {
@@ -349,12 +375,110 @@ export function checkDataInconsistencies(
   });
 
   // Check for transactions with invalid account references
-  const accountIds = new Set(accounts.map((a) => a.id));
   [...incomeTransactions, ...expenseTransactions, ...savingsTransactions].forEach((t) => {
     if (!accountIds.has(t.accountId)) {
       errors.push(`Transaction references non-existent account: ${t.accountId}`);
     }
   });
+
+  // Check for transactions with invalid recurring template references
+  if (recurringIncomes) {
+    const recurringIncomeIds = new Set(recurringIncomes.map((r) => r.id));
+    incomeTransactions.forEach((t) => {
+      if (t.recurringTemplateId && !recurringIncomeIds.has(t.recurringTemplateId)) {
+        errors.push(`Income transaction references non-existent recurring template: ${t.recurringTemplateId}`);
+      }
+    });
+  }
+
+  if (recurringExpenses) {
+    const recurringExpenseIds = new Set(recurringExpenses.map((r) => r.id));
+    expenseTransactions.forEach((t) => {
+      if (t.recurringTemplateId && !recurringExpenseIds.has(t.recurringTemplateId)) {
+        errors.push(`Expense transaction references non-existent recurring template: ${t.recurringTemplateId}`);
+      }
+    });
+  }
+
+  if (recurringSavings) {
+    const recurringSavingsIds = new Set(recurringSavings.map((r) => r.id));
+    savingsTransactions.forEach((t) => {
+      if (t.recurringTemplateId && !recurringSavingsIds.has(t.recurringTemplateId)) {
+        errors.push(`Savings transaction references non-existent recurring template: ${t.recurringTemplateId}`);
+      }
+    });
+  }
+
+  // Check for transactions with invalid EMI references
+  if (expenseEMIs) {
+    const expenseEMIIds = new Set(expenseEMIs.map((e) => e.id));
+    expenseTransactions.forEach((t) => {
+      if (t.emiId && !expenseEMIIds.has(t.emiId)) {
+        errors.push(`Expense transaction references non-existent EMI: ${t.emiId}`);
+      }
+    });
+  }
+
+  if (savingsEMIs) {
+    const savingsEMIIds = new Set(savingsEMIs.map((e) => e.id));
+    savingsTransactions.forEach((t) => {
+      if (t.emiId && !savingsEMIIds.has(t.emiId)) {
+        errors.push(`Savings transaction references non-existent EMI: ${t.emiId}`);
+      }
+    });
+  }
+
+  // Check for EMIs with invalid account references
+  if (expenseEMIs) {
+    expenseEMIs.forEach((emi) => {
+      if (!accountIds.has(emi.accountId)) {
+        errors.push(`Expense EMI "${emi.name}" references non-existent account: ${emi.accountId}`);
+      }
+      if (emi.creditCardId && !accountIds.has(emi.creditCardId)) {
+        errors.push(`Expense EMI "${emi.name}" references non-existent credit card account: ${emi.creditCardId}`);
+      }
+      // Validate credit card account type
+      if (emi.creditCardId) {
+        const creditCard = accounts.find((a) => a.id === emi.creditCardId);
+        if (creditCard && creditCard.accountType !== 'CreditCard') {
+          errors.push(`Expense EMI "${emi.name}" creditCardId references a non-CreditCard account: ${creditCard.accountType}`);
+        }
+      }
+    });
+  }
+
+  if (savingsEMIs) {
+    savingsEMIs.forEach((emi) => {
+      if (!accountIds.has(emi.accountId)) {
+        errors.push(`Savings EMI "${emi.name}" references non-existent account: ${emi.accountId}`);
+      }
+    });
+  }
+
+  // Check for recurring templates with invalid account references
+  if (recurringIncomes) {
+    recurringIncomes.forEach((template) => {
+      if (!accountIds.has(template.accountId)) {
+        errors.push(`Recurring income "${template.name}" references non-existent account: ${template.accountId}`);
+      }
+    });
+  }
+
+  if (recurringExpenses) {
+    recurringExpenses.forEach((template) => {
+      if (!accountIds.has(template.accountId)) {
+        errors.push(`Recurring expense "${template.name}" references non-existent account: ${template.accountId}`);
+      }
+    });
+  }
+
+  if (recurringSavings) {
+    recurringSavings.forEach((template) => {
+      if (!accountIds.has(template.accountId)) {
+        errors.push(`Recurring savings "${template.name}" references non-existent account: ${template.accountId}`);
+      }
+    });
+  }
 
   // Check for transactions with dates in the future (more than reasonable)
   const now = new Date();
