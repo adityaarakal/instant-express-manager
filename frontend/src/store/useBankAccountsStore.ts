@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type { BankAccount } from '../types/bankAccounts';
 import { getLocalforageStorage } from '../utils/storage';
+import { validateAccountBalance, validateAmount } from '../utils/validation';
 
 type BankAccountsState = {
   accounts: BankAccount[];
@@ -23,6 +24,19 @@ export const useBankAccountsStore = create<BankAccountsState>()(
       (set, get) => ({
         accounts: [],
         createAccount: (accountData) => {
+          // Validate account data
+          const amountValidation = validateAmount(accountData.currentBalance, 'Balance');
+          const balanceValidation = validateAccountBalance(accountData as BankAccount);
+          
+          if (!amountValidation.isValid || !balanceValidation.isValid) {
+            const allErrors = [...amountValidation.errors, ...balanceValidation.errors];
+            console.warn('Account validation errors:', allErrors);
+            // Still create the account but log warnings
+            if (allErrors.length > 0 && !allErrors.some(e => e.includes('negative'))) {
+              throw new Error(allErrors.join(', '));
+            }
+          }
+
           const now = new Date().toISOString();
           const newAccount: BankAccount = {
             ...accountData,
@@ -37,13 +51,36 @@ export const useBankAccountsStore = create<BankAccountsState>()(
           }));
         },
         updateAccount: (id, updates) => {
-          set((state) => ({
-            accounts: state.accounts.map((account) =>
-              account.id === id
-                ? { ...account, ...updates, updatedAt: new Date().toISOString() }
-                : account
-            ),
-          }));
+          set((state) => {
+            const account = state.accounts.find((a) => a.id === id);
+            if (!account) return state;
+
+            // Validate balance if being updated
+            if (updates.currentBalance !== undefined) {
+              const amountValidation = validateAmount(updates.currentBalance, 'Balance');
+              const balanceValidation = validateAccountBalance(
+                { ...account, ...updates } as BankAccount,
+                updates.currentBalance,
+              );
+              
+              if (!amountValidation.isValid || !balanceValidation.isValid) {
+                const allErrors = [...amountValidation.errors, ...balanceValidation.errors];
+                console.warn('Account update validation errors:', allErrors);
+                // Still update but log warnings
+                if (allErrors.length > 0 && !allErrors.some(e => e.includes('negative'))) {
+                  throw new Error(allErrors.join(', '));
+                }
+              }
+            }
+
+            return {
+              accounts: state.accounts.map((account) =>
+                account.id === id
+                  ? { ...account, ...updates, updatedAt: new Date().toISOString() }
+                  : account
+              ),
+            };
+          });
         },
         deleteAccount: (id) => {
           set((state) => ({
@@ -60,17 +97,35 @@ export const useBankAccountsStore = create<BankAccountsState>()(
           return get().accounts.filter((account) => account.accountType === type);
         },
         updateAccountBalance: (id, newBalance) => {
-          set((state) => ({
-            accounts: state.accounts.map((account) =>
-              account.id === id
-                ? {
-                    ...account,
-                    currentBalance: newBalance,
-                    updatedAt: new Date().toISOString(),
-                  }
-                : account
-            ),
-          }));
+          set((state) => {
+            const account = state.accounts.find((a) => a.id === id);
+            if (!account) return state;
+
+            // Validate balance
+            const amountValidation = validateAmount(newBalance, 'Balance');
+            const balanceValidation = validateAccountBalance(account, newBalance);
+            
+            if (!amountValidation.isValid || !balanceValidation.isValid) {
+              const allErrors = [...amountValidation.errors, ...balanceValidation.errors];
+              console.warn('Balance update validation errors:', allErrors);
+              // Still update but log warnings
+              if (allErrors.length > 0 && !allErrors.some(e => e.includes('negative'))) {
+                throw new Error(allErrors.join(', '));
+              }
+            }
+
+            return {
+              accounts: state.accounts.map((account) =>
+                account.id === id
+                  ? {
+                      ...account,
+                      currentBalance: newBalance,
+                      updatedAt: new Date().toISOString(),
+                    }
+                  : account
+              ),
+            };
+          });
         },
       }),
       {

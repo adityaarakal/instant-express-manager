@@ -15,6 +15,7 @@ import type {
   SavingsInvestmentTransaction,
 } from '../types/transactions';
 import { calculateRemainingCash } from './formulas';
+import { applyDueDateZeroing } from './validation';
 import { DEFAULT_BUCKETS } from '../config/plannedExpenses';
 
 /**
@@ -63,10 +64,16 @@ export function aggregateMonth(
     const savingsTransfer = accountSavings.reduce((sum, t) => sum + t.amount, 0) || null;
 
     // Calculate bucket amounts from expense transactions
+    // Apply due date zeroing logic: if due date has passed, amount becomes 0
     const bucketAmounts: Record<string, number | null> = {};
+    const today = new Date();
     bucketOrder.forEach((bucketId) => {
       const bucketExpenses = accountExpenses.filter((t) => t.bucket === bucketId);
-      const total = bucketExpenses.reduce((sum, t) => sum + t.amount, 0);
+      const total = bucketExpenses.reduce((sum, t) => {
+        // Apply due date zeroing: if due date has passed, don't count the amount
+        const effectiveAmount = applyDueDateZeroing(t.amount, t.dueDate, today);
+        return sum + effectiveAmount;
+      }, 0);
       bucketAmounts[bucketId] = total > 0 ? total : null;
     });
 

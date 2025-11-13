@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogActions,
@@ -11,6 +11,8 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Alert,
+  AlertTitle,
 } from '@mui/material';
 import type {
   IncomeTransaction,
@@ -18,6 +20,15 @@ import type {
   SavingsInvestmentTransaction,
 } from '../../types/transactions';
 import type { BankAccount } from '../../types/bankAccounts';
+import {
+  validateTransaction,
+  validateAmount,
+  validateDate,
+  validateDateRange,
+} from '../../utils/validation';
+import { useIncomeTransactionsStore } from '../../store/useIncomeTransactionsStore';
+import { useExpenseTransactionsStore } from '../../store/useExpenseTransactionsStore';
+import { useSavingsInvestmentTransactionsStore } from '../../store/useSavingsInvestmentTransactionsStore';
 
 type TabValue = 'income' | 'expense' | 'savings';
 
@@ -58,6 +69,31 @@ export function TransactionFormDialog({
     sipNumber: '',
     notes: '',
   });
+
+  // Get all transactions for validation
+  const incomeTransactions = useIncomeTransactionsStore((state) => state.transactions);
+  const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
+  const savingsTransactions = useSavingsInvestmentTransactionsStore((state) => state.transactions);
+
+  // Real-time validation
+  const validation = useMemo(() => {
+    const selectedAccount = accounts.find((a) => a.id === formData.accountId);
+    if (!selectedAccount) {
+      return { isValid: false, errors: ['Please select an account'], warnings: [] };
+    }
+
+    const allTransactions = [...incomeTransactions, ...expenseTransactions, ...savingsTransactions];
+    const transactionData: Partial<IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction> = {
+      accountId: formData.accountId,
+      amount: formData.amount,
+      date: formData.date,
+      ...(type === 'expense' && formData.dueDate ? { dueDate: formData.dueDate } : {}),
+      ...(type === 'expense' ? { status: formData.status as 'Pending' | 'Paid' } : {}),
+      ...(type === 'savings' ? { status: formData.status as 'Pending' | 'Completed' } : {}),
+    };
+
+    return validateTransaction(transactionData, selectedAccount, allTransactions);
+  }, [formData, accounts, type, incomeTransactions, expenseTransactions, savingsTransactions]);
 
   useEffect(() => {
     if (editingTransaction) {
@@ -142,6 +178,12 @@ export function TransactionFormDialog({
 
   const handleSave = () => {
     if (!formData.accountId || formData.amount <= 0) return;
+    
+    // Check validation before saving
+    if (!validation.isValid) {
+      // Show errors but allow saving with warnings
+      console.warn('Validation errors:', validation.errors);
+    }
 
     if (type === 'income') {
       onSave({
@@ -191,6 +233,30 @@ export function TransactionFormDialog({
       </DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
+          {/* Validation Errors */}
+          {validation.errors.length > 0 && (
+            <Alert severity="error">
+              <AlertTitle>Validation Errors</AlertTitle>
+              <ul style={{ margin: 0, paddingLeft: 20 }}>
+                {validation.errors.map((error, idx) => (
+                  <li key={idx}>{error}</li>
+                ))}
+              </ul>
+            </Alert>
+          )}
+
+          {/* Validation Warnings */}
+          {validation.warnings.length > 0 && (
+            <Alert severity="warning">
+              <AlertTitle>Warnings</AlertTitle>
+              <ul style={{ margin: 0, paddingLeft: 20 }}>
+                {validation.warnings.map((warning, idx) => (
+                  <li key={idx}>{warning}</li>
+                ))}
+              </ul>
+            </Alert>
+          )}
+
           <TextField
             label="Date"
             type="date"
@@ -394,7 +460,11 @@ export function TransactionFormDialog({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSave} variant="contained" disabled={!formData.accountId || formData.amount <= 0}>
+        <Button
+          onClick={handleSave}
+          variant="contained"
+          disabled={!formData.accountId || formData.amount <= 0 || validation.errors.length > 0}
+        >
           {editingTransaction ? 'Update' : 'Create'}
         </Button>
       </DialogActions>

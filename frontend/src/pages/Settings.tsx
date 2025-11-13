@@ -21,6 +21,7 @@ import RestoreIcon from '@mui/icons-material/Restore';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { ThemeModeToggle } from '../components/layout/ThemeModeToggle';
+import { DataHealthCheck } from '../components/common/DataHealthCheck';
 
 const CURRENCIES = [
   { code: 'INR', name: 'Indian Rupee (₹)' },
@@ -194,6 +195,13 @@ export function Settings() {
                 </Paper>
               ))}
             </Stack>
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Data Health</Typography>
+            <DataHealthCheck />
           </Stack>
 
           <Divider />

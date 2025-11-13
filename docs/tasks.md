@@ -172,14 +172,14 @@ This document lists every major task required to build the complete financial ma
 - [x] Run periodically (every hour or on visibility change)
 - [x] Handle edge cases (past due dates, completed items)
 
-### Task 15 – Data Validation & Business Rules *(Pending)*
-- [ ] Implement remaining cash calculation
-- [ ] Implement due date zeroing logic
-- [ ] Add validation:
-  - [ ] Prevent negative account balances (with warning)
-  - [ ] Validate date ranges
-  - [ ] Validate amounts
-- [ ] Add warnings for data inconsistencies
+### Task 15 – Data Validation & Business Rules *(Completed)*
+- [x] Implement remaining cash calculation
+- [x] Implement due date zeroing logic
+- [x] Add validation:
+  - [x] Prevent negative account balances (with warning)
+  - [x] Validate date ranges
+  - [x] Validate amounts
+- [x] Add warnings for data inconsistencies
 
 ---
 
