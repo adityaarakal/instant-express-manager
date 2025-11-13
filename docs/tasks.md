@@ -185,12 +185,12 @@ This document lists every major task required to build the complete financial ma
 
 ## Phase 7 — Migration & Cleanup
 
-### Task 16 – Remove Old Code *(Pending)*
-- [ ] Remove Excel import/export functionality
-- [ ] Remove old `PlannedMonthSnapshot` data model
+### Task 16 – Remove Old Code *(In Progress)*
+- [x] Remove Excel import/export functionality
+- [ ] Remove old `PlannedMonthSnapshot` data model (kept for backward compatibility)
 - [ ] Remove seed data based on old model
-- [ ] Clean up unused components
-- [ ] Update all references
+- [x] Clean up unused components (ImportDialog, ExportDialog, TemplatesDialog, ManualAdjustmentsDialog)
+- [x] Update all references (Planner, MonthViewHeader)
 
 ### Task 17 – One-Time Data Migration (Optional) *(Pending)*
 - [ ] Create migration script to convert old data to new structure
