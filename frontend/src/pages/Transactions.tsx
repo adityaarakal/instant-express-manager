@@ -65,7 +65,9 @@ export function Transactions() {
   const { accounts } = useBankAccountsStore();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<string | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<
+    IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction | null
+  >(null);
 
   const accountsMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -74,7 +76,20 @@ export function Transactions() {
   }, [accounts]);
 
   const handleOpenDialog = (transactionId?: string) => {
-    setEditingTransaction(transactionId || null);
+    if (transactionId) {
+      if (activeTab === 'income') {
+        const t = incomeTransactions.find((t) => t.id === transactionId);
+        setEditingTransaction(t || null);
+      } else if (activeTab === 'expense') {
+        const t = expenseTransactions.find((t) => t.id === transactionId);
+        setEditingTransaction(t || null);
+      } else {
+        const t = savingsTransactions.find((t) => t.id === transactionId);
+        setEditingTransaction(t || null);
+      }
+    } else {
+      setEditingTransaction(null);
+    }
     setDialogOpen(true);
   };
 
@@ -267,20 +282,34 @@ export function Transactions() {
         </TableContainer>
       </Paper>
 
-      {/* Transaction Dialog - will be implemented in next step */}
-      <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-        <DialogTitle>
-          {editingTransaction ? 'Edit Transaction' : `Add ${activeTab === 'income' ? 'Income' : activeTab === 'expense' ? 'Expense' : 'Savings/Investment'} Transaction`}
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
-            Transaction form will be implemented next.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>Close</Button>
-        </DialogActions>
-      </Dialog>
+      <TransactionFormDialog
+        open={dialogOpen}
+        onClose={handleCloseDialog}
+        type={activeTab}
+        accounts={accounts}
+        editingTransaction={editingTransaction}
+        onSave={(data) => {
+          if (activeTab === 'income') {
+            if (editingTransaction) {
+              updateIncome(editingTransaction.id, data);
+            } else {
+              createIncome(data);
+            }
+          } else if (activeTab === 'expense') {
+            if (editingTransaction) {
+              updateExpense(editingTransaction.id, data);
+            } else {
+              createExpense(data);
+            }
+          } else {
+            if (editingTransaction) {
+              updateSavings(editingTransaction.id, data);
+            } else {
+              createSavings(data);
+            }
+          }
+        }}
+      />
     </Stack>
   );
 }
