@@ -69,6 +69,14 @@ export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
             throw new Error(`Amount validation failed: ${amountValidation.errors.join(', ')}`);
           }
           
+          // Validate totalInstallments
+          if (emiData.totalInstallments <= 0) {
+            throw new Error('Total installments must be greater than 0');
+          }
+          if (!Number.isInteger(emiData.totalInstallments)) {
+            throw new Error('Total installments must be an integer');
+          }
+          
           const now = new Date().toISOString();
           const newEMI: ExpenseEMI = {
             ...emiData,
@@ -129,6 +137,47 @@ export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
             if (!amountValidation.isValid) {
               throw new Error(`Amount validation failed: ${amountValidation.errors.join(', ')}`);
             }
+          }
+          
+          // Validate totalInstallments if being updated
+          if (updates.totalInstallments !== undefined) {
+            const totalInstallments = updates.totalInstallments;
+            if (totalInstallments <= 0) {
+              throw new Error('Total installments must be greater than 0');
+            }
+            if (!Number.isInteger(totalInstallments)) {
+              throw new Error('Total installments must be an integer');
+            }
+            // Check if new totalInstallments is less than current completedInstallments
+            set((state) => {
+              const emi = state.emis.find((e) => e.id === id);
+              if (emi && totalInstallments < emi.completedInstallments) {
+                throw new Error(`Total installments (${totalInstallments}) cannot be less than completed installments (${emi.completedInstallments})`);
+              }
+              return state;
+            });
+          }
+          
+          // Validate completedInstallments if being updated
+          if (updates.completedInstallments !== undefined) {
+            const completedInstallments = updates.completedInstallments;
+            if (completedInstallments < 0) {
+              throw new Error('Completed installments cannot be negative');
+            }
+            if (!Number.isInteger(completedInstallments)) {
+              throw new Error('Completed installments must be an integer');
+            }
+            // Check if completedInstallments exceeds totalInstallments
+            set((state) => {
+              const emi = state.emis.find((e) => e.id === id);
+              if (emi) {
+                const totalInstallments = updates.totalInstallments !== undefined ? updates.totalInstallments : emi.totalInstallments;
+                if (completedInstallments > totalInstallments) {
+                  throw new Error(`Completed installments (${completedInstallments}) cannot exceed total installments (${totalInstallments})`);
+                }
+              }
+              return state;
+            });
           }
           
           set((state) => ({

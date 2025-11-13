@@ -377,9 +377,10 @@ Bank
 #### 11. **Date and Amount Validations** ✅ **COMPLETED**
 - **Status**: ✅ Implemented
 - **Implementation**: Added comprehensive date and amount validations across all entity stores:
-  - **EMI Stores**: Validates `startDate`, `endDate` (date range), and `amount` in `createEMI()` and `updateEMI()`
-    - `useExpenseEMIsStore` - Date range and amount validation
-    - `useSavingsInvestmentEMIsStore` - Date range and amount validation
+  - **EMI Stores**: Validates `startDate`, `endDate` (date range), `amount`, `totalInstallments`, and `completedInstallments` in `createEMI()` and `updateEMI()`
+    - `useExpenseEMIsStore` - Date range, amount, and installment validations
+    - `useSavingsInvestmentEMIsStore` - Date range, amount, and installment validations
+    - Validates: `totalInstallments > 0`, `completedInstallments >= 0`, `completedInstallments <= totalInstallments`
   - **Recurring Template Stores**: Validates `startDate`, `endDate` (if provided), and `amount` in `createTemplate()` and `updateTemplate()`
     - `useRecurringIncomesStore` - Date and amount validation
     - `useRecurringExpensesStore` - Date and amount validation
@@ -389,7 +390,7 @@ Bank
     - `useExpenseTransactionsStore` - Date and amount validation
     - `useSavingsInvestmentTransactionsStore` - Date and amount validation
 - **Location**: All store files in `frontend/src/store/`
-- **Result**: Ensures all dates are valid and within reasonable ranges, and all amounts are non-negative and valid numbers
+- **Result**: Ensures all dates are valid and within reasonable ranges, all amounts are non-negative and valid numbers, and EMI installments are logically consistent
 
 ---
 
@@ -523,6 +524,7 @@ Bank
   - ✅ Date validations (all entities with dates)
   - ✅ Date range validations (EMIs, Recurring templates)
   - ✅ Amount validations (all entities with amounts)
+  - ✅ EMI installment validations (totalInstallments, completedInstallments)
 - **Relationship Queries**: 100% ✅ (All queries implemented)
 
 ---
@@ -567,8 +569,12 @@ All validations, health checks, and relationship queries have been implemented. 
 - ✅ **updateAccount**: Validates `bankId` exists if being updated
 
 ### EMI Stores
-- ✅ **ExpenseEMI**: Validates `accountId`, `creditCardId` (if CCEMI), `startDate`, `endDate` (date range), and `amount`
-- ✅ **SavingsInvestmentEMI**: Validates `accountId`, `startDate`, `endDate` (date range), and `amount`
+- ✅ **ExpenseEMI**: Validates `accountId`, `creditCardId` (if CCEMI), `startDate`, `endDate` (date range), `amount`, `totalInstallments`, and `completedInstallments`
+- ✅ **SavingsInvestmentEMI**: Validates `accountId`, `startDate`, `endDate` (date range), `amount`, `totalInstallments`, and `completedInstallments`
+- **Installment Validations**: 
+  - `totalInstallments > 0` and must be integer
+  - `completedInstallments >= 0` and must be integer
+  - `completedInstallments <= totalInstallments`
 
 ### Recurring Template Stores
 - ✅ **RecurringIncome**: Validates `accountId`, `startDate`, `endDate` (if provided, date range), and `amount`
