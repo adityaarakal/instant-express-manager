@@ -2,11 +2,9 @@ import { useState, useMemo, memo, useEffect } from 'react';
 import { Box, TextField, InputAdornment, Chip, Stack } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
-import type { PlannedMonthSnapshot } from '../../types/plannedExpenses';
-
 interface MonthSearchFilterProps {
-  months: PlannedMonthSnapshot[];
-  onFilterChange: (filteredMonths: PlannedMonthSnapshot[]) => void;
+  months: Array<{ id: string; monthStart: string; accounts: Array<{ accountName: string }> }>;
+  onFilterChange: (filteredMonths: Array<{ id: string; monthStart: string; accounts: Array<{ accountName: string }> }>) => void;
 }
 
 export const MonthSearchFilter = memo(function MonthSearchFilter({

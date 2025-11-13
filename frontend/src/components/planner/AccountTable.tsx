@@ -1,4 +1,4 @@
-import { useMemo, useCallback, memo } from 'react';
+import { useMemo, memo } from 'react';
 import {
   Box,
   Paper,
@@ -11,16 +11,16 @@ import {
   TableRow,
   Typography,
   Tooltip,
+  Button,
 } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
-import type { PlannedMonthSnapshot } from '../../types/plannedExpenses';
+import AddIcon from '@mui/icons-material/Add';
+import type { AggregatedMonth } from '../../types/plannedExpensesAggregated';
 import { DEFAULT_BUCKETS } from '../../config/plannedExpenses';
-import { usePlannedMonthsStore } from '../../store/usePlannedMonthsStore';
-import { EditableCell } from './EditableCell';
 import { EmptyState } from '../common/EmptyState';
 
 interface AccountTableProps {
-  month: PlannedMonthSnapshot;
+  month: AggregatedMonth;
 }
 
 const formatCurrency = (value: number | null | undefined): string => {
@@ -36,24 +36,24 @@ const formatCurrency = (value: number | null | undefined): string => {
 };
 
 export const AccountTable = memo(function AccountTable({ month }: AccountTableProps) {
-  const { updateAccountAllocation } = usePlannedMonthsStore();
   const buckets = useMemo(
     () => DEFAULT_BUCKETS.filter((bucket) => month.bucketOrder.includes(bucket.id)),
     [month.bucketOrder],
   );
 
-  const handleUpdate = useCallback(
-    (accountId: string, updates: Parameters<typeof updateAccountAllocation>[2]) => {
-      updateAccountAllocation(month.id, accountId, updates);
-    },
-    [month.id, updateAccountAllocation],
-  );
-
   if (month.accounts.length === 0) {
     return (
       <EmptyState
+        icon={<AddIcon sx={{ fontSize: 48 }} />}
         title="No Accounts"
-        description="No accounts found for this month. Add accounts or import data to get started."
+        description="No accounts found for this month. Add bank accounts to see allocations."
+        action={{
+          label: 'Add Account',
+          onClick: () => {
+            window.location.href = '/accounts';
+          },
+          icon: <AddIcon />,
+        }}
       />
     );
   }
@@ -99,6 +99,11 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
                 </Typography>
               </TableCell>
             ))}
+            <TableCell align="center">
+              <Typography variant="subtitle2" fontWeight="bold">
+                Actions
+              </Typography>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -131,37 +136,28 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
                 </Typography>
               </TableCell>
               <TableCell align="right">
-                <EditableCell
-                  value={account.fixedBalance}
-                  onSave={(value) => handleUpdate(account.id, { fixedBalance: value })}
-                  align="right"
-                />
+                <Typography variant="body2">{formatCurrency(account.fixedBalance)}</Typography>
               </TableCell>
               <TableCell align="right">
-                <EditableCell
-                  value={account.savingsTransfer}
-                  onSave={(value) => handleUpdate(account.id, { savingsTransfer: value })}
-                  align="right"
-                />
+                <Typography variant="body2">{formatCurrency(account.savingsTransfer)}</Typography>
               </TableCell>
-              {buckets.map((bucket) => {
-                const amount = account.bucketAmounts[bucket.id] ?? null;
-                return (
-                  <TableCell key={bucket.id} align="right">
-                    <EditableCell
-                      value={amount}
-                      onSave={(value) =>
-                        handleUpdate(account.id, {
-                          bucketAmounts: {
-                            [bucket.id]: value,
-                          },
-                        })
-                      }
-                      align="right"
-                    />
-                  </TableCell>
-                );
-              })}
+              {buckets.map((bucket) => (
+                <TableCell key={bucket.id} align="right">
+                  <Typography variant="body2">{formatCurrency(account.bucketAmounts[bucket.id])}</Typography>
+                </TableCell>
+              ))}
+              <TableCell align="center">
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<AddIcon />}
+                  onClick={() => {
+                    window.location.href = '/transactions';
+                  }}
+                >
+                  Add Transaction
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -169,4 +165,3 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
     </TableContainer>
   );
 });
-

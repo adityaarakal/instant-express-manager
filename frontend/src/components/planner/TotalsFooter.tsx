@@ -1,10 +1,10 @@
 import { Box, Paper, Stack, Typography } from '@mui/material';
-import type { PlannedMonthSnapshot } from '../../types/plannedExpenses';
+import type { AggregatedMonth } from '../../types/plannedExpensesAggregated';
 import { DEFAULT_BUCKETS } from '../../config/plannedExpenses';
 import type { BucketTotals } from '../../utils/totals';
 
 interface TotalsFooterProps {
-  month: PlannedMonthSnapshot;
+  month: AggregatedMonth;
   totals: BucketTotals;
 }
 

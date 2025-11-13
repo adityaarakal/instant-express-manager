@@ -1,23 +1,22 @@
 import { Box, Chip, Stack, Typography } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PendingIcon from '@mui/icons-material/Pending';
-import type { AllocationStatus, PlannedMonthSnapshot } from '../../types/plannedExpenses';
+import type { AggregatedMonth } from '../../types/plannedExpensesAggregated';
 import { DEFAULT_BUCKETS } from '../../config/plannedExpenses';
-import { usePlannedMonthsStore } from '../../store/usePlannedMonthsStore';
 
 interface StatusRibbonProps {
-  month: PlannedMonthSnapshot;
+  month: AggregatedMonth;
+  onStatusChange?: (bucketId: string, status: 'Pending' | 'Paid') => void;
 }
 
-export function StatusRibbon({ month }: StatusRibbonProps) {
-  const { updateBucketStatus } = usePlannedMonthsStore();
+export function StatusRibbon({ month, onStatusChange }: StatusRibbonProps) {
   const buckets = DEFAULT_BUCKETS.filter((bucket) =>
     month.bucketOrder.includes(bucket.id),
   );
 
-  const handleStatusToggle = (bucketId: string, currentStatus: AllocationStatus) => {
-    const newStatus: AllocationStatus = currentStatus === 'paid' ? 'pending' : 'paid';
-    updateBucketStatus(month.id, bucketId, newStatus);
+  const handleStatusToggle = (bucketId: string, currentStatus: 'Pending' | 'Paid') => {
+    const newStatus: 'Pending' | 'Paid' = currentStatus === 'Paid' ? 'Pending' : 'Paid';
+    onStatusChange?.(bucketId, newStatus);
   };
 
   return (
@@ -27,9 +26,9 @@ export function StatusRibbon({ month }: StatusRibbonProps) {
       </Typography>
       <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
         {buckets.map((bucket) => {
-          const status: AllocationStatus =
-            month.statusByBucket[bucket.id] ?? bucket.defaultStatus;
-          const isPaid = status === 'paid';
+          const status: 'Pending' | 'Paid' =
+            month.statusByBucket[bucket.id] ?? 'Pending';
+          const isPaid = status === 'Paid';
 
           return (
             <Chip
