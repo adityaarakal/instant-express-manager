@@ -35,7 +35,7 @@ export function TotalsFooter({ month, totals }: TotalsFooterProps) {
           const pending = totals.pending[bucket.id] ?? 0;
           const paid = totals.paid[bucket.id] ?? 0;
           const all = totals.all[bucket.id] ?? 0;
-          const status = month.statusByBucket[bucket.id] ?? bucket.defaultStatus;
+          const status = month.statusByBucket[bucket.id] ?? 'Pending';
 
           return (
             <Box
@@ -66,12 +66,12 @@ export function TotalsFooter({ month, totals }: TotalsFooterProps) {
                 </Typography>
               </Box>
               <Stack direction="row" spacing={2} alignItems="center">
-                {status === 'pending' && pending > 0 && (
+                {status === 'Pending' && pending > 0 && (
                   <Typography variant="body2" color="warning.main">
                     Pending: {formatCurrency(pending)}
                   </Typography>
                 )}
-                {status === 'paid' && paid > 0 && (
+                {status === 'Paid' && paid > 0 && (
                   <Typography variant="body2" color="success.main">
                     Paid: {formatCurrency(paid)}
                   </Typography>
