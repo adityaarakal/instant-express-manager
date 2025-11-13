@@ -28,10 +28,20 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DownloadIcon from '@mui/icons-material/Download';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore';
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
+import { TransactionFilters, type FilterState } from '../components/transactions/TransactionFilters';
+import {
+  exportIncomeTransactionsToCSV,
+  exportExpenseTransactionsToCSV,
+  exportSavingsTransactionsToCSV,
+  downloadCSV,
+} from '../utils/transactionExport';
 import type {
   IncomeTransaction,
   ExpenseTransaction,
@@ -68,12 +78,63 @@ export function Transactions() {
   const [editingTransaction, setEditingTransaction] = useState<
     IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction | null
   >(null);
+  const [filters, setFilters] = useState<FilterState>({
+    dateFrom: '',
+    dateTo: '',
+    accountId: '',
+    category: '',
+    status: '',
+    searchTerm: '',
+  });
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const accountsMap = useMemo(() => {
     const map = new Map<string, string>();
     accounts.forEach((acc) => map.set(acc.id, acc.name));
     return map;
   }, [accounts]);
+
+  // Filter transactions based on current filters
+  const filteredTransactions = useMemo(() => {
+    let transactions: (IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction)[] = [];
+
+    if (activeTab === 'income') {
+      transactions = incomeTransactions;
+    } else if (activeTab === 'expense') {
+      transactions = expenseTransactions;
+    } else {
+      transactions = savingsTransactions;
+    }
+
+    return transactions.filter((t) => {
+      // Date range filter
+      if (filters.dateFrom && t.date < filters.dateFrom) return false;
+      if (filters.dateTo && t.date > filters.dateTo) return false;
+
+      // Account filter
+      if (filters.accountId && t.accountId !== filters.accountId) return false;
+
+      // Category filter
+      if (filters.category) {
+        if (activeTab === 'income' && (t as IncomeTransaction).category !== filters.category) return false;
+        if (activeTab === 'expense' && (t as ExpenseTransaction).category !== filters.category) return false;
+        if (activeTab === 'savings' && (t as SavingsInvestmentTransaction).type !== filters.category) return false;
+      }
+
+      // Status filter
+      if (filters.status && t.status !== filters.status) return false;
+
+      // Search term filter
+      if (filters.searchTerm) {
+        const searchLower = filters.searchTerm.toLowerCase();
+        const matchesDescription = t.description.toLowerCase().includes(searchLower);
+        const matchesAccount = (accountsMap.get(t.accountId) || '').toLowerCase().includes(searchLower);
+        if (!matchesDescription && !matchesAccount) return false;
+      }
+
+      return true;
+    });
+  }, [activeTab, incomeTransactions, expenseTransactions, savingsTransactions, filters, accountsMap]);
 
   const handleOpenDialog = (transactionId?: string) => {
     if (transactionId) {
@@ -106,19 +167,114 @@ export function Transactions() {
     }
   };
 
+  const handleBulkDelete = () => {
+    if (selectedIds.size === 0) return;
+    if (window.confirm(`Are you sure you want to delete ${selectedIds.size} transaction(s)?`)) {
+      selectedIds.forEach((id) => {
+        if (activeTab === 'income') deleteIncome(id);
+        else if (activeTab === 'expense') deleteExpense(id);
+        else deleteSavings(id);
+      });
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleBulkStatusUpdate = (newStatus: string) => {
+    if (selectedIds.size === 0) return;
+    selectedIds.forEach((id) => {
+      if (activeTab === 'income') {
+        updateIncome(id, { status: newStatus as 'Pending' | 'Received' });
+      } else if (activeTab === 'expense') {
+        updateExpense(id, { status: newStatus as 'Pending' | 'Paid' });
+      } else {
+        updateSavings(id, { status: newStatus as 'Pending' | 'Completed' });
+      }
+    });
+    setSelectedIds(new Set());
+  };
+
+  const handleExport = () => {
+    let csvContent = '';
+    let filename = '';
+
+    if (activeTab === 'income') {
+      csvContent = exportIncomeTransactionsToCSV(filteredTransactions as IncomeTransaction[], accounts);
+      filename = `income-transactions-${new Date().toISOString().split('T')[0]}.csv`;
+    } else if (activeTab === 'expense') {
+      csvContent = exportExpenseTransactionsToCSV(filteredTransactions as ExpenseTransaction[], accounts);
+      filename = `expense-transactions-${new Date().toISOString().split('T')[0]}.csv`;
+    } else {
+      csvContent = exportSavingsTransactionsToCSV(filteredTransactions as SavingsInvestmentTransaction[], accounts);
+      filename = `savings-transactions-${new Date().toISOString().split('T')[0]}.csv`;
+    }
+
+    downloadCSV(csvContent, filename);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === filteredTransactions.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredTransactions.map((t) => t.id)));
+    }
+  };
+
+  const handleSelectTransaction = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
   return (
     <Stack spacing={3}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h4">Transactions</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpenDialog()}
-          disabled={accounts.length === 0}
-        >
-          Add Transaction
-        </Button>
+        <Stack direction="row" spacing={2}>
+          {selectedIds.size > 0 && (
+            <>
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  if (activeTab === 'income') {
+                    handleBulkStatusUpdate('Received');
+                  } else if (activeTab === 'expense') {
+                    handleBulkStatusUpdate('Paid');
+                  } else {
+                    handleBulkStatusUpdate('Completed');
+                  }
+                }}
+              >
+                Mark as {activeTab === 'income' ? 'Received' : activeTab === 'expense' ? 'Paid' : 'Completed'} ({selectedIds.size})
+              </Button>
+              <Button variant="outlined" color="error" onClick={handleBulkDelete}>
+                Delete ({selectedIds.size})
+              </Button>
+            </>
+          )}
+          <Button
+            variant="outlined"
+            startIcon={<DownloadIcon />}
+            onClick={handleExport}
+            disabled={filteredTransactions.length === 0}
+          >
+            Export CSV
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenDialog()}
+            disabled={accounts.length === 0}
+          >
+            Add Transaction
+          </Button>
+        </Stack>
       </Box>
+
+      <TransactionFilters type={activeTab} accounts={accounts} onFilterChange={setFilters} />
 
       <Paper>
         <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
@@ -131,6 +287,15 @@ export function Transactions() {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell padding="checkbox">
+                  <IconButton size="small" onClick={handleSelectAll}>
+                    {selectedIds.size === filteredTransactions.length && filteredTransactions.length > 0 ? (
+                      <CheckBoxIcon fontSize="small" />
+                    ) : (
+                      <CheckBoxOutlineBlankIcon fontSize="small" />
+                    )}
+                  </IconButton>
+                </TableCell>
                 <TableCell>Date</TableCell>
                 <TableCell>Account</TableCell>
                 {activeTab === 'income' && <TableCell>Category</TableCell>}
@@ -155,19 +320,33 @@ export function Transactions() {
             <TableBody>
               {activeTab === 'income' && (
                 <>
-                  {incomeTransactions.length === 0 ? (
+                  {filteredTransactions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} align="center">
+                      <TableCell colSpan={8} align="center">
                         <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
-                          No income transactions found.
+                          {incomeTransactions.length === 0
+                            ? 'No income transactions found.'
+                            : 'No transactions match the current filters.'}
                         </Typography>
                       </TableCell>
                     </TableRow>
                   ) : (
-                    incomeTransactions
+                    (filteredTransactions as IncomeTransaction[])
                       .sort((a, b) => b.date.localeCompare(a.date))
                       .map((transaction) => (
                         <TableRow key={transaction.id} hover>
+                          <TableCell padding="checkbox">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleSelectTransaction(transaction.id)}
+                            >
+                              {selectedIds.has(transaction.id) ? (
+                                <CheckBoxIcon fontSize="small" />
+                              ) : (
+                                <CheckBoxOutlineBlankIcon fontSize="small" />
+                              )}
+                            </IconButton>
+                          </TableCell>
                           <TableCell>{formatDate(transaction.date)}</TableCell>
                           <TableCell>{accountsMap.get(transaction.accountId) || '—'}</TableCell>
                           <TableCell>{transaction.category}</TableCell>
@@ -196,19 +375,33 @@ export function Transactions() {
 
               {activeTab === 'expense' && (
                 <>
-                  {expenseTransactions.length === 0 ? (
+                  {filteredTransactions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} align="center">
+                      <TableCell colSpan={9} align="center">
                         <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
-                          No expense transactions found.
+                          {expenseTransactions.length === 0
+                            ? 'No expense transactions found.'
+                            : 'No transactions match the current filters.'}
                         </Typography>
                       </TableCell>
                     </TableRow>
                   ) : (
-                    expenseTransactions
+                    (filteredTransactions as ExpenseTransaction[])
                       .sort((a, b) => b.date.localeCompare(a.date))
                       .map((transaction) => (
                         <TableRow key={transaction.id} hover>
+                          <TableCell padding="checkbox">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleSelectTransaction(transaction.id)}
+                            >
+                              {selectedIds.has(transaction.id) ? (
+                                <CheckBoxIcon fontSize="small" />
+                              ) : (
+                                <CheckBoxOutlineBlankIcon fontSize="small" />
+                              )}
+                            </IconButton>
+                          </TableCell>
                           <TableCell>{formatDate(transaction.date)}</TableCell>
                           <TableCell>{accountsMap.get(transaction.accountId) || '—'}</TableCell>
                           <TableCell>{transaction.category}</TableCell>
@@ -238,19 +431,33 @@ export function Transactions() {
 
               {activeTab === 'savings' && (
                 <>
-                  {savingsTransactions.length === 0 ? (
+                  {filteredTransactions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} align="center">
+                      <TableCell colSpan={9} align="center">
                         <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
-                          No savings/investment transactions found.
+                          {savingsTransactions.length === 0
+                            ? 'No savings/investment transactions found.'
+                            : 'No transactions match the current filters.'}
                         </Typography>
                       </TableCell>
                     </TableRow>
                   ) : (
-                    savingsTransactions
+                    (filteredTransactions as SavingsInvestmentTransaction[])
                       .sort((a, b) => b.date.localeCompare(a.date))
                       .map((transaction) => (
                         <TableRow key={transaction.id} hover>
+                          <TableCell padding="checkbox">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleSelectTransaction(transaction.id)}
+                            >
+                              {selectedIds.has(transaction.id) ? (
+                                <CheckBoxIcon fontSize="small" />
+                              ) : (
+                                <CheckBoxOutlineBlankIcon fontSize="small" />
+                              )}
+                            </IconButton>
+                          </TableCell>
                           <TableCell>{formatDate(transaction.date)}</TableCell>
                           <TableCell>{accountsMap.get(transaction.accountId) || '—'}</TableCell>
                           <TableCell>{transaction.type}</TableCell>
