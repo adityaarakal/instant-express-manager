@@ -28,7 +28,7 @@ export function aggregateMonth(
   savingsTransactions: SavingsInvestmentTransaction[],
   fixedFactor: number,
   statusByBucket: Record<string, 'Pending' | 'Paid'> = {},
-): AggregatedMonth | null => {
+): AggregatedMonth | null {
   const [year, month] = monthId.split('-');
   const monthStart = `${year}-${month}-01`;
   const startDate = `${year}-${month}-01`;
