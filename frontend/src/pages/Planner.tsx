@@ -35,7 +35,6 @@ const formatMonthDate = (dateString: string): string => {
 export const Planner = memo(function Planner() {
   const { getMonth, getAvailableMonths, getBucketTotals, updateBucketStatus } = useAggregatedPlannedMonthsStore();
   const { activeMonthId, setActiveMonth } = usePlannerStore();
-  const [adjustmentsDialogOpen, setAdjustmentsDialogOpen] = useState(false);
   const [filteredMonths, setFilteredMonths] = useState<string[]>([]);
 
   // Keyboard shortcuts
@@ -130,7 +129,6 @@ export const Planner = memo(function Planner() {
         <Stack spacing={3}>
           <MonthViewHeader
             month={activeMonth}
-            onAdjustmentsClick={() => setAdjustmentsDialogOpen(true)}
           />
           <StatusRibbon
             month={activeMonth}

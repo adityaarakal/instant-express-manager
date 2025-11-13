@@ -1,12 +1,10 @@
 import { Box, Button, Chip, Paper, Stack, Typography } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import TuneIcon from '@mui/icons-material/Tune';
 import type { AggregatedMonth } from '../../types/plannedExpensesAggregated';
 
 interface MonthViewHeaderProps {
   month: AggregatedMonth;
-  onAdjustmentsClick?: () => void;
 }
 
 const formatCurrency = (value: number | null | undefined): string => {
@@ -29,11 +27,7 @@ const formatMonthDate = (dateString: string): string => {
   }).format(date);
 };
 
-export function MonthViewHeader({ month, onAdjustmentsClick }: MonthViewHeaderProps) {
-  const totalAdjustments = (month.manualAdjustments ?? []).reduce(
-    (sum, adj) => sum + adj.amount,
-    0,
-  );
+export function MonthViewHeader({ month }: MonthViewHeaderProps) {
 
   return (
     <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
@@ -92,25 +86,6 @@ export function MonthViewHeader({ month, onAdjustmentsClick }: MonthViewHeaderPr
               color="error"
               variant="outlined"
             />
-          )}
-          {onAdjustmentsClick && (
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<TuneIcon />}
-              onClick={onAdjustmentsClick}
-              sx={{ whiteSpace: 'nowrap' }}
-            >
-              Adjustments
-              {totalAdjustments !== 0 && (
-                <Chip
-                  label={formatCurrency(Math.abs(totalAdjustments))}
-                  size="small"
-                  color={totalAdjustments >= 0 ? 'success' : 'error'}
-                  sx={{ ml: 1, height: 20 }}
-                />
-              )}
-            </Button>
           )}
         </Stack>
       </Stack>
