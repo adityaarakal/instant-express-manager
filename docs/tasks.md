@@ -227,6 +227,7 @@ This document lists every major task required to build the complete financial ma
 - ✅ Transaction filters and export (Task 9)
 - ✅ Old code cleanup (Task 16 - partial, old stores kept for compatibility)
 - ✅ Analytics page (Task 13)
+- ✅ Data Validation & Business Rules (Task 15)
 
 ---
 
