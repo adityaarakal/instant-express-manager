@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import {
+  Alert,
+  AlertTitle,
   Box,
   Button,
   Dialog,
@@ -238,6 +240,12 @@ export function Transactions() {
 
   return (
     <Stack spacing={3}>
+      {accounts.length === 0 && (
+        <Alert severity="info">
+          <AlertTitle>No Bank Accounts</AlertTitle>
+          Please create at least one bank account before adding transactions. Go to <strong>Banks</strong> page to create a bank and account.
+        </Alert>
+      )}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h4">Transactions</Typography>
         <Stack direction="row" spacing={2}>
@@ -275,6 +283,7 @@ export function Transactions() {
             startIcon={<AddIcon />}
             onClick={() => handleOpenDialog()}
             disabled={accounts.length === 0}
+            title={accounts.length === 0 ? 'Please create at least one bank account first' : ''}
           >
             Add Transaction
           </Button>
