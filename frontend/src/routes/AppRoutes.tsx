@@ -7,6 +7,7 @@ import { Transactions } from '../pages/Transactions';
 import { EMIs } from '../pages/EMIs';
 import { Recurring } from '../pages/Recurring';
 import { Planner } from '../pages/Planner';
+import { Analytics } from '../pages/Analytics';
 import { Settings } from '../pages/Settings';
 
 export function AppRoutes() {
@@ -19,6 +20,7 @@ export function AppRoutes() {
       <Route path="/emis" element={<EMIs />} />
       <Route path="/recurring" element={<Recurring />} />
       <Route path="/planner" element={<Planner />} />
+      <Route path="/analytics" element={<Analytics />} />
       <Route path="/settings" element={<Settings />} />
     </Routes>
   );
