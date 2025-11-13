@@ -1,0 +1,516 @@
+import { useState, useMemo } from 'react';
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+  IconButton,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Tabs,
+  Tab,
+  Chip,
+  LinearProgress,
+  Link,
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import PauseIcon from '@mui/icons-material/Pause';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import { useExpenseEMIsStore } from '../store/useExpenseEMIsStore';
+import { useSavingsInvestmentEMIsStore } from '../store/useSavingsInvestmentEMIsStore';
+import { useBankAccountsStore } from '../store/useBankAccountsStore';
+import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
+import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
+import type { ExpenseEMI, SavingsInvestmentEMI } from '../types/emis';
+
+const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+};
+
+const formatDate = (dateString: string): string => {
+  return new Intl.DateTimeFormat('en-IN', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(new Date(dateString));
+};
+
+type TabValue = 'expense' | 'savings';
+
+export function EMIs() {
+  const [activeTab, setActiveTab] = useState<TabValue>('expense');
+  const { emis: expenseEMIs, createEMI: createExpenseEMI, updateEMI: updateExpenseEMI, deleteEMI: deleteExpenseEMI, pauseEMI: pauseExpenseEMI, resumeEMI: resumeExpenseEMI, getGeneratedTransactions: getExpenseGeneratedTransactions } = useExpenseEMIsStore();
+  const { emis: savingsEMIs, createEMI: createSavingsEMI, updateEMI: updateSavingsEMI, deleteEMI: deleteSavingsEMI, pauseEMI: pauseSavingsEMI, resumeEMI: resumeSavingsEMI, getGeneratedTransactions: getSavingsGeneratedTransactions } = useSavingsInvestmentEMIsStore();
+  const { accounts } = useBankAccountsStore();
+  const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
+  const savingsTransactions = useSavingsInvestmentTransactionsStore((state) => state.transactions);
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingEMI, setEditingEMI] = useState<ExpenseEMI | SavingsInvestmentEMI | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: '',
+    amount: 0,
+    accountId: accounts[0]?.id || '',
+    frequency: 'Monthly' as 'Monthly' | 'Quarterly',
+    totalInstallments: 12,
+    // Expense specific
+    category: 'Other' as ExpenseEMI['category'],
+    creditCardId: '',
+    // Savings specific
+    destination: '',
+    notes: '',
+  });
+
+  const accountsMap = useMemo(() => {
+    const map = new Map<string, string>();
+    accounts.forEach((acc) => map.set(acc.id, acc.name));
+    return map;
+  }, [accounts]);
+
+  const handleOpenDialog = (emi?: ExpenseEMI | SavingsInvestmentEMI) => {
+    if (emi) {
+      setEditingEMI(emi);
+      if (activeTab === 'expense') {
+        const e = emi as ExpenseEMI;
+        setFormData({
+          name: e.name,
+          startDate: e.startDate,
+          endDate: e.endDate,
+          amount: e.amount,
+          accountId: e.accountId,
+          frequency: e.frequency,
+          totalInstallments: e.totalInstallments,
+          category: e.category,
+          creditCardId: e.creditCardId || '',
+          destination: '',
+          notes: e.notes || '',
+        });
+      } else {
+        const s = emi as SavingsInvestmentEMI;
+        setFormData({
+          name: s.name,
+          startDate: s.startDate,
+          endDate: s.endDate,
+          amount: s.amount,
+          accountId: s.accountId,
+          frequency: s.frequency,
+          totalInstallments: s.totalInstallments,
+          category: 'Other',
+          creditCardId: '',
+          destination: s.destination,
+          notes: s.notes || '',
+        });
+      }
+    } else {
+      setEditingEMI(null);
+      setFormData({
+        name: '',
+        startDate: new Date().toISOString().split('T')[0],
+        endDate: '',
+        amount: 0,
+        accountId: accounts[0]?.id || '',
+        frequency: 'Monthly',
+        totalInstallments: 12,
+        category: 'Other',
+        creditCardId: '',
+        destination: '',
+        notes: '',
+      });
+    }
+    setDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setEditingEMI(null);
+  };
+
+  const handleSave = () => {
+    if (!formData.name.trim() || !formData.accountId || formData.amount <= 0) return;
+
+    if (activeTab === 'expense') {
+      const emiData = {
+        name: formData.name,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        amount: formData.amount,
+        accountId: formData.accountId,
+        category: formData.category,
+        creditCardId: formData.category === 'CCEMI' ? formData.creditCardId : undefined,
+        frequency: formData.frequency,
+        status: 'Active' as const,
+        totalInstallments: formData.totalInstallments,
+        notes: formData.notes || undefined,
+      };
+
+      if (editingEMI) {
+        updateExpenseEMI(editingEMI.id, emiData);
+      } else {
+        createExpenseEMI(emiData);
+      }
+    } else {
+      const emiData = {
+        name: formData.name,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        amount: formData.amount,
+        accountId: formData.accountId,
+        destination: formData.destination,
+        frequency: formData.frequency,
+        status: 'Active' as const,
+        totalInstallments: formData.totalInstallments,
+        notes: formData.notes || undefined,
+      };
+
+      if (editingEMI) {
+        updateSavingsEMI(editingEMI.id, emiData);
+      } else {
+        createSavingsEMI(emiData);
+      }
+    }
+    handleCloseDialog();
+  };
+
+  const handleDelete = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this EMI? This will not delete generated transactions.')) {
+      if (activeTab === 'expense') {
+        deleteExpenseEMI(id);
+      } else {
+        deleteSavingsEMI(id);
+      }
+    }
+  };
+
+  const handlePauseResume = (emi: ExpenseEMI | SavingsInvestmentEMI) => {
+    if (emi.status === 'Active') {
+      if (activeTab === 'expense') {
+        pauseExpenseEMI(emi.id);
+      } else {
+        pauseSavingsEMI(emi.id);
+      }
+    } else if (emi.status === 'Paused') {
+      if (activeTab === 'expense') {
+        resumeExpenseEMI(emi.id);
+      } else {
+        resumeSavingsEMI(emi.id);
+      }
+    }
+  };
+
+  const getProgress = (emi: ExpenseEMI | SavingsInvestmentEMI): number => {
+    return (emi.completedInstallments / emi.totalInstallments) * 100;
+  };
+
+  const getGeneratedTransactionsCount = (emiId: string): number => {
+    if (activeTab === 'expense') {
+      return getExpenseGeneratedTransactions(emiId).length;
+    } else {
+      return getSavingsGeneratedTransactions(emiId).length;
+    }
+  };
+
+  const currentEMIs = activeTab === 'expense' ? expenseEMIs : savingsEMIs;
+
+  return (
+    <Stack spacing={3}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h4">EMIs</Typography>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => handleOpenDialog()}
+          disabled={accounts.length === 0}
+        >
+          Add EMI
+        </Button>
+      </Box>
+
+      <Paper>
+        <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
+          <Tab label="Expense EMIs" value="expense" />
+          <Tab label="Savings/Investment EMIs" value="savings" />
+        </Tabs>
+
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Account</TableCell>
+                <TableCell>Amount</TableCell>
+                <TableCell>Frequency</TableCell>
+                <TableCell>Start Date</TableCell>
+                <TableCell>Progress</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell align="right">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {currentEMIs.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} align="center">
+                    <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
+                      No EMIs found. Add your first EMI to get started.
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                currentEMIs
+                  .sort((a, b) => b.startDate.localeCompare(a.startDate))
+                  .map((emi) => (
+                    <TableRow key={emi.id} hover>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight="medium">
+                          {emi.name}
+                        </Typography>
+                        {activeTab === 'savings' && (
+                          <Typography variant="caption" color="text.secondary">
+                            {(emi as SavingsInvestmentEMI).destination}
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell>{accountsMap.get(emi.accountId) || '—'}</TableCell>
+                      <TableCell>{formatCurrency(emi.amount)}</TableCell>
+                      <TableCell>{emi.frequency}</TableCell>
+                      <TableCell>{formatDate(emi.startDate)}</TableCell>
+                      <TableCell>
+                        <Box sx={{ minWidth: 100 }}>
+                          <LinearProgress
+                            variant="determinate"
+                            value={getProgress(emi)}
+                            sx={{ height: 8, borderRadius: 1 }}
+                          />
+                          <Typography variant="caption" color="text.secondary">
+                            {emi.completedInstallments} / {emi.totalInstallments}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={emi.status}
+                          size="small"
+                          color={
+                            emi.status === 'Active'
+                              ? 'success'
+                              : emi.status === 'Completed'
+                              ? 'default'
+                              : 'warning'
+                          }
+                        />
+                      </TableCell>
+                      <TableCell align="right">
+                        <Stack direction="row" spacing={1} justifyContent="flex-end">
+                          <Link
+                            component="button"
+                            variant="body2"
+                            onClick={() => {
+                              const count = getGeneratedTransactionsCount(emi.id);
+                              if (count > 0) {
+                                window.location.href = `/transactions?tab=${activeTab === 'expense' ? 'expense' : 'savings'}&emi=${emi.id}`;
+                              }
+                            }}
+                            sx={{ textDecoration: 'none' }}
+                          >
+                            {getGeneratedTransactionsCount(emi.id)} transactions
+                          </Link>
+                          <IconButton
+                            size="small"
+                            onClick={() => handlePauseResume(emi)}
+                            disabled={emi.status === 'Completed'}
+                          >
+                            {emi.status === 'Active' ? (
+                              <PauseIcon fontSize="small" />
+                            ) : (
+                              <PlayArrowIcon fontSize="small" />
+                            )}
+                          </IconButton>
+                          <IconButton size="small" onClick={() => handleOpenDialog(emi)}>
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton size="small" onClick={() => handleDelete(emi.id)} color="error">
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
+
+      <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+        <DialogTitle>{editingEMI ? 'Edit EMI' : 'Add EMI'}</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              label="EMI Name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+              fullWidth
+              placeholder="e.g., Home Loan EMI"
+            />
+            <FormControl fullWidth required>
+              <InputLabel>Account</InputLabel>
+              <Select
+                value={formData.accountId}
+                label="Account"
+                onChange={(e) => setFormData({ ...formData, accountId: e.target.value })}
+              >
+                {accounts.map((account) => (
+                  <MenuItem key={account.id} value={account.id}>
+                    {account.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              label="Monthly Amount"
+              type="number"
+              value={formData.amount}
+              onChange={(e) => setFormData({ ...formData, amount: Number(e.target.value) })}
+              required
+              fullWidth
+              InputProps={{
+                startAdornment: <span style={{ marginRight: 8 }}>₹</span>,
+              }}
+            />
+            <FormControl fullWidth>
+              <InputLabel>Frequency</InputLabel>
+              <Select
+                value={formData.frequency}
+                label="Frequency"
+                onChange={(e) => setFormData({ ...formData, frequency: e.target.value as 'Monthly' | 'Quarterly' })}
+              >
+                <MenuItem value="Monthly">Monthly</MenuItem>
+                <MenuItem value="Quarterly">Quarterly</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              label="Start Date"
+              type="date"
+              value={formData.startDate}
+              onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+              required
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="End Date"
+              type="date"
+              value={formData.endDate}
+              onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+              required
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Total Installments"
+              type="number"
+              value={formData.totalInstallments}
+              onChange={(e) => setFormData({ ...formData, totalInstallments: Number(e.target.value) })}
+              required
+              fullWidth
+            />
+
+            {activeTab === 'expense' && (
+              <>
+                <FormControl fullWidth>
+                  <InputLabel>Category</InputLabel>
+                  <Select
+                    value={formData.category}
+                    label="Category"
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value as ExpenseEMI['category'] })}
+                  >
+                    <MenuItem value="CCEMI">CC EMI</MenuItem>
+                    <MenuItem value="Loan">Loan</MenuItem>
+                    <MenuItem value="Other">Other</MenuItem>
+                  </Select>
+                </FormControl>
+                {formData.category === 'CCEMI' && (
+                  <FormControl fullWidth>
+                    <InputLabel>Credit Card</InputLabel>
+                    <Select
+                      value={formData.creditCardId}
+                      label="Credit Card"
+                      onChange={(e) => setFormData({ ...formData, creditCardId: e.target.value })}
+                    >
+                      {accounts
+                        .filter((acc) => acc.accountType === 'CreditCard')
+                        .map((account) => (
+                          <MenuItem key={account.id} value={account.id}>
+                            {account.name}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
+                )}
+              </>
+            )}
+
+            {activeTab === 'savings' && (
+              <TextField
+                label="Destination"
+                value={formData.destination}
+                onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
+                required
+                fullWidth
+                placeholder="e.g., Mutual Fund Name, SIP Name"
+              />
+            )}
+
+            <TextField
+              label="Notes"
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              multiline
+              rows={3}
+              fullWidth
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button
+            onClick={handleSave}
+            variant="contained"
+            disabled={
+              !formData.name.trim() ||
+              !formData.accountId ||
+              formData.amount <= 0 ||
+              (activeTab === 'savings' && !formData.destination.trim())
+            }
+          >
+            {editingEMI ? 'Update' : 'Create'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Stack>
+  );
+}
+
