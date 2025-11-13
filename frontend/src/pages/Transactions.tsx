@@ -36,6 +36,7 @@ import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStor
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { TransactionFilters, type FilterState } from '../components/transactions/TransactionFilters';
+import { TransactionFormDialog } from '../components/transactions/TransactionFormDialog';
 import {
   exportIncomeTransactionsToCSV,
   exportExpenseTransactionsToCSV,
@@ -132,7 +133,8 @@ export function Transactions() {
       // Search term filter
       if (filters.searchTerm) {
         const searchLower = filters.searchTerm.toLowerCase();
-        const matchesDescription = t.description.toLowerCase().includes(searchLower);
+        const description = 'description' in t ? (t.description || '') : (t.destination || '');
+        const matchesDescription = description.toLowerCase().includes(searchLower);
         const matchesAccount = (accountsMap.get(t.accountId) || '').toLowerCase().includes(searchLower);
         if (!matchesDescription && !matchesAccount) return false;
       }
@@ -473,7 +475,7 @@ export function Transactions() {
                           <TableCell>{accountsMap.get(transaction.accountId) || '—'}</TableCell>
                           <TableCell>{transaction.type}</TableCell>
                           <TableCell>{transaction.destination}</TableCell>
-                          <TableCell>{transaction.description || '—'}</TableCell>
+                          <TableCell>{('description' in transaction ? transaction.description : transaction.destination) || '—'}</TableCell>
                           <TableCell align="right">{formatCurrency(transaction.amount)}</TableCell>
                           <TableCell>
                             <Chip
@@ -506,7 +508,7 @@ export function Transactions() {
         type={activeTab}
         accounts={accounts}
         editingTransaction={editingTransaction}
-        onSave={(data) => {
+        onSave={(data: any) => {
           if (activeTab === 'income') {
             if (editingTransaction) {
               updateIncome(editingTransaction.id, data);

@@ -75,8 +75,8 @@ export function aggregateMonth(
     const fixedBalance = account.currentBalance; // Use current balance as fixed balance
     const remainingCash = calculateRemainingCash({
       baseValue: accountInflow,
-      fixedBalances: fixedBalance,
-      savingsTransfers: savingsTransfer,
+      fixedBalances: [fixedBalance || 0],
+      savingsTransfers: savingsTransfer ? [savingsTransfer] : [],
       manualAdjustments: [],
     });
 

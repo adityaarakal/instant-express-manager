@@ -76,21 +76,34 @@ export function Recurring() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<RecurringIncome | RecurringExpense | RecurringSavingsInvestment | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    amount: number;
+    accountId: string;
+    frequency: 'Monthly' | 'Weekly' | 'Yearly' | 'Custom' | 'Quarterly';
+    startDate: string;
+    endDate: string;
+    category: IncomeCategory;
+    expenseCategory: ExpenseCategory;
+    bucket: ExpenseBucket;
+    destination: string;
+    type: SavingsInvestmentType;
+    notes: string;
+  }>({
     name: '',
     amount: 0,
     accountId: accounts[0]?.id || '',
-    frequency: 'Monthly' as 'Monthly' | 'Weekly' | 'Yearly' | 'Custom',
+    frequency: 'Monthly',
     startDate: new Date().toISOString().split('T')[0],
     endDate: '',
     // Income specific
-    category: 'Salary' as IncomeCategory,
+    category: 'Salary',
     // Expense specific
-    expenseCategory: 'Other' as ExpenseCategory,
-    bucket: 'Expense' as ExpenseBucket,
+    expenseCategory: 'Other',
+    bucket: 'Expense',
     // Savings specific
     destination: '',
-    type: 'SIP' as SavingsInvestmentType,
+    type: 'SIP',
     notes: '',
   });
 
@@ -141,7 +154,7 @@ export function Recurring() {
           name: t.name,
           amount: t.amount,
           accountId: t.accountId,
-          frequency: t.frequency,
+          frequency: t.frequency as 'Monthly' | 'Quarterly' | 'Yearly', // Savings frequency type
           startDate: t.startDate,
           endDate: t.endDate || '',
           category: 'Salary',
@@ -181,12 +194,16 @@ export function Recurring() {
     if (!formData.name.trim() || !formData.accountId || formData.amount <= 0) return;
 
     if (activeTab === 'income') {
+      // Convert frequency - filter out 'Quarterly' for Income (not valid)
+      const incomeFrequency: 'Monthly' | 'Weekly' | 'Yearly' | 'Custom' =
+        formData.frequency === 'Quarterly' ? 'Monthly' : (formData.frequency as 'Monthly' | 'Weekly' | 'Yearly' | 'Custom');
+      
       const templateData = {
         name: formData.name,
         amount: formData.amount,
         accountId: formData.accountId,
         category: formData.category,
-        frequency: formData.frequency,
+        frequency: incomeFrequency,
         startDate: formData.startDate,
         endDate: formData.endDate || undefined,
         status: 'Active' as const,
@@ -199,13 +216,17 @@ export function Recurring() {
         createIncome(templateData);
       }
     } else if (activeTab === 'expense') {
+      // Convert frequency - filter out 'Quarterly' for Expense (not valid)
+      const expenseFrequency: 'Monthly' | 'Weekly' | 'Yearly' | 'Custom' =
+        formData.frequency === 'Quarterly' ? 'Monthly' : (formData.frequency as 'Monthly' | 'Weekly' | 'Yearly' | 'Custom');
+      
       const templateData = {
         name: formData.name,
         amount: formData.amount,
         accountId: formData.accountId,
         category: formData.expenseCategory,
         bucket: formData.bucket,
-        frequency: formData.frequency,
+        frequency: expenseFrequency,
         startDate: formData.startDate,
         endDate: formData.endDate || undefined,
         status: 'Active' as const,
@@ -218,13 +239,17 @@ export function Recurring() {
         createExpense(templateData);
       }
     } else {
+      // Convert frequency to Savings/Investment format (Monthly | Quarterly | Yearly)
+      const savingsFrequency: 'Monthly' | 'Quarterly' | 'Yearly' =
+        formData.frequency === 'Quarterly' ? 'Quarterly' : formData.frequency === 'Yearly' ? 'Yearly' : 'Monthly';
+      
       const templateData = {
         name: formData.name,
         amount: formData.amount,
         accountId: formData.accountId,
         destination: formData.destination,
         type: formData.type,
-        frequency: formData.frequency,
+        frequency: savingsFrequency,
         startDate: formData.startDate,
         endDate: formData.endDate || undefined,
         status: 'Active' as const,
@@ -468,10 +493,20 @@ export function Recurring() {
                   setFormData({ ...formData, frequency: e.target.value as RecurringIncome['frequency'] })
                 }
               >
-                <MenuItem value="Monthly">Monthly</MenuItem>
-                <MenuItem value="Weekly">Weekly</MenuItem>
-                <MenuItem value="Yearly">Yearly</MenuItem>
-                <MenuItem value="Custom">Custom</MenuItem>
+                {activeTab === 'savings' ? (
+                  <>
+                    <MenuItem value="Monthly">Monthly</MenuItem>
+                    <MenuItem value="Quarterly">Quarterly</MenuItem>
+                    <MenuItem value="Yearly">Yearly</MenuItem>
+                  </>
+                ) : (
+                  <>
+                    <MenuItem value="Monthly">Monthly</MenuItem>
+                    <MenuItem value="Weekly">Weekly</MenuItem>
+                    <MenuItem value="Yearly">Yearly</MenuItem>
+                    <MenuItem value="Custom">Custom</MenuItem>
+                  </>
+                )}
               </Select>
             </FormControl>
             <TextField

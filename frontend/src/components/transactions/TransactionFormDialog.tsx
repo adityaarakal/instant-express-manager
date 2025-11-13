@@ -105,7 +105,7 @@ export function TransactionFormDialog({
           date: t.date,
           accountId: t.accountId,
           amount: t.amount,
-          description: t.description || '',
+          description: ('description' in t ? t.description : '') || '',
           status: t.status,
           category: 'Salary',
           clientName: '',

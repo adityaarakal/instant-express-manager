@@ -48,6 +48,7 @@ export interface SavingsInvestmentTransaction {
   destination: string; // Mutual Fund Name, SIP Name, etc.
   type: 'SIP' | 'LumpSum' | 'Withdrawal' | 'Return';
   sipNumber?: string;
+  description?: string; // Optional description/notes
   recurringTemplateId?: string; // Reference to RecurringSavingsInvestment
   emiId?: string; // Reference to SavingsInvestmentEMI if generated from EMI
   status: 'Pending' | 'Completed';

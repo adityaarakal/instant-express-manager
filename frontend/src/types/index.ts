@@ -13,6 +13,13 @@ export * from './recurring';
 export * from './plannedExpensesAggregated';
 
 // Legacy (to be removed after migration)
-export * from './plannedExpenses';
+// Export specific types to avoid conflicts
+export type {
+  AllocationStatus,
+  Account as LegacyAccount,
+  BucketDefinition,
+  BucketAmounts,
+  PlannedMonthSnapshot,
+} from './plannedExpenses';
 export * from './templates';
 
