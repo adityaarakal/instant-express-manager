@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -69,6 +69,11 @@ type TabValue = 'income' | 'expense' | 'savings';
 
 export function Transactions() {
   const [activeTab, setActiveTab] = useState<TabValue>('income');
+  
+  // Clear selection when tab changes
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [activeTab]);
   const { transactions: incomeTransactions, createTransaction: createIncome, updateTransaction: updateIncome, deleteTransaction: deleteIncome } = useIncomeTransactionsStore();
   const { transactions: expenseTransactions, createTransaction: createExpense, updateTransaction: updateExpense, deleteTransaction: deleteExpense } = useExpenseTransactionsStore();
   const { transactions: savingsTransactions, createTransaction: createSavings, updateTransaction: updateSavings, deleteTransaction: deleteSavings } = useSavingsInvestmentTransactionsStore();
@@ -277,7 +282,13 @@ export function Transactions() {
       <TransactionFilters type={activeTab} accounts={accounts} onFilterChange={setFilters} />
 
       <Paper>
-        <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
+        <Tabs
+          value={activeTab}
+          onChange={(_, v) => {
+            setActiveTab(v);
+            setSelectedIds(new Set());
+          }}
+        >
           <Tab label="Income" value="income" />
           <Tab label="Expense" value="expense" />
           <Tab label="Savings/Investment" value="savings" />

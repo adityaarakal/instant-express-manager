@@ -103,7 +103,7 @@ This document lists every major task required to build the complete financial ma
   - [x] Balance tracking
   - [x] Credit card specific fields
 
-### Task 9 – Transactions UI *(In Progress)*
+### Task 9 – Transactions UI *(Completed)*
 - [x] Create Transactions page with tabs:
   - [x] Income Transactions
   - [x] Expense Transactions
@@ -111,9 +111,9 @@ This document lists every major task required to build the complete financial ma
 - [x] For each tab:
   - [x] List with basic display
   - [x] Create/Edit/Delete transaction dialog
-  - [ ] List with filters (date range, account, category, status) - *Next*
-  - [ ] Bulk actions (mark as paid, delete multiple)
-  - [ ] Export to CSV
+  - [x] List with filters (date range, account, category, status)
+  - [x] Bulk actions (mark as paid, delete multiple)
+  - [x] Export to CSV
 
 ### Task 10 – EMIs UI *(Completed)*
 - [x] Create EMIs page with tabs:
