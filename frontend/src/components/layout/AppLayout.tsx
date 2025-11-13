@@ -26,6 +26,7 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
+import RepeatIcon from '@mui/icons-material/Repeat';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 import { ThemeModeToggle } from './ThemeModeToggle';
@@ -43,6 +44,7 @@ const navItems = [
   { label: 'Accounts', to: '/accounts', icon: <AccountBalanceWalletIcon fontSize="small" />, end: false as const },
   { label: 'Transactions', to: '/transactions', icon: <ReceiptIcon fontSize="small" />, end: false as const },
   { label: 'EMIs', to: '/emis', icon: <CreditCardIcon fontSize="small" />, end: false as const },
+  { label: 'Recurring', to: '/recurring', icon: <RepeatIcon fontSize="small" />, end: false as const },
   { label: 'Planner', to: '/planner', icon: <EventNoteOutlinedIcon fontSize="small" />, end: false as const },
   { label: 'Settings', to: '/settings', icon: <SettingsOutlinedIcon fontSize="small" />, end: false as const },
 ] as const;
