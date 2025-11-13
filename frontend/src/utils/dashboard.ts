@@ -1,16 +1,21 @@
-import type { PlannedMonthSnapshot } from '../types/plannedExpenses';
-import { calculateBucketTotals } from './totals';
+import type {
+  IncomeTransaction,
+  ExpenseTransaction,
+  SavingsInvestmentTransaction,
+} from '../types/transactions';
+import type { BankAccount } from '../types/bankAccounts';
 import { DEFAULT_BUCKETS } from '../config/plannedExpenses';
 
 export interface DashboardMetrics {
-  totalPendingAllocations: number;
+  totalIncome: number;
+  totalExpenses: number;
   totalSavings: number;
   totalCCBills: number;
+  creditCardOutstanding: number;
   upcomingDueDates: Array<{
-    monthId: string;
-    monthStart: string;
-    bucketId: string;
-    bucketName: string;
+    id: string;
+    type: 'transaction' | 'emi' | 'recurring';
+    description: string;
     dueDate: string;
     amount: number;
   }>;
@@ -21,82 +26,97 @@ export interface DashboardMetrics {
 }
 
 export const calculateDashboardMetrics = (
-  months: PlannedMonthSnapshot[],
+  incomeTransactions: IncomeTransaction[],
+  expenseTransactions: ExpenseTransaction[],
+  savingsTransactions: SavingsInvestmentTransaction[],
+  accounts: BankAccount[],
 ): DashboardMetrics => {
-  let totalPendingAllocations = 0;
+  let totalIncome = 0;
+  let totalExpenses = 0;
   let totalSavings = 0;
   let totalCCBills = 0;
+  let creditCardOutstanding = 0;
   const upcomingDueDates: DashboardMetrics['upcomingDueDates'] = [];
   const savingsTrend: DashboardMetrics['savingsTrend'] = [];
 
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const next30Days = new Date(today);
   next30Days.setDate(today.getDate() + 30);
 
-  for (const month of months) {
-    const totals = calculateBucketTotals(month);
-    const monthDate = new Date(month.monthStart);
-
-    // Sum pending allocations across all buckets
-    for (const amount of Object.values(totals.pending)) {
-      totalPendingAllocations += amount;
+  // Calculate totals
+  incomeTransactions.forEach((t) => {
+    if (t.status === 'Received') {
+      totalIncome += t.amount;
     }
+  });
 
-    // Sum savings transfers
-    for (const account of month.accounts) {
-      if (account.savingsTransfer !== null && account.savingsTransfer !== undefined) {
-        totalSavings += account.savingsTransfer;
-      }
+  expenseTransactions.forEach((t) => {
+    totalExpenses += t.amount;
+    if (t.bucket === 'CCBill') {
+      totalCCBills += t.amount;
     }
+  });
 
-    // Sum CC bills (credit card buckets)
-    const ccBuckets = DEFAULT_BUCKETS.filter(
-      (bucket) => bucket.id.includes('cc-bill') || bucket.name.toLowerCase().includes('cc'),
-    );
-    for (const bucket of ccBuckets) {
-      if (totals.all[bucket.id]) {
-        totalCCBills += totals.all[bucket.id];
-      }
+  savingsTransactions.forEach((t) => {
+    if (t.status === 'Completed') {
+      totalSavings += t.amount;
     }
+  });
 
-    // Collect upcoming due dates
-    for (const [bucketId, dueDateStr] of Object.entries(month.dueDates)) {
-      if (!dueDateStr) continue;
+  // Calculate credit card outstanding
+  accounts.forEach((account) => {
+    if (account.accountType === 'CreditCard' && account.outstandingBalance) {
+      creditCardOutstanding += account.outstandingBalance;
+    }
+  });
 
-      const dueDate = new Date(dueDateStr);
+  // Collect upcoming due dates from expense transactions
+  expenseTransactions.forEach((t) => {
+    if (t.dueDate && t.status === 'Pending') {
+      const dueDate = new Date(t.dueDate);
+      dueDate.setHours(0, 0, 0, 0);
       if (dueDate >= today && dueDate <= next30Days) {
-        const bucket = DEFAULT_BUCKETS.find((b) => b.id === bucketId);
-        const amount = totals.pending[bucketId] ?? totals.all[bucketId] ?? 0;
-
-        if (amount > 0) {
-          upcomingDueDates.push({
-            monthId: month.id,
-            monthStart: month.monthStart,
-            bucketId,
-            bucketName: bucket?.name ?? bucketId,
-            dueDate: dueDateStr,
-            amount,
-          });
-        }
+        const bucket = DEFAULT_BUCKETS.find((b) => b.id === t.bucket);
+        upcomingDueDates.push({
+          id: t.id,
+          type: 'transaction',
+          description: `${bucket?.name || t.bucket}: ${t.description}`,
+          dueDate: t.dueDate,
+          amount: t.amount,
+        });
       }
     }
+  });
 
-    // Build savings trend (last 12 months)
-    if (monthDate >= new Date(today.getFullYear() - 1, today.getMonth(), 1)) {
-      let monthSavings = 0;
-      for (const account of month.accounts) {
-        if (account.savingsTransfer !== null && account.savingsTransfer !== undefined) {
-          monthSavings += account.savingsTransfer;
-        }
+  // Build savings trend (last 12 months)
+  const savingsByMonth = new Map<string, number>();
+  savingsTransactions.forEach((t) => {
+    if (t.status === 'Completed') {
+      const date = new Date(t.date);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const monthDate = new Date(date.getFullYear(), date.getMonth(), 1);
+      
+      // Only include last 12 months
+      const twelveMonthsAgo = new Date(today);
+      twelveMonthsAgo.setMonth(today.getMonth() - 12);
+      
+      if (monthDate >= twelveMonthsAgo) {
+        savingsByMonth.set(monthKey, (savingsByMonth.get(monthKey) || 0) + t.amount);
       }
-      savingsTrend.push({
-        month: new Intl.DateTimeFormat('en-IN', { month: 'short', year: 'numeric' }).format(
-          monthDate,
-        ),
-        savings: monthSavings,
-      });
     }
-  }
+  });
+
+  savingsByMonth.forEach((savings, monthKey) => {
+    const [year, month] = monthKey.split('-');
+    const monthDate = new Date(Number(year), Number(month) - 1, 1);
+    savingsTrend.push({
+      month: new Intl.DateTimeFormat('en-IN', { month: 'short', year: 'numeric' }).format(
+        monthDate,
+      ),
+      savings,
+    });
+  });
 
   // Sort due dates by date
   upcomingDueDates.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
@@ -109,11 +129,12 @@ export const calculateDashboardMetrics = (
   });
 
   return {
-    totalPendingAllocations: Number(totalPendingAllocations.toFixed(2)),
+    totalIncome: Number(totalIncome.toFixed(2)),
+    totalExpenses: Number(totalExpenses.toFixed(2)),
     totalSavings: Number(totalSavings.toFixed(2)),
     totalCCBills: Number(totalCCBills.toFixed(2)),
+    creditCardOutstanding: Number(creditCardOutstanding.toFixed(2)),
     upcomingDueDates,
     savingsTrend,
   };
 };
-

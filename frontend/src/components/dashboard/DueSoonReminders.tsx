@@ -1,9 +1,16 @@
 import { Box, Card, CardContent, Chip, Stack, Typography } from '@mui/material';
 import EventIcon from '@mui/icons-material/Event';
-import type { DashboardMetrics } from '../../utils/dashboard';
+
+interface DueDateReminder {
+  id: string;
+  type: 'transaction' | 'emi' | 'recurring';
+  description: string;
+  dueDate: string;
+  amount: number;
+}
 
 interface DueSoonRemindersProps {
-  reminders: DashboardMetrics['upcomingDueDates'];
+  reminders: DueDateReminder[];
 }
 
 const formatCurrency = (value: number): string => {
@@ -66,7 +73,7 @@ export function DueSoonReminders({ reminders }: DueSoonRemindersProps) {
 
             return (
               <Box
-                key={`${reminder.monthId}-${reminder.bucketId}-${index}`}
+                key={`${reminder.id}-${reminder.type}-${index}`}
                 sx={{
                   p: 2,
                   borderRadius: 2,
@@ -78,17 +85,17 @@ export function DueSoonReminders({ reminders }: DueSoonRemindersProps) {
                 <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
                   <Box>
                     <Typography variant="subtitle1" fontWeight="medium">
-                      {reminder.bucketName}
+                      {reminder.description}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {formatDate(reminder.dueDate)}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {new Intl.DateTimeFormat('en-IN', {
-                        month: 'long',
-                        year: 'numeric',
-                      }).format(new Date(reminder.monthStart))}
-                    </Typography>
+                    <Chip
+                      label={reminder.type}
+                      size="small"
+                      variant="outlined"
+                      sx={{ mt: 0.5 }}
+                    />
                   </Box>
                   <Box sx={{ textAlign: 'right' }}>
                     <Typography variant="h6" fontWeight="bold">

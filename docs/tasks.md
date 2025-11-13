@@ -114,27 +114,27 @@ This document lists every major task required to build the complete financial ma
   - [ ] Bulk actions (mark as paid, delete multiple)
   - [ ] Export to CSV
 
-### Task 10 – EMIs UI *(Pending)*
-- [ ] Create EMIs page with tabs:
-  - [ ] Expense EMIs
-  - [ ] Savings/Investment EMIs
-- [ ] For each tab:
-  - [ ] List of EMIs with status
-  - [ ] Create/Edit/Delete EMI dialog
-  - [ ] View generated transactions
-  - [ ] Installment progress tracking
-  - [ ] Pause/Resume functionality
+### Task 10 – EMIs UI *(Completed)*
+- [x] Create EMIs page with tabs:
+  - [x] Expense EMIs
+  - [x] Savings/Investment EMIs
+- [x] For each tab:
+  - [x] List of EMIs with status
+  - [x] Create/Edit/Delete EMI dialog
+  - [x] View generated transactions
+  - [x] Installment progress tracking
+  - [x] Pause/Resume functionality
 
-### Task 11 – Recurring Templates UI *(Pending)*
-- [ ] Create Recurring page with tabs:
-  - [ ] Recurring Incomes
-  - [ ] Recurring Expenses
-  - [ ] Recurring Savings/Investments
-- [ ] For each tab:
-  - [ ] List of templates with next due date
-  - [ ] Create/Edit/Delete template dialog
-  - [ ] View generated transactions
-  - [ ] Pause/Resume functionality
+### Task 11 – Recurring Templates UI *(Completed)*
+- [x] Create Recurring page with tabs:
+  - [x] Recurring Incomes
+  - [x] Recurring Expenses
+  - [x] Recurring Savings/Investments
+- [x] For each tab:
+  - [x] List of templates with next due date
+  - [x] Create/Edit/Delete template dialog
+  - [x] View generated transactions
+  - [x] Pause/Resume functionality
 
 ---
 

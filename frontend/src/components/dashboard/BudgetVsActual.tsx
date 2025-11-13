@@ -2,9 +2,7 @@ import { useMemo, memo } from 'react';
 import { Card, CardContent, Stack, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Box } from '@mui/material';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import type { PlannedMonthSnapshot } from '../../types/plannedExpenses';
-import { usePlannedMonthsStore } from '../../store/usePlannedMonthsStore';
-import { calculateBucketTotals } from '../../utils/totals';
+import { useAggregatedPlannedMonthsStore } from '../../store/useAggregatedPlannedMonthsStore';
 import { DEFAULT_BUCKETS } from '../../config/plannedExpenses';
 
 const formatCurrency = (value: number): string => {
@@ -25,7 +23,7 @@ interface BudgetVsActualProps {
 }
 
 export const BudgetVsActual = memo(function BudgetVsActual({ monthId }: BudgetVsActualProps) {
-  const { getMonth, getBucketTotals } = usePlannedMonthsStore();
+  const { getMonth, getBucketTotals } = useAggregatedPlannedMonthsStore();
 
   const comparison = useMemo(() => {
     if (!monthId) {
@@ -38,6 +36,10 @@ export const BudgetVsActual = memo(function BudgetVsActual({ monthId }: BudgetVs
     }
 
     const totals = getBucketTotals(monthId);
+    if (!totals) {
+      return null;
+    }
+
     const buckets = DEFAULT_BUCKETS.filter((bucket) =>
       month.bucketOrder.includes(bucket.id),
     );
