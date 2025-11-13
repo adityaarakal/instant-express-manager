@@ -1,142 +1,229 @@
-# Planned Expenses React App – Execution Tasks
+# Financial Management App – Execution Tasks
 
-> **Note:** The original Excel workbook now serves only as a design reference. Ongoing data entry and management will happen inside this application. Any Excel export/import workflows are optional backlog items, kept for historical parity but not required for daily use.
+> **IMPORTANT:** This app is a **standalone financial management system** that replaces the entire Excel workbook. All data entry and management happens within the app. **NO Excel import/export required** - the Excel workbook serves only as a reference for understanding data structure and business logic.
 
-This document lists every major task required to deliver the Planned Expenses automation project. Tasks are ordered sequentially; each phase builds on the previous one. Work through them in order unless priorities change explicitly.
-
----
-
-## Phase 1 — Data Foundations
-
-### Task 1 – Finalise Workbook Export *(Completed)*
-- Extend `scripts/export_planned_expenses.py` to cover all months without manual limits. ✅
-- Detect `#REF!` cells and capture raw formulas for manual adjustments. ✅
-- Generate canonical JSON/CSV seeds under `data/seeds/` and snapshot results. ✅
-
-### Task 2 – Validate Export Parity *(On Hold)*
-- Spot-check totals (remaining cash, bucket sums, pending vs paid) against Excel for representative months.
-  - ✅ Bucket totals match for Jan–May 2023.
-  - ✅ Pending vs paid totals align once blank status cells default to “Pending”.
--  - ⏳ Remaining cash aligns for 77/95 months; REF-affected months (Apr 2023 → Sep 2024) documented and deferred to post-MVP cleanup.
-- Document discrepancies and remediation steps (missing projections, broken references, manual overrides). ✅
-
-### Task 3 – Catalogue Supporting Data Sources *(Completed)*
-- ✅ Identify required inputs from auxiliary sheets (`Projections`, `CC Outstanding`, EMIs, bills`). See `docs/planned-expenses-analysis/05-supporting-data-sources.md`.
-- ✅ Decide what must be present for MVP vs deferred modules; mapping notes captured in the supporting data sources document.
+This document lists every major task required to build the complete financial management application. Tasks are ordered by priority and dependencies.
 
 ---
 
-## Phase 2 — Domain & State Layer
+## Phase 1 — Core Data Models & Stores
 
-### Task 4 – Finalise TypeScript Models *(Completed)*
-- Lock final interfaces in `src/types/plannedExpenses.ts` (SIP splits, adjustments, raw references). ✅
-- Capture bucket metadata (display names, colors, order) in a shared config file. ✅
+### Task 1 – Define Complete Data Models *(In Progress)*
+- [ ] Create TypeScript interfaces for all entities:
+  - [ ] Bank
+  - [ ] BankAccount
+  - [ ] IncomeTransaction
+  - [ ] ExpenseTransaction
+  - [ ] SavingsInvestmentTransaction
+  - [ ] ExpenseEMI
+  - [ ] SavingsInvestmentEMI
+  - [ ] RecurringIncome
+  - [ ] RecurringExpense
+  - [ ] RecurringSavingsInvestment
+- [ ] Update `frontend/src/types/` with all new interfaces
+- [ ] Remove old `PlannedMonthSnapshot` model (replaced by aggregation)
 
-### Task 5 – Build Persistence & Stores *(Completed)*
-- ✅ Implemented core Zustand stores (`usePlannedMonthsStore`, `usePlannerStore`, `useSettingsStore`) with localforage persistence.
-- ✅ Added reusable storage helper for localforage-backed persistence.
-- ✅ Seeded demo data from exported JSON and exposed selectors for derived totals/reminders.
+### Task 2 – Create Banks & Bank Accounts Stores *(Pending)*
+- [ ] Create `useBanksStore` with CRUD operations
+- [ ] Create `useBankAccountsStore` with CRUD operations
+- [ ] Add persistence with localforage
+- [ ] Add selectors for filtering, searching
 
-### Task 6 – Implement Formula Utilities *(Completed)*
-- ✅ Added formula helpers (`calculateRemainingCash`, `sumBucketByStatus`, `applyDueDateRule`, `convertExcelSerialToIso`) in `src/utils/formulas.ts`.
-- ✅ Added derived totals helper and tests with Vitest fixtures.
-
----
-
-## Phase 3 — UI Foundations
-
-### Task 7 – Complete Layout & Navigation *(Completed)*
-- ✅ Upgraded responsive layout with mobile drawer, desktop nav, and theme toggle.
-- ✅ Connected the MUI theme to persisted settings with light/dark/system support.
-
-### Task 8 – Planner Month View (Read-Only) *(Completed)*
-- ✅ Render month header, status ribbon, account table, and totals footer from seed data.
-- ✅ Display due dates, remaining cash, and bucket statuses accurately.
-- ✅ Added month selector dropdown to switch between available months.
-- ✅ Created reusable components: `MonthViewHeader`, `StatusRibbon`, `AccountTable`, `TotalsFooter`.
-
-### Task 9 – Planner Interactions (Editable) *(Completed)*
-- ✅ Enable inline editing for balances, savings, allocations, and status toggles.
-- ✅ Add manual adjustment handling and real-time derived totals.
-- ✅ Created EditableCell component for inline editing with currency formatting.
-- ✅ Made StatusRibbon clickable to toggle pending/paid status.
-- ✅ Made AccountTable editable for fixed balance, savings, and bucket amounts.
-- ✅ Made MonthViewHeader editable for inflow and fixed factor.
-- ✅ Added store methods to update allocations with automatic remaining cash recalculation.
+### Task 3 – Create Transaction Stores *(Pending)*
+- [ ] Create `useIncomeTransactionsStore` with CRUD operations
+- [ ] Create `useExpenseTransactionsStore` with CRUD operations
+- [ ] Create `useSavingsInvestmentTransactionsStore` with CRUD operations
+- [ ] Add persistence with localforage
+- [ ] Add selectors for filtering by date, account, category, status
+- [ ] Add aggregations (totals by month, category, etc.)
 
 ---
 
-## Phase 4 — Import/Export & Sync
+## Phase 2 — EMIs & Recurring Templates
 
-### Task 10 – Import Flow *(Completed)*
-- ✅ Build workbook upload UI if historical spreadsheets ever need to be imported again.
-- ✅ Map imported data to internal stores; surface warnings for unknown mappings or `#REF!`.
-- ✅ Provide preview/diff before commit.
-- ✅ Created ImportDialog component with file upload and JSON parsing.
-- ✅ Added preview with summary (months, accounts, ref errors).
-- ✅ Surface warnings for #REF! errors and validation issues.
-- ✅ Import button in Planner page to trigger import flow.
+### Task 4 – Create EMI Stores *(Pending)*
+- [ ] Create `useExpenseEMIsStore` with CRUD operations
+- [ ] Create `useSavingsInvestmentEMIsStore` with CRUD operations
+- [ ] Implement auto-generation logic:
+  - [ ] Daily check for due EMIs
+  - [ ] Create transactions when due
+  - [ ] Update installment counts
+  - [ ] Mark as Completed when finished
+- [ ] Add persistence with localforage
 
-### Task 11 – Export & Backups *(Completed)*
-- ✅ Allow exporting months to JSON/CSV for backups or offline storage.
-- ✅ Document round-trip procedure (App → backup) if needed.
-- ✅ Created export utilities for JSON and CSV formats.
-- ✅ Built ExportDialog component with format selection.
-- ✅ Added Export button in Planner page.
-- ✅ JSON exports can be re-imported (round-trip support).
-- ✅ CSV exports suitable for spreadsheet applications.
-
----
-
-## Phase 5 — Insights & Settings
-
-### Task 12 – Dashboard Metrics *(Completed)*
-- ✅ Implement summary cards (pending allocations, savings progress, CC bills).
-- ✅ Add due-soon reminders and trend charts powered by aggregated data.
-- ✅ Created `calculateDashboardMetrics` utility to aggregate data across all months.
-- ✅ Built `SummaryCard` component for displaying key metrics with icons.
-- ✅ Built `DueSoonReminders` component showing upcoming due dates with urgency indicators.
-- ✅ Added savings trend summary with totals and averages.
-
-### Task 13 – Settings & Configuration *(Completed)*
-- ✅ Manage currency, default fixed factor, bucket definitions, and theme toggles.
-- ✅ Persist preferences globally and apply across components.
-- ✅ Built comprehensive Settings page with currency selector, fixed factor input, and theme toggle.
-- ✅ Added bucket definitions management (names, colors, default statuses).
-- ✅ Added reminders toggle and save/reset functionality.
-- ✅ All settings persist via Zustand store with localforage.
+### Task 5 – Create Recurring Template Stores *(Pending)*
+- [ ] Create `useRecurringIncomesStore` with CRUD operations
+- [ ] Create `useRecurringExpensesStore` with CRUD operations
+- [ ] Create `useRecurringSavingsInvestmentsStore` with CRUD operations
+- [ ] Implement auto-generation logic:
+  - [ ] Daily check for due recurring items
+  - [ ] Create transactions when due
+  - [ ] Calculate next due date based on frequency
+  - [ ] Mark as Completed when end date reached
+- [ ] Add persistence with localforage
 
 ---
 
-## Phase 6 — Quality & Release
+## Phase 3 — Aggregation Views
 
-### Task 14 – Testing Suite *(Completed)*
-- ✅ Add Vitest coverage for stores and utilities, plus component/integration tests.
-- ✅ Validate Planner interactions, import flows, and dashboard outputs.
-- ✅ Added comprehensive tests for `usePlannedMonthsStore` (upsert, remove, update, totals).
-- ✅ Added tests for `calculateBucketTotals` utility with edge cases.
-- ✅ Added tests for `calculateDashboardMetrics` utility.
-- ✅ Existing formula tests already cover calculation logic.
+### Task 6 – Redesign Planned Expenses as Aggregation *(Pending)*
+- [ ] Update `usePlannedMonthsStore` to aggregate from transactions:
+  - [ ] Calculate inflow from Income Transactions
+  - [ ] Calculate allocations from Expense Transactions
+  - [ ] Calculate savings from Savings/Investment Transactions
+  - [ ] Calculate remaining cash per account
+  - [ ] Group by month and account
+- [ ] Remove direct editing of allocations (edits happen in Transactions)
+- [ ] Keep status toggles (Pending/Paid) - these update transaction status
+- [ ] Update UI to show aggregated data
 
-### Task 15 – PWA & Build Stability *(Completed)*
-- ✅ Resolve Vite PWA service-worker build failures.
-- ✅ Run Lighthouse, confirm offline support, and optimise performance.
-- ✅ Updated PWA configuration with better workbox settings (skipWaiting, clientsClaim).
-- ✅ Disabled PWA in dev mode to avoid build issues during development.
-- ✅ Added build optimizations: code splitting, minification, console removal.
-- ✅ Configured manual chunks for better caching (react, mui, query vendors).
-- ✅ Added image caching strategy for offline support.
-
-### Task 16 – Documentation & Handover *(Completed)*
-- ✅ Update README with setup, data import, and troubleshooting guides.
-- ✅ Produce user walkthroughs and developer onboarding notes.
-- ✅ Finalise release notes and CI/CD deployment pipeline (staging + production).
-- ✅ Created comprehensive README.md with project structure, installation, usage, and deployment.
-- ✅ Created USER_GUIDE.md with step-by-step user instructions.
-- ✅ Created DEVELOPER_GUIDE.md with architecture, development workflow, and common tasks.
-- ✅ Documented GitHub Pages deployment process.
+### Task 7 – Update Dashboard *(Pending)*
+- [ ] Rebuild dashboard to use new transaction stores
+- [ ] Calculate metrics from transactions:
+  - [ ] Total Income (from Income Transactions)
+  - [ ] Total Expenses (from Expense Transactions)
+  - [ ] Total Savings (from Savings/Investment Transactions)
+  - [ ] Credit Card Outstanding (from Bank Accounts)
+  - [ ] Upcoming Due Dates (from EMIs and Recurring)
+- [ ] Update charts to use transaction data
 
 ---
 
-Use this document as the single source for task ordering. Update statuses and notes alongside implementation to keep progress transparent. 
+## Phase 4 — CRUD UIs
 
+### Task 8 – Banks & Bank Accounts UI *(Pending)*
+- [ ] Create Banks page with:
+  - [ ] List of banks
+  - [ ] Create/Edit/Delete bank dialog
+  - [ ] Search and filter
+- [ ] Create Bank Accounts page with:
+  - [ ] List of bank accounts
+  - [ ] Create/Edit/Delete account dialog
+  - [ ] Filter by bank, account type
+  - [ ] Balance tracking
+  - [ ] Credit card specific fields
+
+### Task 9 – Transactions UI *(Pending)*
+- [ ] Create Transactions page with tabs:
+  - [ ] Income Transactions
+  - [ ] Expense Transactions
+  - [ ] Savings/Investment Transactions
+- [ ] For each tab:
+  - [ ] List with filters (date range, account, category, status)
+  - [ ] Create/Edit/Delete transaction dialog
+  - [ ] Bulk actions (mark as paid, delete multiple)
+  - [ ] Export to CSV
+
+### Task 10 – EMIs UI *(Pending)*
+- [ ] Create EMIs page with tabs:
+  - [ ] Expense EMIs
+  - [ ] Savings/Investment EMIs
+- [ ] For each tab:
+  - [ ] List of EMIs with status
+  - [ ] Create/Edit/Delete EMI dialog
+  - [ ] View generated transactions
+  - [ ] Installment progress tracking
+  - [ ] Pause/Resume functionality
+
+### Task 11 – Recurring Templates UI *(Pending)*
+- [ ] Create Recurring page with tabs:
+  - [ ] Recurring Incomes
+  - [ ] Recurring Expenses
+  - [ ] Recurring Savings/Investments
+- [ ] For each tab:
+  - [ ] List of templates with next due date
+  - [ ] Create/Edit/Delete template dialog
+  - [ ] View generated transactions
+  - [ ] Pause/Resume functionality
+
+---
+
+## Phase 5 — Planner & Analytics
+
+### Task 12 – Redesign Planner Page *(Pending)*
+- [ ] Update Planner to show aggregated monthly view
+- [ ] Display:
+  - [ ] Month header (inflow, fixed factor)
+  - [ ] Account table (from transactions)
+  - [ ] Bucket totals (from expense transactions)
+  - [ ] Status toggles (update transaction status)
+- [ ] Remove direct editing (redirect to Transactions page)
+- [ ] Add "Add Transaction" quick actions
+
+### Task 13 – Analytics Page *(Pending)*
+- [ ] Create Analytics page with:
+  - [ ] Income trends (by category, by month)
+  - [ ] Expense breakdowns (by category, by bucket)
+  - [ ] Savings progress charts
+  - [ ] Investment performance
+  - [ ] Credit card analysis
+  - [ ] Budget vs Actual comparisons
+  - [ ] Date range filters
+
+---
+
+## Phase 6 — Auto-Generation & Background Jobs
+
+### Task 14 – Implement Auto-Generation Service *(Pending)*
+- [ ] Create service to check for due EMIs daily
+- [ ] Create service to check for due Recurring templates daily
+- [ ] Run on app startup
+- [ ] Run periodically (every hour or on visibility change)
+- [ ] Handle edge cases (past due dates, completed items)
+
+### Task 15 – Data Validation & Business Rules *(Pending)*
+- [ ] Implement remaining cash calculation
+- [ ] Implement due date zeroing logic
+- [ ] Add validation:
+  - [ ] Prevent negative account balances (with warning)
+  - [ ] Validate date ranges
+  - [ ] Validate amounts
+- [ ] Add warnings for data inconsistencies
+
+---
+
+## Phase 7 — Migration & Cleanup
+
+### Task 16 – Remove Old Code *(Pending)*
+- [ ] Remove Excel import/export functionality
+- [ ] Remove old `PlannedMonthSnapshot` data model
+- [ ] Remove seed data based on old model
+- [ ] Clean up unused components
+- [ ] Update all references
+
+### Task 17 – One-Time Data Migration (Optional) *(Pending)*
+- [ ] Create migration script to convert old data to new structure
+- [ ] Map old months to transactions
+- [ ] Preserve account information
+- [ ] Document migration process
+
+---
+
+## Phase 8 — Testing & Documentation
+
+### Task 18 – Testing *(Pending)*
+- [ ] Unit tests for all stores
+- [ ] Unit tests for auto-generation logic
+- [ ] Integration tests for CRUD flows
+- [ ] E2E tests for critical paths
+
+### Task 19 – Documentation Update *(Pending)*
+- [ ] Update README with new architecture
+- [ ] Update USER_GUIDE with new workflows
+- [ ] Update DEVELOPER_GUIDE with new structure
+- [ ] Create migration guide
+- [ ] Document all entities and relationships
+
+---
+
+## Current Status
+
+- ✅ Requirements documented
+- ✅ Architecture designed
+- ⏳ Data models being defined
+- ⏳ Stores being created
+- ⏳ UIs being built
+
+---
+
+**Note:** This is a complete redesign. The old "Planned Expenses" focused implementation is being replaced with a transaction-based, full CRUD financial management system.
