@@ -77,15 +77,15 @@ This document lists every major task required to build the complete financial ma
 - [ ] Keep status toggles (Pending/Paid) - these update transaction status
 - [ ] Update UI to show aggregated data
 
-### Task 7 – Update Dashboard *(Pending)*
-- [ ] Rebuild dashboard to use new transaction stores
-- [ ] Calculate metrics from transactions:
-  - [ ] Total Income (from Income Transactions)
-  - [ ] Total Expenses (from Expense Transactions)
-  - [ ] Total Savings (from Savings/Investment Transactions)
-  - [ ] Credit Card Outstanding (from Bank Accounts)
-  - [ ] Upcoming Due Dates (from EMIs and Recurring)
-- [ ] Update charts to use transaction data
+### Task 7 – Update Dashboard *(Completed)*
+- [x] Rebuild dashboard to use new transaction stores
+- [x] Calculate metrics from transactions:
+  - [x] Total Income (from Income Transactions)
+  - [x] Total Expenses (from Expense Transactions)
+  - [x] Total Savings (from Savings/Investment Transactions)
+  - [x] Credit Card Outstanding (from Bank Accounts)
+  - [x] Upcoming Due Dates (from transactions)
+- [x] Update charts to use transaction data
 
 ---
 
