@@ -8,74 +8,74 @@ This document lists every major task required to build the complete financial ma
 
 ## Phase 1 — Core Data Models & Stores
 
-### Task 1 – Define Complete Data Models *(In Progress)*
-- [ ] Create TypeScript interfaces for all entities:
-  - [ ] Bank
-  - [ ] BankAccount
-  - [ ] IncomeTransaction
-  - [ ] ExpenseTransaction
-  - [ ] SavingsInvestmentTransaction
-  - [ ] ExpenseEMI
-  - [ ] SavingsInvestmentEMI
-  - [ ] RecurringIncome
-  - [ ] RecurringExpense
-  - [ ] RecurringSavingsInvestment
-- [ ] Update `frontend/src/types/` with all new interfaces
-- [ ] Remove old `PlannedMonthSnapshot` model (replaced by aggregation)
+### Task 1 – Define Complete Data Models *(Completed)*
+- [x] Create TypeScript interfaces for all entities:
+  - [x] Bank
+  - [x] BankAccount
+  - [x] IncomeTransaction
+  - [x] ExpenseTransaction
+  - [x] SavingsInvestmentTransaction
+  - [x] ExpenseEMI
+  - [x] SavingsInvestmentEMI
+  - [x] RecurringIncome
+  - [x] RecurringExpense
+  - [x] RecurringSavingsInvestment
+- [x] Update `frontend/src/types/` with all new interfaces
+- [ ] Remove old `PlannedMonthSnapshot` model (replaced by aggregation) - *Deferred to Task 16*
 
-### Task 2 – Create Banks & Bank Accounts Stores *(Pending)*
-- [ ] Create `useBanksStore` with CRUD operations
-- [ ] Create `useBankAccountsStore` with CRUD operations
-- [ ] Add persistence with localforage
-- [ ] Add selectors for filtering, searching
+### Task 2 – Create Banks & Bank Accounts Stores *(Completed)*
+- [x] Create `useBanksStore` with CRUD operations
+- [x] Create `useBankAccountsStore` with CRUD operations
+- [x] Add persistence with localforage
+- [x] Add selectors for filtering, searching
 
-### Task 3 – Create Transaction Stores *(Pending)*
-- [ ] Create `useIncomeTransactionsStore` with CRUD operations
-- [ ] Create `useExpenseTransactionsStore` with CRUD operations
-- [ ] Create `useSavingsInvestmentTransactionsStore` with CRUD operations
-- [ ] Add persistence with localforage
-- [ ] Add selectors for filtering by date, account, category, status
-- [ ] Add aggregations (totals by month, category, etc.)
+### Task 3 – Create Transaction Stores *(Completed)*
+- [x] Create `useIncomeTransactionsStore` with CRUD operations
+- [x] Create `useExpenseTransactionsStore` with CRUD operations
+- [x] Create `useSavingsInvestmentTransactionsStore` with CRUD operations
+- [x] Add persistence with localforage
+- [x] Add selectors for filtering by date, account, category, status
+- [x] Add aggregations (totals by month, category, etc.)
 
 ---
 
 ## Phase 2 — EMIs & Recurring Templates
 
-### Task 4 – Create EMI Stores *(Pending)*
-- [ ] Create `useExpenseEMIsStore` with CRUD operations
-- [ ] Create `useSavingsInvestmentEMIsStore` with CRUD operations
-- [ ] Implement auto-generation logic:
-  - [ ] Daily check for due EMIs
-  - [ ] Create transactions when due
-  - [ ] Update installment counts
-  - [ ] Mark as Completed when finished
-- [ ] Add persistence with localforage
+### Task 4 – Create EMI Stores *(Completed)*
+- [x] Create `useExpenseEMIsStore` with CRUD operations
+- [x] Create `useSavingsInvestmentEMIsStore` with CRUD operations
+- [x] Implement auto-generation logic:
+  - [x] Daily check for due EMIs
+  - [x] Create transactions when due
+  - [x] Update installment counts
+  - [x] Mark as Completed when finished
+- [x] Add persistence with localforage
 
-### Task 5 – Create Recurring Template Stores *(Pending)*
-- [ ] Create `useRecurringIncomesStore` with CRUD operations
-- [ ] Create `useRecurringExpensesStore` with CRUD operations
-- [ ] Create `useRecurringSavingsInvestmentsStore` with CRUD operations
-- [ ] Implement auto-generation logic:
-  - [ ] Daily check for due recurring items
-  - [ ] Create transactions when due
-  - [ ] Calculate next due date based on frequency
-  - [ ] Mark as Completed when end date reached
-- [ ] Add persistence with localforage
+### Task 5 – Create Recurring Template Stores *(Completed)*
+- [x] Create `useRecurringIncomesStore` with CRUD operations
+- [x] Create `useRecurringExpensesStore` with CRUD operations
+- [x] Create `useRecurringSavingsInvestmentsStore` with CRUD operations
+- [x] Implement auto-generation logic:
+  - [x] Daily check for due recurring items
+  - [x] Create transactions when due
+  - [x] Calculate next due date based on frequency
+  - [x] Mark as Completed when end date reached
+- [x] Add persistence with localforage
 
 ---
 
 ## Phase 3 — Aggregation Views
 
-### Task 6 – Redesign Planned Expenses as Aggregation *(Pending)*
-- [ ] Update `usePlannedMonthsStore` to aggregate from transactions:
-  - [ ] Calculate inflow from Income Transactions
-  - [ ] Calculate allocations from Expense Transactions
-  - [ ] Calculate savings from Savings/Investment Transactions
-  - [ ] Calculate remaining cash per account
-  - [ ] Group by month and account
-- [ ] Remove direct editing of allocations (edits happen in Transactions)
-- [ ] Keep status toggles (Pending/Paid) - these update transaction status
-- [ ] Update UI to show aggregated data
+### Task 6 – Redesign Planned Expenses as Aggregation *(Completed)*
+- [x] Update `usePlannedMonthsStore` to aggregate from transactions:
+  - [x] Calculate inflow from Income Transactions
+  - [x] Calculate allocations from Expense Transactions
+  - [x] Calculate savings from Savings/Investment Transactions
+  - [x] Calculate remaining cash per account
+  - [x] Group by month and account
+- [x] Remove direct editing of allocations (edits happen in Transactions)
+- [x] Keep status toggles (Pending/Paid) - these update transaction status
+- [x] Update UI to show aggregated data
 
 ### Task 7 – Update Dashboard *(Completed)*
 - [x] Rebuild dashboard to use new transaction stores
@@ -91,26 +91,27 @@ This document lists every major task required to build the complete financial ma
 
 ## Phase 4 — CRUD UIs
 
-### Task 8 – Banks & Bank Accounts UI *(Pending)*
-- [ ] Create Banks page with:
-  - [ ] List of banks
-  - [ ] Create/Edit/Delete bank dialog
-  - [ ] Search and filter
-- [ ] Create Bank Accounts page with:
-  - [ ] List of bank accounts
-  - [ ] Create/Edit/Delete account dialog
-  - [ ] Filter by bank, account type
-  - [ ] Balance tracking
-  - [ ] Credit card specific fields
+### Task 8 – Banks & Bank Accounts UI *(Completed)*
+- [x] Create Banks page with:
+  - [x] List of banks
+  - [x] Create/Edit/Delete bank dialog
+  - [x] Search and filter
+- [x] Create Bank Accounts page with:
+  - [x] List of bank accounts
+  - [x] Create/Edit/Delete account dialog
+  - [x] Filter by bank, account type
+  - [x] Balance tracking
+  - [x] Credit card specific fields
 
-### Task 9 – Transactions UI *(Pending)*
-- [ ] Create Transactions page with tabs:
-  - [ ] Income Transactions
-  - [ ] Expense Transactions
-  - [ ] Savings/Investment Transactions
-- [ ] For each tab:
-  - [ ] List with filters (date range, account, category, status)
-  - [ ] Create/Edit/Delete transaction dialog
+### Task 9 – Transactions UI *(In Progress)*
+- [x] Create Transactions page with tabs:
+  - [x] Income Transactions
+  - [x] Expense Transactions
+  - [x] Savings/Investment Transactions
+- [x] For each tab:
+  - [x] List with basic display
+  - [x] Create/Edit/Delete transaction dialog
+  - [ ] List with filters (date range, account, category, status) - *Next*
   - [ ] Bulk actions (mark as paid, delete multiple)
   - [ ] Export to CSV
 
@@ -140,15 +141,15 @@ This document lists every major task required to build the complete financial ma
 
 ## Phase 5 — Planner & Analytics
 
-### Task 12 – Redesign Planner Page *(Pending)*
-- [ ] Update Planner to show aggregated monthly view
-- [ ] Display:
-  - [ ] Month header (inflow, fixed factor)
-  - [ ] Account table (from transactions)
-  - [ ] Bucket totals (from expense transactions)
-  - [ ] Status toggles (update transaction status)
-- [ ] Remove direct editing (redirect to Transactions page)
-- [ ] Add "Add Transaction" quick actions
+### Task 12 – Redesign Planner Page *(Completed)*
+- [x] Update Planner to show aggregated monthly view
+- [x] Display:
+  - [x] Month header (inflow, fixed factor)
+  - [x] Account table (from transactions)
+  - [x] Bucket totals (from expense transactions)
+  - [x] Status toggles (update transaction status)
+- [x] Remove direct editing (redirect to Transactions page)
+- [x] Add "Add Transaction" quick actions
 
 ### Task 13 – Analytics Page *(Pending)*
 - [ ] Create Analytics page with:
@@ -164,12 +165,12 @@ This document lists every major task required to build the complete financial ma
 
 ## Phase 6 — Auto-Generation & Background Jobs
 
-### Task 14 – Implement Auto-Generation Service *(Pending)*
-- [ ] Create service to check for due EMIs daily
-- [ ] Create service to check for due Recurring templates daily
-- [ ] Run on app startup
-- [ ] Run periodically (every hour or on visibility change)
-- [ ] Handle edge cases (past due dates, completed items)
+### Task 14 – Implement Auto-Generation Service *(Completed)*
+- [x] Create service to check for due EMIs daily
+- [x] Create service to check for due Recurring templates daily
+- [x] Run on app startup
+- [x] Run periodically (every hour or on visibility change)
+- [x] Handle edge cases (past due dates, completed items)
 
 ### Task 15 – Data Validation & Business Rules *(Pending)*
 - [ ] Implement remaining cash calculation
@@ -220,9 +221,12 @@ This document lists every major task required to build the complete financial ma
 
 - ✅ Requirements documented
 - ✅ Architecture designed
-- ⏳ Data models being defined
-- ⏳ Stores being created
-- ⏳ UIs being built
+- ✅ Data models defined
+- ✅ Stores created (all 11 stores)
+- ✅ Core UIs built (Banks, Accounts, Transactions, EMIs, Recurring, Planner, Dashboard)
+- ⏳ Transaction filters and export (Task 9 enhancements)
+- ⏳ Old code cleanup (Task 16)
+- ⏳ Analytics page (Task 13)
 
 ---
 
