@@ -3,6 +3,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import localforage from 'localforage';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import { setupAutoGeneration } from '../services/autoGenerationService';
 
 type AppProvidersProps = {
   children: ReactNode;
@@ -40,6 +41,10 @@ export function AppProviders({ children }: AppProvidersProps) {
     queryClient.setDefaultOptions({
       queries: { retry: false, refetchOnWindowFocus: false },
     });
+    
+    // Setup auto-generation for EMIs and Recurring templates
+    const cleanup = setupAutoGeneration();
+    return cleanup;
   }, [queryClient]);
 
   return (
