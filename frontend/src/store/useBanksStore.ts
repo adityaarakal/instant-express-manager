@@ -12,6 +12,13 @@ type BanksState = {
   deleteBank: (id: string) => void;
   getBank: (id: string) => Bank | undefined;
   getBanksByType: (type: Bank['type']) => Bank[];
+  // Aggregate queries
+  getAccountsCount: (bankId: string) => number;
+  getBankSummary: (bankId: string) => {
+    bank: Bank | undefined;
+    accountsCount: number;
+    totalBalance: number;
+  };
 };
 
 const storage = getLocalforageStorage('banks');
@@ -61,6 +68,19 @@ export const useBanksStore = create<BanksState>()(
         },
         getBanksByType: (type) => {
           return get().banks.filter((bank) => bank.type === type);
+        },
+        getAccountsCount: (bankId) => {
+          return useBankAccountsStore.getState().getAccountsByBank(bankId).length;
+        },
+        getBankSummary: (bankId) => {
+          const bank = get().getBank(bankId);
+          const accounts = useBankAccountsStore.getState().getAccountsByBank(bankId);
+          const totalBalance = accounts.reduce((sum, acc) => sum + acc.currentBalance, 0);
+          return {
+            bank,
+            accountsCount: accounts.length,
+            totalBalance,
+          };
         },
       }),
       {

@@ -22,6 +22,23 @@ type BankAccountsState = {
   getAccountsByBank: (bankId: string) => BankAccount[];
   getAccountsByType: (type: BankAccount['accountType']) => BankAccount[];
   updateAccountBalance: (id: string, newBalance: number) => void;
+  // Aggregate queries
+  getTotalTransactionsCount: (accountId: string) => number;
+  getTotalBalanceImpact: (accountId: string) => number;
+  getBankAccountSummary: (accountId: string) => {
+    account: BankAccount | undefined;
+    incomeTransactionsCount: number;
+    expenseTransactionsCount: number;
+    savingsTransactionsCount: number;
+    expenseEMIsCount: number;
+    savingsEMIsCount: number;
+    recurringIncomesCount: number;
+    recurringExpensesCount: number;
+    recurringSavingsCount: number;
+    creditCardEMIsCount: number;
+    totalTransactionsCount: number;
+    totalBalanceImpact: number;
+  };
 };
 
 const storage = getLocalforageStorage('bank-accounts');
@@ -169,6 +186,66 @@ export const useBankAccountsStore = create<BankAccountsState>()(
               ),
             };
           });
+        },
+        getTotalTransactionsCount: (accountId) => {
+          const incomeCount = useIncomeTransactionsStore.getState().getTransactionsByAccount(accountId).length;
+          const expenseCount = useExpenseTransactionsStore.getState().getTransactionsByAccount(accountId).length;
+          const savingsCount = useSavingsInvestmentTransactionsStore.getState().getTransactionsByAccount(accountId).length;
+          return incomeCount + expenseCount + savingsCount;
+        },
+        getTotalBalanceImpact: (accountId) => {
+          const account = get().getAccount(accountId);
+          if (!account) return 0;
+          
+          const incomeTransactions = useIncomeTransactionsStore.getState().getTransactionsByAccount(accountId);
+          const expenseTransactions = useExpenseTransactionsStore.getState().getTransactionsByAccount(accountId);
+          const savingsTransactions = useSavingsInvestmentTransactionsStore.getState().getTransactionsByAccount(accountId);
+          
+          // Calculate net impact from transactions
+          const totalIncome = incomeTransactions
+            .filter((t) => t.status === 'Received')
+            .reduce((sum, t) => sum + t.amount, 0);
+          
+          const totalExpenses = expenseTransactions
+            .filter((t) => t.status === 'Paid')
+            .reduce((sum, t) => sum + t.amount, 0);
+          
+          const totalSavings = savingsTransactions
+            .filter((t) => t.status === 'Completed')
+            .reduce((sum, t) => sum + t.amount, 0);
+          
+          // Net impact: income - expenses - savings
+          return totalIncome - totalExpenses - totalSavings;
+        },
+        getBankAccountSummary: (accountId) => {
+          const account = get().getAccount(accountId);
+          const incomeCount = useIncomeTransactionsStore.getState().getTransactionsByAccount(accountId).length;
+          const expenseCount = useExpenseTransactionsStore.getState().getTransactionsByAccount(accountId).length;
+          const savingsCount = useSavingsInvestmentTransactionsStore.getState().getTransactionsByAccount(accountId).length;
+          const expenseEMIsCount = useExpenseEMIsStore.getState().getEMIsByAccount(accountId).length;
+          const savingsEMIsCount = useSavingsInvestmentEMIsStore.getState().getEMIsByAccount(accountId).length;
+          const recurringIncomesCount = useRecurringIncomesStore.getState().getTemplatesByAccount(accountId).length;
+          const recurringExpensesCount = useRecurringExpensesStore.getState().getTemplatesByAccount(accountId).length;
+          const recurringSavingsCount = useRecurringSavingsInvestmentsStore.getState().getTemplatesByAccount(accountId).length;
+          const creditCardEMIsCount = useExpenseEMIsStore.getState().emis.filter((emi) => emi.creditCardId === accountId).length;
+          
+          const totalTransactionsCount = incomeCount + expenseCount + savingsCount;
+          const totalBalanceImpact = get().getTotalBalanceImpact(accountId);
+          
+          return {
+            account,
+            incomeTransactionsCount: incomeCount,
+            expenseTransactionsCount: expenseCount,
+            savingsTransactionsCount: savingsCount,
+            expenseEMIsCount,
+            savingsEMIsCount,
+            recurringIncomesCount,
+            recurringExpensesCount,
+            recurringSavingsCount,
+            creditCardEMIsCount,
+            totalTransactionsCount,
+            totalBalanceImpact,
+          };
         },
       }),
       {

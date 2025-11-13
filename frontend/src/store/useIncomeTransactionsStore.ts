@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type { IncomeTransaction } from '../types/transactions';
 import { getLocalforageStorage } from '../utils/storage';
+import { useRecurringIncomesStore } from './useRecurringIncomesStore';
 
 type IncomeTransactionsState = {
   transactions: IncomeTransaction[];
@@ -26,6 +27,14 @@ export const useIncomeTransactionsStore = create<IncomeTransactionsState>()(
       (set, get) => ({
         transactions: [],
         createTransaction: (transactionData) => {
+          // Validate recurringTemplateId if provided
+          if (transactionData.recurringTemplateId) {
+            const template = useRecurringIncomesStore.getState().getTemplate(transactionData.recurringTemplateId);
+            if (!template) {
+              throw new Error(`Recurring income template with id ${transactionData.recurringTemplateId} does not exist`);
+            }
+          }
+          
           const now = new Date().toISOString();
           const newTransaction: IncomeTransaction = {
             ...transactionData,
@@ -40,6 +49,16 @@ export const useIncomeTransactionsStore = create<IncomeTransactionsState>()(
           }));
         },
         updateTransaction: (id, updates) => {
+          // Validate recurringTemplateId if being updated
+          if (updates.recurringTemplateId !== undefined) {
+            if (updates.recurringTemplateId) {
+              const template = useRecurringIncomesStore.getState().getTemplate(updates.recurringTemplateId);
+              if (!template) {
+                throw new Error(`Recurring income template with id ${updates.recurringTemplateId} does not exist`);
+              }
+            }
+          }
+          
           set((state) => ({
             transactions: state.transactions.map((transaction) =>
               transaction.id === id

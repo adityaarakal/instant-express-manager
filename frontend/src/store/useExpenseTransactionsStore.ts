@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type { ExpenseTransaction } from '../types/transactions';
 import { getLocalforageStorage } from '../utils/storage';
+import { useRecurringExpensesStore } from './useRecurringExpensesStore';
+import { useExpenseEMIsStore } from './useExpenseEMIsStore';
 
 type ExpenseTransactionsState = {
   transactions: ExpenseTransaction[];
@@ -30,6 +32,22 @@ export const useExpenseTransactionsStore = create<ExpenseTransactionsState>()(
       (set, get) => ({
         transactions: [],
         createTransaction: (transactionData) => {
+          // Validate recurringTemplateId if provided
+          if (transactionData.recurringTemplateId) {
+            const template = useRecurringExpensesStore.getState().getTemplate(transactionData.recurringTemplateId);
+            if (!template) {
+              throw new Error(`Recurring expense template with id ${transactionData.recurringTemplateId} does not exist`);
+            }
+          }
+          
+          // Validate emiId if provided
+          if (transactionData.emiId) {
+            const emi = useExpenseEMIsStore.getState().getEMI(transactionData.emiId);
+            if (!emi) {
+              throw new Error(`Expense EMI with id ${transactionData.emiId} does not exist`);
+            }
+          }
+          
           const now = new Date().toISOString();
           const newTransaction: ExpenseTransaction = {
             ...transactionData,
@@ -44,6 +62,26 @@ export const useExpenseTransactionsStore = create<ExpenseTransactionsState>()(
           }));
         },
         updateTransaction: (id, updates) => {
+          // Validate recurringTemplateId if being updated
+          if (updates.recurringTemplateId !== undefined) {
+            if (updates.recurringTemplateId) {
+              const template = useRecurringExpensesStore.getState().getTemplate(updates.recurringTemplateId);
+              if (!template) {
+                throw new Error(`Recurring expense template with id ${updates.recurringTemplateId} does not exist`);
+              }
+            }
+          }
+          
+          // Validate emiId if being updated
+          if (updates.emiId !== undefined) {
+            if (updates.emiId) {
+              const emi = useExpenseEMIsStore.getState().getEMI(updates.emiId);
+              if (!emi) {
+                throw new Error(`Expense EMI with id ${updates.emiId} does not exist`);
+              }
+            }
+          }
+          
           set((state) => ({
             transactions: state.transactions.map((transaction) =>
               transaction.id === id

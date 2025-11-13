@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type { SavingsInvestmentTransaction } from '../types/transactions';
 import { getLocalforageStorage } from '../utils/storage';
+import { useRecurringSavingsInvestmentsStore } from './useRecurringSavingsInvestmentsStore';
+import { useSavingsInvestmentEMIsStore } from './useSavingsInvestmentEMIsStore';
 
 type SavingsInvestmentTransactionsState = {
   transactions: SavingsInvestmentTransaction[];
@@ -28,6 +30,22 @@ export const useSavingsInvestmentTransactionsStore = create<SavingsInvestmentTra
       (set, get) => ({
         transactions: [],
         createTransaction: (transactionData) => {
+          // Validate recurringTemplateId if provided
+          if (transactionData.recurringTemplateId) {
+            const template = useRecurringSavingsInvestmentsStore.getState().getTemplate(transactionData.recurringTemplateId);
+            if (!template) {
+              throw new Error(`Recurring savings/investment template with id ${transactionData.recurringTemplateId} does not exist`);
+            }
+          }
+          
+          // Validate emiId if provided
+          if (transactionData.emiId) {
+            const emi = useSavingsInvestmentEMIsStore.getState().getEMI(transactionData.emiId);
+            if (!emi) {
+              throw new Error(`Savings/Investment EMI with id ${transactionData.emiId} does not exist`);
+            }
+          }
+          
           const now = new Date().toISOString();
           const newTransaction: SavingsInvestmentTransaction = {
             ...transactionData,
@@ -42,6 +60,26 @@ export const useSavingsInvestmentTransactionsStore = create<SavingsInvestmentTra
           }));
         },
         updateTransaction: (id, updates) => {
+          // Validate recurringTemplateId if being updated
+          if (updates.recurringTemplateId !== undefined) {
+            if (updates.recurringTemplateId) {
+              const template = useRecurringSavingsInvestmentsStore.getState().getTemplate(updates.recurringTemplateId);
+              if (!template) {
+                throw new Error(`Recurring savings/investment template with id ${updates.recurringTemplateId} does not exist`);
+              }
+            }
+          }
+          
+          // Validate emiId if being updated
+          if (updates.emiId !== undefined) {
+            if (updates.emiId) {
+              const emi = useSavingsInvestmentEMIsStore.getState().getEMI(updates.emiId);
+              if (!emi) {
+                throw new Error(`Savings/Investment EMI with id ${updates.emiId} does not exist`);
+              }
+            }
+          }
+          
           set((state) => ({
             transactions: state.transactions.map((transaction) =>
               transaction.id === id
