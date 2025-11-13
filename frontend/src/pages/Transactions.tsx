@@ -69,11 +69,6 @@ type TabValue = 'income' | 'expense' | 'savings';
 
 export function Transactions() {
   const [activeTab, setActiveTab] = useState<TabValue>('income');
-  
-  // Clear selection when tab changes
-  useEffect(() => {
-    setSelectedIds(new Set());
-  }, [activeTab]);
   const { transactions: incomeTransactions, createTransaction: createIncome, updateTransaction: updateIncome, deleteTransaction: deleteIncome } = useIncomeTransactionsStore();
   const { transactions: expenseTransactions, createTransaction: createExpense, updateTransaction: updateExpense, deleteTransaction: deleteExpense } = useExpenseTransactionsStore();
   const { transactions: savingsTransactions, createTransaction: createSavings, updateTransaction: updateSavings, deleteTransaction: deleteSavings } = useSavingsInvestmentTransactionsStore();
@@ -92,6 +87,11 @@ export function Transactions() {
     searchTerm: '',
   });
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Clear selection when tab changes
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [activeTab]);
 
   const accountsMap = useMemo(() => {
     const map = new Map<string, string>();
