@@ -63,6 +63,17 @@ export function BankAccounts() {
     return map;
   }, [banks]);
 
+  const [filterBankId, setFilterBankId] = useState<string>('All');
+  const [filterAccountType, setFilterAccountType] = useState<BankAccount['accountType'] | 'All'>('All');
+
+  const filteredAccounts = useMemo(() => {
+    return accounts.filter((account) => {
+      const matchesBank = filterBankId === 'All' || account.bankId === filterBankId;
+      const matchesType = filterAccountType === 'All' || account.accountType === filterAccountType;
+      return matchesBank && matchesType;
+    });
+  }, [accounts, filterBankId, filterAccountType]);
+
   const handleOpenDialog = (account?: BankAccount) => {
     if (account) {
       setEditingAccount(account);
@@ -155,6 +166,42 @@ export function BankAccounts() {
         </Paper>
       )}
 
+      {banks.length > 0 && (
+        <Paper sx={{ p: 2 }}>
+          <Stack direction="row" spacing={2}>
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel>Filter by Bank</InputLabel>
+              <Select
+                value={filterBankId}
+                label="Filter by Bank"
+                onChange={(e) => setFilterBankId(e.target.value)}
+              >
+                <MenuItem value="All">All Banks</MenuItem>
+                {banks.map((bank) => (
+                  <MenuItem key={bank.id} value={bank.id}>
+                    {bank.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel>Filter by Type</InputLabel>
+              <Select
+                value={filterAccountType}
+                label="Filter by Type"
+                onChange={(e) => setFilterAccountType(e.target.value as BankAccount['accountType'] | 'All')}
+              >
+                <MenuItem value="All">All Types</MenuItem>
+                <MenuItem value="Savings">Savings</MenuItem>
+                <MenuItem value="Current">Current</MenuItem>
+                <MenuItem value="CreditCard">Credit Card</MenuItem>
+                <MenuItem value="Wallet">Wallet</MenuItem>
+              </Select>
+            </FormControl>
+          </Stack>
+        </Paper>
+      )}
+
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -168,16 +215,18 @@ export function BankAccounts() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {accounts.length === 0 ? (
+            {filteredAccounts.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={isCreditCard ? 6 : 5} align="center">
                   <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
-                    No accounts found. Add your first account to get started.
+                    {accounts.length === 0
+                      ? 'No accounts found. Add your first account to get started.'
+                      : 'No accounts match the current filters.'}
                   </Typography>
                 </TableCell>
               </TableRow>
             ) : (
-              accounts.map((account) => (
+              filteredAccounts.map((account) => (
                 <TableRow key={account.id} hover>
                   <TableCell>
                     <Typography variant="body2" fontWeight="medium">

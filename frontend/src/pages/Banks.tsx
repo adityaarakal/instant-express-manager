@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -25,6 +25,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SearchIcon from '@mui/icons-material/Search';
 import { useBanksStore } from '../store/useBanksStore';
 import type { Bank } from '../types/banks';
 
@@ -32,12 +33,27 @@ export function Banks() {
   const { banks, createBank, updateBank, deleteBank } = useBanksStore();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBank, setEditingBank] = useState<Bank | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState<Bank['type'] | 'All'>('All');
   const [formData, setFormData] = useState({
     name: '',
     type: 'Bank' as Bank['type'],
     country: '',
     notes: '',
   });
+
+  const filteredBanks = useMemo(() => {
+    return banks.filter((bank) => {
+      const matchesSearch = searchTerm === '' || 
+        bank.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (bank.country && bank.country.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (bank.notes && bank.notes.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      const matchesType = filterType === 'All' || bank.type === filterType;
+      
+      return matchesSearch && matchesType;
+    });
+  }, [banks, searchTerm, filterType]);
 
   const handleOpenDialog = (bank?: Bank) => {
     if (bank) {
@@ -101,6 +117,34 @@ export function Banks() {
         </Button>
       </Box>
 
+      <Paper sx={{ p: 2 }}>
+        <Stack direction="row" spacing={2}>
+          <TextField
+            size="small"
+            placeholder="Search banks..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+            }}
+            sx={{ flex: 1 }}
+          />
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Type</InputLabel>
+            <Select
+              value={filterType}
+              label="Type"
+              onChange={(e) => setFilterType(e.target.value as Bank['type'] | 'All')}
+            >
+              <MenuItem value="All">All Types</MenuItem>
+              <MenuItem value="Bank">Bank</MenuItem>
+              <MenuItem value="CreditCard">Credit Card</MenuItem>
+              <MenuItem value="Wallet">Wallet</MenuItem>
+            </Select>
+          </FormControl>
+        </Stack>
+      </Paper>
+
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -113,16 +157,18 @@ export function Banks() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {banks.length === 0 ? (
+            {filteredBanks.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} align="center">
                   <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
-                    No banks found. Add your first bank to get started.
+                    {banks.length === 0
+                      ? 'No banks found. Add your first bank to get started.'
+                      : 'No banks match the current filters.'}
                   </Typography>
                 </TableCell>
               </TableRow>
             ) : (
-              banks.map((bank) => (
+              filteredBanks.map((bank) => (
                 <TableRow key={bank.id} hover>
                   <TableCell>{bank.name}</TableCell>
                   <TableCell>{bank.type}</TableCell>
