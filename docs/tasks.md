@@ -151,15 +151,15 @@ This document lists every major task required to build the complete financial ma
 - [x] Remove direct editing (redirect to Transactions page)
 - [x] Add "Add Transaction" quick actions
 
-### Task 13 – Analytics Page *(Pending)*
-- [ ] Create Analytics page with:
-  - [ ] Income trends (by category, by month)
-  - [ ] Expense breakdowns (by category, by bucket)
-  - [ ] Savings progress charts
-  - [ ] Investment performance
-  - [ ] Credit card analysis
-  - [ ] Budget vs Actual comparisons
-  - [ ] Date range filters
+### Task 13 – Analytics Page *(Completed)*
+- [x] Create Analytics page with:
+  - [x] Income trends (by category, by month)
+  - [x] Expense breakdowns (by category, by bucket)
+  - [x] Savings progress charts
+  - [x] Investment performance
+  - [x] Credit card analysis
+  - [x] Budget vs Actual comparisons
+  - [x] Date range filters
 
 ---
 
@@ -223,10 +223,10 @@ This document lists every major task required to build the complete financial ma
 - ✅ Architecture designed
 - ✅ Data models defined
 - ✅ Stores created (all 11 stores)
-- ✅ Core UIs built (Banks, Accounts, Transactions, EMIs, Recurring, Planner, Dashboard)
-- ⏳ Transaction filters and export (Task 9 enhancements)
-- ⏳ Old code cleanup (Task 16)
-- ⏳ Analytics page (Task 13)
+- ✅ Core UIs built (Banks, Accounts, Transactions, EMIs, Recurring, Planner, Dashboard, Analytics)
+- ✅ Transaction filters and export (Task 9)
+- ✅ Old code cleanup (Task 16 - partial, old stores kept for compatibility)
+- ✅ Analytics page (Task 13)
 
 ---
 
