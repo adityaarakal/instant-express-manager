@@ -103,6 +103,18 @@ export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
           }));
         },
         deleteEMI: (id) => {
+          // Check if any transactions reference this EMI
+          const transactions = useExpenseTransactionsStore.getState().transactions.filter(
+            (t) => t.emiId === id
+          );
+          
+          if (transactions.length > 0) {
+            throw new Error(
+              `Cannot delete EMI: ${transactions.length} expense transaction(s) still reference it. ` +
+              `Please delete or update the transactions first.`
+            );
+          }
+          
           set((state) => ({
             emis: state.emis.filter((emi) => emi.id !== id),
           }));

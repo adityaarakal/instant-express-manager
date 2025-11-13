@@ -94,6 +94,18 @@ export const useRecurringExpensesStore = create<RecurringExpensesState>()(
           }));
         },
         deleteTemplate: (id) => {
+          // Check if any transactions reference this template
+          const transactions = useExpenseTransactionsStore.getState().transactions.filter(
+            (t) => t.recurringTemplateId === id
+          );
+          
+          if (transactions.length > 0) {
+            throw new Error(
+              `Cannot delete recurring expense template: ${transactions.length} expense transaction(s) still reference it. ` +
+              `Please delete or update the transactions first.`
+            );
+          }
+          
           set((state) => ({
             templates: state.templates.filter((template) => template.id !== id),
           }));

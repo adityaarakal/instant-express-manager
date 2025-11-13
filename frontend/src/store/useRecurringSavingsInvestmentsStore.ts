@@ -94,6 +94,18 @@ export const useRecurringSavingsInvestmentsStore = create<RecurringSavingsInvest
           }));
         },
         deleteTemplate: (id) => {
+          // Check if any transactions reference this template
+          const transactions = useSavingsInvestmentTransactionsStore.getState().transactions.filter(
+            (t) => t.recurringTemplateId === id
+          );
+          
+          if (transactions.length > 0) {
+            throw new Error(
+              `Cannot delete recurring savings/investment template: ${transactions.length} savings/investment transaction(s) still reference it. ` +
+              `Please delete or update the transactions first.`
+            );
+          }
+          
           set((state) => ({
             templates: state.templates.filter((template) => template.id !== id),
           }));

@@ -286,6 +286,23 @@ Bank
 - **Location**: `frontend/src/store/useBankAccountsStore.ts`
 - **Result**: Prevents deletion if any references exist, provides detailed error message
 
+#### 2a. **EMI Deletion Validation** ✅ **COMPLETED**
+- **Status**: ✅ Implemented
+- **Implementation**: Added validation in EMI stores to check for transaction references:
+  - `useExpenseEMIsStore.deleteEMI()` - Checks for ExpenseTransaction references via `emiId`
+  - `useSavingsInvestmentEMIsStore.deleteEMI()` - Checks for SavingsInvestmentTransaction references via `emiId`
+- **Location**: `frontend/src/store/useExpenseEMIsStore.ts`, `useSavingsInvestmentEMIsStore.ts`
+- **Result**: Prevents deletion if any transactions reference the EMI, prevents orphaned transactions
+
+#### 2b. **Recurring Template Deletion Validation** ✅ **COMPLETED**
+- **Status**: ✅ Implemented
+- **Implementation**: Added validation in recurring template stores to check for transaction references:
+  - `useRecurringIncomesStore.deleteTemplate()` - Checks for IncomeTransaction references via `recurringTemplateId`
+  - `useRecurringExpensesStore.deleteTemplate()` - Checks for ExpenseTransaction references via `recurringTemplateId`
+  - `useRecurringSavingsInvestmentsStore.deleteTemplate()` - Checks for SavingsInvestmentTransaction references via `recurringTemplateId`
+- **Location**: `frontend/src/store/useRecurringIncomesStore.ts`, `useRecurringExpensesStore.ts`, `useRecurringSavingsInvestmentsStore.ts`
+- **Result**: Prevents deletion if any transactions reference the template, prevents orphaned transactions
+
 #### 3. **ExpenseEMI Credit Card Validation** ✅ **COMPLETED**
 - **Status**: ✅ Implemented
 - **Implementation**: Added validation in `useExpenseEMIsStore.createEMI()` and `updateEMI()` to ensure `creditCardId` references a valid CreditCard account
@@ -412,18 +429,26 @@ Bank
    - Implemented in `useBankAccountsStore.deleteAccount()`
    - Checks all entity references before deletion
 
-3. ✅ **Extended Data Health Check** - **COMPLETED**
+3. ✅ **EMI Deletion Validation** - **COMPLETED**
+   - Implemented in `useExpenseEMIsStore.deleteEMI()` and `useSavingsInvestmentEMIsStore.deleteEMI()`
+   - Prevents deletion if transactions reference the EMI
+
+4. ✅ **Recurring Template Deletion Validation** - **COMPLETED**
+   - Implemented in all recurring template stores (`deleteTemplate()`)
+   - Prevents deletion if transactions reference the template
+
+5. ✅ **Extended Data Health Check** - **COMPLETED**
    - Extended `checkDataInconsistencies()` to check all entity types
    - Updated `DataHealthCheck` component to pass all entities
    - Validates: EMIs, Recurring templates, invalid references
 
-4. ✅ **Credit Card Validation in ExpenseEMI** - **COMPLETED**
+6. ✅ **Credit Card Validation in ExpenseEMI** - **COMPLETED**
    - Implemented in `useExpenseEMIsStore.createEMI()` and `updateEMI()`
    - Validates `creditCardId` references a valid CreditCard account
 
 ### ✅ Completed (Medium Priority)
 
-5. ✅ **Add Reference Validation in Transactions** - **COMPLETED**
+7. ✅ **Add Reference Validation in Transactions** - **COMPLETED**
    - **Status**: ✅ Implemented
    - **Implementation**:
      - ✅ Validate `recurringTemplateId` exists when provided in transaction creation/update
@@ -436,7 +461,7 @@ Bank
 
 ### ✅ Completed (Low Priority)
 
-6. ✅ **Add Relationship Query Helpers** - **COMPLETED**
+8. ✅ **Add Relationship Query Helpers** - **COMPLETED**
    - ✅ `getBankAccountSummary(accountId)` - Returns all related entity counts and balance impact
      - Location: `useBankAccountsStore.getBankAccountSummary()`
    - ✅ `getBankSummary(bankId)` - Returns account count and totals
@@ -464,7 +489,11 @@ Bank
 ### 📊 Connection Completeness
 
 - **Core Connections**: 100% ✅
-- **Deletion Validations**: 100% ✅ (Bank, BankAccount)
+- **Deletion Validations**: 100% ✅
+  - ✅ Bank deletion (checks BankAccount references)
+  - ✅ BankAccount deletion (checks all entity references)
+  - ✅ EMI deletion (checks transaction references)
+  - ✅ Recurring Template deletion (checks transaction references)
 - **Health Checks**: 100% ✅ (All entity types checked)
 - **Reference Validations**: 100% ✅
   - ✅ CreditCard validation in ExpenseEMI
@@ -526,6 +555,27 @@ All validations, health checks, and relationship queries have been implemented. 
 - ✅ **RecurringSavingsInvestment**: Validates `accountId`
 
 **All foreign key references are now validated at creation and update time, preventing orphaned records and ensuring data integrity.**
+
+---
+
+## Deletion Integrity (All Implemented ✅)
+
+### Complete Deletion Protection
+All entities that can be referenced by other entities now have deletion validations:
+
+1. ✅ **Bank** → Prevents deletion if BankAccounts exist
+2. ✅ **BankAccount** → Prevents deletion if any entity references it:
+   - Transactions (Income, Expense, Savings/Investment)
+   - EMIs (Expense, Savings/Investment)
+   - Recurring Templates (Income, Expense, Savings/Investment)
+   - Credit Card EMI references
+3. ✅ **ExpenseEMI** → Prevents deletion if ExpenseTransactions reference it via `emiId`
+4. ✅ **SavingsInvestmentEMI** → Prevents deletion if SavingsInvestmentTransactions reference it via `emiId`
+5. ✅ **RecurringIncome** → Prevents deletion if IncomeTransactions reference it via `recurringTemplateId`
+6. ✅ **RecurringExpense** → Prevents deletion if ExpenseTransactions reference it via `recurringTemplateId`
+7. ✅ **RecurringSavingsInvestment** → Prevents deletion if SavingsInvestmentTransactions reference it via `recurringTemplateId`
+
+**Result**: Complete referential integrity protection. No entity can be deleted if it's referenced by another entity, preventing orphaned records and maintaining data consistency.
 
 ---
 
