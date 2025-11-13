@@ -4,6 +4,7 @@ import type { IncomeTransaction } from '../types/transactions';
 import { getLocalforageStorage } from '../utils/storage';
 import { useRecurringIncomesStore } from './useRecurringIncomesStore';
 import { useBankAccountsStore } from './useBankAccountsStore';
+import { validateDate, validateAmount } from '../utils/validation';
 
 type IncomeTransactionsState = {
   transactions: IncomeTransaction[];
@@ -42,6 +43,18 @@ export const useIncomeTransactionsStore = create<IncomeTransactionsState>()(
             }
           }
           
+          // Validate date
+          const dateValidation = validateDate(transactionData.date, 'Transaction Date');
+          if (!dateValidation.isValid) {
+            throw new Error(`Date validation failed: ${dateValidation.errors.join(', ')}`);
+          }
+          
+          // Validate amount
+          const amountValidation = validateAmount(transactionData.amount, 'Amount');
+          if (!amountValidation.isValid) {
+            throw new Error(`Amount validation failed: ${amountValidation.errors.join(', ')}`);
+          }
+          
           const now = new Date().toISOString();
           const newTransaction: IncomeTransaction = {
             ...transactionData,
@@ -71,6 +84,22 @@ export const useIncomeTransactionsStore = create<IncomeTransactionsState>()(
               if (!template) {
                 throw new Error(`Recurring income template with id ${updates.recurringTemplateId} does not exist`);
               }
+            }
+          }
+          
+          // Validate date if being updated
+          if (updates.date) {
+            const dateValidation = validateDate(updates.date, 'Transaction Date');
+            if (!dateValidation.isValid) {
+              throw new Error(`Date validation failed: ${dateValidation.errors.join(', ')}`);
+            }
+          }
+          
+          // Validate amount if being updated
+          if (updates.amount !== undefined) {
+            const amountValidation = validateAmount(updates.amount, 'Amount');
+            if (!amountValidation.isValid) {
+              throw new Error(`Amount validation failed: ${amountValidation.errors.join(', ')}`);
             }
           }
           

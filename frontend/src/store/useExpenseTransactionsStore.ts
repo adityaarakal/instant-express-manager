@@ -5,6 +5,7 @@ import { getLocalforageStorage } from '../utils/storage';
 import { useRecurringExpensesStore } from './useRecurringExpensesStore';
 import { useExpenseEMIsStore } from './useExpenseEMIsStore';
 import { useBankAccountsStore } from './useBankAccountsStore';
+import { validateDate, validateAmount } from '../utils/validation';
 
 type ExpenseTransactionsState = {
   transactions: ExpenseTransaction[];
@@ -55,6 +56,18 @@ export const useExpenseTransactionsStore = create<ExpenseTransactionsState>()(
             }
           }
           
+          // Validate date
+          const dateValidation = validateDate(transactionData.date, 'Transaction Date');
+          if (!dateValidation.isValid) {
+            throw new Error(`Date validation failed: ${dateValidation.errors.join(', ')}`);
+          }
+          
+          // Validate amount
+          const amountValidation = validateAmount(transactionData.amount, 'Amount');
+          if (!amountValidation.isValid) {
+            throw new Error(`Amount validation failed: ${amountValidation.errors.join(', ')}`);
+          }
+          
           const now = new Date().toISOString();
           const newTransaction: ExpenseTransaction = {
             ...transactionData,
@@ -94,6 +107,22 @@ export const useExpenseTransactionsStore = create<ExpenseTransactionsState>()(
               if (!emi) {
                 throw new Error(`Expense EMI with id ${updates.emiId} does not exist`);
               }
+            }
+          }
+          
+          // Validate date if being updated
+          if (updates.date) {
+            const dateValidation = validateDate(updates.date, 'Transaction Date');
+            if (!dateValidation.isValid) {
+              throw new Error(`Date validation failed: ${dateValidation.errors.join(', ')}`);
+            }
+          }
+          
+          // Validate amount if being updated
+          if (updates.amount !== undefined) {
+            const amountValidation = validateAmount(updates.amount, 'Amount');
+            if (!amountValidation.isValid) {
+              throw new Error(`Amount validation failed: ${amountValidation.errors.join(', ')}`);
             }
           }
           

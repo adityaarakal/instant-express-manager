@@ -374,6 +374,23 @@ Bank
 - **Location**: `frontend/src/store/useRecurringIncomesStore.ts`, `useRecurringExpensesStore.ts`, `useRecurringSavingsInvestmentsStore.ts`
 - **Result**: Prevents creating/updating recurring templates with invalid `accountId` references
 
+#### 11. **Date and Amount Validations** ✅ **COMPLETED**
+- **Status**: ✅ Implemented
+- **Implementation**: Added comprehensive date and amount validations across all entity stores:
+  - **EMI Stores**: Validates `startDate`, `endDate` (date range), and `amount` in `createEMI()` and `updateEMI()`
+    - `useExpenseEMIsStore` - Date range and amount validation
+    - `useSavingsInvestmentEMIsStore` - Date range and amount validation
+  - **Recurring Template Stores**: Validates `startDate`, `endDate` (if provided), and `amount` in `createTemplate()` and `updateTemplate()`
+    - `useRecurringIncomesStore` - Date and amount validation
+    - `useRecurringExpensesStore` - Date and amount validation
+    - `useRecurringSavingsInvestmentsStore` - Date and amount validation
+  - **Transaction Stores**: Validates `date` and `amount` in `createTransaction()` and `updateTransaction()`
+    - `useIncomeTransactionsStore` - Date and amount validation
+    - `useExpenseTransactionsStore` - Date and amount validation
+    - `useSavingsInvestmentTransactionsStore` - Date and amount validation
+- **Location**: All store files in `frontend/src/store/`
+- **Result**: Ensures all dates are valid and within reasonable ranges, and all amounts are non-negative and valid numbers
+
 ---
 
 ## Store Methods for Relationship Queries
@@ -502,6 +519,10 @@ Bank
   - ✅ BankAccount `bankId` validation
   - ✅ EMI `accountId` validation (all EMI types)
   - ✅ Recurring template `accountId` validation (all recurring types)
+- **Data Validations**: 100% ✅
+  - ✅ Date validations (all entities with dates)
+  - ✅ Date range validations (EMIs, Recurring templates)
+  - ✅ Amount validations (all entities with amounts)
 - **Relationship Queries**: 100% ✅ (All queries implemented)
 
 ---
@@ -537,24 +558,26 @@ All validations, health checks, and relationship queries have been implemented. 
 ## Critical Reference Validations (All Implemented ✅)
 
 ### Transaction Stores
-- ✅ **IncomeTransaction**: Validates `accountId` and `recurringTemplateId` (if provided)
-- ✅ **ExpenseTransaction**: Validates `accountId`, `recurringTemplateId` (if provided), and `emiId` (if provided)
-- ✅ **SavingsInvestmentTransaction**: Validates `accountId`, `recurringTemplateId` (if provided), and `emiId` (if provided)
+- ✅ **IncomeTransaction**: Validates `accountId`, `recurringTemplateId` (if provided), `date`, and `amount`
+- ✅ **ExpenseTransaction**: Validates `accountId`, `recurringTemplateId` (if provided), `emiId` (if provided), `date`, and `amount`
+- ✅ **SavingsInvestmentTransaction**: Validates `accountId`, `recurringTemplateId` (if provided), `emiId` (if provided), `date`, and `amount`
 
 ### BankAccount Store
 - ✅ **createAccount**: Validates `bankId` exists
 - ✅ **updateAccount**: Validates `bankId` exists if being updated
 
 ### EMI Stores
-- ✅ **ExpenseEMI**: Validates `accountId` and `creditCardId` (if CCEMI)
-- ✅ **SavingsInvestmentEMI**: Validates `accountId`
+- ✅ **ExpenseEMI**: Validates `accountId`, `creditCardId` (if CCEMI), `startDate`, `endDate` (date range), and `amount`
+- ✅ **SavingsInvestmentEMI**: Validates `accountId`, `startDate`, `endDate` (date range), and `amount`
 
 ### Recurring Template Stores
-- ✅ **RecurringIncome**: Validates `accountId`
-- ✅ **RecurringExpense**: Validates `accountId`
-- ✅ **RecurringSavingsInvestment**: Validates `accountId`
+- ✅ **RecurringIncome**: Validates `accountId`, `startDate`, `endDate` (if provided, date range), and `amount`
+- ✅ **RecurringExpense**: Validates `accountId`, `startDate`, `endDate` (if provided, date range), and `amount`
+- ✅ **RecurringSavingsInvestment**: Validates `accountId`, `startDate`, `endDate` (if provided, date range), and `amount`
 
 **All foreign key references are now validated at creation and update time, preventing orphaned records and ensuring data integrity.**
+
+**All dates and amounts are validated at creation and update time, ensuring data quality and preventing invalid values.**
 
 ---
 

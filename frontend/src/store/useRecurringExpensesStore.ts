@@ -3,6 +3,7 @@ import { devtools, persist } from 'zustand/middleware';
 import type { RecurringExpense } from '../types/recurring';
 import { useExpenseTransactionsStore } from './useExpenseTransactionsStore';
 import { useBankAccountsStore } from './useBankAccountsStore';
+import { validateDate, validateAmount, validateDateRange } from '../utils/validation';
 import { getLocalforageStorage } from '../utils/storage';
 
 type RecurringExpensesState = {
@@ -59,6 +60,26 @@ export const useRecurringExpensesStore = create<RecurringExpensesState>()(
             throw new Error(`Account with id ${templateData.accountId} does not exist`);
           }
           
+          // Validate startDate
+          const startDateValidation = validateDate(templateData.startDate, 'Start Date');
+          if (!startDateValidation.isValid) {
+            throw new Error(`Start date validation failed: ${startDateValidation.errors.join(', ')}`);
+          }
+          
+          // Validate endDate if provided
+          if (templateData.endDate) {
+            const dateRangeValidation = validateDateRange(templateData.startDate, templateData.endDate);
+            if (!dateRangeValidation.isValid) {
+              throw new Error(`Date range validation failed: ${dateRangeValidation.errors.join(', ')}`);
+            }
+          }
+          
+          // Validate amount
+          const amountValidation = validateAmount(templateData.amount, 'Amount');
+          if (!amountValidation.isValid) {
+            throw new Error(`Amount validation failed: ${amountValidation.errors.join(', ')}`);
+          }
+          
           const now = new Date().toISOString();
           const nextDueDate = templateData.startDate;
           const newTemplate: RecurringExpense = {
@@ -82,6 +103,38 @@ export const useRecurringExpensesStore = create<RecurringExpensesState>()(
             const account = useBankAccountsStore.getState().getAccount(updates.accountId);
             if (!account) {
               throw new Error(`Account with id ${updates.accountId} does not exist`);
+            }
+          }
+          
+          // Validate dates if being updated
+          if (updates.startDate || updates.endDate !== undefined) {
+            set((state) => {
+              const template = state.templates.find((t) => t.id === id);
+              if (template) {
+                const startDate = updates.startDate || template.startDate;
+                const endDate = updates.endDate !== undefined ? updates.endDate : template.endDate;
+                
+                const startDateValidation = validateDate(startDate, 'Start Date');
+                if (!startDateValidation.isValid) {
+                  throw new Error(`Start date validation failed: ${startDateValidation.errors.join(', ')}`);
+                }
+                
+                if (endDate) {
+                  const dateRangeValidation = validateDateRange(startDate, endDate);
+                  if (!dateRangeValidation.isValid) {
+                    throw new Error(`Date range validation failed: ${dateRangeValidation.errors.join(', ')}`);
+                  }
+                }
+              }
+              return state;
+            });
+          }
+          
+          // Validate amount if being updated
+          if (updates.amount !== undefined) {
+            const amountValidation = validateAmount(updates.amount, 'Amount');
+            if (!amountValidation.isValid) {
+              throw new Error(`Amount validation failed: ${amountValidation.errors.join(', ')}`);
             }
           }
           

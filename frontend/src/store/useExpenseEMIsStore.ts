@@ -3,6 +3,7 @@ import { devtools, persist } from 'zustand/middleware';
 import type { ExpenseEMI } from '../types/emis';
 import { useExpenseTransactionsStore } from './useExpenseTransactionsStore';
 import { useBankAccountsStore } from './useBankAccountsStore';
+import { validateDateRange, validateAmount } from '../utils/validation';
 import { getLocalforageStorage } from '../utils/storage';
 
 type ExpenseEMIsState = {
@@ -56,6 +57,18 @@ export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
             }
           }
           
+          // Validate date range
+          const dateValidation = validateDateRange(emiData.startDate, emiData.endDate);
+          if (!dateValidation.isValid) {
+            throw new Error(`Date validation failed: ${dateValidation.errors.join(', ')}`);
+          }
+          
+          // Validate amount
+          const amountValidation = validateAmount(emiData.amount, 'EMI Amount');
+          if (!amountValidation.isValid) {
+            throw new Error(`Amount validation failed: ${amountValidation.errors.join(', ')}`);
+          }
+          
           const now = new Date().toISOString();
           const newEMI: ExpenseEMI = {
             ...emiData,
@@ -91,6 +104,30 @@ export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
               if (creditCard.accountType !== 'CreditCard') {
                 throw new Error(`creditCardId must reference a CreditCard account, but found ${creditCard.accountType}`);
               }
+            }
+          }
+          
+          // Validate date range if dates are being updated
+          if (updates.startDate || updates.endDate) {
+            set((state) => {
+              const emi = state.emis.find((e) => e.id === id);
+              if (emi) {
+                const startDate = updates.startDate || emi.startDate;
+                const endDate = updates.endDate || emi.endDate;
+                const dateValidation = validateDateRange(startDate, endDate);
+                if (!dateValidation.isValid) {
+                  throw new Error(`Date validation failed: ${dateValidation.errors.join(', ')}`);
+                }
+              }
+              return state;
+            });
+          }
+          
+          // Validate amount if being updated
+          if (updates.amount !== undefined) {
+            const amountValidation = validateAmount(updates.amount, 'EMI Amount');
+            if (!amountValidation.isValid) {
+              throw new Error(`Amount validation failed: ${amountValidation.errors.join(', ')}`);
             }
           }
           
