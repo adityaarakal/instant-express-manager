@@ -446,14 +446,15 @@ The application has **excellent core functionality** with all CRUD operations, a
 - [x] Preserve original IDs and timestamps on restore
 - [x] Add timeout for undo (10 minutes)
 
-### Data Backup/Restore
-- [ ] Create backup service
-- [ ] Export all stores to JSON
-- [ ] Add backup button to Settings
-- [ ] Create import/restore functionality
-- [ ] Add data validation on import
-- [ ] Add version tracking
-- [ ] Add backup history
+### Data Backup/Restore ✅ **COMPLETED**
+- [x] Create backup service (`backupService.ts`)
+- [x] Export all stores to JSON (with version and timestamp)
+- [x] Add backup/restore UI to Settings page
+- [x] Import and validate data (format validation)
+- [x] Create import/restore functionality (replace and merge modes)
+- [x] Version tracking for backups
+- [x] Error handling with user-friendly messages
+- [ ] Add backup history (Future enhancement)
 
 ### Pagination
 - [ ] Add pagination to Transactions page
