@@ -1,11 +1,13 @@
 import { Component, type ReactNode } from 'react';
-import { Box, Button, Paper, Stack, Typography } from '@mui/material';
+import { Box, Button, Paper, Stack, Typography, Alert, AlertTitle } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import HomeIcon from '@mui/icons-material/Home';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode;
+  onReset?: () => void;
 }
 
 interface ErrorBoundaryState {
@@ -28,7 +30,15 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, error: null });
+    if (this.props.onReset) {
+      this.props.onReset();
+    } else {
+      this.setState({ hasError: false, error: null });
+    }
+  };
+
+  handleGoHome = () => {
+    window.location.href = '/';
   };
 
   render() {
@@ -38,25 +48,44 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       }
 
       return (
-        <Paper elevation={1} sx={{ p: 4, borderRadius: 3, textAlign: 'center' }}>
-          <Stack spacing={2} alignItems="center">
-            <ErrorOutlineIcon color="error" sx={{ fontSize: 48 }} />
-            <Typography variant="h5">Something went wrong</Typography>
-            <Typography variant="body2" color="text.secondary">
-              {this.state.error?.message || 'An unexpected error occurred'}
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<RefreshIcon />}
-              onClick={this.handleReset}
-            >
-              Try Again
-            </Button>
-            <Typography variant="caption" color="text.secondary">
-              If the problem persists, try refreshing the page or clearing your browser cache.
-            </Typography>
-          </Stack>
-        </Paper>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', p: 3 }}>
+          <Paper elevation={1} sx={{ p: 4, borderRadius: 3, maxWidth: 600, width: '100%' }}>
+            <Stack spacing={3} alignItems="center">
+              <ErrorOutlineIcon color="error" sx={{ fontSize: 64 }} />
+              <Typography variant="h4" component="h1">
+                Something went wrong
+              </Typography>
+              <Alert severity="error" sx={{ width: '100%' }}>
+                <AlertTitle>Error Details</AlertTitle>
+                <Typography variant="body2">
+                  {this.state.error?.message || 'An unexpected error occurred'}
+                </Typography>
+              </Alert>
+              <Stack direction="row" spacing={2} sx={{ width: '100%', justifyContent: 'center' }}>
+                <Button
+                  variant="contained"
+                  startIcon={<RefreshIcon />}
+                  onClick={this.handleReset}
+                  size="large"
+                >
+                  Try Again
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<HomeIcon />}
+                  onClick={this.handleGoHome}
+                  size="large"
+                >
+                  Go Home
+                </Button>
+              </Stack>
+              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', maxWidth: 400 }}>
+                If the problem persists, try refreshing the page or clearing your browser cache.
+                You can also try going back to the home page.
+              </Typography>
+            </Stack>
+          </Paper>
+        </Box>
       );
     }
 

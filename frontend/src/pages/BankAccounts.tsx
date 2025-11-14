@@ -30,6 +30,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useBanksStore } from '../store/useBanksStore';
 import { useToastStore } from '../store/useToastStore';
+import { getUserFriendlyError } from '../utils/errorHandling';
 import { useUndoStore } from '../store/useUndoStore';
 import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
@@ -157,7 +158,7 @@ export function BankAccounts() {
       }
       handleCloseDialog();
     } catch (error) {
-      showError(error instanceof Error ? error.message : 'Failed to save account');
+      showError(getUserFriendlyError(error, 'save account'));
     } finally {
       setIsSaving(false);
     }

@@ -29,6 +29,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useToastStore } from '../store/useToastStore';
+import { getUserFriendlyError } from '../utils/errorHandling';
 import { ThemeModeToggle } from '../components/layout/ThemeModeToggle';
 import { DataHealthCheck } from '../components/common/DataHealthCheck';
 import { downloadBackup, readBackupFile, importBackup, exportBackup } from '../utils/backupService';
@@ -85,7 +86,7 @@ export function Settings() {
       downloadBackup();
       showSuccess('Backup exported successfully');
     } catch (error) {
-      showError(error instanceof Error ? error.message : 'Failed to export backup');
+      showError(getUserFriendlyError(error, 'export backup'));
     }
   };
 
@@ -102,7 +103,7 @@ export function Settings() {
       });
       setImportDialogOpen(true);
     } catch (error) {
-      showError(error instanceof Error ? error.message : 'Failed to read backup file');
+      showError(getUserFriendlyError(error, 'read backup file'));
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -127,7 +128,7 @@ export function Settings() {
         fileInputRef.current.value = '';
       }
     } catch (error) {
-      showError(error instanceof Error ? error.message : 'Failed to import backup');
+      showError(getUserFriendlyError(error, 'import backup'));
     }
   };
 

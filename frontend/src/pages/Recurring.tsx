@@ -42,6 +42,7 @@ import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore'
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useToastStore } from '../store/useToastStore';
+import { getUserFriendlyError } from '../utils/errorHandling';
 import { useUndoStore } from '../store/useUndoStore';
 import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
@@ -319,7 +320,7 @@ export function Recurring() {
     }
     handleCloseDialog();
     } catch (error) {
-      showError(error instanceof Error ? error.message : 'Failed to save recurring template');
+      showError(getUserFriendlyError(error, 'save recurring template'));
     } finally {
       setIsSaving(false);
     }
@@ -377,7 +378,7 @@ export function Recurring() {
           }
         );
       } catch (error) {
-        showError(error instanceof Error ? error.message : 'Failed to delete recurring template');
+        showError(getUserFriendlyError(error, 'delete recurring template'));
       } finally {
         setDeletingId(null);
       }
@@ -411,7 +412,7 @@ export function Recurring() {
         }
       }
     } catch (error) {
-      showError(error instanceof Error ? error.message : 'Failed to update recurring template status');
+        showError(getUserFriendlyError(error, 'update recurring template status'));
     }
   };
 

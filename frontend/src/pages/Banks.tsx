@@ -29,6 +29,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import { useBanksStore } from '../store/useBanksStore';
 import { useToastStore } from '../store/useToastStore';
+import { getUserFriendlyError } from '../utils/errorHandling';
 import { useUndoStore } from '../store/useUndoStore';
 import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
@@ -120,7 +121,7 @@ export function Banks() {
       }
       handleCloseDialog();
     } catch (error) {
-      showError(error instanceof Error ? error.message : 'Failed to save bank');
+      showError(getUserFriendlyError(error, 'save bank'));
     } finally {
       setIsSaving(false);
     }
@@ -158,7 +159,7 @@ export function Banks() {
           }
         );
       } catch (error) {
-        showError(error instanceof Error ? error.message : 'Failed to delete bank');
+        showError(getUserFriendlyError(error, 'delete bank'));
       } finally {
         setDeletingId(null);
       }

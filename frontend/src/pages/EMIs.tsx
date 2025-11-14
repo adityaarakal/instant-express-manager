@@ -41,6 +41,7 @@ import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useToastStore } from '../store/useToastStore';
+import { getUserFriendlyError } from '../utils/errorHandling';
 import { useUndoStore } from '../store/useUndoStore';
 import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
@@ -246,7 +247,7 @@ export function EMIs() {
       }
       handleCloseDialog();
     } catch (error) {
-      showError(error instanceof Error ? error.message : 'Failed to save EMI');
+      showError(getUserFriendlyError(error, 'save EMI'));
     } finally {
       setIsSaving(false);
     }
@@ -295,7 +296,7 @@ export function EMIs() {
           }
         );
       } catch (error) {
-        showError(error instanceof Error ? error.message : 'Failed to delete EMI');
+        showError(getUserFriendlyError(error, 'delete EMI'));
       } finally {
         setDeletingId(null);
       }
@@ -323,7 +324,7 @@ export function EMIs() {
         }
       }
     } catch (error) {
-      showError(error instanceof Error ? error.message : 'Failed to update EMI status');
+        showError(getUserFriendlyError(error, 'update EMI status'));
     }
   };
 

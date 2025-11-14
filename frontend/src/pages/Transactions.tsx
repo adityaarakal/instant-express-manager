@@ -40,6 +40,7 @@ import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStor
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useToastStore } from '../store/useToastStore';
+import { getUserFriendlyError } from '../utils/errorHandling';
 import { useUndoStore } from '../store/useUndoStore';
 import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
@@ -297,7 +298,7 @@ export function Transactions() {
           }
         );
       } catch (error) {
-        showError(error instanceof Error ? error.message : 'Failed to delete transaction');
+        showError(getUserFriendlyError(error, 'delete transaction'));
       } finally {
         setDeletingIds(new Set());
       }
@@ -320,7 +321,7 @@ export function Transactions() {
         setSelectedIds(new Set());
         showSuccess(`${count} transaction(s) deleted successfully`);
       } catch (error) {
-        showError(error instanceof Error ? error.message : 'Failed to delete transactions');
+        showError(getUserFriendlyError(error, 'delete transactions'));
       } finally {
         setIsBulkOperating(false);
         setDeletingIds(new Set());
@@ -346,7 +347,7 @@ export function Transactions() {
       setSelectedIds(new Set());
       showSuccess(`${count} transaction(s) updated successfully`);
     } catch (error) {
-      showError(error instanceof Error ? error.message : 'Failed to update transactions');
+      showError(getUserFriendlyError(error, 'update transactions'));
     } finally {
       setIsBulkOperating(false);
     }
@@ -770,7 +771,7 @@ export function Transactions() {
             }
             handleCloseDialog();
           } catch (error) {
-            showError(error instanceof Error ? error.message : 'Failed to save transaction');
+            showError(getUserFriendlyError(error, 'save transaction'));
           } finally {
             setIsSaving(false);
           }
