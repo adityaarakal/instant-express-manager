@@ -16,6 +16,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TablePagination,
   TextField,
   Typography,
   IconButton,
@@ -101,6 +102,8 @@ export function Transactions() {
   const [isSaving, setIsSaving] = useState(false);
   const [isBulkOperating, setIsBulkOperating] = useState(false);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
 
   // Simulate initial load
   useEffect(() => {
@@ -120,7 +123,7 @@ export function Transactions() {
   }, [accounts]);
 
   // Filter transactions based on current filters
-  const filteredTransactions = useMemo(() => {
+  const filteredAndSortedTransactions = useMemo(() => {
     let transactions: (IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction)[] = [];
 
     if (activeTab === 'income') {
@@ -160,7 +163,28 @@ export function Transactions() {
 
       return true;
     });
+
+    // Sort by date (newest first)
+    return filtered.sort((a, b) => b.date.localeCompare(a.date));
   }, [activeTab, incomeTransactions, expenseTransactions, savingsTransactions, filters, accountsMap]);
+
+  // Pagination
+  const paginatedTransactions = useMemo(() => {
+    const start = page * rowsPerPage;
+    const end = start + rowsPerPage;
+    return filteredAndSortedTransactions.slice(start, end);
+  }, [filteredAndSortedTransactions, page, rowsPerPage]);
+
+  const handleChangePage = (_event: unknown, newPage: number) => {
+    setPage(newPage);
+    setSelectedIds(new Set()); // Clear selection when changing page
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+    setSelectedIds(new Set()); // Clear selection when changing page size
+  };
 
   const handleOpenDialog = (transactionId?: string) => {
     if (transactionId) {
@@ -289,13 +313,13 @@ export function Transactions() {
     let filename = '';
 
     if (activeTab === 'income') {
-      csvContent = exportIncomeTransactionsToCSV(filteredTransactions as IncomeTransaction[], accounts);
+      csvContent = exportIncomeTransactionsToCSV(filteredAndSortedTransactions as IncomeTransaction[], accounts);
       filename = `income-transactions-${new Date().toISOString().split('T')[0]}.csv`;
     } else if (activeTab === 'expense') {
-      csvContent = exportExpenseTransactionsToCSV(filteredTransactions as ExpenseTransaction[], accounts);
+      csvContent = exportExpenseTransactionsToCSV(filteredAndSortedTransactions as ExpenseTransaction[], accounts);
       filename = `expense-transactions-${new Date().toISOString().split('T')[0]}.csv`;
     } else {
-      csvContent = exportSavingsTransactionsToCSV(filteredTransactions as SavingsInvestmentTransaction[], accounts);
+      csvContent = exportSavingsTransactionsToCSV(filteredAndSortedTransactions as SavingsInvestmentTransaction[], accounts);
       filename = `savings-transactions-${new Date().toISOString().split('T')[0]}.csv`;
     }
 
@@ -303,10 +327,10 @@ export function Transactions() {
   };
 
   const handleSelectAll = () => {
-    if (selectedIds.size === filteredTransactions.length) {
+    if (selectedIds.size === paginatedTransactions.length && paginatedTransactions.length > 0) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(filteredTransactions.map((t) => t.id)));
+      setSelectedIds(new Set(paginatedTransactions.map((t) => t.id)));
     }
   };
 
@@ -364,7 +388,7 @@ export function Transactions() {
             variant="outlined"
             startIcon={<DownloadIcon />}
             onClick={handleExport}
-            disabled={filteredTransactions.length === 0}
+            disabled={filteredAndSortedTransactions.length === 0}
           >
             Export CSV
           </Button>
@@ -401,7 +425,7 @@ export function Transactions() {
               <TableRow>
                 <TableCell padding="checkbox">
                   <IconButton size="small" onClick={handleSelectAll}>
-                    {selectedIds.size === filteredTransactions.length && filteredTransactions.length > 0 ? (
+                    {selectedIds.size === paginatedTransactions.length && paginatedTransactions.length > 0 ? (
                       <CheckBoxIcon fontSize="small" />
                     ) : (
                       <CheckBoxOutlineBlankIcon fontSize="small" />
@@ -437,19 +461,20 @@ export function Transactions() {
                 />
               ) : activeTab === 'income' && (
                 <>
-                  {filteredTransactions.length === 0 ? (
+                  {paginatedTransactions.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={8} align="center">
                         <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
                           {incomeTransactions.length === 0
                             ? 'No income transactions found.'
-                            : 'No transactions match the current filters.'}
+                            : filteredAndSortedTransactions.length === 0
+                            ? 'No transactions match the current filters.'
+                            : 'No transactions on this page.'}
                         </Typography>
                       </TableCell>
                     </TableRow>
                   ) : (
-                    (filteredTransactions as IncomeTransaction[])
-                      .sort((a, b) => b.date.localeCompare(a.date))
+                    (paginatedTransactions as IncomeTransaction[])
                       .map((transaction) => (
                         <TableRow key={transaction.id} hover>
                           <TableCell padding="checkbox">
@@ -505,19 +530,20 @@ export function Transactions() {
 
               {activeTab === 'expense' && (
                 <>
-                  {filteredTransactions.length === 0 ? (
+                  {paginatedTransactions.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={9} align="center">
                         <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
                           {expenseTransactions.length === 0
                             ? 'No expense transactions found.'
-                            : 'No transactions match the current filters.'}
+                            : filteredAndSortedTransactions.length === 0
+                            ? 'No transactions match the current filters.'
+                            : 'No transactions on this page.'}
                         </Typography>
                       </TableCell>
                     </TableRow>
                   ) : (
-                    (filteredTransactions as ExpenseTransaction[])
-                      .sort((a, b) => b.date.localeCompare(a.date))
+                    (paginatedTransactions as ExpenseTransaction[])
                       .map((transaction) => (
                         <TableRow key={transaction.id} hover>
                           <TableCell padding="checkbox">
@@ -574,19 +600,20 @@ export function Transactions() {
 
               {activeTab === 'savings' && (
                 <>
-                  {filteredTransactions.length === 0 ? (
+                  {paginatedTransactions.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={9} align="center">
                         <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
                           {savingsTransactions.length === 0
                             ? 'No savings/investment transactions found.'
-                            : 'No transactions match the current filters.'}
+                            : filteredAndSortedTransactions.length === 0
+                            ? 'No transactions match the current filters.'
+                            : 'No transactions on this page.'}
                         </Typography>
                       </TableCell>
                     </TableRow>
                   ) : (
-                    (filteredTransactions as SavingsInvestmentTransaction[])
-                      .sort((a, b) => b.date.localeCompare(a.date))
+                    (paginatedTransactions as SavingsInvestmentTransaction[])
                       .map((transaction) => (
                         <TableRow key={transaction.id} hover>
                           <TableCell padding="checkbox">
@@ -643,6 +670,21 @@ export function Transactions() {
             </TableBody>
           </Table>
         </TableContainer>
+        {!isLoading && filteredAndSortedTransactions.length > 0 && (
+          <TablePagination
+            component="div"
+            count={filteredAndSortedTransactions.length}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPageOptions={[10, 25, 50, 100]}
+            labelRowsPerPage="Rows per page:"
+            labelDisplayedRows={({ from, to, count }) =>
+              `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`
+            }
+          />
+        )}
       </Paper>
 
         <TransactionFormDialog

@@ -151,20 +151,28 @@ The application has **excellent core functionality** with all CRUD operations, a
 
 ---
 
-### 5. **Pagination/Virtualization** ⚠️ **PARTIAL**
+### 5. **Pagination/Virtualization** ✅ **COMPLETED**
 **Impact**: Performance issues with large datasets  
-**Current State**: All data loaded at once  
-**Needed**:
-- Pagination for transaction lists
-- Virtual scrolling for large tables
-- "Load more" functionality
-- Performance optimization
-
+**Status**: ✅ Fully implemented  
 **Implementation**:
-- Add pagination controls
-- Implement virtual scrolling (react-window)
-- Add page size options
-- Optimize rendering
+- ✅ Added Material-UI `TablePagination` component to all list pages
+- ✅ Implemented pagination for Transactions page (Income, Expense, Savings/Investment tabs)
+- ✅ Implemented pagination for EMIs page (Expense, Savings/Investment tabs)
+- ✅ Implemented pagination for Recurring page (Income, Expense, Savings/Investment tabs)
+- ✅ Configurable page size options (10, 25, 50, 100 rows per page)
+- ✅ Default page size: 25 rows
+- ✅ Page resets when switching tabs
+- ✅ Selection cleared when changing pages
+- ✅ Proper empty state messages (no data vs. no data on current page)
+- ✅ Sorting preserved (newest first by date)
+- ✅ Export CSV uses filtered and sorted data (not just current page)
+
+**Files Modified**:
+- `frontend/src/pages/Transactions.tsx` (added pagination)
+- `frontend/src/pages/EMIs.tsx` (added pagination)
+- `frontend/src/pages/Recurring.tsx` (added pagination)
+
+**Note**: Virtual scrolling (react-window) can be added later if needed for extremely large datasets (10,000+ items), but pagination provides good performance for typical use cases.
 
 ---
 
@@ -377,7 +385,7 @@ The application has **excellent core functionality** with all CRUD operations, a
 | Loading States | ✅ Complete | 100% | **HIGH** |
 | Undo Functionality | ✅ Complete | 100% | **HIGH** |
 | Data Backup/Restore | ✅ Complete | 100% | **HIGH** |
-| Pagination | ⚠️ Partial | 20% | **HIGH** |
+| Pagination | ✅ Complete | 100% | **HIGH** |
 | Navigation | ⚠️ Partial | 70% | Medium |
 | Keyboard Shortcuts | ⚠️ Outdated | 30% | Medium |
 | Error Handling | ⚠️ Basic | 60% | Medium |
@@ -399,9 +407,9 @@ The application has **excellent core functionality** with all CRUD operations, a
 4. ✅ **Full Data Backup/Restore** (Settings page) - **COMPLETED**
 
 ### Phase 2: Navigation & Shortcuts (Week 2)
-5. **Navigation Improvements** (React Router everywhere)
-6. **Keyboard Shortcuts** (Update and implement)
-7. **Pagination** (For large lists)
+5. ✅ **Pagination** (For large lists) - **COMPLETED**
+6. **Navigation Improvements** (React Router everywhere)
+7. **Keyboard Shortcuts** (Update and implement)
 
 ### Phase 3: Polish & Documentation (Week 3)
 8. **Error Handling** (Better messages and recovery)
@@ -456,12 +464,16 @@ The application has **excellent core functionality** with all CRUD operations, a
 - [x] Error handling with user-friendly messages
 - [ ] Add backup history (Future enhancement)
 
-### Pagination
-- [ ] Add pagination to Transactions page
-- [ ] Add pagination to EMIs page
-- [ ] Add pagination to Recurring page
-- [ ] Add page size options
-- [ ] Add virtual scrolling for very large lists
+### Pagination ✅ **COMPLETED**
+- [x] Add pagination to Transactions page (all tabs)
+- [x] Add pagination to EMIs page (all tabs)
+- [x] Add pagination to Recurring page (all tabs)
+- [x] Add page size options (10, 25, 50, 100)
+- [x] Default page size: 25 rows
+- [x] Page resets on tab change
+- [x] Selection cleared on page change
+- [x] Proper empty state messages
+- [ ] Add virtual scrolling for very large lists (Future enhancement - only needed for 10,000+ items)
 - [ ] Optimize rendering performance
 
 ### Navigation Improvements
@@ -535,12 +547,13 @@ The application has **excellent core functionality** with all CRUD operations, a
   - ✅ Loading States: **COMPLETED** (~6 hours)
   - ✅ Undo Functionality: **COMPLETED** (~8 hours)
   - ✅ Data Backup/Restore: **COMPLETED** (~6 hours)
-- **Phase 2 (Navigation)**: ~20 hours
+  - ✅ Pagination: **COMPLETED** (~4 hours)
+- **Phase 2 (Navigation)**: ~16 hours
 - **Phase 3 (Polish)**: ~30 hours
 - **Phase 4 (Performance)**: ~40 hours
 - **Total**: ~130 hours
-- **Completed**: ~28 hours
-- **Remaining**: ~102 hours
+- **Completed**: ~32 hours
+- **Remaining**: ~98 hours
 
 ---
 

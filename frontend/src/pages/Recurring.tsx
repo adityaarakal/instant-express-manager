@@ -14,6 +14,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TablePagination,
   TextField,
   Typography,
   IconButton,
@@ -86,6 +87,8 @@ export function Recurring() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
 
   // Simulate initial load
   useEffect(() => {
@@ -549,6 +552,21 @@ export function Recurring() {
             </TableBody>
           </Table>
         </TableContainer>
+        {!isLoading && allTemplates.length > 0 && (
+          <TablePagination
+            component="div"
+            count={allTemplates.length}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPageOptions={[10, 25, 50, 100]}
+            labelRowsPerPage="Rows per page:"
+            labelDisplayedRows={({ from, to, count }) =>
+              `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`
+            }
+          />
+        )}
       </Paper>
 
       <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>

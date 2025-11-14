@@ -14,6 +14,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TablePagination,
   TextField,
   Typography,
   IconButton,
@@ -78,12 +79,19 @@ export function EMIs() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
 
   // Simulate initial load
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 300);
     return () => clearTimeout(timer);
   }, []);
+
+  // Reset page when tab changes
+  useEffect(() => {
+    setPage(0);
+  }, [activeTab]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -310,7 +318,25 @@ export function EMIs() {
     }
   };
 
-  const currentEMIs = activeTab === 'expense' ? expenseEMIs : savingsEMIs;
+  const allEMIs = useMemo(() => {
+    return activeTab === 'expense' ? expenseEMIs : savingsEMIs;
+  }, [activeTab, expenseEMIs, savingsEMIs]);
+
+  // Pagination
+  const paginatedEMIs = useMemo(() => {
+    const start = page * rowsPerPage;
+    const end = start + rowsPerPage;
+    return allEMIs.slice(start, end);
+  }, [allEMIs, page, rowsPerPage]);
+
+  const handleChangePage = (_event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   return (
     <Stack spacing={3}>
@@ -349,16 +375,18 @@ export function EMIs() {
             <TableBody>
               {isLoading ? (
                 <TableSkeleton rows={5} columns={8} />
-              ) : currentEMIs.length === 0 ? (
+              ) : paginatedEMIs.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} align="center">
                     <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
-                      No EMIs found. Add your first EMI to get started.
+                      {allEMIs.length === 0
+                        ? 'No EMIs found. Add your first EMI to get started.'
+                        : 'No EMIs on this page.'}
                     </Typography>
                   </TableCell>
                 </TableRow>
               ) : (
-                currentEMIs
+                paginatedEMIs
                   .sort((a, b) => b.startDate.localeCompare(a.startDate))
                   .map((emi) => (
                     <TableRow key={emi.id} hover>
@@ -454,6 +482,21 @@ export function EMIs() {
             </TableBody>
           </Table>
         </TableContainer>
+        {!isLoading && allEMIs.length > 0 && (
+          <TablePagination
+            component="div"
+            count={allEMIs.length}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPageOptions={[10, 25, 50, 100]}
+            labelRowsPerPage="Rows per page:"
+            labelDisplayedRows={({ from, to, count }) =>
+              `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`
+            }
+          />
+        )}
       </Paper>
 
       <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
