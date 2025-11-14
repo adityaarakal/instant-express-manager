@@ -421,13 +421,6 @@ export function Recurring() {
     setPage(0);
   };
 
-  const currentTemplates =
-    activeTab === 'income'
-      ? incomeTemplates
-      : activeTab === 'expense'
-      ? expenseTemplates
-      : savingsTemplates;
-
   return (
     <Stack spacing={3}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
