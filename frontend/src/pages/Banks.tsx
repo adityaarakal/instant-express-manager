@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -21,6 +21,7 @@ import {
   Select,
   FormControl,
   InputLabel,
+  CircularProgress,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -28,6 +29,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import { useBanksStore } from '../store/useBanksStore';
 import { useToastStore } from '../store/useToastStore';
+import { TableSkeleton } from '../components/common/TableSkeleton';
+import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import type { Bank } from '../types/banks';
 
 export function Banks() {
@@ -37,6 +40,15 @@ export function Banks() {
   const [editingBank, setEditingBank] = useState<Bank | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<Bank['type'] | 'All'>('All');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Simulate initial load (since Zustand with localforage loads synchronously, this is just for UX)
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
   const [formData, setFormData] = useState({
     name: '',
     type: 'Bank' as Bank['type'],
@@ -89,10 +101,14 @@ export function Banks() {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name.trim()) return;
 
+    setIsSaving(true);
     try {
+      // Simulate async operation for better UX
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      
       if (editingBank) {
         updateBank(editingBank.id, formData);
         showSuccess('Bank updated successfully');
@@ -103,16 +119,23 @@ export function Banks() {
       handleCloseDialog();
     } catch (error) {
       showError(error instanceof Error ? error.message : 'Failed to save bank');
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this bank?')) {
+      setDeletingId(id);
       try {
+        // Simulate async operation for better UX
+        await new Promise((resolve) => setTimeout(resolve, 200));
         deleteBank(id);
         showSuccess('Bank deleted successfully');
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to delete bank');
+      } finally {
+        setDeletingId(null);
       }
     }
   };
@@ -170,7 +193,9 @@ export function Banks() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredBanks.length === 0 ? (
+            {isLoading ? (
+              <TableSkeleton rows={5} columns={5} />
+            ) : filteredBanks.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} align="center">
                   <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
@@ -188,11 +213,20 @@ export function Banks() {
                   <TableCell>{bank.country || '—'}</TableCell>
                   <TableCell>{bank.notes || '—'}</TableCell>
                   <TableCell align="right">
-                    <IconButton size="small" onClick={() => handleOpenDialog(bank)}>
+                    <IconButton size="small" onClick={() => handleOpenDialog(bank)} disabled={deletingId !== null}>
                       <EditIcon fontSize="small" />
                     </IconButton>
-                    <IconButton size="small" onClick={() => handleDelete(bank.id)} color="error">
-                      <DeleteIcon fontSize="small" />
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleDelete(bank.id)} 
+                      color="error"
+                      disabled={deletingId !== null}
+                    >
+                      {deletingId === bank.id ? (
+                        <CircularProgress size={16} />
+                      ) : (
+                        <DeleteIcon fontSize="small" />
+                      )}
                     </IconButton>
                   </TableCell>
                 </TableRow>
@@ -242,10 +276,15 @@ export function Banks() {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button onClick={handleSave} variant="contained" disabled={!formData.name.trim()}>
+          <Button onClick={handleCloseDialog} disabled={isSaving}>Cancel</Button>
+          <ButtonWithLoading
+            onClick={handleSave}
+            variant="contained"
+            disabled={!formData.name.trim()}
+            loading={isSaving}
+          >
             {editingBank ? 'Update' : 'Create'}
-          </Button>
+          </ButtonWithLoading>
         </DialogActions>
       </Dialog>
     </Stack>

@@ -38,7 +38,8 @@ interface TransactionFormDialogProps {
   type: TabValue;
   accounts: BankAccount[];
   editingTransaction?: IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction | null;
-  onSave: (data: any) => void;
+  onSave: (data: any) => void | Promise<void>;
+  isSaving?: boolean;
 }
 
 export function TransactionFormDialog({
@@ -48,6 +49,7 @@ export function TransactionFormDialog({
   accounts,
   editingTransaction,
   onSave,
+  isSaving = false,
 }: TransactionFormDialogProps) {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -459,11 +461,12 @@ export function TransactionFormDialog({
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={onClose} disabled={isSaving}>Cancel</Button>
         <Button
           onClick={handleSave}
           variant="contained"
-          disabled={!formData.accountId || formData.amount <= 0 || validation.errors.length > 0}
+          disabled={!formData.accountId || formData.amount <= 0 || validation.errors.length > 0 || isSaving}
+          startIcon={isSaving ? <CircularProgress size={16} /> : undefined}
         >
           {editingTransaction ? 'Update' : 'Create'}
         </Button>

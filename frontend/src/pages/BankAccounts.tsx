@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -22,6 +22,7 @@ import {
   FormControl,
   InputLabel,
   Chip,
+  CircularProgress,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -29,6 +30,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useBanksStore } from '../store/useBanksStore';
 import { useToastStore } from '../store/useToastStore';
+import { TableSkeleton } from '../components/common/TableSkeleton';
+import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import type { BankAccount } from '../types/bankAccounts';
 
 const formatCurrency = (value: number): string => {
@@ -46,6 +49,15 @@ export function BankAccounts() {
   const { showSuccess, showError } = useToastStore();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Simulate initial load
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
   const [formData, setFormData] = useState({
     name: '',
     bankId: '',
@@ -114,7 +126,7 @@ export function BankAccounts() {
     setEditingAccount(null);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name.trim() || !formData.bankId) return;
 
     const accountData = {
@@ -130,7 +142,10 @@ export function BankAccounts() {
       notes: formData.notes || undefined,
     };
 
+    setIsSaving(true);
     try {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      
       if (editingAccount) {
         updateAccount(editingAccount.id, accountData);
         showSuccess('Account updated successfully');
@@ -141,16 +156,22 @@ export function BankAccounts() {
       handleCloseDialog();
     } catch (error) {
       showError(error instanceof Error ? error.message : 'Failed to save account');
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this account?')) {
+      setDeletingId(id);
       try {
+        await new Promise((resolve) => setTimeout(resolve, 200));
         deleteAccount(id);
         showSuccess('Account deleted successfully');
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to delete account');
+      } finally {
+        setDeletingId(null);
       }
     }
   };
@@ -228,7 +249,9 @@ export function BankAccounts() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredAccounts.length === 0 ? (
+            {isLoading ? (
+              <TableSkeleton rows={5} columns={isCreditCard ? 6 : 5} />
+            ) : filteredAccounts.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={isCreditCard ? 6 : 5} align="center">
                   <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
@@ -271,11 +294,20 @@ export function BankAccounts() {
                     </TableCell>
                   )}
                   <TableCell align="right">
-                    <IconButton size="small" onClick={() => handleOpenDialog(account)}>
+                    <IconButton size="small" onClick={() => handleOpenDialog(account)} disabled={deletingId !== null}>
                       <EditIcon fontSize="small" />
                     </IconButton>
-                    <IconButton size="small" onClick={() => handleDelete(account.id)} color="error">
-                      <DeleteIcon fontSize="small" />
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleDelete(account.id)} 
+                      color="error"
+                      disabled={deletingId !== null}
+                    >
+                      {deletingId === account.id ? (
+                        <CircularProgress size={16} />
+                      ) : (
+                        <DeleteIcon fontSize="small" />
+                      )}
                     </IconButton>
                   </TableCell>
                 </TableRow>
@@ -393,10 +425,15 @@ export function BankAccounts() {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button onClick={handleSave} variant="contained" disabled={!formData.name.trim() || !formData.bankId}>
+          <Button onClick={handleCloseDialog} disabled={isSaving}>Cancel</Button>
+          <ButtonWithLoading
+            onClick={handleSave}
+            variant="contained"
+            disabled={!formData.name.trim() || !formData.bankId}
+            loading={isSaving}
+          >
             {editingAccount ? 'Update' : 'Create'}
-          </Button>
+          </ButtonWithLoading>
         </DialogActions>
       </Dialog>
     </Stack>

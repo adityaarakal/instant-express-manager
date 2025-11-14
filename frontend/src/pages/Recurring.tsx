@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -25,6 +25,7 @@ import {
   Tab,
   Chip,
   Link,
+  CircularProgress,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -39,6 +40,8 @@ import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore'
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useToastStore } from '../store/useToastStore';
+import { TableSkeleton } from '../components/common/TableSkeleton';
+import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import type {
   RecurringIncome,
   RecurringExpense,
@@ -78,6 +81,16 @@ export function Recurring() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<RecurringIncome | RecurringExpense | RecurringSavingsInvestment | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Simulate initial load
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
   const [formData, setFormData] = useState<{
     name: string;
     amount: number;
@@ -192,10 +205,12 @@ export function Recurring() {
     setEditingTemplate(null);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name.trim() || !formData.accountId || formData.amount <= 0) return;
 
+    setIsSaving(true);
     try {
+      await new Promise((resolve) => setTimeout(resolve, 200));
       if (activeTab === 'income') {
       // Convert frequency - filter out 'Quarterly' for Income (not valid)
       const incomeFrequency: 'Monthly' | 'Weekly' | 'Yearly' | 'Custom' =
@@ -274,12 +289,16 @@ export function Recurring() {
     handleCloseDialog();
     } catch (error) {
       showError(error instanceof Error ? error.message : 'Failed to save recurring template');
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this recurring template? This will not delete generated transactions.')) {
+      setDeletingId(id);
       try {
+        await new Promise((resolve) => setTimeout(resolve, 200));
         if (activeTab === 'income') {
           deleteIncome(id);
           showSuccess('Recurring income template deleted successfully');
@@ -292,12 +311,15 @@ export function Recurring() {
         }
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to delete recurring template');
+      } finally {
+        setDeletingId(null);
       }
     }
   };
 
-  const handlePauseResume = (template: RecurringIncome | RecurringExpense | RecurringSavingsInvestment) => {
+  const handlePauseResume = async (template: RecurringIncome | RecurringExpense | RecurringSavingsInvestment) => {
     try {
+      await new Promise((resolve) => setTimeout(resolve, 200));
       if (template.status === 'Active') {
         if (activeTab === 'income') {
           pauseIncome(template.id);
@@ -378,7 +400,9 @@ export function Recurring() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {currentTemplates.length === 0 ? (
+              {isLoading ? (
+                <TableSkeleton rows={5} columns={7} />
+              ) : currentTemplates.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} align="center">
                     <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
@@ -452,7 +476,7 @@ export function Recurring() {
                           <IconButton
                             size="small"
                             onClick={() => handlePauseResume(template)}
-                            disabled={template.status === 'Completed'}
+                            disabled={template.status === 'Completed' || deletingId !== null}
                           >
                             {template.status === 'Active' ? (
                               <PauseIcon fontSize="small" />
@@ -460,11 +484,24 @@ export function Recurring() {
                               <PlayArrowIcon fontSize="small" />
                             )}
                           </IconButton>
-                          <IconButton size="small" onClick={() => handleOpenDialog(template)}>
+                          <IconButton 
+                            size="small" 
+                            onClick={() => handleOpenDialog(template)}
+                            disabled={deletingId !== null}
+                          >
                             <EditIcon fontSize="small" />
                           </IconButton>
-                          <IconButton size="small" onClick={() => handleDelete(template.id)} color="error">
-                            <DeleteIcon fontSize="small" />
+                          <IconButton 
+                            size="small" 
+                            onClick={() => handleDelete(template.id)} 
+                            color="error"
+                            disabled={deletingId !== null}
+                          >
+                            {deletingId === template.id ? (
+                              <CircularProgress size={16} />
+                            ) : (
+                              <DeleteIcon fontSize="small" />
+                            )}
                           </IconButton>
                         </Stack>
                       </TableCell>
@@ -654,19 +691,21 @@ export function Recurring() {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button
+          <Button onClick={handleCloseDialog} disabled={isSaving}>Cancel</Button>
+          <ButtonWithLoading
             onClick={handleSave}
             variant="contained"
+            loading={isSaving}
             disabled={
               !formData.name.trim() ||
               !formData.accountId ||
               formData.amount <= 0 ||
+              isSaving ||
               (activeTab === 'savings' && !formData.destination.trim())
             }
           >
             {editingTemplate ? 'Update' : 'Create'}
-          </Button>
+          </ButtonWithLoading>
         </DialogActions>
       </Dialog>
     </Stack>

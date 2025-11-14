@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -26,6 +26,7 @@ import {
   Chip,
   LinearProgress,
   Link,
+  CircularProgress,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -38,6 +39,8 @@ import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useToastStore } from '../store/useToastStore';
+import { TableSkeleton } from '../components/common/TableSkeleton';
+import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import type { ExpenseEMI, SavingsInvestmentEMI } from '../types/emis';
 
 const formatCurrency = (value: number): string => {
@@ -70,6 +73,16 @@ export function EMIs() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEMI, setEditingEMI] = useState<ExpenseEMI | SavingsInvestmentEMI | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Simulate initial load
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
   const [formData, setFormData] = useState({
     name: '',
     startDate: new Date().toISOString().split('T')[0],
@@ -150,10 +163,12 @@ export function EMIs() {
     setEditingEMI(null);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name.trim() || !formData.accountId || formData.amount <= 0) return;
 
+    setIsSaving(true);
     try {
+      await new Promise((resolve) => setTimeout(resolve, 200));
       if (activeTab === 'expense') {
       const emiData = {
         name: formData.name,
@@ -197,16 +212,20 @@ export function EMIs() {
         createSavingsEMI(emiData);
         showSuccess('Savings EMI created successfully');
       }
-    }
+      }
       handleCloseDialog();
     } catch (error) {
       showError(error instanceof Error ? error.message : 'Failed to save EMI');
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this EMI? This will not delete generated transactions.')) {
+      setDeletingId(id);
       try {
+        await new Promise((resolve) => setTimeout(resolve, 200));
         if (activeTab === 'expense') {
           deleteExpenseEMI(id);
           showSuccess('Expense EMI deleted successfully');
@@ -216,12 +235,15 @@ export function EMIs() {
         }
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to delete EMI');
+      } finally {
+        setDeletingId(null);
       }
     }
   };
 
-  const handlePauseResume = (emi: ExpenseEMI | SavingsInvestmentEMI) => {
+  const handlePauseResume = async (emi: ExpenseEMI | SavingsInvestmentEMI) => {
     try {
+      await new Promise((resolve) => setTimeout(resolve, 200));
       if (emi.status === 'Active') {
         if (activeTab === 'expense') {
           pauseExpenseEMI(emi.id);
@@ -293,7 +315,9 @@ export function EMIs() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {currentEMIs.length === 0 ? (
+              {isLoading ? (
+                <TableSkeleton rows={5} columns={8} />
+              ) : currentEMIs.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} align="center">
                     <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
@@ -363,7 +387,7 @@ export function EMIs() {
                           <IconButton
                             size="small"
                             onClick={() => handlePauseResume(emi)}
-                            disabled={emi.status === 'Completed'}
+                            disabled={emi.status === 'Completed' || deletingId !== null}
                           >
                             {emi.status === 'Active' ? (
                               <PauseIcon fontSize="small" />
@@ -371,11 +395,24 @@ export function EMIs() {
                               <PlayArrowIcon fontSize="small" />
                             )}
                           </IconButton>
-                          <IconButton size="small" onClick={() => handleOpenDialog(emi)}>
+                          <IconButton 
+                            size="small" 
+                            onClick={() => handleOpenDialog(emi)}
+                            disabled={deletingId !== null}
+                          >
                             <EditIcon fontSize="small" />
                           </IconButton>
-                          <IconButton size="small" onClick={() => handleDelete(emi.id)} color="error">
-                            <DeleteIcon fontSize="small" />
+                          <IconButton 
+                            size="small" 
+                            onClick={() => handleDelete(emi.id)} 
+                            color="error"
+                            disabled={deletingId !== null}
+                          >
+                            {deletingId === emi.id ? (
+                              <CircularProgress size={16} />
+                            ) : (
+                              <DeleteIcon fontSize="small" />
+                            )}
                           </IconButton>
                         </Stack>
                       </TableCell>
@@ -519,19 +556,21 @@ export function EMIs() {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button
+          <Button onClick={handleCloseDialog} disabled={isSaving}>Cancel</Button>
+          <ButtonWithLoading
             onClick={handleSave}
             variant="contained"
+            loading={isSaving}
             disabled={
               !formData.name.trim() ||
               !formData.accountId ||
               formData.amount <= 0 ||
-              (activeTab === 'savings' && !formData.destination.trim())
+              (activeTab === 'savings' && !formData.destination.trim()) ||
+              isSaving
             }
           >
             {editingEMI ? 'Update' : 'Create'}
-          </Button>
+          </ButtonWithLoading>
         </DialogActions>
       </Dialog>
     </Stack>

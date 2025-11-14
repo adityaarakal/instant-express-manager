@@ -26,6 +26,7 @@ import {
   Tabs,
   Tab,
   Chip,
+  CircularProgress,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -38,6 +39,8 @@ import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStor
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useToastStore } from '../store/useToastStore';
+import { TableSkeleton } from '../components/common/TableSkeleton';
+import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import { TransactionFilters, type FilterState } from '../components/transactions/TransactionFilters';
 import { TransactionFormDialog } from '../components/transactions/TransactionFormDialog';
 import {
@@ -92,6 +95,16 @@ export function Transactions() {
     searchTerm: '',
   });
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isBulkOperating, setIsBulkOperating] = useState(false);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+
+  // Simulate initial load
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Clear selection when tab changes
   useEffect(() => {
@@ -170,23 +183,30 @@ export function Transactions() {
     setEditingTransaction(null);
   };
 
-  const handleDelete = (id: string, type: TabValue) => {
+  const handleDelete = async (id: string, type: TabValue) => {
     if (window.confirm('Are you sure you want to delete this transaction?')) {
+      setDeletingIds(new Set([id]));
       try {
+        await new Promise((resolve) => setTimeout(resolve, 200));
         if (type === 'income') deleteIncome(id);
         else if (type === 'expense') deleteExpense(id);
         else deleteSavings(id);
         showSuccess('Transaction deleted successfully');
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to delete transaction');
+      } finally {
+        setDeletingIds(new Set());
       }
     }
   };
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
     if (window.confirm(`Are you sure you want to delete ${selectedIds.size} transaction(s)?`)) {
+      setIsBulkOperating(true);
+      setDeletingIds(new Set(selectedIds));
       try {
+        await new Promise((resolve) => setTimeout(resolve, 300));
         const count = selectedIds.size;
         selectedIds.forEach((id) => {
           if (activeTab === 'income') deleteIncome(id);
@@ -197,13 +217,18 @@ export function Transactions() {
         showSuccess(`${count} transaction(s) deleted successfully`);
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to delete transactions');
+      } finally {
+        setIsBulkOperating(false);
+        setDeletingIds(new Set());
       }
     }
   };
 
-  const handleBulkStatusUpdate = (newStatus: string) => {
+  const handleBulkStatusUpdate = async (newStatus: string) => {
     if (selectedIds.size === 0) return;
+    setIsBulkOperating(true);
     try {
+      await new Promise((resolve) => setTimeout(resolve, 300));
       const count = selectedIds.size;
       selectedIds.forEach((id) => {
         if (activeTab === 'income') {
@@ -218,6 +243,8 @@ export function Transactions() {
       showSuccess(`${count} transaction(s) updated successfully`);
     } catch (error) {
       showError(error instanceof Error ? error.message : 'Failed to update transactions');
+    } finally {
+      setIsBulkOperating(false);
     }
   };
 
@@ -270,8 +297,10 @@ export function Transactions() {
         <Stack direction="row" spacing={2}>
           {selectedIds.size > 0 && (
             <>
-              <Button
+              <ButtonWithLoading
                 variant="outlined"
+                loading={isBulkOperating}
+                disabled={isBulkOperating}
                 onClick={() => {
                   if (activeTab === 'income') {
                     handleBulkStatusUpdate('Received');
@@ -283,10 +312,16 @@ export function Transactions() {
                 }}
               >
                 Mark as {activeTab === 'income' ? 'Received' : activeTab === 'expense' ? 'Paid' : 'Completed'} ({selectedIds.size})
-              </Button>
-              <Button variant="outlined" color="error" onClick={handleBulkDelete}>
+              </ButtonWithLoading>
+              <ButtonWithLoading
+                variant="outlined"
+                color="error"
+                loading={isBulkOperating}
+                disabled={isBulkOperating}
+                onClick={handleBulkDelete}
+              >
                 Delete ({selectedIds.size})
-              </Button>
+              </ButtonWithLoading>
             </>
           )}
           <Button
@@ -359,7 +394,12 @@ export function Transactions() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {activeTab === 'income' && (
+              {isLoading ? (
+                <TableSkeleton 
+                  rows={5} 
+                  columns={activeTab === 'income' ? 8 : activeTab === 'expense' ? 9 : 9} 
+                />
+              ) : activeTab === 'income' && (
                 <>
                   {filteredTransactions.length === 0 ? (
                     <TableRow>
@@ -401,11 +441,24 @@ export function Transactions() {
                             />
                           </TableCell>
                           <TableCell align="right">
-                            <IconButton size="small" onClick={() => handleOpenDialog(transaction.id)}>
+                            <IconButton 
+                              size="small" 
+                              onClick={() => handleOpenDialog(transaction.id)}
+                              disabled={isBulkOperating || deletingIds.has(transaction.id)}
+                            >
                               <EditIcon fontSize="small" />
                             </IconButton>
-                            <IconButton size="small" onClick={() => handleDelete(transaction.id, 'income')} color="error">
-                              <DeleteIcon fontSize="small" />
+                            <IconButton 
+                              size="small" 
+                              onClick={() => handleDelete(transaction.id, 'income')} 
+                              color="error"
+                              disabled={isBulkOperating || deletingIds.has(transaction.id)}
+                            >
+                              {deletingIds.has(transaction.id) ? (
+                                <CircularProgress size={16} />
+                              ) : (
+                                <DeleteIcon fontSize="small" />
+                              )}
                             </IconButton>
                           </TableCell>
                         </TableRow>
@@ -457,11 +510,24 @@ export function Transactions() {
                             />
                           </TableCell>
                           <TableCell align="right">
-                            <IconButton size="small" onClick={() => handleOpenDialog(transaction.id)}>
+                            <IconButton 
+                              size="small" 
+                              onClick={() => handleOpenDialog(transaction.id)}
+                              disabled={isBulkOperating || deletingIds.has(transaction.id)}
+                            >
                               <EditIcon fontSize="small" />
                             </IconButton>
-                            <IconButton size="small" onClick={() => handleDelete(transaction.id, 'expense')} color="error">
-                              <DeleteIcon fontSize="small" />
+                            <IconButton 
+                              size="small" 
+                              onClick={() => handleDelete(transaction.id, 'expense')} 
+                              color="error"
+                              disabled={isBulkOperating || deletingIds.has(transaction.id)}
+                            >
+                              {deletingIds.has(transaction.id) ? (
+                                <CircularProgress size={16} />
+                              ) : (
+                                <DeleteIcon fontSize="small" />
+                              )}
                             </IconButton>
                           </TableCell>
                         </TableRow>
@@ -513,11 +579,24 @@ export function Transactions() {
                             />
                           </TableCell>
                           <TableCell align="right">
-                            <IconButton size="small" onClick={() => handleOpenDialog(transaction.id)}>
+                            <IconButton 
+                              size="small" 
+                              onClick={() => handleOpenDialog(transaction.id)}
+                              disabled={isBulkOperating || deletingIds.has(transaction.id)}
+                            >
                               <EditIcon fontSize="small" />
                             </IconButton>
-                            <IconButton size="small" onClick={() => handleDelete(transaction.id, 'savings')} color="error">
-                              <DeleteIcon fontSize="small" />
+                            <IconButton 
+                              size="small" 
+                              onClick={() => handleDelete(transaction.id, 'savings')} 
+                              color="error"
+                              disabled={isBulkOperating || deletingIds.has(transaction.id)}
+                            >
+                              {deletingIds.has(transaction.id) ? (
+                                <CircularProgress size={16} />
+                              ) : (
+                                <DeleteIcon fontSize="small" />
+                              )}
                             </IconButton>
                           </TableCell>
                         </TableRow>
@@ -530,14 +609,18 @@ export function Transactions() {
         </TableContainer>
       </Paper>
 
-      <TransactionFormDialog
-        open={dialogOpen}
-        onClose={handleCloseDialog}
-        type={activeTab}
-        accounts={accounts}
-        editingTransaction={editingTransaction}
-        onSave={(data: any) => {
+        <TransactionFormDialog
+          open={dialogOpen}
+          onClose={handleCloseDialog}
+          type={activeTab}
+          accounts={accounts}
+          editingTransaction={editingTransaction}
+          isSaving={isSaving}
+        onSave={async (data: any) => {
+          setIsSaving(true);
           try {
+            await new Promise((resolve) => setTimeout(resolve, 200));
+            
             if (activeTab === 'income') {
               if (editingTransaction) {
                 updateIncome(editingTransaction.id, data);
@@ -566,6 +649,8 @@ export function Transactions() {
             handleCloseDialog();
           } catch (error) {
             showError(error instanceof Error ? error.message : 'Failed to save transaction');
+          } finally {
+            setIsSaving(false);
           }
         }}
       />
