@@ -46,6 +46,8 @@ import type { Bank } from '../types/banks';
 export function Banks() {
   const { banks, createBank, updateBank, deleteBank } = useBanksStore();
   const { showSuccess, showError, showToast } = useToastStore();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBank, setEditingBank] = useState<Bank | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
