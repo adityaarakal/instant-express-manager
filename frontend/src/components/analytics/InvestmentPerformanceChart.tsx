@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { Paper, Typography, Box, Stack, Chip } from '@mui/material';
 import {
   BarChart,
@@ -16,7 +16,7 @@ interface InvestmentPerformanceChartProps {
   transactions: SavingsInvestmentTransaction[];
 }
 
-export function InvestmentPerformanceChart({ transactions }: InvestmentPerformanceChartProps) {
+export const InvestmentPerformanceChart = memo(function InvestmentPerformanceChart({ transactions }: InvestmentPerformanceChartProps) {
   const destinationData = useMemo(() => {
     const destination: Record<string, { invested: number; withdrawn: number }> = {};
     transactions.forEach((t) => {
@@ -76,5 +76,5 @@ export function InvestmentPerformanceChart({ transactions }: InvestmentPerforman
       </Box>
     </Paper>
   );
-}
+});
 

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { Paper, Typography, Box, Stack } from '@mui/material';
 import {
   PieChart,
@@ -21,7 +21,7 @@ interface ExpenseBreakdownChartProps {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
 
-export function ExpenseBreakdownChart({ transactions }: ExpenseBreakdownChartProps) {
+export const ExpenseBreakdownChart = memo(function ExpenseBreakdownChart({ transactions }: ExpenseBreakdownChartProps) {
   const categoryData = useMemo(() => {
     const category: Record<string, number> = {};
     transactions.forEach((t) => {
@@ -104,5 +104,5 @@ export function ExpenseBreakdownChart({ transactions }: ExpenseBreakdownChartPro
       </Paper>
     </Stack>
   );
-}
+});
 

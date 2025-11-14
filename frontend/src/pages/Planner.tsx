@@ -80,19 +80,30 @@ export const Planner = memo(function Planner() {
     <Stack spacing={3}>
       <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
         <MonthSearchFilter
-          months={availableMonths.map((id) => {
-            const month = getMonth(id);
-            return month
-              ? {
-                  id: month.id,
-                  monthStart: month.monthStart,
-                  accounts: month.accounts,
-                }
-              : null;
-          }).filter((m): m is { id: string; monthStart: string; accounts: AggregatedMonth['accounts'] } => m !== null)}
-          onFilterChange={(filtered) => {
-            setFilteredMonths(filtered.map((m) => m.id));
-          }}
+          months={useMemo(
+            () =>
+              availableMonths
+                .map((id) => {
+                  const month = getMonth(id);
+                  return month
+                    ? {
+                        id: month.id,
+                        monthStart: month.monthStart,
+                        accounts: month.accounts,
+                      }
+                    : null;
+                })
+                .filter(
+                  (m): m is { id: string; monthStart: string; accounts: AggregatedMonth['accounts'] } => m !== null
+                ),
+            [availableMonths, getMonth]
+          )}
+          onFilterChange={useCallback(
+            (filtered) => {
+              setFilteredMonths(filtered.map((m) => m.id));
+            },
+            []
+          )}
         />
         <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
           <FormControl fullWidth size="small">

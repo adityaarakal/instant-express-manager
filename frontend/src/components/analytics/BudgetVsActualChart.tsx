@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { Paper, Typography, Box } from '@mui/material';
 import {
   BarChart,
@@ -22,7 +22,7 @@ interface BudgetVsActualChartProps {
   savingsTransactions: SavingsInvestmentTransaction[];
 }
 
-export function BudgetVsActualChart({
+export const BudgetVsActualChart = memo(function BudgetVsActualChart({
   incomeTransactions,
   expenseTransactions,
   savingsTransactions,
@@ -114,5 +114,5 @@ export function BudgetVsActualChart({
       </Box>
     </Paper>
   );
-}
+});
 

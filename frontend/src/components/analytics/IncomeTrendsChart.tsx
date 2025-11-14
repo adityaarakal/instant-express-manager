@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { Paper, Typography, Box, Stack } from '@mui/material';
 import {
   LineChart,
@@ -18,7 +18,7 @@ interface IncomeTrendsChartProps {
   transactions: IncomeTransaction[];
 }
 
-export function IncomeTrendsChart({ transactions }: IncomeTrendsChartProps) {
+export const IncomeTrendsChart = memo(function IncomeTrendsChart({ transactions }: IncomeTrendsChartProps) {
   const monthlyData = useMemo(() => {
     const monthly: Record<string, number> = {};
     transactions.forEach((t) => {
@@ -90,5 +90,5 @@ export function IncomeTrendsChart({ transactions }: IncomeTrendsChartProps) {
       </Paper>
     </Stack>
   );
-}
+});
 

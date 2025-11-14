@@ -1,4 +1,4 @@
-import { useState, useMemo, memo } from 'react';
+import { useState, useMemo, memo, lazy, Suspense } from 'react';
 import {
   Box,
   Paper,
@@ -10,17 +10,52 @@ import {
   Select,
   Tabs,
   Tab,
+  CircularProgress,
 } from '@mui/material';
 import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore';
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
-import { IncomeTrendsChart } from '../components/analytics/IncomeTrendsChart';
-import { ExpenseBreakdownChart } from '../components/analytics/ExpenseBreakdownChart';
-import { SavingsProgressChart } from '../components/analytics/SavingsProgressChart';
-import { InvestmentPerformanceChart } from '../components/analytics/InvestmentPerformanceChart';
-import { CreditCardAnalysisChart } from '../components/analytics/CreditCardAnalysisChart';
-import { BudgetVsActualChart } from '../components/analytics/BudgetVsActualChart';
+
+// Lazy load chart components for better performance
+const IncomeTrendsChart = lazy(() =>
+  import('../components/analytics/IncomeTrendsChart').then((module) => ({ default: module.IncomeTrendsChart }))
+);
+const ExpenseBreakdownChart = lazy(() =>
+  import('../components/analytics/ExpenseBreakdownChart').then((module) => ({ default: module.ExpenseBreakdownChart }))
+);
+const SavingsProgressChart = lazy(() =>
+  import('../components/analytics/SavingsProgressChart').then((module) => ({ default: module.SavingsProgressChart }))
+);
+const InvestmentPerformanceChart = lazy(() =>
+  import('../components/analytics/InvestmentPerformanceChart').then((module) => ({
+    default: module.InvestmentPerformanceChart,
+  }))
+);
+const CreditCardAnalysisChart = lazy(() =>
+  import('../components/analytics/CreditCardAnalysisChart').then((module) => ({
+    default: module.CreditCardAnalysisChart,
+  }))
+);
+const BudgetVsActualChart = lazy(() =>
+  import('../components/analytics/BudgetVsActualChart').then((module) => ({ default: module.BudgetVsActualChart }))
+);
+
+// Chart loading fallback
+function ChartLoader() {
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '300px',
+      }}
+    >
+      <CircularProgress />
+    </Box>
+  );
+}
 
 type DateRange = 'last3months' | 'last6months' | 'last12months' | 'all';
 
@@ -106,38 +141,48 @@ export const Analytics = memo(function Analytics() {
       </Paper>
 
       {activeTab === 0 && (
-        <Stack spacing={3}>
-          <IncomeTrendsChart transactions={filteredIncome} />
-        </Stack>
+        <Suspense fallback={<ChartLoader />}>
+          <Stack spacing={3}>
+            <IncomeTrendsChart transactions={filteredIncome} />
+          </Stack>
+        </Suspense>
       )}
 
       {activeTab === 1 && (
-        <Stack spacing={3}>
-          <ExpenseBreakdownChart transactions={filteredExpenses} />
-        </Stack>
+        <Suspense fallback={<ChartLoader />}>
+          <Stack spacing={3}>
+            <ExpenseBreakdownChart transactions={filteredExpenses} />
+          </Stack>
+        </Suspense>
       )}
 
       {activeTab === 2 && (
-        <Stack spacing={3}>
-          <SavingsProgressChart transactions={filteredSavings} />
-          <InvestmentPerformanceChart transactions={filteredSavings} />
-        </Stack>
+        <Suspense fallback={<ChartLoader />}>
+          <Stack spacing={3}>
+            <SavingsProgressChart transactions={filteredSavings} />
+            <InvestmentPerformanceChart transactions={filteredSavings} />
+          </Stack>
+        </Suspense>
       )}
 
       {activeTab === 3 && (
-        <Stack spacing={3}>
-          <CreditCardAnalysisChart accounts={creditCards} transactions={filteredExpenses} />
-        </Stack>
+        <Suspense fallback={<ChartLoader />}>
+          <Stack spacing={3}>
+            <CreditCardAnalysisChart accounts={creditCards} transactions={filteredExpenses} />
+          </Stack>
+        </Suspense>
       )}
 
       {activeTab === 4 && (
-        <Stack spacing={3}>
-          <BudgetVsActualChart
-            incomeTransactions={filteredIncome}
-            expenseTransactions={filteredExpenses}
-            savingsTransactions={filteredSavings}
-          />
-        </Stack>
+        <Suspense fallback={<ChartLoader />}>
+          <Stack spacing={3}>
+            <BudgetVsActualChart
+              incomeTransactions={filteredIncome}
+              expenseTransactions={filteredExpenses}
+              savingsTransactions={filteredSavings}
+            />
+          </Stack>
+        </Suspense>
       )}
     </Stack>
   );

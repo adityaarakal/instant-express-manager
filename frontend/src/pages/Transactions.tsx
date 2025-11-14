@@ -448,6 +448,9 @@ export function Transactions() {
             startIcon={<DownloadIcon />}
             onClick={handleExport}
             disabled={filteredAndSortedTransactions.length === 0}
+            aria-label="Export transactions to CSV"
+            fullWidth={isMobile}
+            size={isMobile ? 'medium' : 'large'}
           >
             Export CSV
           </Button>
@@ -457,6 +460,9 @@ export function Transactions() {
             onClick={() => handleOpenDialog()}
             disabled={accounts.length === 0}
             title={accounts.length === 0 ? 'Please create at least one bank account first' : ''}
+            aria-label={accounts.length === 0 ? 'Add transaction (requires at least one bank account)' : 'Add new transaction'}
+            fullWidth={isMobile}
+            size={isMobile ? 'medium' : 'large'}
           >
             Add Transaction
           </Button>

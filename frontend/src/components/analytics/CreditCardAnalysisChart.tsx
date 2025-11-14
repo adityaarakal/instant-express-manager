@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { Paper, Typography, Box, Stack, Chip } from '@mui/material';
 import {
   BarChart,
@@ -18,7 +18,7 @@ interface CreditCardAnalysisChartProps {
   transactions: ExpenseTransaction[];
 }
 
-export function CreditCardAnalysisChart({ accounts, transactions }: CreditCardAnalysisChartProps) {
+export const CreditCardAnalysisChart = memo(function CreditCardAnalysisChart({ accounts, transactions }: CreditCardAnalysisChartProps) {
   const cardData = useMemo(() => {
     return accounts.map((account) => {
       const cardTransactions = transactions.filter(
@@ -79,5 +79,5 @@ export function CreditCardAnalysisChart({ accounts, transactions }: CreditCardAn
       </Paper>
     </Stack>
   );
-}
+});
 
