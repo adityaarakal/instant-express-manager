@@ -111,6 +111,7 @@ export function Transactions() {
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Simulate initial load
   useEffect(() => {
@@ -130,6 +131,34 @@ export function Transactions() {
     setSelectedIds(new Set());
     setPage(0); // Reset to first page when tab changes
   }, [activeTab]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl/Cmd + N - Open new transaction dialog
+      if ((event.ctrlKey || event.metaKey) && event.key === 'n' && !dialogOpen) {
+        const target = event.target as HTMLElement;
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+          event.preventDefault();
+          if (accounts.length > 0) {
+            handleOpenDialog();
+          }
+        }
+      }
+
+      // Ctrl/Cmd + K - Focus search input
+      if ((event.ctrlKey || event.metaKey) && event.key === 'k' && !dialogOpen) {
+        const target = event.target as HTMLElement;
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+          event.preventDefault();
+          searchInputRef.current?.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [dialogOpen, accounts.length]);
 
   const accountsMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -419,7 +448,7 @@ export function Transactions() {
         </Stack>
       </Box>
 
-      <TransactionFilters type={activeTab} accounts={accounts} onFilterChange={setFilters} />
+      <TransactionFilters ref={searchInputRef} type={activeTab} accounts={accounts} onFilterChange={setFilters} />
 
       <Paper>
         <Tabs

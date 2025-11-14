@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, forwardRef } from 'react';
 import {
   Box,
   Button,
@@ -46,7 +46,8 @@ const defaultFilters: FilterState = {
   searchTerm: '',
 };
 
-export function TransactionFilters({ type, accounts, onFilterChange }: TransactionFiltersProps) {
+export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFiltersProps>(
+  function TransactionFilters({ type, accounts, onFilterChange }, searchInputRef) {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
 
@@ -104,6 +105,7 @@ export function TransactionFilters({ type, accounts, onFilterChange }: Transacti
     <Box sx={{ mb: 2 }}>
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
         <TextField
+          inputRef={searchInputRef}
           placeholder="Search by description..."
           value={filters.searchTerm}
           onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
@@ -253,5 +255,6 @@ export function TransactionFilters({ type, accounts, onFilterChange }: Transacti
       )}
     </Box>
   );
-}
+  }
+);
 

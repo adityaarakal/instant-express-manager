@@ -95,6 +95,40 @@ export function EMIs() {
     setPage(0);
   }, [activeTab]);
 
+  const handleOpenDialog = (emiId?: string) => {
+    if (emiId) {
+      if (activeTab === 'expense') {
+        const e = expenseEMIs.find((e) => e.id === emiId);
+        setEditingEMI(e || null);
+      } else {
+        const e = savingsEMIs.find((e) => e.id === emiId);
+        setEditingEMI(e || null);
+      }
+    } else {
+      setEditingEMI(null);
+    }
+    setDialogOpen(true);
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl/Cmd + N - Open new EMI dialog
+      if ((event.ctrlKey || event.metaKey) && event.key === 'n' && !dialogOpen) {
+        const target = event.target as HTMLElement;
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+          event.preventDefault();
+          if (accounts.length > 0) {
+            handleOpenDialog();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [dialogOpen, accounts.length, activeTab, expenseEMIs, savingsEMIs]);
+
   const [formData, setFormData] = useState({
     name: '',
     startDate: new Date().toISOString().split('T')[0],

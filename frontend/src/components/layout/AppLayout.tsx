@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   AppBar,
@@ -60,6 +60,30 @@ export function AppLayout({ children }: AppLayoutProps) {
   const handleDrawerToggle = () => {
     setMobileOpen((prev) => !prev);
   };
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // ? - Show keyboard shortcuts help
+      if (event.key === '?' && !event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey) {
+        // Only trigger if not typing in an input/textarea
+        const target = event.target as HTMLElement;
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+          event.preventDefault();
+          setShortcutsHelpOpen(true);
+        }
+      }
+
+      // Esc - Close shortcuts help dialog
+      if (event.key === 'Escape' && shortcutsHelpOpen) {
+        event.preventDefault();
+        setShortcutsHelpOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [shortcutsHelpOpen]);
 
   const DrawerContent = (
     <Box role="presentation" sx={{ mt: 1 }}>

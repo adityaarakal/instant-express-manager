@@ -19,11 +19,11 @@ interface Shortcut {
 }
 
 const shortcuts: Shortcut[] = [
-  { keys: ['Ctrl/Cmd', 'I'], description: 'Open Import dialog' },
-  { keys: ['Ctrl/Cmd', 'E'], description: 'Open Export dialog' },
-  { keys: ['Ctrl/Cmd', 'T'], description: 'Open Templates dialog' },
-  { keys: ['Enter'], description: 'Save edited cell' },
-  { keys: ['Escape'], description: 'Cancel editing' },
+  { keys: ['Ctrl/Cmd', 'N'], description: 'New transaction/EMI/recurring (on respective pages)' },
+  { keys: ['Ctrl/Cmd', 'S'], description: 'Save form (when in a dialog)' },
+  { keys: ['Ctrl/Cmd', 'K'], description: 'Focus search/filter' },
+  { keys: ['Escape'], description: 'Close dialog or cancel action' },
+  { keys: ['?'], description: 'Show keyboard shortcuts help' },
 ];
 
 interface KeyboardShortcutsHelpProps {

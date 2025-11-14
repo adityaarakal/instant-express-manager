@@ -22,7 +22,6 @@ import { AccountTable } from '../components/planner/AccountTable';
 import { TotalsFooter } from '../components/planner/TotalsFooter';
 import { MonthSearchFilter } from '../components/planner/MonthSearchFilter';
 import { EmptyState } from '../components/common/EmptyState';
-import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import type { AggregatedMonth } from '../types/plannedExpensesAggregated';
 
 const formatMonthDate = (dateString: string): string => {
@@ -39,17 +38,7 @@ export const Planner = memo(function Planner() {
   const { activeMonthId, setActiveMonth } = usePlannerStore();
   const [filteredMonths, setFilteredMonths] = useState<string[]>([]);
 
-  // Keyboard shortcuts
-  useKeyboardShortcuts([
-    {
-      key: 't',
-      ctrl: true,
-      handler: () => {
-        // Open templates dialog (to be implemented)
-      },
-      description: 'Open templates',
-    },
-  ]);
+  // Keyboard shortcuts removed - no longer needed for Planner page
 
   const availableMonths = getAvailableMonths();
 
