@@ -5,6 +5,8 @@ import localforage from 'localforage';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { setupAutoGeneration } from '../services/autoGenerationService';
 import { ToastProvider } from '../components/common/ToastProvider';
+import { PWAUpdateNotification } from '../components/pwa/PWAUpdateNotification';
+import { PWAInstallPrompt } from '../components/pwa/PWAInstallPrompt';
 
 type AppProvidersProps = {
   children: ReactNode;
@@ -58,6 +60,8 @@ export function AppProviders({ children }: AppProvidersProps) {
     >
       {children}
       <ToastProvider />
+      <PWAUpdateNotification />
+      <PWAInstallPrompt />
     </PersistQueryClientProvider>
   );
 }
