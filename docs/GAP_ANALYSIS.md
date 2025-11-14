@@ -528,6 +528,14 @@ The application has **excellent core functionality** with all CRUD operations, a
 **Test Coverage**:
 - ✅ Banks Store: CRUD operations, validation
 - ✅ BankAccounts Store: CRUD operations, validation, bank relationship
+- ✅ IncomeTransactionsStore: 13 tests (CRUD, validation, selectors)
+- ✅ ExpenseTransactionsStore: 19 tests (CRUD, validation, selectors)
+- ✅ SavingsInvestmentTransactionsStore: 17 tests (CRUD, validation, selectors)
+- ✅ ExpenseEMIsStore: 17 tests (CRUD, validation, pause/resume, selectors)
+- ✅ SavingsInvestmentEMIsStore: 15 tests (CRUD, validation, pause/resume, selectors)
+- ✅ RecurringIncomesStore: 14 tests (CRUD, validation, pause/resume, selectors)
+- ✅ RecurringExpensesStore: 14 tests (CRUD, validation, pause/resume, selectors)
+- ✅ RecurringSavingsInvestmentsStore: 14 tests (CRUD, validation, pause/resume, selectors)
 - ✅ Dashboard Metrics: Income, expenses, savings, credit card calculations
 - ✅ Formulas: Remaining cash, bucket sums, date conversions
 
@@ -562,7 +570,7 @@ Run tests with: `npm test` in the frontend directory.
 | Documentation | ✅ Complete | 100% | Low |
 | Performance | ✅ Optimized | 90% | Low |
 | PWA Features | ✅ Verified | 95% | Low |
-| Testing | ✅ Foundation | 40% | Low |
+| Testing | ✅ Foundation | 85% | Low |
 
 ---
 
