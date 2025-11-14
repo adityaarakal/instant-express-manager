@@ -39,6 +39,8 @@ import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
+import { EmptyState } from '../components/common/EmptyState';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import type { BankAccount } from '../types/bankAccounts';
 
 const formatCurrency = (value: number): string => {
@@ -365,12 +367,25 @@ export function BankAccounts() {
               <TableSkeleton rows={5} columns={isCreditCard ? 6 : 5} />
             ) : filteredAccounts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={isCreditCard ? 6 : 5} align="center">
-                  <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
-                    {accounts.length === 0
-                      ? 'No accounts found. Add your first account to get started.'
-                      : 'No accounts match the current filters.'}
-                  </Typography>
+                <TableCell colSpan={isCreditCard ? 6 : 5} align="center" sx={{ border: 'none', py: 4 }}>
+                  <EmptyState
+                    icon={<AccountBalanceWalletIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
+                    title={accounts.length === 0 ? 'No Accounts Yet' : 'No Accounts Match Filters'}
+                    description={
+                      accounts.length === 0
+                        ? 'Create your first bank account to start tracking transactions. Link it to a bank to organize your finances.'
+                        : 'Try adjusting your filter criteria to find the accounts you\'re looking for.'
+                    }
+                    action={
+                      accounts.length === 0
+                        ? {
+                            label: 'Add Your First Account',
+                            onClick: () => handleOpenDialog(),
+                            icon: <AddIcon />,
+                          }
+                        : undefined
+                    }
+                  />
                 </TableCell>
               </TableRow>
             ) : (

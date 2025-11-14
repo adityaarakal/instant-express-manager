@@ -50,6 +50,8 @@ import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
+import { EmptyState } from '../components/common/EmptyState';
+import RepeatIcon from '@mui/icons-material/Repeat';
 import type {
   RecurringIncome,
   RecurringExpense,
@@ -521,12 +523,25 @@ export function Recurring() {
                 <TableSkeleton rows={5} columns={7} />
               ) : paginatedTemplates.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center">
-                    <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
-                      {allTemplates.length === 0
-                        ? 'No recurring templates found. Add your first template to get started.'
-                        : 'No templates on this page.'}
-                    </Typography>
+                  <TableCell colSpan={7} align="center" sx={{ border: 'none', py: 4 }}>
+                    <EmptyState
+                      icon={<RepeatIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
+                      title={allTemplates.length === 0 ? 'No Recurring Templates Yet' : 'No Templates on This Page'}
+                      description={
+                        allTemplates.length === 0
+                          ? `Start automating your ${activeTab === 'income' ? 'income' : activeTab === 'expense' ? 'expense' : 'savings/investment'} tracking by creating your first recurring template. Set up automatic transaction generation for regular ${activeTab === 'income' ? 'income' : activeTab === 'expense' ? 'expenses' : 'savings/investments'}.`
+                          : 'Navigate to a different page to see more templates.'
+                      }
+                      action={
+                        allTemplates.length === 0 && accounts.length > 0
+                          ? {
+                              label: `Add ${activeTab === 'income' ? 'Income' : activeTab === 'expense' ? 'Expense' : 'Savings/Investment'} Template`,
+                              onClick: () => handleOpenDialog(),
+                              icon: <AddIcon />,
+                            }
+                          : undefined
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               ) : (

@@ -47,6 +47,9 @@ import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
+import { EmptyState } from '../components/common/EmptyState';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+import SavingsIcon from '@mui/icons-material/Savings';
 import type { ExpenseEMI, SavingsInvestmentEMI } from '../types/emis';
 
 const formatCurrency = (value: number): string => {
@@ -429,12 +432,33 @@ export function EMIs() {
                 <TableSkeleton rows={5} columns={8} />
               ) : paginatedEMIs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} align="center">
-                    <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
-                      {allEMIs.length === 0
-                        ? 'No EMIs found. Add your first EMI to get started.'
-                        : 'No EMIs on this page.'}
-                    </Typography>
+                  <TableCell colSpan={8} align="center" sx={{ border: 'none', py: 4 }}>
+                    <EmptyState
+                      icon={
+                        activeTab === 'expense' ? (
+                          <CreditCardIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />
+                        ) : (
+                          <SavingsIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />
+                        )
+                      }
+                      title={allEMIs.length === 0 ? 'No EMIs Yet' : 'No EMIs on This Page'}
+                      description={
+                        allEMIs.length === 0
+                          ? activeTab === 'expense'
+                            ? 'Start tracking your expense EMIs by adding your first EMI. Track credit card bills, loans, and other recurring expenses with installments.'
+                            : 'Start tracking your savings/investment EMIs by adding your first EMI. Track SIPs, loans, and other recurring investments with installments.'
+                          : 'Navigate to a different page to see more EMIs.'
+                      }
+                      action={
+                        allEMIs.length === 0 && accounts.length > 0
+                          ? {
+                              label: `Add ${activeTab === 'expense' ? 'Expense' : 'Savings/Investment'} EMI`,
+                              onClick: () => handleOpenDialog(),
+                              icon: <AddIcon />,
+                            }
+                          : undefined
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               ) : (

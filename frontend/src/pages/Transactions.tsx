@@ -47,7 +47,11 @@ import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
+import { EmptyState } from '../components/common/EmptyState';
 import { TransactionFilters, type FilterState } from '../components/transactions/TransactionFilters';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import SavingsIcon from '@mui/icons-material/Savings';
 import { TransactionFormDialog } from '../components/transactions/TransactionFormDialog';
 import {
   exportIncomeTransactionsToCSV,
@@ -559,14 +563,33 @@ export function Transactions() {
                 <>
                   {paginatedTransactions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} align="center">
-                        <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
-                          {incomeTransactions.length === 0
-                            ? 'No income transactions found.'
-                            : filteredAndSortedTransactions.length === 0
-                            ? 'No transactions match the current filters.'
-                            : 'No transactions on this page.'}
-                        </Typography>
+                      <TableCell colSpan={8} align="center" sx={{ border: 'none', py: 4 }}>
+                        <EmptyState
+                          icon={<AttachMoneyIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
+                          title={
+                            incomeTransactions.length === 0
+                              ? 'No Income Transactions Yet'
+                              : filteredAndSortedTransactions.length === 0
+                              ? 'No Transactions Match Filters'
+                              : 'No Transactions on This Page'
+                          }
+                          description={
+                            incomeTransactions.length === 0
+                              ? 'Start tracking your income by adding your first income transaction. Record salaries, bonuses, freelancing, and other income sources.'
+                              : filteredAndSortedTransactions.length === 0
+                              ? 'Try adjusting your search or filter criteria to find the transactions you\'re looking for.'
+                              : 'Navigate to a different page to see more transactions.'
+                          }
+                          action={
+                            incomeTransactions.length === 0 && accounts.length > 0
+                              ? {
+                                  label: 'Add Income Transaction',
+                                  onClick: () => handleOpenDialog('income'),
+                                  icon: <AddIcon />,
+                                }
+                              : undefined
+                          }
+                        />
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -631,14 +654,33 @@ export function Transactions() {
                 <>
                   {paginatedTransactions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9} align="center">
-                        <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
-                          {expenseTransactions.length === 0
-                            ? 'No expense transactions found.'
-                            : filteredAndSortedTransactions.length === 0
-                            ? 'No transactions match the current filters.'
-                            : 'No transactions on this page.'}
-                        </Typography>
+                      <TableCell colSpan={9} align="center" sx={{ border: 'none', py: 4 }}>
+                        <EmptyState
+                          icon={<ShoppingCartIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
+                          title={
+                            expenseTransactions.length === 0
+                              ? 'No Expense Transactions Yet'
+                              : filteredAndSortedTransactions.length === 0
+                              ? 'No Transactions Match Filters'
+                              : 'No Transactions on This Page'
+                          }
+                          description={
+                            expenseTransactions.length === 0
+                              ? 'Start tracking your expenses by adding your first expense transaction. Record bills, utilities, responsibilities, and other expenses.'
+                              : filteredAndSortedTransactions.length === 0
+                              ? 'Try adjusting your search or filter criteria to find the transactions you\'re looking for.'
+                              : 'Navigate to a different page to see more transactions.'
+                          }
+                          action={
+                            expenseTransactions.length === 0 && accounts.length > 0
+                              ? {
+                                  label: 'Add Expense Transaction',
+                                  onClick: () => handleOpenDialog('expense'),
+                                  icon: <AddIcon />,
+                                }
+                              : undefined
+                          }
+                        />
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -704,14 +746,33 @@ export function Transactions() {
                 <>
                   {paginatedTransactions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9} align="center">
-                        <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
-                          {savingsTransactions.length === 0
-                            ? 'No savings/investment transactions found.'
-                            : filteredAndSortedTransactions.length === 0
-                            ? 'No transactions match the current filters.'
-                            : 'No transactions on this page.'}
-                        </Typography>
+                      <TableCell colSpan={9} align="center" sx={{ border: 'none', py: 4 }}>
+                        <EmptyState
+                          icon={<SavingsIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
+                          title={
+                            savingsTransactions.length === 0
+                              ? 'No Savings/Investment Transactions Yet'
+                              : filteredAndSortedTransactions.length === 0
+                              ? 'No Transactions Match Filters'
+                              : 'No Transactions on This Page'
+                          }
+                          description={
+                            savingsTransactions.length === 0
+                              ? 'Start tracking your savings and investments by adding your first transaction. Record SIPs, lump sum investments, withdrawals, and returns.'
+                              : filteredAndSortedTransactions.length === 0
+                              ? 'Try adjusting your search or filter criteria to find the transactions you\'re looking for.'
+                              : 'Navigate to a different page to see more transactions.'
+                          }
+                          action={
+                            savingsTransactions.length === 0 && accounts.length > 0
+                              ? {
+                                  label: 'Add Savings/Investment Transaction',
+                                  onClick: () => handleOpenDialog('savings'),
+                                  icon: <AddIcon />,
+                                }
+                              : undefined
+                          }
+                        />
                       </TableCell>
                     </TableRow>
                   ) : (

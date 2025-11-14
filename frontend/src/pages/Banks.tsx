@@ -39,6 +39,8 @@ import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
+import { EmptyState } from '../components/common/EmptyState';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import type { Bank } from '../types/banks';
 
 export function Banks() {
@@ -313,12 +315,25 @@ export function Banks() {
               <TableSkeleton rows={5} columns={5} />
             ) : filteredBanks.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} align="center">
-                  <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
-                    {banks.length === 0
-                      ? 'No banks found. Add your first bank to get started.'
-                      : 'No banks match the current filters.'}
-                  </Typography>
+                <TableCell colSpan={5} align="center" sx={{ border: 'none', py: 4 }}>
+                  <EmptyState
+                    icon={<AccountBalanceIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
+                    title={banks.length === 0 ? 'No Banks Yet' : 'No Banks Match Filters'}
+                    description={
+                      banks.length === 0
+                        ? 'Start by adding your first bank. You can add banks, credit cards, or wallets to organize your accounts.'
+                        : 'Try adjusting your search or filter criteria to find what you\'re looking for.'
+                    }
+                    action={
+                      banks.length === 0
+                        ? {
+                            label: 'Add Your First Bank',
+                            onClick: () => handleOpenDialog(),
+                            icon: <AddIcon />,
+                          }
+                        : undefined
+                    }
+                  />
                 </TableCell>
               </TableRow>
             ) : (

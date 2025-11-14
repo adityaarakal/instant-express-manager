@@ -329,12 +329,36 @@ The application has **excellent core functionality** with all CRUD operations, a
 
 ## 🎨 UX/UI Enhancements (Medium Priority)
 
-### 14. **Empty States** ✅ **GOOD** - Minor improvements needed
-**Current State**: Basic empty states exist  
-**Needed**:
-- More helpful empty state messages
-- Action buttons in empty states
-- Better illustrations/icons
+### 14. **Empty States** ✅ **COMPLETED**
+**Current State**: ✅ Enhanced with helpful messages, icons, and action buttons  
+**Status**: ✅ Fully improved  
+**Implementation**:
+- ✅ **Helpful Messages**: All empty states now have descriptive titles and helpful descriptions explaining what to do next
+- ✅ **Action Buttons**: Added action buttons to all empty states that allow users to directly create their first item
+- ✅ **Better Icons**: Added large, contextual icons (64px) to all empty states with appropriate Material-UI icons
+- ✅ **Context-Aware Messages**: Empty states differentiate between "no items" and "no items match filters" scenarios
+- ✅ **Enhanced Banks Page**: EmptyState with AccountBalance icon, helpful message, and "Add Your First Bank" button
+- ✅ **Enhanced BankAccounts Page**: EmptyState with AccountBalanceWallet icon, helpful message, and "Add Your First Account" button
+- ✅ **Enhanced Transactions Page**: EmptyState with contextual icons (AttachMoney, ShoppingCart, Savings) for each tab, helpful messages, and action buttons
+- ✅ **Enhanced EMIs Page**: EmptyState with contextual icons (CreditCard, Savings) based on active tab, helpful messages, and action buttons
+- ✅ **Enhanced Recurring Page**: EmptyState with Repeat icon, context-aware messages based on active tab, and action buttons
+- ✅ **Visual Improvements**: Empty states use the existing EmptyState component with proper spacing, borders, and styling
+
+**Files Modified**:
+- `frontend/src/pages/Banks.tsx` (updated - replaced simple Typography with EmptyState component)
+- `frontend/src/pages/BankAccounts.tsx` (updated - replaced simple Typography with EmptyState component)
+- `frontend/src/pages/Transactions.tsx` (updated - replaced simple Typography with EmptyState component for all 3 tabs)
+- `frontend/src/pages/EMIs.tsx` (updated - replaced simple Typography with EmptyState component)
+- `frontend/src/pages/Recurring.tsx` (updated - replaced simple Typography with EmptyState component)
+
+**Features**:
+- Large contextual icons (64px) with opacity for visual appeal
+- Descriptive titles (e.g., "No Banks Yet", "No Transactions Match Filters")
+- Helpful descriptions explaining what users can do
+- Action buttons that directly open the create dialog (only shown when no items exist and accounts are available)
+- Context-aware messaging (different messages for empty vs filtered states)
+- Consistent styling using the EmptyState component
+- Proper table cell spanning and border removal for better visual integration
 
 ---
 
