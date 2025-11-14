@@ -82,6 +82,8 @@ export function BankAccounts() {
 
   const [filterBankId, setFilterBankId] = useState<string>('All');
   const [filterAccountType, setFilterAccountType] = useState<BankAccount['accountType'] | 'All'>('All');
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const filteredAccounts = useMemo(() => {
     return accounts.filter((account) => {
@@ -226,7 +228,10 @@ export function BankAccounts() {
 
       {banks.length > 0 && (
         <Paper sx={{ p: 2 }}>
-          <Stack direction="row" spacing={2}>
+          <Stack 
+            direction={isMobile ? 'column' : 'row'} 
+            spacing={2}
+          >
             <FormControl size="small" sx={{ minWidth: 200 }}>
               <InputLabel>Filter by Bank</InputLabel>
               <Select
@@ -260,8 +265,17 @@ export function BankAccounts() {
         </Paper>
       )}
 
-      <TableContainer component={Paper}>
-        <Table aria-label="Bank accounts table">
+      <TableContainer 
+        component={Paper}
+        sx={{
+          overflowX: 'auto',
+          '& .MuiTableCell-root': {
+            whiteSpace: 'nowrap',
+            minWidth: 100,
+          },
+        }}
+      >
+        <Table aria-label="Bank accounts table" sx={{ minWidth: 800 }}>
           <TableHead>
             <TableRow>
               <TableCell>Account Name</TableCell>

@@ -92,6 +92,8 @@ export function Recurring() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Simulate initial load
   useEffect(() => {
@@ -450,7 +452,15 @@ export function Recurring() {
 
   return (
     <Stack spacing={3}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          flexDirection: isMobile ? 'column' : 'row',
+          gap: isMobile ? 2 : 0,
+        }}
+      >
         <Typography variant="h4">Recurring Templates</Typography>
         <Button
           variant="contained"
@@ -458,6 +468,8 @@ export function Recurring() {
           onClick={() => handleOpenDialog()}
           disabled={accounts.length === 0}
           aria-label={accounts.length === 0 ? 'Add recurring template (requires at least one bank account)' : 'Add new recurring template'}
+          fullWidth={isMobile}
+          size={isMobile ? 'medium' : 'large'}
         >
           Add Template
         </Button>
@@ -470,8 +482,16 @@ export function Recurring() {
           <Tab label="Recurring Savings/Investments" value="savings" />
         </Tabs>
 
-        <TableContainer>
-          <Table aria-label={`${activeTab} recurring templates table`}>
+        <TableContainer
+          sx={{
+            overflowX: 'auto',
+            '& .MuiTableCell-root': {
+              whiteSpace: 'nowrap',
+              minWidth: 100,
+            },
+          }}
+        >
+          <Table aria-label={`${activeTab} recurring templates table`} sx={{ minWidth: 800 }}>
             <TableHead>
               <TableRow>
                 <TableCell>Name</TableCell>
@@ -608,11 +628,16 @@ export function Recurring() {
             onPageChange={handleChangePage}
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[10, 25, 50, 100]}
-            labelRowsPerPage="Rows per page:"
+            rowsPerPageOptions={isMobile ? [10, 25] : [10, 25, 50, 100]}
+            labelRowsPerPage={isMobile ? 'Rows:' : 'Rows per page:'}
             labelDisplayedRows={({ from, to, count }) =>
               `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`
             }
+            sx={{
+              '& .MuiTablePagination-toolbar': {
+                flexWrap: isMobile ? 'wrap' : 'nowrap',
+              },
+            }}
           />
         )}
       </Paper>

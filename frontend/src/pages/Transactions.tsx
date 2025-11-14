@@ -112,6 +112,8 @@ export function Transactions() {
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Simulate initial load
@@ -397,9 +399,21 @@ export function Transactions() {
           Please create at least one bank account before adding transactions. Go to <strong>Banks</strong> page to create a bank and account.
         </Alert>
       )}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          flexDirection: isMobile ? 'column' : 'row',
+          gap: isMobile ? 2 : 0,
+        }}
+      >
         <Typography variant="h4">Transactions</Typography>
-        <Stack direction="row" spacing={2}>
+        <Stack 
+          direction={isMobile ? 'column' : 'row'} 
+          spacing={2}
+          sx={{ width: isMobile ? '100%' : 'auto' }}
+        >
           {selectedIds.size > 0 && (
             <>
               <ButtonWithLoading
@@ -465,8 +479,16 @@ export function Transactions() {
           <Tab label="Savings/Investment" value="savings" aria-controls="savings-tabpanel" />
         </Tabs>
 
-        <TableContainer>
-          <Table aria-label={`${activeTab} transactions table`}>
+        <TableContainer
+          sx={{
+            overflowX: 'auto',
+            '& .MuiTableCell-root': {
+              whiteSpace: 'nowrap',
+              minWidth: 100,
+            },
+          }}
+        >
+          <Table aria-label={`${activeTab} transactions table`} sx={{ minWidth: 900 }}>
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">
@@ -737,11 +759,18 @@ export function Transactions() {
             onPageChange={handleChangePage}
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[10, 25, 50, 100]}
-            labelRowsPerPage="Rows per page:"
+            rowsPerPageOptions={isMobile ? [10, 25] : [10, 25, 50, 100]}
+            labelRowsPerPage={isMobile ? 'Rows:' : 'Rows per page:'}
             labelDisplayedRows={({ from, to, count }) =>
-              `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`
+              isMobile 
+                ? `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`
+                : `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`
             }
+            sx={{
+              '& .MuiTablePagination-toolbar': {
+                flexWrap: isMobile ? 'wrap' : 'nowrap',
+              },
+            }}
           />
         )}
       </Paper>

@@ -22,6 +22,8 @@ import {
   FormControl,
   InputLabel,
   CircularProgress,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -168,20 +170,33 @@ export function Banks() {
 
   return (
     <Stack spacing={3}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          flexDirection: isMobile ? 'column' : 'row',
+          gap: isMobile ? 2 : 0,
+        }}
+      >
         <Typography variant="h4">Banks</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => handleOpenDialog()}
           aria-label="Add new bank"
+          fullWidth={isMobile}
+          size={isMobile ? 'medium' : 'large'}
         >
           Add Bank
         </Button>
       </Box>
 
       <Paper sx={{ p: 2 }}>
-        <Stack direction="row" spacing={2}>
+        <Stack 
+          direction={isMobile ? 'column' : 'row'} 
+          spacing={2}
+        >
           <TextField
             size="small"
             placeholder="Search banks..."
@@ -208,8 +223,17 @@ export function Banks() {
         </Stack>
       </Paper>
 
-      <TableContainer component={Paper}>
-        <Table aria-label="Banks table">
+      <TableContainer 
+        component={Paper}
+        sx={{
+          overflowX: 'auto',
+          '& .MuiTableCell-root': {
+            whiteSpace: 'nowrap',
+            minWidth: 100,
+          },
+        }}
+      >
+        <Table aria-label="Banks table" sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
