@@ -92,19 +92,37 @@ The application has **excellent core functionality** with all CRUD operations, a
 
 ---
 
-### 3. **Undo Functionality** ❌ **MISSING**
+### 3. **Undo Functionality** ✅ **COMPLETED**
 **Impact**: Accidental deletions are permanent  
-**Current State**: No way to recover deleted data  
-**Needed**:
-- Undo stack for deletions
-- Temporary storage of deleted items (5-10 minutes)
-- Undo button in toast notification
-- Restore functionality
-
+**Status**: ✅ Fully implemented  
 **Implementation**:
-- Create undo service/store
-- Store deleted items temporarily
-- Add undo button to delete confirmations
+- ✅ Created `useUndoStore` - Zustand store for temporary deletion storage (10-minute expiry)
+- ✅ Created `undoRestore.ts` - Utility function to restore deleted items to their original stores
+- ✅ Updated `ToastProvider` - Shows proper Button component for undo actions
+- ✅ Updated `useToastStore` - Added action button support to all toast methods
+- ✅ Integrated undo functionality into all delete operations:
+  - ✅ Banks page (Delete with undo)
+  - ✅ Bank Accounts page (Delete with undo)
+  - ✅ Transactions page (Delete with undo)
+  - ✅ EMIs page (Delete with undo)
+  - ✅ Recurring page (Delete with undo)
+- ✅ 10-minute undo window (configurable expiry)
+- ✅ Undo button in success toast (8-second duration for better visibility)
+- ✅ Restores items with original IDs and timestamps
+- ✅ Safety checks to prevent duplicate restores
+- ✅ Supports all 10 entity types
+
+**Files Created/Modified**:
+- `frontend/src/store/useUndoStore.ts` (new)
+- `frontend/src/utils/undoRestore.ts` (new)
+- `frontend/src/components/common/ToastProvider.tsx` (updated - Button for actions)
+- `frontend/src/store/useToastStore.ts` (updated - action support)
+- `frontend/src/pages/Banks.tsx` (updated)
+- `frontend/src/pages/BankAccounts.tsx` (updated)
+- `frontend/src/pages/Transactions.tsx` (updated)
+- `frontend/src/pages/EMIs.tsx` (updated)
+- `frontend/src/pages/Recurring.tsx` (updated)
+- `frontend/src/components/transactions/TransactionFormDialog.tsx` (updated - CircularProgress import)
 
 ---
 
@@ -349,7 +367,7 @@ The application has **excellent core functionality** with all CRUD operations, a
 | Analytics | ✅ Complete | 100% | - |
 | User Feedback | ✅ Complete | 100% | - |
 | Loading States | ✅ Complete | 100% | **HIGH** |
-| Undo Functionality | ❌ Missing | 0% | **HIGH** |
+| Undo Functionality | ✅ Complete | 100% | **HIGH** |
 | Data Backup/Restore | ❌ Missing | 0% | **HIGH** |
 | Pagination | ⚠️ Partial | 20% | **HIGH** |
 | Navigation | ⚠️ Partial | 70% | Medium |
@@ -369,7 +387,7 @@ The application has **excellent core functionality** with all CRUD operations, a
 ### Phase 1: Critical UX (Week 1)
 1. ✅ **User Feedback System** (Toast notifications) - **COMPLETED**
 2. ✅ **Loading States** (Skeletons and spinners) - **COMPLETED**
-3. **Undo Functionality** (For deletions)
+3. ✅ **Undo Functionality** (For deletions) - **COMPLETED**
 4. **Full Data Backup/Restore** (Settings page)
 
 ### Phase 2: Navigation & Shortcuts (Week 2)
@@ -505,14 +523,14 @@ The application has **excellent core functionality** with all CRUD operations, a
 - **Phase 1 (Critical)**: ~40 hours
   - ✅ User Feedback System: **COMPLETED** (~8 hours)
   - ✅ Loading States: **COMPLETED** (~6 hours)
-  - Undo Functionality: ~12 hours (remaining)
+  - ✅ Undo Functionality: **COMPLETED** (~8 hours)
   - Data Backup/Restore: ~10 hours (remaining)
 - **Phase 2 (Navigation)**: ~20 hours
 - **Phase 3 (Polish)**: ~30 hours
 - **Phase 4 (Performance)**: ~40 hours
 - **Total**: ~130 hours
-- **Completed**: ~14 hours
-- **Remaining**: ~116 hours
+- **Completed**: ~22 hours
+- **Remaining**: ~108 hours
 
 ---
 

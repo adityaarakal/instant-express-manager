@@ -29,13 +29,15 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import { useBanksStore } from '../store/useBanksStore';
 import { useToastStore } from '../store/useToastStore';
+import { useUndoStore } from '../store/useUndoStore';
+import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import type { Bank } from '../types/banks';
 
 export function Banks() {
   const { banks, createBank, updateBank, deleteBank } = useBanksStore();
-  const { showSuccess, showError } = useToastStore();
+  const { showSuccess, showError, showToast } = useToastStore();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBank, setEditingBank] = useState<Bank | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -128,10 +130,33 @@ export function Banks() {
     if (window.confirm('Are you sure you want to delete this bank?')) {
       setDeletingId(id);
       try {
+        // Store the bank data for undo before deleting
+        const bank = banks.find((b) => b.id === id);
+        if (!bank) {
+          showError('Bank not found');
+          return;
+        }
+
         // Simulate async operation for better UX
         await new Promise((resolve) => setTimeout(resolve, 200));
         deleteBank(id);
-        showSuccess('Bank deleted successfully');
+
+        // Store in undo store and show undo button
+        const deletedItemId = useUndoStore.getState().addDeletedItem('Bank', bank);
+        
+        showToast(
+          'Bank deleted successfully',
+          'success',
+          8000, // Longer duration for undo
+          {
+            label: 'Undo',
+            onClick: () => {
+              if (restoreDeletedItem(deletedItemId)) {
+                // Item restored, no need to show another toast
+              }
+            },
+          }
+        );
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to delete bank');
       } finally {

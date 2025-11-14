@@ -40,6 +40,8 @@ import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore'
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useToastStore } from '../store/useToastStore';
+import { useUndoStore } from '../store/useUndoStore';
+import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import type {
@@ -77,7 +79,7 @@ export function Recurring() {
   const incomeTransactions = useIncomeTransactionsStore((state) => state.transactions);
   const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
   const savingsTransactions = useSavingsInvestmentTransactionsStore((state) => state.transactions);
-  const { showSuccess, showError } = useToastStore();
+  const { showSuccess, showError, showToast } = useToastStore();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<RecurringIncome | RecurringExpense | RecurringSavingsInvestment | null>(null);
@@ -298,17 +300,53 @@ export function Recurring() {
     if (window.confirm('Are you sure you want to delete this recurring template? This will not delete generated transactions.')) {
       setDeletingId(id);
       try {
+        // Store the template data for undo before deleting
+        let template: RecurringIncome | RecurringExpense | RecurringSavingsInvestment | undefined;
+        let entityType: 'RecurringIncome' | 'RecurringExpense' | 'RecurringSavingsInvestment';
+        let successMessage: string;
+        
+        if (activeTab === 'income') {
+          template = incomeTemplates.find((t) => t.id === id);
+          entityType = 'RecurringIncome';
+          successMessage = 'Recurring income template deleted successfully';
+        } else if (activeTab === 'expense') {
+          template = expenseTemplates.find((t) => t.id === id);
+          entityType = 'RecurringExpense';
+          successMessage = 'Recurring expense template deleted successfully';
+        } else {
+          template = savingsTemplates.find((t) => t.id === id);
+          entityType = 'RecurringSavingsInvestment';
+          successMessage = 'Recurring savings template deleted successfully';
+        }
+
+        if (!template) {
+          showError('Template not found');
+          return;
+        }
+
         await new Promise((resolve) => setTimeout(resolve, 200));
         if (activeTab === 'income') {
           deleteIncome(id);
-          showSuccess('Recurring income template deleted successfully');
         } else if (activeTab === 'expense') {
           deleteExpense(id);
-          showSuccess('Recurring expense template deleted successfully');
         } else {
           deleteSavings(id);
-          showSuccess('Recurring savings template deleted successfully');
         }
+
+        // Store in undo store and show undo button
+        const deletedItemId = useUndoStore.getState().addDeletedItem(entityType, template);
+        
+        showToast(
+          successMessage,
+          'success',
+          8000,
+          {
+            label: 'Undo',
+            onClick: () => {
+              restoreDeletedItem(deletedItemId);
+            },
+          }
+        );
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to delete recurring template');
       } finally {

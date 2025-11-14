@@ -1,4 +1,4 @@
-import { Snackbar, Alert, AlertTitle, IconButton, Box } from '@mui/material';
+import { Snackbar, Alert, AlertTitle, IconButton, Box, Button } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useToastStore } from '../../store/useToastStore';
 
@@ -23,18 +23,17 @@ export function ToastProvider() {
             action={
               <>
                 {toast.action && (
-                  <IconButton
+                  <Button
                     size="small"
-                    aria-label={toast.action.label}
                     color="inherit"
                     onClick={() => {
                       toast.action?.onClick();
                       removeToast(toast.id);
                     }}
-                    sx={{ mr: 1 }}
+                    sx={{ mr: 1, textTransform: 'none', fontWeight: 600 }}
                   >
                     {toast.action.label}
-                  </IconButton>
+                  </Button>
                 )}
                 <IconButton
                   size="small"

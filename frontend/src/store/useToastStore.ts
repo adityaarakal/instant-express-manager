@@ -16,10 +16,10 @@ export interface Toast {
 type ToastState = {
   toasts: Toast[];
   showToast: (message: string, severity?: ToastSeverity, duration?: number, action?: Toast['action']) => void;
-  showSuccess: (message: string, duration?: number) => void;
-  showError: (message: string, duration?: number) => void;
-  showWarning: (message: string, duration?: number) => void;
-  showInfo: (message: string, duration?: number) => void;
+  showSuccess: (message: string, duration?: number, action?: Toast['action']) => void;
+  showError: (message: string, duration?: number, action?: Toast['action']) => void;
+  showWarning: (message: string, duration?: number, action?: Toast['action']) => void;
+  showInfo: (message: string, duration?: number, action?: Toast['action']) => void;
   removeToast: (id: string) => void;
   clearAll: () => void;
 };
@@ -48,17 +48,17 @@ export const useToastStore = create<ToastState>((set) => ({
       }, duration);
     }
   },
-  showSuccess: (message, duration) => {
-    useToastStore.getState().showToast(message, 'success', duration);
+  showSuccess: (message, duration, action) => {
+    useToastStore.getState().showToast(message, 'success', duration, action);
   },
-  showError: (message, duration) => {
-    useToastStore.getState().showToast(message, 'error', duration);
+  showError: (message, duration, action) => {
+    useToastStore.getState().showToast(message, 'error', duration, action);
   },
-  showWarning: (message, duration) => {
-    useToastStore.getState().showToast(message, 'warning', duration);
+  showWarning: (message, duration, action) => {
+    useToastStore.getState().showToast(message, 'warning', duration, action);
   },
-  showInfo: (message, duration) => {
-    useToastStore.getState().showToast(message, 'info', duration);
+  showInfo: (message, duration, action) => {
+    useToastStore.getState().showToast(message, 'info', duration, action);
   },
   removeToast: (id) => {
     set((state) => ({

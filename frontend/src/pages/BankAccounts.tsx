@@ -30,6 +30,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useBanksStore } from '../store/useBanksStore';
 import { useToastStore } from '../store/useToastStore';
+import { useUndoStore } from '../store/useUndoStore';
+import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import type { BankAccount } from '../types/bankAccounts';
@@ -46,7 +48,7 @@ const formatCurrency = (value: number): string => {
 export function BankAccounts() {
   const { accounts, createAccount, updateAccount, deleteAccount } = useBankAccountsStore();
   const { banks } = useBanksStore();
-  const { showSuccess, showError } = useToastStore();
+  const { showSuccess, showError, showToast } = useToastStore();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -165,9 +167,30 @@ export function BankAccounts() {
     if (window.confirm('Are you sure you want to delete this account?')) {
       setDeletingId(id);
       try {
+        // Store the account data for undo before deleting
+        const account = accounts.find((a) => a.id === id);
+        if (!account) {
+          showError('Account not found');
+          return;
+        }
+
         await new Promise((resolve) => setTimeout(resolve, 200));
         deleteAccount(id);
-        showSuccess('Account deleted successfully');
+
+        // Store in undo store and show undo button
+        const deletedItemId = useUndoStore.getState().addDeletedItem('BankAccount', account);
+        
+        showToast(
+          'Account deleted successfully',
+          'success',
+          8000,
+          {
+            label: 'Undo',
+            onClick: () => {
+              restoreDeletedItem(deletedItemId);
+            },
+          }
+        );
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to delete account');
       } finally {

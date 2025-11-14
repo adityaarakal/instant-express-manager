@@ -39,6 +39,8 @@ import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useToastStore } from '../store/useToastStore';
+import { useUndoStore } from '../store/useUndoStore';
+import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import type { ExpenseEMI, SavingsInvestmentEMI } from '../types/emis';
@@ -69,7 +71,7 @@ export function EMIs() {
   const { accounts } = useBankAccountsStore();
   const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
   const savingsTransactions = useSavingsInvestmentTransactionsStore((state) => state.transactions);
-  const { showSuccess, showError } = useToastStore();
+  const { showSuccess, showError, showToast } = useToastStore();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEMI, setEditingEMI] = useState<ExpenseEMI | SavingsInvestmentEMI | null>(null);
@@ -225,14 +227,44 @@ export function EMIs() {
     if (window.confirm('Are you sure you want to delete this EMI? This will not delete generated transactions.')) {
       setDeletingId(id);
       try {
+        // Store the EMI data for undo before deleting
+        let emi: ExpenseEMI | SavingsInvestmentEMI | undefined;
+        let entityType: 'ExpenseEMI' | 'SavingsInvestmentEMI';
+        
+        if (activeTab === 'expense') {
+          emi = expenseEMIs.find((e) => e.id === id);
+          entityType = 'ExpenseEMI';
+        } else {
+          emi = savingsEMIs.find((e) => e.id === id);
+          entityType = 'SavingsInvestmentEMI';
+        }
+
+        if (!emi) {
+          showError('EMI not found');
+          return;
+        }
+
         await new Promise((resolve) => setTimeout(resolve, 200));
         if (activeTab === 'expense') {
           deleteExpenseEMI(id);
-          showSuccess('Expense EMI deleted successfully');
         } else {
           deleteSavingsEMI(id);
-          showSuccess('Savings EMI deleted successfully');
         }
+
+        // Store in undo store and show undo button
+        const deletedItemId = useUndoStore.getState().addDeletedItem(entityType, emi);
+        
+        showToast(
+          activeTab === 'expense' ? 'Expense EMI deleted successfully' : 'Savings EMI deleted successfully',
+          'success',
+          8000,
+          {
+            label: 'Undo',
+            onClick: () => {
+              restoreDeletedItem(deletedItemId);
+            },
+          }
+        );
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to delete EMI');
       } finally {

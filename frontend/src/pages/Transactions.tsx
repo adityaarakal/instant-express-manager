@@ -39,6 +39,8 @@ import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStor
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useToastStore } from '../store/useToastStore';
+import { useUndoStore } from '../store/useUndoStore';
+import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import { TransactionFilters, type FilterState } from '../components/transactions/TransactionFilters';
@@ -80,7 +82,7 @@ export function Transactions() {
   const { transactions: expenseTransactions, createTransaction: createExpense, updateTransaction: updateExpense, deleteTransaction: deleteExpense } = useExpenseTransactionsStore();
   const { transactions: savingsTransactions, createTransaction: createSavings, updateTransaction: updateSavings, deleteTransaction: deleteSavings } = useSavingsInvestmentTransactionsStore();
   const { accounts } = useBankAccountsStore();
-  const { showSuccess, showError } = useToastStore();
+  const { showSuccess, showError, showToast } = useToastStore();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<
@@ -187,11 +189,45 @@ export function Transactions() {
     if (window.confirm('Are you sure you want to delete this transaction?')) {
       setDeletingIds(new Set([id]));
       try {
+        // Store the transaction data for undo before deleting
+        let transaction: IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction | undefined;
+        let entityType: 'IncomeTransaction' | 'ExpenseTransaction' | 'SavingsInvestmentTransaction';
+        
+        if (type === 'income') {
+          transaction = incomeTransactions.find((t) => t.id === id);
+          entityType = 'IncomeTransaction';
+        } else if (type === 'expense') {
+          transaction = expenseTransactions.find((t) => t.id === id);
+          entityType = 'ExpenseTransaction';
+        } else {
+          transaction = savingsTransactions.find((t) => t.id === id);
+          entityType = 'SavingsInvestmentTransaction';
+        }
+
+        if (!transaction) {
+          showError('Transaction not found');
+          return;
+        }
+
         await new Promise((resolve) => setTimeout(resolve, 200));
         if (type === 'income') deleteIncome(id);
         else if (type === 'expense') deleteExpense(id);
         else deleteSavings(id);
-        showSuccess('Transaction deleted successfully');
+
+        // Store in undo store and show undo button
+        const deletedItemId = useUndoStore.getState().addDeletedItem(entityType, transaction);
+        
+        showToast(
+          'Transaction deleted successfully',
+          'success',
+          8000,
+          {
+            label: 'Undo',
+            onClick: () => {
+              restoreDeletedItem(deletedItemId);
+            },
+          }
+        );
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to delete transaction');
       } finally {
