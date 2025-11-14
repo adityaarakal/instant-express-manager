@@ -539,8 +539,7 @@ The application has **excellent core functionality** with all CRUD operations, a
 - ✅ Dashboard Metrics: Income, expenses, savings, credit card calculations
 - ✅ Formulas: Remaining cash, bucket sums, date conversions
 
-**Note**: Testing foundation is established. All major stores now have comprehensive unit tests (123 tests total). Additional tests can be added incrementally for:
-- Auto-generation logic (EMI and Recurring transaction generation)
+**Note**: Testing foundation is established. All major stores and auto-generation logic now have comprehensive unit tests (136 tests total). Additional tests can be added incrementally for:
 - More utility functions
 - Integration tests for CRUD flows
 - E2E tests for critical paths (can use Playwright or Cypress)
@@ -570,7 +569,7 @@ Run tests with: `npm test` in the frontend directory.
 | Documentation | ✅ Complete | 100% | Low |
 | Performance | ✅ Optimized | 90% | Low |
 | PWA Features | ✅ Verified | 95% | Low |
-| Testing | ✅ Foundation | 85% | Low |
+| Testing | ✅ Foundation | 90% | Low |
 
 ---
 
@@ -703,7 +702,7 @@ Run tests with: `npm test` in the frontend directory.
 - [x] Unit tests for Recurring stores (Incomes, Expenses, SavingsInvestments - 42 tests)
 - [x] Unit tests for utilities (Dashboard, Formulas - updated)
 - [x] Test setup and configuration (Vitest, testing-library)
-- [ ] Unit tests for auto-generation logic
+- [x] Unit tests for auto-generation logic (EMI and Recurring - 13 tests)
 - [ ] Integration tests for CRUD flows
 - [ ] E2E tests for critical paths
 

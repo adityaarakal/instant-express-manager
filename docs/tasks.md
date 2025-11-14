@@ -218,7 +218,7 @@ This document lists every major task required to build the complete financial ma
 - [x] Unit tests for dashboard metrics
 - [x] Unit tests for formulas
 - [x] Unit tests for Recurring stores (Incomes, Expenses, SavingsInvestments) - 42 tests total (14 each)
-- [ ] Unit tests for auto-generation logic
+- [x] Unit tests for auto-generation logic - 13 tests (EMI and Recurring transaction generation)
 - [ ] Integration tests for CRUD flows
 - [ ] E2E tests for critical paths
 
