@@ -78,7 +78,14 @@ const formatDate = (dateString: string): string => {
 type TabValue = 'income' | 'expense' | 'savings';
 
 export function Transactions() {
-  const [activeTab, setActiveTab] = useState<TabValue>('income');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<TabValue>(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'expense' || tabParam === 'savings') {
+      return tabParam;
+    }
+    return 'income';
+  });
   const { transactions: incomeTransactions, createTransaction: createIncome, updateTransaction: updateIncome, deleteTransaction: deleteIncome } = useIncomeTransactionsStore();
   const { transactions: expenseTransactions, createTransaction: createExpense, updateTransaction: updateExpense, deleteTransaction: deleteExpense } = useExpenseTransactionsStore();
   const { transactions: savingsTransactions, createTransaction: createSavings, updateTransaction: updateSavings, deleteTransaction: deleteSavings } = useSavingsInvestmentTransactionsStore();

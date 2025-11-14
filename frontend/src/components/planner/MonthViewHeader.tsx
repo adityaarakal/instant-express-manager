@@ -1,4 +1,5 @@
 import { Box, Button, Chip, Paper, Stack, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import type { AggregatedMonth } from '../../types/plannedExpensesAggregated';
@@ -28,6 +29,7 @@ const formatMonthDate = (dateString: string): string => {
 };
 
 export function MonthViewHeader({ month }: MonthViewHeaderProps) {
+  const navigate = useNavigate();
 
   return (
     <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
@@ -52,7 +54,7 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
               size="small"
               variant="outlined"
               onClick={() => {
-                window.location.href = '/transactions?tab=income';
+                navigate('/transactions?tab=income');
               }}
               sx={{ ml: 1 }}
             >
@@ -71,7 +73,7 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
               size="small"
               variant="outlined"
               onClick={() => {
-                window.location.href = '/settings';
+                navigate('/settings');
               }}
               sx={{ ml: 1 }}
             >

@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback, memo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -33,6 +34,7 @@ const formatMonthDate = (dateString: string): string => {
 };
 
 export const Planner = memo(function Planner() {
+  const navigate = useNavigate();
   const { getMonth, getAvailableMonths, getBucketTotals, updateBucketStatus } = useAggregatedPlannedMonthsStore();
   const { activeMonthId, setActiveMonth } = usePlannerStore();
   const [filteredMonths, setFilteredMonths] = useState<string[]>([]);
@@ -76,7 +78,7 @@ export const Planner = memo(function Planner() {
           action={{
             label: 'Add Transaction',
             onClick: () => {
-              window.location.href = '/transactions';
+              navigate('/transactions');
             },
             icon: <UploadFileIcon />,
           }}

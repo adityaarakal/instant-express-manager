@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -72,6 +73,7 @@ const formatDate = (dateString: string): string => {
 type TabValue = 'income' | 'expense' | 'savings';
 
 export function Recurring() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabValue>('income');
   const { templates: incomeTemplates, createTemplate: createIncome, updateTemplate: updateIncome, deleteTemplate: deleteIncome, pauseTemplate: pauseIncome, resumeTemplate: resumeIncome, getGeneratedTransactions: getIncomeGeneratedTransactions } = useRecurringIncomesStore();
   const { templates: expenseTemplates, createTemplate: createExpense, updateTemplate: updateExpense, deleteTemplate: deleteExpense, pauseTemplate: pauseExpense, resumeTemplate: resumeExpense, getGeneratedTransactions: getExpenseGeneratedTransactions } = useRecurringExpensesStore();
@@ -524,7 +526,7 @@ export function Recurring() {
                             onClick={() => {
                               const count = getGeneratedTransactionsCount(template.id);
                               if (count > 0) {
-                                window.location.href = `/transactions?tab=${activeTab}`;
+                                navigate(`/transactions?tab=${activeTab}`);
                               }
                             }}
                             sx={{ textDecoration: 'none' }}

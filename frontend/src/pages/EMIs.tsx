@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -66,6 +67,7 @@ const formatDate = (dateString: string): string => {
 type TabValue = 'expense' | 'savings';
 
 export function EMIs() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabValue>('expense');
   const { emis: expenseEMIs, createEMI: createExpenseEMI, updateEMI: updateExpenseEMI, deleteEMI: deleteExpenseEMI, pauseEMI: pauseExpenseEMI, resumeEMI: resumeExpenseEMI, getGeneratedTransactions: getExpenseGeneratedTransactions } = useExpenseEMIsStore();
   const { emis: savingsEMIs, createEMI: createSavingsEMI, updateEMI: updateSavingsEMI, deleteEMI: deleteSavingsEMI, pauseEMI: pauseSavingsEMI, resumeEMI: resumeSavingsEMI, getGeneratedTransactions: getSavingsGeneratedTransactions } = useSavingsInvestmentEMIsStore();
@@ -437,7 +439,7 @@ export function EMIs() {
                             onClick={() => {
                               const count = getGeneratedTransactionsCount(emi.id);
                               if (count > 0) {
-                                window.location.href = `/transactions?tab=${activeTab === 'expense' ? 'expense' : 'savings'}&emi=${emi.id}`;
+                                navigate(`/transactions?tab=${activeTab === 'expense' ? 'expense' : 'savings'}&emi=${emi.id}`);
                               }
                             }}
                             sx={{ textDecoration: 'none' }}

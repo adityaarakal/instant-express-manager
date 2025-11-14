@@ -1,4 +1,5 @@
 import { useMemo, memo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Paper,
@@ -36,6 +37,7 @@ const formatCurrency = (value: number | null | undefined): string => {
 };
 
 export const AccountTable = memo(function AccountTable({ month }: AccountTableProps) {
+  const navigate = useNavigate();
   const buckets = useMemo(
     () => DEFAULT_BUCKETS.filter((bucket) => month.bucketOrder.includes(bucket.id)),
     [month.bucketOrder],
@@ -50,7 +52,7 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
         action={{
           label: 'Add Account',
           onClick: () => {
-            window.location.href = '/accounts';
+            navigate('/accounts');
           },
           icon: <AddIcon />,
         }}
@@ -152,7 +154,7 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
                   variant="outlined"
                   startIcon={<AddIcon />}
                   onClick={() => {
-                    window.location.href = '/transactions';
+                    navigate('/transactions');
                   }}
                 >
                   Add Transaction
