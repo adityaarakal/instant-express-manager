@@ -497,13 +497,14 @@ The application has **excellent core functionality** with all CRUD operations, a
 - [ ] Add breadcrumbs component
 - [ ] Add "Back" buttons where appropriate
 
-### Keyboard Shortcuts
-- [ ] Update KeyboardShortcutsHelp component
-- [ ] Remove outdated shortcuts (Import/Export/Templates)
-- [ ] Add new shortcuts (New, Save, Search, etc.)
-- [ ] Implement global keyboard shortcut handler
-- [ ] Add shortcut indicators in UI
-- [ ] Test all shortcuts
+### Keyboard Shortcuts ✅ **COMPLETED**
+- [x] Update KeyboardShortcutsHelp component (removed outdated shortcuts)
+- [x] Add global shortcuts in AppLayout (`?` for help, `Esc` for closing)
+- [x] Add Ctrl/Cmd + N for new items (Transactions, EMIs, Recurring pages)
+- [x] Add Ctrl/Cmd + K for search (Transactions page)
+- [x] Esc automatically handled by Material-UI Dialogs
+- [x] Implement actual shortcut handlers with proper input field detection
+- [x] Remove outdated shortcuts from Planner page
 
 ### Error Handling
 - [ ] Improve error messages (user-friendly)
