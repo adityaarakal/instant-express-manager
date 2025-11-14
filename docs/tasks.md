@@ -212,9 +212,9 @@ This document lists every major task required to build the complete financial ma
 - [x] Unit tests for BankAccounts store
 - [x] Unit tests for IncomeTransactionsStore (13 tests)
 - [x] Unit tests for ExpenseTransactionsStore (19 tests)
+- [x] Unit tests for SavingsInvestmentTransactionsStore (17 tests)
 - [x] Unit tests for dashboard metrics
 - [x] Unit tests for formulas
-- [ ] Unit tests for SavingsInvestmentTransactionsStore
 - [ ] Unit tests for EMI stores (ExpenseEMIs, SavingsInvestmentEMIs)
 - [ ] Unit tests for Recurring stores (Incomes, Expenses, SavingsInvestments)
 - [ ] Unit tests for auto-generation logic
