@@ -46,6 +46,7 @@ import { useUndoStore } from '../store/useUndoStore';
 import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import type { ExpenseEMI, SavingsInvestmentEMI } from '../types/emis';
 
 const formatCurrency = (value: number): string => {
@@ -82,6 +83,8 @@ export function EMIs() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [emiToDelete, setEmiToDelete] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
 
@@ -253,53 +256,61 @@ export function EMIs() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this EMI? This will not delete generated transactions.')) {
-      setDeletingId(id);
-      try {
-        // Store the EMI data for undo before deleting
-        let emi: ExpenseEMI | SavingsInvestmentEMI | undefined;
-        let entityType: 'ExpenseEMI' | 'SavingsInvestmentEMI';
-        
-        if (activeTab === 'expense') {
-          emi = expenseEMIs.find((e) => e.id === id);
-          entityType = 'ExpenseEMI';
-        } else {
-          emi = savingsEMIs.find((e) => e.id === id);
-          entityType = 'SavingsInvestmentEMI';
-        }
+  const handleDeleteClick = (id: string) => {
+    setEmiToDelete(id);
+    setConfirmDeleteOpen(true);
+  };
 
-        if (!emi) {
-          showError('EMI not found');
-          return;
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 200));
-        if (activeTab === 'expense') {
-          deleteExpenseEMI(id);
-        } else {
-          deleteSavingsEMI(id);
-        }
-
-        // Store in undo store and show undo button
-        const deletedItemId = useUndoStore.getState().addDeletedItem(entityType, emi);
-        
-        showToast(
-          activeTab === 'expense' ? 'Expense EMI deleted successfully' : 'Savings EMI deleted successfully',
-          'success',
-          8000,
-          {
-            label: 'Undo',
-            onClick: () => {
-              restoreDeletedItem(deletedItemId);
-            },
-          }
-        );
-      } catch (error) {
-        showError(getUserFriendlyError(error, 'delete EMI'));
-      } finally {
-        setDeletingId(null);
+  const handleDeleteConfirm = async () => {
+    if (!emiToDelete) return;
+    
+    const id = emiToDelete;
+    setConfirmDeleteOpen(false);
+    setDeletingId(id);
+    try {
+      // Store the EMI data for undo before deleting
+      let emi: ExpenseEMI | SavingsInvestmentEMI | undefined;
+      let entityType: 'ExpenseEMI' | 'SavingsInvestmentEMI';
+      
+      if (activeTab === 'expense') {
+        emi = expenseEMIs.find((e) => e.id === id);
+        entityType = 'ExpenseEMI';
+      } else {
+        emi = savingsEMIs.find((e) => e.id === id);
+        entityType = 'SavingsInvestmentEMI';
       }
+
+      if (!emi) {
+        showError('EMI not found');
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      if (activeTab === 'expense') {
+        deleteExpenseEMI(id);
+      } else {
+        deleteSavingsEMI(id);
+      }
+
+      // Store in undo store and show undo button
+      const deletedItemId = useUndoStore.getState().addDeletedItem(entityType, emi);
+      
+      showToast(
+        activeTab === 'expense' ? 'Expense EMI deleted successfully' : 'Savings EMI deleted successfully',
+        'success',
+        8000,
+        {
+          label: 'Undo',
+          onClick: () => {
+            restoreDeletedItem(deletedItemId);
+          },
+        }
+      );
+    } catch (error) {
+      showError(getUserFriendlyError(error, 'delete EMI'));
+    } finally {
+      setDeletingId(null);
+      setEmiToDelete(null);
     }
   };
 
@@ -507,7 +518,7 @@ export function EMIs() {
                           </IconButton>
                           <IconButton 
                             size="small" 
-                            onClick={() => handleDelete(emi.id)} 
+                            onClick={() => handleDeleteClick(emi.id)} 
                             color="error"
                             disabled={deletingId !== null}
                             aria-label={`Delete EMI ${emi.name}`}
@@ -700,6 +711,20 @@ export function EMIs() {
           </ButtonWithLoading>
         </DialogActions>
       </Dialog>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title="Delete EMI"
+        message="Are you sure you want to delete this EMI? This will not delete generated transactions. This action cannot be undone, but you can use the undo option in the notification."
+        confirmText="Delete"
+        cancelText="Cancel"
+        severity="error"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => {
+          setConfirmDeleteOpen(false);
+          setEmiToDelete(null);
+        }}
+      />
     </Stack>
   );
 }

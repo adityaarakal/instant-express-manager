@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Alert,
   AlertTitle,
@@ -45,6 +46,7 @@ import { useUndoStore } from '../store/useUndoStore';
 import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { TransactionFilters, type FilterState } from '../components/transactions/TransactionFilters';
 import { TransactionFormDialog } from '../components/transactions/TransactionFormDialog';
 import {
@@ -110,6 +112,9 @@ export function Transactions() {
   const [isSaving, setIsSaving] = useState(false);
   const [isBulkOperating, setIsBulkOperating] = useState(false);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [confirmBulkDeleteOpen, setConfirmBulkDeleteOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState<{ id: string; type: TabValue } | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const theme = useTheme();
@@ -256,78 +261,91 @@ export function Transactions() {
     setEditingTransaction(null);
   };
 
-  const handleDelete = async (id: string, type: TabValue) => {
-    if (window.confirm('Are you sure you want to delete this transaction?')) {
-      setDeletingIds(new Set([id]));
-      try {
-        // Store the transaction data for undo before deleting
-        let transaction: IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction | undefined;
-        let entityType: 'IncomeTransaction' | 'ExpenseTransaction' | 'SavingsInvestmentTransaction';
-        
-        if (type === 'income') {
-          transaction = incomeTransactions.find((t) => t.id === id);
-          entityType = 'IncomeTransaction';
-        } else if (type === 'expense') {
-          transaction = expenseTransactions.find((t) => t.id === id);
-          entityType = 'ExpenseTransaction';
-        } else {
-          transaction = savingsTransactions.find((t) => t.id === id);
-          entityType = 'SavingsInvestmentTransaction';
-        }
+  const handleDeleteClick = (id: string, type: TabValue) => {
+    setTransactionToDelete({ id, type });
+    setConfirmDeleteOpen(true);
+  };
 
-        if (!transaction) {
-          showError('Transaction not found');
-          return;
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 200));
-        if (type === 'income') deleteIncome(id);
-        else if (type === 'expense') deleteExpense(id);
-        else deleteSavings(id);
-
-        // Store in undo store and show undo button
-        const deletedItemId = useUndoStore.getState().addDeletedItem(entityType, transaction);
-        
-        showToast(
-          'Transaction deleted successfully',
-          'success',
-          8000,
-          {
-            label: 'Undo',
-            onClick: () => {
-              restoreDeletedItem(deletedItemId);
-            },
-          }
-        );
-      } catch (error) {
-        showError(getUserFriendlyError(error, 'delete transaction'));
-      } finally {
-        setDeletingIds(new Set());
+  const handleDeleteConfirm = async () => {
+    if (!transactionToDelete) return;
+    
+    const { id, type } = transactionToDelete;
+    setConfirmDeleteOpen(false);
+    setDeletingIds(new Set([id]));
+    try {
+      // Store the transaction data for undo before deleting
+      let transaction: IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction | undefined;
+      let entityType: 'IncomeTransaction' | 'ExpenseTransaction' | 'SavingsInvestmentTransaction';
+      
+      if (type === 'income') {
+        transaction = incomeTransactions.find((t) => t.id === id);
+        entityType = 'IncomeTransaction';
+      } else if (type === 'expense') {
+        transaction = expenseTransactions.find((t) => t.id === id);
+        entityType = 'ExpenseTransaction';
+      } else {
+        transaction = savingsTransactions.find((t) => t.id === id);
+        entityType = 'SavingsInvestmentTransaction';
       }
+
+      if (!transaction) {
+        showError('Transaction not found');
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      if (type === 'income') deleteIncome(id);
+      else if (type === 'expense') deleteExpense(id);
+      else deleteSavings(id);
+
+      // Store in undo store and show undo button
+      const deletedItemId = useUndoStore.getState().addDeletedItem(entityType, transaction);
+      
+      showToast(
+        'Transaction deleted successfully',
+        'success',
+        8000,
+        {
+          label: 'Undo',
+          onClick: () => {
+            restoreDeletedItem(deletedItemId);
+          },
+        }
+      );
+    } catch (error) {
+      showError(getUserFriendlyError(error, 'delete transaction'));
+    } finally {
+      setDeletingIds(new Set());
+      setTransactionToDelete(null);
     }
   };
 
-  const handleBulkDelete = async () => {
+  const handleBulkDeleteClick = () => {
     if (selectedIds.size === 0) return;
-    if (window.confirm(`Are you sure you want to delete ${selectedIds.size} transaction(s)?`)) {
-      setIsBulkOperating(true);
-      setDeletingIds(new Set(selectedIds));
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        const count = selectedIds.size;
-        selectedIds.forEach((id) => {
-          if (activeTab === 'income') deleteIncome(id);
-          else if (activeTab === 'expense') deleteExpense(id);
-          else deleteSavings(id);
-        });
-        setSelectedIds(new Set());
-        showSuccess(`${count} transaction(s) deleted successfully`);
-      } catch (error) {
-        showError(getUserFriendlyError(error, 'delete transactions'));
-      } finally {
-        setIsBulkOperating(false);
-        setDeletingIds(new Set());
-      }
+    setConfirmBulkDeleteOpen(true);
+  };
+
+  const handleBulkDeleteConfirm = async () => {
+    if (selectedIds.size === 0) return;
+    
+    setConfirmBulkDeleteOpen(false);
+    setIsBulkOperating(true);
+    setDeletingIds(new Set(selectedIds));
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const count = selectedIds.size;
+      selectedIds.forEach((id) => {
+        if (activeTab === 'income') deleteIncome(id);
+        else if (activeTab === 'expense') deleteExpense(id);
+        else deleteSavings(id);
+      });
+      setSelectedIds(new Set());
+      showSuccess(`${count} transaction(s) deleted successfully`);
+    } catch (error) {
+      showError(getUserFriendlyError(error, 'delete transactions'));
+    } finally {
+      setIsBulkOperating(false);
+      setDeletingIds(new Set());
     }
   };
 
@@ -437,7 +455,7 @@ export function Transactions() {
                 color="error"
                 loading={isBulkOperating}
                 disabled={isBulkOperating}
-                onClick={handleBulkDelete}
+                onClick={handleBulkDeleteClick}
               >
                 Delete ({selectedIds.size})
               </ButtonWithLoading>
@@ -591,7 +609,7 @@ export function Transactions() {
                             </IconButton>
                             <IconButton 
                               size="small" 
-                              onClick={() => handleDelete(transaction.id, 'income')} 
+                              onClick={() => handleDeleteClick(transaction.id, 'income')} 
                               color="error"
                               disabled={isBulkOperating || deletingIds.has(transaction.id)}
                               aria-label={`Delete transaction ${transaction.description || transaction.id}`}
@@ -664,7 +682,7 @@ export function Transactions() {
                             </IconButton>
                             <IconButton 
                               size="small" 
-                              onClick={() => handleDelete(transaction.id, 'expense')} 
+                              onClick={() => handleDeleteClick(transaction.id, 'expense')} 
                               color="error"
                               disabled={isBulkOperating || deletingIds.has(transaction.id)}
                               aria-label={`Delete transaction ${transaction.description || transaction.id}`}
@@ -737,7 +755,7 @@ export function Transactions() {
                             </IconButton>
                             <IconButton 
                               size="small" 
-                              onClick={() => handleDelete(transaction.id, 'savings')} 
+                              onClick={() => handleDeleteClick(transaction.id, 'savings')} 
                               color="error"
                               disabled={isBulkOperating || deletingIds.has(transaction.id)}
                               aria-label={`Delete transaction ${('description' in transaction ? transaction.description : transaction.destination) || transaction.id}`}
@@ -824,6 +842,33 @@ export function Transactions() {
           } finally {
             setIsSaving(false);
           }
+        }}
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title="Delete Transaction"
+        message="Are you sure you want to delete this transaction? This action cannot be undone, but you can use the undo option in the notification."
+        confirmText="Delete"
+        cancelText="Cancel"
+        severity="error"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => {
+          setConfirmDeleteOpen(false);
+          setTransactionToDelete(null);
+        }}
+      />
+
+      <ConfirmDialog
+        open={confirmBulkDeleteOpen}
+        title="Delete Transactions"
+        message={`Are you sure you want to delete ${selectedIds.size} transaction(s)? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        severity="error"
+        onConfirm={handleBulkDeleteConfirm}
+        onCancel={() => {
+          setConfirmBulkDeleteOpen(false);
         }}
       />
     </Stack>

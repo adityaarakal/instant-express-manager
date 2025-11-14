@@ -36,6 +36,7 @@ import { useUndoStore } from '../store/useUndoStore';
 import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import type { Bank } from '../types/banks';
 
 export function Banks() {
@@ -48,6 +49,8 @@ export function Banks() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [bankToDelete, setBankToDelete] = useState<string | null>(null);
 
   // Simulate initial load (since Zustand with localforage loads synchronously, this is just for UX)
   useEffect(() => {
@@ -129,42 +132,49 @@ export function Banks() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this bank?')) {
-      setDeletingId(id);
-      try {
-        // Store the bank data for undo before deleting
-        const bank = banks.find((b) => b.id === id);
-        if (!bank) {
-          showError('Bank not found');
-          return;
-        }
+  const handleDeleteClick = (id: string) => {
+    setBankToDelete(id);
+    setConfirmDeleteOpen(true);
+  };
 
-        // Simulate async operation for better UX
-        await new Promise((resolve) => setTimeout(resolve, 200));
-        deleteBank(id);
-
-        // Store in undo store and show undo button
-        const deletedItemId = useUndoStore.getState().addDeletedItem('Bank', bank);
-        
-        showToast(
-          'Bank deleted successfully',
-          'success',
-          8000, // Longer duration for undo
-          {
-            label: 'Undo',
-            onClick: () => {
-              if (restoreDeletedItem(deletedItemId)) {
-                // Item restored, no need to show another toast
-              }
-            },
-          }
-        );
-      } catch (error) {
-        showError(getUserFriendlyError(error, 'delete bank'));
-      } finally {
-        setDeletingId(null);
+  const handleDeleteConfirm = async () => {
+    if (!bankToDelete) return;
+    
+    setConfirmDeleteOpen(false);
+    setDeletingId(bankToDelete);
+    try {
+      // Store the bank data for undo before deleting
+      const bank = banks.find((b) => b.id === bankToDelete);
+      if (!bank) {
+        showError('Bank not found');
+        return;
       }
+
+      // Simulate async operation for better UX
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      deleteBank(bankToDelete);
+
+      // Store in undo store and show undo button
+      const deletedItemId = useUndoStore.getState().addDeletedItem('Bank', bank);
+      
+      showToast(
+        'Bank deleted successfully',
+        'success',
+        8000, // Longer duration for undo
+        {
+          label: 'Undo',
+          onClick: () => {
+            if (restoreDeletedItem(deletedItemId)) {
+              // Item restored, no need to show another toast
+            }
+          },
+        }
+      );
+    } catch (error) {
+      showError(getUserFriendlyError(error, 'delete bank'));
+    } finally {
+      setDeletingId(null);
+      setBankToDelete(null);
     }
   };
 
@@ -274,7 +284,7 @@ export function Banks() {
                     </IconButton>
                     <IconButton 
                       size="small" 
-                      onClick={() => handleDelete(bank.id)} 
+                      onClick={() => handleDeleteClick(bank.id)} 
                       color="error"
                       disabled={deletingId !== null}
                       aria-label={`Delete bank ${bank.name}`}
@@ -354,6 +364,20 @@ export function Banks() {
           </ButtonWithLoading>
         </DialogActions>
       </Dialog>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title="Delete Bank"
+        message="Are you sure you want to delete this bank? This action cannot be undone, but you can use the undo option in the notification."
+        confirmText="Delete"
+        cancelText="Cancel"
+        severity="error"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => {
+          setConfirmDeleteOpen(false);
+          setBankToDelete(null);
+        }}
+      />
     </Stack>
   );
 }

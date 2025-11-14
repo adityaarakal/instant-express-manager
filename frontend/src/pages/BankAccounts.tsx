@@ -35,6 +35,7 @@ import { useUndoStore } from '../store/useUndoStore';
 import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import type { BankAccount } from '../types/bankAccounts';
 
 const formatCurrency = (value: number): string => {
@@ -55,6 +56,8 @@ export function BankAccounts() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
 
   // Simulate initial load
   useEffect(() => {
@@ -166,27 +169,34 @@ export function BankAccounts() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this account?')) {
-      setDeletingId(id);
-      try {
-        // Store the account data for undo before deleting
-        const account = accounts.find((a) => a.id === id);
-        if (!account) {
-          showError('Account not found');
-          return;
-        }
+  const handleDeleteClick = (id: string) => {
+    setAccountToDelete(id);
+    setConfirmDeleteOpen(true);
+  };
 
-        await new Promise((resolve) => setTimeout(resolve, 200));
-        deleteAccount(id);
+  const handleDeleteConfirm = async () => {
+    if (!accountToDelete) return;
+    
+    setConfirmDeleteOpen(false);
+    setDeletingId(accountToDelete);
+    try {
+      // Store the account data for undo before deleting
+      const account = accounts.find((a) => a.id === accountToDelete);
+      if (!account) {
+        showError('Account not found');
+        return;
+      }
 
-        // Store in undo store and show undo button
-        const deletedItemId = useUndoStore.getState().addDeletedItem('BankAccount', account);
-        
-        showToast(
-          'Account deleted successfully',
-          'success',
-          8000,
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      deleteAccount(accountToDelete);
+
+      // Store in undo store and show undo button
+      const deletedItemId = useUndoStore.getState().addDeletedItem('BankAccount', account);
+      
+      showToast(
+        'Account deleted successfully',
+        'success',
+        8000,
           {
             label: 'Undo',
             onClick: () => {
@@ -194,11 +204,11 @@ export function BankAccounts() {
             },
           }
         );
-      } catch (error) {
-        showError(error instanceof Error ? error.message : 'Failed to delete account');
-      } finally {
-        setDeletingId(null);
-      }
+    } catch (error) {
+      showError(getUserFriendlyError(error, 'delete account'));
+    } finally {
+      setDeletingId(null);
+      setAccountToDelete(null);
     }
   };
 
@@ -342,7 +352,7 @@ export function BankAccounts() {
                     </IconButton>
                     <IconButton 
                       size="small" 
-                      onClick={() => handleDelete(account.id)} 
+                      onClick={() => handleDeleteClick(account.id)} 
                       color="error"
                       disabled={deletingId !== null}
                       aria-label={`Delete account ${account.name}`}
@@ -483,6 +493,20 @@ export function BankAccounts() {
           </ButtonWithLoading>
         </DialogActions>
       </Dialog>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title="Delete Account"
+        message="Are you sure you want to delete this account? This action cannot be undone, but you can use the undo option in the notification."
+        confirmText="Delete"
+        cancelText="Cancel"
+        severity="error"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => {
+          setConfirmDeleteOpen(false);
+          setAccountToDelete(null);
+        }}
+      />
     </Stack>
   );
 }

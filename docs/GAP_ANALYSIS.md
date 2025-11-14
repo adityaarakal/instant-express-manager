@@ -338,12 +338,36 @@ The application has **excellent core functionality** with all CRUD operations, a
 
 ---
 
-### 15. **Confirmation Dialogs** ✅ **GOOD** - Could be improved
-**Current State**: Basic `window.confirm`  
-**Needed**:
-- Material-UI confirmation dialogs
-- Better messaging
-- Undo option in delete confirmations
+### 15. **Confirmation Dialogs** ✅ **COMPLETED**
+**Current State**: ✅ Material-UI confirmation dialogs implemented  
+**Status**: ✅ Fully improved  
+**Implementation**:
+- ✅ **Reusable ConfirmDialog Component**: Created `ConfirmDialog.tsx` with Material-UI Dialog, customizable severity (error/warning/info), and proper ARIA labels
+- ✅ **Replaced All window.confirm**: Replaced 6 instances of `window.confirm` across all pages:
+  - ✅ Banks page (1 instance)
+  - ✅ BankAccounts page (1 instance)
+  - ✅ Transactions page (2 instances - single delete and bulk delete)
+  - ✅ EMIs page (1 instance)
+  - ✅ Recurring page (1 instance)
+- ✅ **Better Messaging**: All dialogs now have clear titles, descriptive messages, and mention undo functionality
+- ✅ **Consistent UX**: All confirmation dialogs use the same component with consistent styling and behavior
+- ✅ **Undo Integration**: All delete confirmations mention that undo is available in the notification toast
+
+**Files Created/Modified**:
+- `frontend/src/components/common/ConfirmDialog.tsx` (new - reusable confirmation dialog component)
+- `frontend/src/pages/Banks.tsx` (updated - replaced window.confirm)
+- `frontend/src/pages/BankAccounts.tsx` (updated - replaced window.confirm)
+- `frontend/src/pages/Transactions.tsx` (updated - replaced 2 window.confirm instances)
+- `frontend/src/pages/EMIs.tsx` (updated - replaced window.confirm)
+- `frontend/src/pages/Recurring.tsx` (updated - replaced window.confirm)
+
+**Features**:
+- Material-UI Dialog with proper accessibility
+- Customizable severity levels (error, warning, info)
+- Customizable button text
+- Warning icon with color coding
+- Proper ARIA labels for screen readers
+- Mentions undo functionality in delete confirmations
 
 ---
 

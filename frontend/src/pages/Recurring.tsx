@@ -28,6 +28,8 @@ import {
   Chip,
   Link,
   CircularProgress,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -47,6 +49,7 @@ import { useUndoStore } from '../store/useUndoStore';
 import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import type {
   RecurringIncome,
   RecurringExpense,
@@ -90,6 +93,8 @@ export function Recurring() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const theme = useTheme();
@@ -328,62 +333,70 @@ export function Recurring() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this recurring template? This will not delete generated transactions.')) {
-      setDeletingId(id);
-      try {
-        // Store the template data for undo before deleting
-        let template: RecurringIncome | RecurringExpense | RecurringSavingsInvestment | undefined;
-        let entityType: 'RecurringIncome' | 'RecurringExpense' | 'RecurringSavingsInvestment';
-        let successMessage: string;
-        
-        if (activeTab === 'income') {
-          template = incomeTemplates.find((t) => t.id === id);
-          entityType = 'RecurringIncome';
-          successMessage = 'Recurring income template deleted successfully';
-        } else if (activeTab === 'expense') {
-          template = expenseTemplates.find((t) => t.id === id);
-          entityType = 'RecurringExpense';
-          successMessage = 'Recurring expense template deleted successfully';
-        } else {
-          template = savingsTemplates.find((t) => t.id === id);
-          entityType = 'RecurringSavingsInvestment';
-          successMessage = 'Recurring savings template deleted successfully';
-        }
+  const handleDeleteClick = (id: string) => {
+    setTemplateToDelete(id);
+    setConfirmDeleteOpen(true);
+  };
 
-        if (!template) {
-          showError('Template not found');
-          return;
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 200));
-        if (activeTab === 'income') {
-          deleteIncome(id);
-        } else if (activeTab === 'expense') {
-          deleteExpense(id);
-        } else {
-          deleteSavings(id);
-        }
-
-        // Store in undo store and show undo button
-        const deletedItemId = useUndoStore.getState().addDeletedItem(entityType, template);
-        
-        showToast(
-          successMessage,
-          'success',
-          8000,
-          {
-            label: 'Undo',
-            onClick: () => {
-              restoreDeletedItem(deletedItemId);
-            },
-          }
-        );
-      } catch (error) {
-        showError(getUserFriendlyError(error, 'delete recurring template'));
-      } finally {
-        setDeletingId(null);
+  const handleDeleteConfirm = async () => {
+    if (!templateToDelete) return;
+    
+    const id = templateToDelete;
+    setConfirmDeleteOpen(false);
+    setDeletingId(id);
+    try {
+      // Store the template data for undo before deleting
+      let template: RecurringIncome | RecurringExpense | RecurringSavingsInvestment | undefined;
+      let entityType: 'RecurringIncome' | 'RecurringExpense' | 'RecurringSavingsInvestment';
+      let successMessage: string;
+      
+      if (activeTab === 'income') {
+        template = incomeTemplates.find((t) => t.id === id);
+        entityType = 'RecurringIncome';
+        successMessage = 'Recurring income template deleted successfully';
+      } else if (activeTab === 'expense') {
+        template = expenseTemplates.find((t) => t.id === id);
+        entityType = 'RecurringExpense';
+        successMessage = 'Recurring expense template deleted successfully';
+      } else {
+        template = savingsTemplates.find((t) => t.id === id);
+        entityType = 'RecurringSavingsInvestment';
+        successMessage = 'Recurring savings template deleted successfully';
       }
+
+      if (!template) {
+        showError('Template not found');
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      if (activeTab === 'income') {
+        deleteIncome(id);
+      } else if (activeTab === 'expense') {
+        deleteExpense(id);
+      } else {
+        deleteSavings(id);
+      }
+
+      // Store in undo store and show undo button
+      const deletedItemId = useUndoStore.getState().addDeletedItem(entityType, template);
+      
+      showToast(
+        successMessage,
+        'success',
+        8000,
+        {
+          label: 'Undo',
+          onClick: () => {
+            restoreDeletedItem(deletedItemId);
+          },
+        }
+      );
+    } catch (error) {
+      showError(getUserFriendlyError(error, 'delete recurring template'));
+    } finally {
+      setDeletingId(null);
+      setTemplateToDelete(null);
     }
   };
 
@@ -601,7 +614,7 @@ export function Recurring() {
                           </IconButton>
                           <IconButton 
                             size="small" 
-                            onClick={() => handleDelete(template.id)} 
+                            onClick={() => handleDeleteClick(template.id)} 
                             color="error"
                             disabled={deletingId !== null}
                             aria-label={`Delete recurring template ${template.name}`}
@@ -837,6 +850,20 @@ export function Recurring() {
           </ButtonWithLoading>
         </DialogActions>
       </Dialog>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title="Delete Recurring Template"
+        message="Are you sure you want to delete this recurring template? This will not delete generated transactions. This action cannot be undone, but you can use the undo option in the notification."
+        confirmText="Delete"
+        cancelText="Cancel"
+        severity="error"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => {
+          setConfirmDeleteOpen(false);
+          setTemplateToDelete(null);
+        }}
+      />
     </Stack>
   );
 }
