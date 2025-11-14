@@ -458,16 +458,18 @@ export function Recurring() {
             <TableBody>
               {isLoading ? (
                 <TableSkeleton rows={5} columns={7} />
-              ) : currentTemplates.length === 0 ? (
+              ) : paginatedTemplates.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} align="center">
                     <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
-                      No recurring templates found. Add your first template to get started.
+                      {allTemplates.length === 0
+                        ? 'No recurring templates found. Add your first template to get started.'
+                        : 'No templates on this page.'}
                     </Typography>
                   </TableCell>
                 </TableRow>
               ) : (
-                currentTemplates
+                paginatedTemplates
                   .sort((a, b) => a.nextDueDate.localeCompare(b.nextDueDate))
                   .map((template) => (
                     <TableRow key={template.id} hover>
