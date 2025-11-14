@@ -37,6 +37,7 @@ import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore'
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
+import { useToastStore } from '../store/useToastStore';
 import { TransactionFilters, type FilterState } from '../components/transactions/TransactionFilters';
 import { TransactionFormDialog } from '../components/transactions/TransactionFormDialog';
 import {
@@ -76,6 +77,7 @@ export function Transactions() {
   const { transactions: expenseTransactions, createTransaction: createExpense, updateTransaction: updateExpense, deleteTransaction: deleteExpense } = useExpenseTransactionsStore();
   const { transactions: savingsTransactions, createTransaction: createSavings, updateTransaction: updateSavings, deleteTransaction: deleteSavings } = useSavingsInvestmentTransactionsStore();
   const { accounts } = useBankAccountsStore();
+  const { showSuccess, showError } = useToastStore();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<
@@ -170,36 +172,53 @@ export function Transactions() {
 
   const handleDelete = (id: string, type: TabValue) => {
     if (window.confirm('Are you sure you want to delete this transaction?')) {
-      if (type === 'income') deleteIncome(id);
-      else if (type === 'expense') deleteExpense(id);
-      else deleteSavings(id);
+      try {
+        if (type === 'income') deleteIncome(id);
+        else if (type === 'expense') deleteExpense(id);
+        else deleteSavings(id);
+        showSuccess('Transaction deleted successfully');
+      } catch (error) {
+        showError(error instanceof Error ? error.message : 'Failed to delete transaction');
+      }
     }
   };
 
   const handleBulkDelete = () => {
     if (selectedIds.size === 0) return;
     if (window.confirm(`Are you sure you want to delete ${selectedIds.size} transaction(s)?`)) {
-      selectedIds.forEach((id) => {
-        if (activeTab === 'income') deleteIncome(id);
-        else if (activeTab === 'expense') deleteExpense(id);
-        else deleteSavings(id);
-      });
-      setSelectedIds(new Set());
+      try {
+        const count = selectedIds.size;
+        selectedIds.forEach((id) => {
+          if (activeTab === 'income') deleteIncome(id);
+          else if (activeTab === 'expense') deleteExpense(id);
+          else deleteSavings(id);
+        });
+        setSelectedIds(new Set());
+        showSuccess(`${count} transaction(s) deleted successfully`);
+      } catch (error) {
+        showError(error instanceof Error ? error.message : 'Failed to delete transactions');
+      }
     }
   };
 
   const handleBulkStatusUpdate = (newStatus: string) => {
     if (selectedIds.size === 0) return;
-    selectedIds.forEach((id) => {
-      if (activeTab === 'income') {
-        updateIncome(id, { status: newStatus as 'Pending' | 'Received' });
-      } else if (activeTab === 'expense') {
-        updateExpense(id, { status: newStatus as 'Pending' | 'Paid' });
-      } else {
-        updateSavings(id, { status: newStatus as 'Pending' | 'Completed' });
-      }
-    });
-    setSelectedIds(new Set());
+    try {
+      const count = selectedIds.size;
+      selectedIds.forEach((id) => {
+        if (activeTab === 'income') {
+          updateIncome(id, { status: newStatus as 'Pending' | 'Received' });
+        } else if (activeTab === 'expense') {
+          updateExpense(id, { status: newStatus as 'Pending' | 'Paid' });
+        } else {
+          updateSavings(id, { status: newStatus as 'Pending' | 'Completed' });
+        }
+      });
+      setSelectedIds(new Set());
+      showSuccess(`${count} transaction(s) updated successfully`);
+    } catch (error) {
+      showError(error instanceof Error ? error.message : 'Failed to update transactions');
+    }
   };
 
   const handleExport = () => {
@@ -518,24 +537,35 @@ export function Transactions() {
         accounts={accounts}
         editingTransaction={editingTransaction}
         onSave={(data: any) => {
-          if (activeTab === 'income') {
-            if (editingTransaction) {
-              updateIncome(editingTransaction.id, data);
+          try {
+            if (activeTab === 'income') {
+              if (editingTransaction) {
+                updateIncome(editingTransaction.id, data);
+                showSuccess('Income transaction updated successfully');
+              } else {
+                createIncome(data);
+                showSuccess('Income transaction created successfully');
+              }
+            } else if (activeTab === 'expense') {
+              if (editingTransaction) {
+                updateExpense(editingTransaction.id, data);
+                showSuccess('Expense transaction updated successfully');
+              } else {
+                createExpense(data);
+                showSuccess('Expense transaction created successfully');
+              }
             } else {
-              createIncome(data);
+              if (editingTransaction) {
+                updateSavings(editingTransaction.id, data);
+                showSuccess('Savings transaction updated successfully');
+              } else {
+                createSavings(data);
+                showSuccess('Savings transaction created successfully');
+              }
             }
-          } else if (activeTab === 'expense') {
-            if (editingTransaction) {
-              updateExpense(editingTransaction.id, data);
-            } else {
-              createExpense(data);
-            }
-          } else {
-            if (editingTransaction) {
-              updateSavings(editingTransaction.id, data);
-            } else {
-              createSavings(data);
-            }
+            handleCloseDialog();
+          } catch (error) {
+            showError(error instanceof Error ? error.message : 'Failed to save transaction');
           }
         }}
       />

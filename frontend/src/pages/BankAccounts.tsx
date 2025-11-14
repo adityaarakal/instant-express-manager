@@ -28,6 +28,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useBanksStore } from '../store/useBanksStore';
+import { useToastStore } from '../store/useToastStore';
 import type { BankAccount } from '../types/bankAccounts';
 
 const formatCurrency = (value: number): string => {
@@ -42,6 +43,7 @@ const formatCurrency = (value: number): string => {
 export function BankAccounts() {
   const { accounts, createAccount, updateAccount, deleteAccount } = useBankAccountsStore();
   const { banks } = useBanksStore();
+  const { showSuccess, showError } = useToastStore();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null);
   const [formData, setFormData] = useState({
@@ -128,17 +130,28 @@ export function BankAccounts() {
       notes: formData.notes || undefined,
     };
 
-    if (editingAccount) {
-      updateAccount(editingAccount.id, accountData);
-    } else {
-      createAccount(accountData);
+    try {
+      if (editingAccount) {
+        updateAccount(editingAccount.id, accountData);
+        showSuccess('Account updated successfully');
+      } else {
+        createAccount(accountData);
+        showSuccess('Account created successfully');
+      }
+      handleCloseDialog();
+    } catch (error) {
+      showError(error instanceof Error ? error.message : 'Failed to save account');
     }
-    handleCloseDialog();
   };
 
   const handleDelete = (id: string) => {
     if (window.confirm('Are you sure you want to delete this account?')) {
-      deleteAccount(id);
+      try {
+        deleteAccount(id);
+        showSuccess('Account deleted successfully');
+      } catch (error) {
+        showError(error instanceof Error ? error.message : 'Failed to delete account');
+      }
     }
   };
 

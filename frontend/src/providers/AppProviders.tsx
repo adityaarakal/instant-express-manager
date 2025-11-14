@@ -4,6 +4,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import localforage from 'localforage';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { setupAutoGeneration } from '../services/autoGenerationService';
+import { ToastProvider } from '../components/common/ToastProvider';
 
 type AppProvidersProps = {
   children: ReactNode;
@@ -56,6 +57,7 @@ export function AppProviders({ children }: AppProvidersProps) {
       }}
     >
       {children}
+      <ToastProvider />
     </PersistQueryClientProvider>
   );
 }

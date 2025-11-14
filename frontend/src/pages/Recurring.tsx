@@ -38,6 +38,7 @@ import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore';
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
+import { useToastStore } from '../store/useToastStore';
 import type {
   RecurringIncome,
   RecurringExpense,
@@ -73,6 +74,7 @@ export function Recurring() {
   const incomeTransactions = useIncomeTransactionsStore((state) => state.transactions);
   const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
   const savingsTransactions = useSavingsInvestmentTransactionsStore((state) => state.transactions);
+  const { showSuccess, showError } = useToastStore();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<RecurringIncome | RecurringExpense | RecurringSavingsInvestment | null>(null);
@@ -193,7 +195,8 @@ export function Recurring() {
   const handleSave = () => {
     if (!formData.name.trim() || !formData.accountId || formData.amount <= 0) return;
 
-    if (activeTab === 'income') {
+    try {
+      if (activeTab === 'income') {
       // Convert frequency - filter out 'Quarterly' for Income (not valid)
       const incomeFrequency: 'Monthly' | 'Weekly' | 'Yearly' | 'Custom' =
         formData.frequency === 'Quarterly' ? 'Monthly' : (formData.frequency as 'Monthly' | 'Weekly' | 'Yearly' | 'Custom');
@@ -212,8 +215,10 @@ export function Recurring() {
 
       if (editingTemplate) {
         updateIncome(editingTemplate.id, templateData);
+        showSuccess('Recurring income template updated successfully');
       } else {
         createIncome(templateData);
+        showSuccess('Recurring income template created successfully');
       }
     } else if (activeTab === 'expense') {
       // Convert frequency - filter out 'Quarterly' for Expense (not valid)
@@ -235,8 +240,10 @@ export function Recurring() {
 
       if (editingTemplate) {
         updateExpense(editingTemplate.id, templateData);
+        showSuccess('Recurring expense template updated successfully');
       } else {
         createExpense(templateData);
+        showSuccess('Recurring expense template created successfully');
       }
     } else {
       // Convert frequency to Savings/Investment format (Monthly | Quarterly | Yearly)
@@ -258,42 +265,64 @@ export function Recurring() {
 
       if (editingTemplate) {
         updateSavings(editingTemplate.id, templateData);
+        showSuccess('Recurring savings template updated successfully');
       } else {
         createSavings(templateData);
+        showSuccess('Recurring savings template created successfully');
       }
     }
     handleCloseDialog();
+    } catch (error) {
+      showError(error instanceof Error ? error.message : 'Failed to save recurring template');
+    }
   };
 
   const handleDelete = (id: string) => {
     if (window.confirm('Are you sure you want to delete this recurring template? This will not delete generated transactions.')) {
-      if (activeTab === 'income') {
-        deleteIncome(id);
-      } else if (activeTab === 'expense') {
-        deleteExpense(id);
-      } else {
-        deleteSavings(id);
+      try {
+        if (activeTab === 'income') {
+          deleteIncome(id);
+          showSuccess('Recurring income template deleted successfully');
+        } else if (activeTab === 'expense') {
+          deleteExpense(id);
+          showSuccess('Recurring expense template deleted successfully');
+        } else {
+          deleteSavings(id);
+          showSuccess('Recurring savings template deleted successfully');
+        }
+      } catch (error) {
+        showError(error instanceof Error ? error.message : 'Failed to delete recurring template');
       }
     }
   };
 
   const handlePauseResume = (template: RecurringIncome | RecurringExpense | RecurringSavingsInvestment) => {
-    if (template.status === 'Active') {
-      if (activeTab === 'income') {
-        pauseIncome(template.id);
-      } else if (activeTab === 'expense') {
-        pauseExpense(template.id);
-      } else {
-        pauseSavings(template.id);
+    try {
+      if (template.status === 'Active') {
+        if (activeTab === 'income') {
+          pauseIncome(template.id);
+          showSuccess('Recurring income template paused');
+        } else if (activeTab === 'expense') {
+          pauseExpense(template.id);
+          showSuccess('Recurring expense template paused');
+        } else {
+          pauseSavings(template.id);
+          showSuccess('Recurring savings template paused');
+        }
+      } else if (template.status === 'Paused') {
+        if (activeTab === 'income') {
+          resumeIncome(template.id);
+          showSuccess('Recurring income template resumed');
+        } else if (activeTab === 'expense') {
+          resumeExpense(template.id);
+          showSuccess('Recurring expense template resumed');
+        } else {
+          resumeSavings(template.id);
+          showSuccess('Recurring savings template resumed');
+        }
       }
-    } else if (template.status === 'Paused') {
-      if (activeTab === 'income') {
-        resumeIncome(template.id);
-      } else if (activeTab === 'expense') {
-        resumeExpense(template.id);
-      } else {
-        resumeSavings(template.id);
-      }
+    } catch (error) {
+      showError(error instanceof Error ? error.message : 'Failed to update recurring template status');
     }
   };
 

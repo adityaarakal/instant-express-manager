@@ -37,6 +37,7 @@ import { useSavingsInvestmentEMIsStore } from '../store/useSavingsInvestmentEMIs
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
+import { useToastStore } from '../store/useToastStore';
 import type { ExpenseEMI, SavingsInvestmentEMI } from '../types/emis';
 
 const formatCurrency = (value: number): string => {
@@ -65,6 +66,7 @@ export function EMIs() {
   const { accounts } = useBankAccountsStore();
   const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
   const savingsTransactions = useSavingsInvestmentTransactionsStore((state) => state.transactions);
+  const { showSuccess, showError } = useToastStore();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEMI, setEditingEMI] = useState<ExpenseEMI | SavingsInvestmentEMI | null>(null);
@@ -151,7 +153,8 @@ export function EMIs() {
   const handleSave = () => {
     if (!formData.name.trim() || !formData.accountId || formData.amount <= 0) return;
 
-    if (activeTab === 'expense') {
+    try {
+      if (activeTab === 'expense') {
       const emiData = {
         name: formData.name,
         startDate: formData.startDate,
@@ -168,8 +171,10 @@ export function EMIs() {
 
       if (editingEMI) {
         updateExpenseEMI(editingEMI.id, emiData);
+        showSuccess('Expense EMI updated successfully');
       } else {
         createExpenseEMI(emiData);
+        showSuccess('Expense EMI created successfully');
       }
     } else {
       const emiData = {
@@ -187,36 +192,55 @@ export function EMIs() {
 
       if (editingEMI) {
         updateSavingsEMI(editingEMI.id, emiData);
+        showSuccess('Savings EMI updated successfully');
       } else {
         createSavingsEMI(emiData);
+        showSuccess('Savings EMI created successfully');
       }
     }
-    handleCloseDialog();
+      handleCloseDialog();
+    } catch (error) {
+      showError(error instanceof Error ? error.message : 'Failed to save EMI');
+    }
   };
 
   const handleDelete = (id: string) => {
     if (window.confirm('Are you sure you want to delete this EMI? This will not delete generated transactions.')) {
-      if (activeTab === 'expense') {
-        deleteExpenseEMI(id);
-      } else {
-        deleteSavingsEMI(id);
+      try {
+        if (activeTab === 'expense') {
+          deleteExpenseEMI(id);
+          showSuccess('Expense EMI deleted successfully');
+        } else {
+          deleteSavingsEMI(id);
+          showSuccess('Savings EMI deleted successfully');
+        }
+      } catch (error) {
+        showError(error instanceof Error ? error.message : 'Failed to delete EMI');
       }
     }
   };
 
   const handlePauseResume = (emi: ExpenseEMI | SavingsInvestmentEMI) => {
-    if (emi.status === 'Active') {
-      if (activeTab === 'expense') {
-        pauseExpenseEMI(emi.id);
-      } else {
-        pauseSavingsEMI(emi.id);
+    try {
+      if (emi.status === 'Active') {
+        if (activeTab === 'expense') {
+          pauseExpenseEMI(emi.id);
+          showSuccess('Expense EMI paused');
+        } else {
+          pauseSavingsEMI(emi.id);
+          showSuccess('Savings EMI paused');
+        }
+      } else if (emi.status === 'Paused') {
+        if (activeTab === 'expense') {
+          resumeExpenseEMI(emi.id);
+          showSuccess('Expense EMI resumed');
+        } else {
+          resumeSavingsEMI(emi.id);
+          showSuccess('Savings EMI resumed');
+        }
       }
-    } else if (emi.status === 'Paused') {
-      if (activeTab === 'expense') {
-        resumeExpenseEMI(emi.id);
-      } else {
-        resumeSavingsEMI(emi.id);
-      }
+    } catch (error) {
+      showError(error instanceof Error ? error.message : 'Failed to update EMI status');
     }
   };
 

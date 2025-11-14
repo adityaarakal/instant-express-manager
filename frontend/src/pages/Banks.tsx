@@ -27,10 +27,12 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import { useBanksStore } from '../store/useBanksStore';
+import { useToastStore } from '../store/useToastStore';
 import type { Bank } from '../types/banks';
 
 export function Banks() {
   const { banks, createBank, updateBank, deleteBank } = useBanksStore();
+  const { showSuccess, showError } = useToastStore();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBank, setEditingBank] = useState<Bank | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -90,17 +92,28 @@ export function Banks() {
   const handleSave = () => {
     if (!formData.name.trim()) return;
 
-    if (editingBank) {
-      updateBank(editingBank.id, formData);
-    } else {
-      createBank(formData);
+    try {
+      if (editingBank) {
+        updateBank(editingBank.id, formData);
+        showSuccess('Bank updated successfully');
+      } else {
+        createBank(formData);
+        showSuccess('Bank created successfully');
+      }
+      handleCloseDialog();
+    } catch (error) {
+      showError(error instanceof Error ? error.message : 'Failed to save bank');
     }
-    handleCloseDialog();
   };
 
   const handleDelete = (id: string) => {
     if (window.confirm('Are you sure you want to delete this bank?')) {
-      deleteBank(id);
+      try {
+        deleteBank(id);
+        showSuccess('Bank deleted successfully');
+      } catch (error) {
+        showError(error instanceof Error ? error.message : 'Failed to delete bank');
+      }
     }
   };
 
