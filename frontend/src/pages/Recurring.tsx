@@ -98,6 +98,30 @@ export function Recurring() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Reset page when tab changes
+  useEffect(() => {
+    setPage(0);
+  }, [activeTab]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl/Cmd + N - Open new recurring template dialog
+      if ((event.ctrlKey || event.metaKey) && event.key === 'n' && !dialogOpen) {
+        const target = event.target as HTMLElement;
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+          event.preventDefault();
+          if (accounts.length > 0) {
+            handleOpenDialog();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [dialogOpen, accounts.length]);
+
   const [formData, setFormData] = useState<{
     name: string;
     amount: number;

@@ -95,21 +95,6 @@ export function EMIs() {
     setPage(0);
   }, [activeTab]);
 
-  const handleOpenDialog = (emiId?: string) => {
-    if (emiId) {
-      if (activeTab === 'expense') {
-        const e = expenseEMIs.find((e) => e.id === emiId);
-        setEditingEMI(e || null);
-      } else {
-        const e = savingsEMIs.find((e) => e.id === emiId);
-        setEditingEMI(e || null);
-      }
-    } else {
-      setEditingEMI(null);
-    }
-    setDialogOpen(true);
-  };
-
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -127,7 +112,7 @@ export function EMIs() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dialogOpen, accounts.length, activeTab, expenseEMIs, savingsEMIs]);
+  }, [dialogOpen, accounts.length]);
 
   const [formData, setFormData] = useState({
     name: '',
