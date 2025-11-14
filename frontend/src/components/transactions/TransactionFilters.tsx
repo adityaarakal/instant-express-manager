@@ -62,6 +62,32 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
     return count;
   }, [filters]);
 
+  const activeFilters = useMemo(() => {
+    const active: Array<{ key: keyof FilterState; label: string; value: string }> = [];
+    
+    if (filters.dateFrom) {
+      active.push({ key: 'dateFrom', label: 'From', value: filters.dateFrom });
+    }
+    if (filters.dateTo) {
+      active.push({ key: 'dateTo', label: 'To', value: filters.dateTo });
+    }
+    if (filters.accountId) {
+      const account = accounts.find((a) => a.id === filters.accountId);
+      active.push({ key: 'accountId', label: 'Account', value: account?.name || filters.accountId });
+    }
+    if (filters.category) {
+      active.push({ key: 'category', label: type === 'savings' ? 'Type' : 'Category', value: filters.category });
+    }
+    if (filters.status) {
+      active.push({ key: 'status', label: 'Status', value: filters.status });
+    }
+    if (filters.searchTerm) {
+      active.push({ key: 'searchTerm', label: 'Search', value: filters.searchTerm });
+    }
+    
+    return active;
+  }, [filters, accounts, type]);
+
   const handleFilterChange = (key: keyof FilterState, value: string) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
@@ -71,6 +97,12 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
   const handleClearFilters = () => {
     setFilters(defaultFilters);
     onFilterChange(defaultFilters);
+  };
+
+  const handleRemoveFilter = (key: keyof FilterState) => {
+    const newFilters = { ...filters, [key]: '' };
+    setFilters(newFilters);
+    onFilterChange(newFilters);
   };
 
   const incomeCategories: IncomeTransaction['category'][] = [
@@ -121,11 +153,33 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
           Filters
         </Button>
         {activeFilterCount > 0 && (
-          <IconButton size="small" onClick={handleClearFilters} title="Clear all filters">
-            <ClearIcon fontSize="small" />
-          </IconButton>
+          <Button
+            size="small"
+            onClick={handleClearFilters}
+            startIcon={<ClearIcon />}
+            variant="outlined"
+            color="inherit"
+          >
+            Clear All
+          </Button>
         )}
       </Stack>
+
+      {/* Filter Chips */}
+      {activeFilters.length > 0 && (
+        <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+          {activeFilters.map((filter) => (
+            <Chip
+              key={filter.key}
+              label={`${filter.label}: ${filter.value}`}
+              onDelete={() => handleRemoveFilter(filter.key)}
+              size="small"
+              variant="outlined"
+              color="primary"
+            />
+          ))}
+        </Stack>
+      )}
 
       {filtersExpanded && (
         <Box

@@ -24,11 +24,13 @@ import {
   CircularProgress,
   useMediaQuery,
   useTheme,
+  Chip,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
 import { useBanksStore } from '../store/useBanksStore';
 import { useToastStore } from '../store/useToastStore';
 import { getUserFriendlyError } from '../utils/errorHandling';
@@ -87,6 +89,13 @@ export function Banks() {
       return matchesSearch && matchesType;
     });
   }, [banks, searchTerm, filterType]);
+
+  const hasActiveFilters = searchTerm !== '' || filterType !== 'All';
+
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setFilterType('All');
+  };
 
   const handleOpenDialog = (bank?: Bank) => {
     if (bank) {
@@ -241,7 +250,42 @@ export function Banks() {
               <MenuItem value="Wallet">Wallet</MenuItem>
             </Select>
           </FormControl>
+          {hasActiveFilters && (
+            <Button
+              size="small"
+              onClick={handleClearFilters}
+              startIcon={<ClearIcon />}
+              variant="outlined"
+              color="inherit"
+            >
+              Clear
+            </Button>
+          )}
         </Stack>
+        
+        {/* Filter Chips */}
+        {hasActiveFilters && (
+          <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: 'wrap', gap: 1 }}>
+            {searchTerm && (
+              <Chip
+                label={`Search: ${searchTerm}`}
+                onDelete={() => setSearchTerm('')}
+                size="small"
+                variant="outlined"
+                color="primary"
+              />
+            )}
+            {filterType !== 'All' && (
+              <Chip
+                label={`Type: ${filterType}`}
+                onDelete={() => setFilterType('All')}
+                size="small"
+                variant="outlined"
+                color="primary"
+              />
+            )}
+          </Stack>
+        )}
       </Paper>
 
       <TableContainer 

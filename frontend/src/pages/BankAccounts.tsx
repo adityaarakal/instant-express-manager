@@ -23,10 +23,13 @@ import {
   InputLabel,
   Chip,
   CircularProgress,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ClearIcon from '@mui/icons-material/Clear';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useBanksStore } from '../store/useBanksStore';
 import { useToastStore } from '../store/useToastStore';
@@ -114,6 +117,13 @@ export function BankAccounts() {
       return matchesBank && matchesType;
     });
   }, [accounts, filterBankId, filterAccountType]);
+
+  const hasActiveFilters = filterBankId !== 'All' || filterAccountType !== 'All';
+
+  const handleClearFilters = () => {
+    setFilterBankId('All');
+    setFilterAccountType('All');
+  };
 
   const handleOpenDialog = (account?: BankAccount) => {
     if (account) {
@@ -290,7 +300,42 @@ export function BankAccounts() {
                 <MenuItem value="Wallet">Wallet</MenuItem>
               </Select>
             </FormControl>
+            {hasActiveFilters && (
+              <Button
+                size="small"
+                onClick={handleClearFilters}
+                startIcon={<ClearIcon />}
+                variant="outlined"
+                color="inherit"
+              >
+                Clear
+              </Button>
+            )}
           </Stack>
+          
+          {/* Filter Chips */}
+          {hasActiveFilters && (
+            <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: 'wrap', gap: 1 }}>
+              {filterBankId !== 'All' && (
+                <Chip
+                  label={`Bank: ${banksMap.get(filterBankId) || filterBankId}`}
+                  onDelete={() => setFilterBankId('All')}
+                  size="small"
+                  variant="outlined"
+                  color="primary"
+                />
+              )}
+              {filterAccountType !== 'All' && (
+                <Chip
+                  label={`Type: ${filterAccountType}`}
+                  onDelete={() => setFilterAccountType('All')}
+                  size="small"
+                  variant="outlined"
+                  color="primary"
+                />
+              )}
+            </Stack>
+          )}
         </Paper>
       )}
 
