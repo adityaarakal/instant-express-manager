@@ -64,6 +64,17 @@ export function Banks() {
     notes: '',
   });
 
+  // Field-level validation
+  const fieldErrors = useMemo(() => {
+    const errors: Record<string, string> = {};
+    
+    if (!formData.name.trim()) {
+      errors.name = 'Bank name is required';
+    }
+    
+    return errors;
+  }, [formData]);
+
   const filteredBanks = useMemo(() => {
     return banks.filter((bank) => {
       const matchesSearch = searchTerm === '' || 
@@ -323,6 +334,8 @@ export function Banks() {
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
               fullWidth
+              error={!!fieldErrors.name}
+              helperText={fieldErrors.name}
             />
             <FormControl fullWidth>
               <InputLabel>Type</InputLabel>

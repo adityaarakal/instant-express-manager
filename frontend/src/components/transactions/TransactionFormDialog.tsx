@@ -78,7 +78,61 @@ export function TransactionFormDialog({
   const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
   const savingsTransactions = useSavingsInvestmentTransactionsStore((state) => state.transactions);
 
-  // Real-time validation
+  // Field-level validation
+  const fieldErrors = useMemo(() => {
+    const errors: Record<string, string> = {};
+    
+    // Date validation
+    if (!formData.date) {
+      errors.date = 'Date is required';
+    } else {
+      const dateValidation = validateDate(formData.date, 'Date');
+      if (!dateValidation.isValid) {
+        errors.date = dateValidation.errors[0] || '';
+      }
+    }
+
+    // Account validation
+    if (!formData.accountId) {
+      errors.accountId = 'Account is required';
+    }
+
+    // Amount validation
+    if (formData.amount <= 0) {
+      errors.amount = 'Amount must be greater than 0';
+    } else {
+      const amountValidation = validateAmount(formData.amount, 'Amount');
+      if (!amountValidation.isValid) {
+        errors.amount = amountValidation.errors[0] || '';
+      }
+    }
+
+    // Description validation
+    if (!formData.description.trim()) {
+      errors.description = 'Description is required';
+    }
+
+    // Due date validation (for expenses)
+    if (type === 'expense' && formData.dueDate) {
+      const dueDateValidation = validateDate(formData.dueDate, 'Due Date');
+      if (!dueDateValidation.isValid) {
+        errors.dueDate = dueDateValidation.errors[0] || '';
+      }
+      // Check if due date is before transaction date
+      if (formData.date && formData.dueDate && new Date(formData.dueDate) < new Date(formData.date)) {
+        errors.dueDate = 'Due date cannot be before transaction date';
+      }
+    }
+
+    // Destination validation (for savings)
+    if (type === 'savings' && !formData.destination.trim()) {
+      errors.destination = 'Destination is required';
+    }
+
+    return errors;
+  }, [formData, type]);
+
+  // Transaction-level validation (for business rules)
   const validation = useMemo(() => {
     const selectedAccount = accounts.find((a) => a.id === formData.accountId);
     if (!selectedAccount) {
@@ -180,9 +234,15 @@ export function TransactionFormDialog({
   }, [editingTransaction, type, accounts]);
 
   const handleSave = () => {
+    // Check field-level validation
+    if (Object.keys(fieldErrors).length > 0) {
+      // Don't save if there are field-level errors
+      return;
+    }
+    
     if (!formData.accountId || formData.amount <= 0) return;
     
-    // Check validation before saving
+    // Check transaction-level validation
     if (!validation.isValid) {
       // Show errors but allow saving with warnings
       console.warn('Validation errors:', validation.errors);
@@ -267,9 +327,11 @@ export function TransactionFormDialog({
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
             fullWidth
             required
+            error={!!fieldErrors.date}
+            helperText={fieldErrors.date}
             InputLabelProps={{ shrink: true }}
           />
-          <FormControl fullWidth required>
+          <FormControl fullWidth required error={!!fieldErrors.accountId}>
             <InputLabel>Account</InputLabel>
             <Select
               value={formData.accountId}
@@ -282,6 +344,11 @@ export function TransactionFormDialog({
                 </MenuItem>
               ))}
             </Select>
+            {fieldErrors.accountId && (
+              <span style={{ color: 'var(--mui-palette-error-main)', fontSize: '0.75rem', marginTop: '3px', marginLeft: '14px' }}>
+                {fieldErrors.accountId}
+              </span>
+            )}
           </FormControl>
           <TextField
             label="Amount"
@@ -290,6 +357,8 @@ export function TransactionFormDialog({
             onChange={(e) => setFormData({ ...formData, amount: Number(e.target.value) })}
             fullWidth
             required
+            error={!!fieldErrors.amount}
+            helperText={fieldErrors.amount}
             InputProps={{
               startAdornment: <span style={{ marginRight: 8 }}>₹</span>,
             }}
@@ -300,6 +369,8 @@ export function TransactionFormDialog({
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             fullWidth
             required
+            error={!!fieldErrors.description}
+            helperText={fieldErrors.description}
           />
 
           {type === 'income' && (
@@ -390,6 +461,8 @@ export function TransactionFormDialog({
                 value={formData.dueDate}
                 onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
                 fullWidth
+                error={!!fieldErrors.dueDate}
+                helperText={fieldErrors.dueDate}
                 InputLabelProps={{ shrink: true }}
               />
               <FormControl fullWidth>
@@ -427,6 +500,8 @@ export function TransactionFormDialog({
                 onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
                 fullWidth
                 required
+                error={!!fieldErrors.destination}
+                helperText={fieldErrors.destination}
                 placeholder="e.g., Mutual Fund Name, SIP Name"
               />
               {formData.savingsType === 'SIP' && (

@@ -77,6 +77,25 @@ export function BankAccounts() {
     notes: '',
   });
 
+  // Field-level validation
+  const fieldErrors = useMemo(() => {
+    const errors: Record<string, string> = {};
+    
+    if (!formData.name.trim()) {
+      errors.name = 'Account name is required';
+    }
+    
+    if (!formData.bankId) {
+      errors.bankId = 'Bank is required';
+    }
+    
+    if (formData.currentBalance < 0 && formData.accountType !== 'CreditCard') {
+      errors.currentBalance = 'Balance cannot be negative for non-credit card accounts';
+    }
+    
+    return errors;
+  }, [formData]);
+
   const banksMap = useMemo(() => {
     const map = new Map<string, string>();
     banks.forEach((bank) => map.set(bank.id, bank.name));
@@ -384,9 +403,11 @@ export function BankAccounts() {
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
               fullWidth
+              error={!!fieldErrors.name}
+              helperText={fieldErrors.name}
               placeholder="e.g., ICICI 3945"
             />
-            <FormControl fullWidth required>
+            <FormControl fullWidth required error={!!fieldErrors.bankId}>
               <InputLabel>Bank</InputLabel>
               <Select
                 value={formData.bankId}
@@ -399,6 +420,11 @@ export function BankAccounts() {
                   </MenuItem>
                 ))}
               </Select>
+              {fieldErrors.bankId && (
+                <span style={{ color: 'var(--mui-palette-error-main)', fontSize: '0.75rem', marginTop: '3px', marginLeft: '14px' }}>
+                  {fieldErrors.bankId}
+                </span>
+              )}
             </FormControl>
             <FormControl fullWidth>
               <InputLabel>Account Type</InputLabel>
@@ -427,6 +453,8 @@ export function BankAccounts() {
               value={formData.currentBalance}
               onChange={(e) => setFormData({ ...formData, currentBalance: Number(e.target.value) })}
               fullWidth
+              error={!!fieldErrors.currentBalance}
+              helperText={fieldErrors.currentBalance}
               InputProps={{
                 startAdornment: <Typography sx={{ mr: 1 }}>₹</Typography>,
               }}

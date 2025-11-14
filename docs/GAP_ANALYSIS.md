@@ -371,12 +371,33 @@ The application has **excellent core functionality** with all CRUD operations, a
 
 ---
 
-### 16. **Form Validation Feedback** ✅ **GOOD** - Minor improvements
-**Current State**: Real-time validation exists  
-**Needed**:
-- Better visual feedback
-- Inline error messages
-- Field-level validation indicators
+### 16. **Form Validation Feedback** ✅ **COMPLETED**
+**Current State**: ✅ Enhanced with inline validation feedback  
+**Status**: ✅ Fully improved  
+**Implementation**:
+- ✅ **Field-Level Validation**: Added field-specific validation with inline error messages
+- ✅ **Inline Error Messages**: All form fields now show error messages directly below the field using `helperText`
+- ✅ **Visual Error Indicators**: Added `error` prop to TextField components (red borders) and `error` prop to FormControl components
+- ✅ **Real-Time Validation**: Validation runs on every field change using `useMemo` for performance
+- ✅ **Enhanced Transaction Form**: Added validation for Date, Account, Amount, Description, Due Date, and Destination fields
+- ✅ **Enhanced Banks Form**: Added validation for Bank Name field
+- ✅ **Enhanced BankAccounts Form**: Added validation for Account Name, Bank, and Current Balance fields
+- ✅ **Prevent Invalid Saves**: Save button is disabled when field-level errors exist
+
+**Files Modified**:
+- `frontend/src/components/transactions/TransactionFormDialog.tsx` (updated - added field-level validation with inline errors)
+- `frontend/src/pages/Banks.tsx` (updated - added field-level validation)
+- `frontend/src/pages/BankAccounts.tsx` (updated - added field-level validation)
+
+**Validation Features**:
+- Date validation (required, format, range checks)
+- Account selection validation (required)
+- Amount validation (must be > 0, format checks)
+- Description validation (required)
+- Due date validation (format, must be after transaction date)
+- Destination validation (required for savings)
+- Balance validation (cannot be negative for non-credit cards)
+- Real-time error display with red borders and helper text
 
 ---
 
