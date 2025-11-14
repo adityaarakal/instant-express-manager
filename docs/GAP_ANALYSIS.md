@@ -429,13 +429,14 @@ The application has **excellent core functionality** with all CRUD operations, a
 - [x] Add progress indicators for bulk operations (Transactions page)
 - [ ] Add loading states for charts (Future enhancement)
 
-### Undo Functionality
-- [ ] Create undo service/store
-- [ ] Store deleted items temporarily
-- [ ] Add undo button to delete confirmations
-- [ ] Add undo button to toast notifications
-- [ ] Implement restore functionality
-- [ ] Add timeout for undo (5-10 minutes)
+### Undo Functionality ✅ **COMPLETED**
+- [x] Create undo service/store (`useUndoStore`)
+- [x] Store deleted items temporarily (10-minute expiry)
+- [x] Add undo button to delete toast notifications
+- [x] Restore functionality for all entity types
+- [x] Safety checks to prevent duplicate restores
+- [x] Preserve original IDs and timestamps on restore
+- [x] Add timeout for undo (10 minutes)
 
 ### Data Backup/Restore
 - [ ] Create backup service
