@@ -1,75 +1,146 @@
-# Developer Guide - Planned Expenses Manager
+# Developer Guide - Instant Express Manager
 
 ## Project Overview
 
-This is a React PWA built with TypeScript, Material UI, and Zustand for state management. The app replicates Excel spreadsheet functionality for managing planned expenses.
+This is a React PWA built with TypeScript, Material UI, and Zustand for state management. The app is a comprehensive standalone financial management system with full CRUD operations for banks, accounts, transactions, EMIs, and recurring templates.
 
 ## Architecture
 
 ### State Management
 
-- **Zustand Stores**: Three main stores
-  - `usePlannedMonthsStore`: Manages planned months data
+- **Zustand Stores**: Multiple stores for each entity type
+  - `useBanksStore`: Manages banks
+  - `useBankAccountsStore`: Manages bank accounts
+  - `useIncomeTransactionsStore`: Manages income transactions
+  - `useExpenseTransactionsStore`: Manages expense transactions
+  - `useSavingsInvestmentTransactionsStore`: Manages savings/investment transactions
+  - `useExpenseEMIsStore`: Manages expense EMIs
+  - `useSavingsInvestmentEMIsStore`: Manages savings/investment EMIs
+  - `useRecurringIncomesStore`: Manages recurring income templates
+  - `useRecurringExpensesStore`: Manages recurring expense templates
+  - `useRecurringSavingsInvestmentsStore`: Manages recurring savings/investment templates
   - `usePlannerStore`: UI state (active month, filters)
   - `useSettingsStore`: User preferences
+  - `useToastStore`: Toast notifications
+  - `useUndoStore`: Undo functionality
 - **Persistence**: All stores use `localforage` for IndexedDB persistence
+- **Storage Keys**: Each store has its own storage key (e.g., `banks`, `bank-accounts`, `income-transactions`)
 
 ### Data Flow
 
-1. **Seed Data**: Loaded from `data/seeds/planned-expenses.json`
-2. **Store Initialization**: Stores initialize with seed data
-3. **User Edits**: Updates flow through store actions
-4. **Persistence**: Changes automatically saved to IndexedDB
-5. **UI Updates**: React components subscribe to store changes
+1. **Store Initialization**: Stores initialize with empty arrays or default data
+2. **User Actions**: CRUD operations flow through store actions
+3. **Persistence**: Changes automatically saved to IndexedDB via Zustand persist middleware
+4. **UI Updates**: React components subscribe to store changes
+5. **Validation**: Business rules enforced in store actions
+6. **Auto-Generation**: Services generate transactions from EMIs and recurring templates
 
 ### Component Structure
 
 ```
 components/
-├── dashboard/        # Dashboard-specific components
-├── layout/          # Shared layout components
-└── planner/         # Planner-specific components
+├── analytics/        # Analytics chart components
+├── common/          # Shared components (ErrorBoundary, Toast, etc.)
+├── dashboard/       # Dashboard-specific components
+├── layout/          # Layout components (AppBar, Navigation)
+├── planner/         # Planner-specific components
+└── transactions/    # Transaction-specific components
 ```
 
 ## Key Files
 
 ### Stores
 
-- `src/store/usePlannedMonthsStore.ts`: Core data store
-  - `upsertMonth`: Add/update month
-  - `updateAccountAllocation`: Update account values
-  - `updateBucketStatus`: Toggle bucket status
-  - `getBucketTotals`: Calculate totals
+All stores follow a similar pattern:
+
+```typescript
+interface StoreState {
+  items: Entity[];
+  createItem: (data: CreateData) => void;
+  updateItem: (id: string, data: UpdateData) => void;
+  deleteItem: (id: string) => void;
+  // ... other actions
+}
+```
+
+Key stores:
+- `src/store/useBanksStore.ts`: Bank CRUD operations
+- `src/store/useBankAccountsStore.ts`: Account CRUD operations with validation
+- `src/store/useIncomeTransactionsStore.ts`: Income transaction CRUD
+- `src/store/useExpenseTransactionsStore.ts`: Expense transaction CRUD
+- `src/store/useSavingsInvestmentTransactionsStore.ts`: Savings/investment transaction CRUD
+- `src/store/useExpenseEMIsStore.ts`: Expense EMI CRUD with auto-generation
+- `src/store/useSavingsInvestmentEMIsStore.ts`: Savings/investment EMI CRUD
+- `src/store/useRecurringIncomesStore.ts`: Recurring income template CRUD
+- `src/store/useRecurringExpensesStore.ts`: Recurring expense template CRUD
+- `src/store/useRecurringSavingsInvestmentsStore.ts`: Recurring savings/investment template CRUD
+
+### Services
+
+- `src/services/autoGenerationService.ts`: Auto-generates transactions from EMIs and recurring templates
+  - `generateEMITransactions`: Generates transactions for active EMIs
+  - `generateRecurringTransactions`: Generates transactions for active recurring templates
 
 ### Utilities
 
-- `src/utils/formulas.ts`: Excel formula translations
-  - `calculateRemainingCash`: Remaining cash calculation
-  - `sumBucketByStatus`: Sum by status
-  - `convertExcelSerialToIso`: Date conversion
+- `src/utils/aggregation.ts`: Planner aggregation logic
+  - `aggregateMonthData`: Aggregates transactions into monthly view
+  - `calculateBucketTotals`: Calculates bucket totals from transactions
 
-- `src/utils/totals.ts`: Bucket totals
-  - `calculateBucketTotals`: Aggregate bucket amounts
+- `src/utils/backupService.ts`: Backup/restore functionality
+  - `exportBackup`: Exports all store data to JSON
+  - `importBackup`: Imports data with replace/merge options
+  - `validateBackup`: Validates backup file structure
 
-- `src/utils/dashboard.ts`: Dashboard metrics
-  - `calculateDashboardMetrics`: Aggregate across months
+- `src/utils/errorHandling.ts`: Error message formatting
+  - `getUserFriendlyError`: Formats errors for user display
+  - `formatErrorMessage`: Converts technical errors to user-friendly messages
+
+- `src/utils/entityRelationships.ts`: Entity relationship utilities
+  - `getEntityDependencies`: Gets entities that depend on a given entity
+  - `checkEntityReferences`: Checks if entity is referenced by others
+
+- `src/utils/transactionExport.ts`: CSV export
+  - `exportTransactionsToCSV`: Exports transactions to CSV format
+
+- `src/utils/undoRestore.ts`: Undo functionality
+  - `restoreDeletedItem`: Restores a deleted item from undo store
+
+- `src/utils/validation.ts`: Data validation
+  - `validateDate`: Validates date format
+  - `validateDateRange`: Validates date ranges
+  - `validateAmount`: Validates amount values
+  - `checkDataInconsistencies`: Comprehensive data health check
 
 ### Types
 
-- `src/types/plannedExpenses.ts`: Core type definitions
-  - `PlannedMonthSnapshot`: Month data structure
-  - `AccountAllocationSnapshot`: Account allocation
-  - `BucketDefinition`: Bucket metadata
+- `src/types/banks.ts`: Bank type definitions
+- `src/types/bankAccounts.ts`: Bank account type definitions
+- `src/types/transactions.ts`: Transaction type definitions
+- `src/types/emis.ts`: EMI type definitions
+- `src/types/recurring.ts`: Recurring template type definitions
+- `src/types/plannedExpensesAggregated.ts`: Planner aggregated data types
 
 ## Development Workflow
 
+### Adding a New Entity
+
+1. **Create Type Definition**: Add types in `src/types/`
+2. **Create Store**: Create Zustand store with CRUD operations
+3. **Add Persistence**: Configure Zustand persist middleware
+4. **Add Validation**: Implement business rules in store actions
+5. **Create UI Components**: Build page and form components
+6. **Add Tests**: Write tests for store and components
+7. **Update Docs**: Update relevant documentation
+
 ### Adding a New Feature
 
-1. **Update Types**: Add types in `src/types/plannedExpenses.ts`
+1. **Update Types**: Add types if needed
 2. **Update Store**: Add actions/selectors in relevant store
 3. **Create Components**: Build UI components
-4. **Add Tests**: Write tests for new functionality
-5. **Update Docs**: Update relevant documentation
+4. **Add Validation**: Add business rules
+5. **Add Tests**: Write tests for new functionality
+6. **Update Docs**: Update relevant documentation
 
 ### Testing
 
@@ -87,51 +158,75 @@ Test files follow pattern: `*.test.ts` or `*.test.tsx`
 - ESLint for linting
 - Prefer functional components with hooks
 - Use Material UI for UI components
+- Use Zustand for state management
+- Use React Router for navigation
 
 ## Data Model
 
-### PlannedMonthSnapshot
+### Core Entities
 
-```typescript
-{
-  id: string;
-  monthStart: string; // ISO date
-  fixedFactor: number | null;
-  inflowTotal: number | null;
-  statusByBucket: Record<string, 'pending' | 'paid'>;
-  dueDates: Record<string, string | null>;
-  bucketOrder: string[];
-  accounts: AccountAllocationSnapshot[];
-  refErrors: MonthRefError[];
-  manualAdjustments?: ManualAdjustment[];
-}
-```
+All entities follow a similar pattern with:
+- `id`: Unique identifier (UUID)
+- `createdAt`: Creation timestamp
+- `updatedAt`: Last update timestamp
 
-### AccountAllocationSnapshot
+Key entities:
+- **Bank**: Bank information (name, type, country, notes)
+- **BankAccount**: Account information (name, bank, type, balance, etc.)
+- **IncomeTransaction**: Income transaction (date, amount, account, category, etc.)
+- **ExpenseTransaction**: Expense transaction (date, amount, account, category, etc.)
+- **SavingsInvestmentTransaction**: Savings/investment transaction (date, amount, account, type, etc.)
+- **ExpenseEMI**: Expense EMI (name, amount, account, installments, etc.)
+- **SavingsInvestmentEMI**: Savings/investment EMI (name, amount, account, installments, etc.)
+- **RecurringIncome**: Recurring income template (name, amount, frequency, etc.)
+- **RecurringExpense**: Recurring expense template (name, amount, frequency, etc.)
+- **RecurringSavingsInvestment**: Recurring savings/investment template (name, amount, frequency, etc.)
 
-```typescript
-{
-  id: string;
-  accountId: string;
-  accountName: string;
-  remainingCash: number | null; // Calculated
-  fixedBalance: number | null;
-  savingsTransfer: number | null;
-  bucketAmounts: Record<string, number | null>;
-}
-```
+### Entity Relationships
+
+- **Bank** → **BankAccount** (one-to-many)
+- **BankAccount** → **Transaction** (one-to-many)
+- **BankAccount** → **EMI** (one-to-many)
+- **BankAccount** → **Recurring Template** (one-to-many)
+- **EMI** → **Transaction** (one-to-many, via `emiId`)
+- **Recurring Template** → **Transaction** (one-to-many, via `recurringTemplateId`)
+
+See `docs/ENTITY_RELATIONSHIPS.md` for complete relationship documentation.
+
+## Validation & Business Rules
+
+### Store-Level Validation
+
+All stores implement validation in their CRUD operations:
+- **Foreign Key Validation**: Ensures referenced entities exist
+- **Deletion Validation**: Prevents deletion if entity is referenced
+- **Date Validation**: Validates date ranges and formats
+- **Amount Validation**: Ensures amounts are positive and valid
+- **EMI Validation**: Validates installment counts and progress
+
+### Data Health Checks
+
+Use `src/utils/validation.ts` for comprehensive data health checks:
+- Orphaned transactions (missing account references)
+- Orphaned EMIs (missing account references)
+- Orphaned recurring templates (missing account references)
+- Duplicate records
+- Invalid date ranges
+- Invalid references
 
 ## Build & Deployment
 
 ### Development
 
 ```bash
+cd frontend
 npm run dev
 ```
 
 ### Production Build
 
 ```bash
+cd frontend
 npm run build
 ```
 
@@ -145,26 +240,27 @@ Output: `frontend/dist/`
 
 ## Common Tasks
 
-### Adding a New Bucket
+### Adding a New Transaction Category
 
-1. Update `src/config/plannedExpenses.ts`:
+1. Update type definition in `src/types/transactions.ts`:
    ```typescript
-   {
-     id: 'new-bucket',
-     name: 'New Bucket',
-     color: '#hex-color',
-     defaultStatus: 'pending',
-   }
+   type IncomeCategory = 'Salary' | 'Bonus' | 'NewCategory' | ...;
    ```
 
-2. Update seed data if needed
-3. Bucket will appear automatically in UI
+2. Update form components to include new category
+3. Update filters to include new category
 
-### Adding a New Calculation
+### Adding a New Validation Rule
 
-1. Add utility function in `src/utils/formulas.ts`
-2. Add test in `src/utils/__tests__/formulas.test.ts`
-3. Use in store actions or components
+1. Add validation function in `src/utils/validation.ts`
+2. Call validation in store action
+3. Show error toast if validation fails
+
+### Adding a New Page
+
+1. Create page component in `src/pages/`
+2. Add route in `src/routes/AppRoutes.tsx`
+3. Add navigation link in `src/components/layout/AppLayout.tsx`
 
 ### Debugging
 
@@ -172,19 +268,52 @@ Output: `frontend/dist/`
 - Check browser IndexedDB via DevTools
 - Check console for errors
 - Use React DevTools for component debugging
+- Use Data Health Check in Settings page
 
-## Known Issues
+## Error Handling
 
-- **#REF! Errors**: Some months have broken Excel references (documented)
-- **PWA Build**: Service worker may fail in some environments (disabled in dev)
+### Error Boundary
+
+- `src/components/common/ErrorBoundary.tsx`: Catches React errors
+- Provides user-friendly error UI with recovery options
+
+### Error Messages
+
+- `src/utils/errorHandling.ts`: Formats errors for user display
+- All error messages use `getUserFriendlyError()` for consistency
+
+### Toast Notifications
+
+- `src/store/useToastStore.ts`: Manages toast notifications
+- All CRUD operations show success/error toasts
+
+## Performance Optimization
+
+### Pagination
+
+- All list pages use Material-UI TablePagination
+- Default 25 items per page
+- Configurable rows per page
+
+### Memoization
+
+- Use `React.memo` for expensive components
+- Use `useMemo` for computed values
+- Use `useCallback` for event handlers
+
+### Lazy Loading
+
+- Code splitting for routes
+- Lazy load heavy components
 
 ## Contributing
 
 1. Check `docs/tasks.md` for current status
-2. Create feature branch
-3. Write tests
-4. Update documentation
-5. Submit PR
+2. Check `docs/GAP_ANALYSIS.md` for pending improvements
+3. Create feature branch
+4. Write tests
+5. Update documentation
+6. Submit PR
 
 ## Resources
 
@@ -192,4 +321,4 @@ Output: `frontend/dist/`
 - [Material UI Docs](https://mui.com/)
 - [Vite Docs](https://vitejs.dev/)
 - [React Router Docs](https://reactrouter.com/)
-
+- [localforage Docs](https://localforage.github.io/localforage/)
