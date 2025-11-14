@@ -399,6 +399,28 @@ export function Recurring() {
     }
   };
 
+  const allTemplates = useMemo(() => {
+    if (activeTab === 'income') return incomeTemplates;
+    if (activeTab === 'expense') return expenseTemplates;
+    return savingsTemplates;
+  }, [activeTab, incomeTemplates, expenseTemplates, savingsTemplates]);
+
+  // Pagination
+  const paginatedTemplates = useMemo(() => {
+    const start = page * rowsPerPage;
+    const end = start + rowsPerPage;
+    return allTemplates.slice(start, end);
+  }, [allTemplates, page, rowsPerPage]);
+
+  const handleChangePage = (_event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
   const currentTemplates =
     activeTab === 'income'
       ? incomeTemplates
