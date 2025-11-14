@@ -457,6 +457,7 @@ export function Recurring() {
           startIcon={<AddIcon />}
           onClick={() => handleOpenDialog()}
           disabled={accounts.length === 0}
+          aria-label={accounts.length === 0 ? 'Add recurring template (requires at least one bank account)' : 'Add new recurring template'}
         >
           Add Template
         </Button>
@@ -470,7 +471,7 @@ export function Recurring() {
         </Tabs>
 
         <TableContainer>
-          <Table>
+          <Table aria-label={`${activeTab} recurring templates table`}>
             <TableHead>
               <TableRow>
                 <TableCell>Name</TableCell>
@@ -562,6 +563,7 @@ export function Recurring() {
                             size="small"
                             onClick={() => handlePauseResume(template)}
                             disabled={template.status === 'Completed' || deletingId !== null}
+                            aria-label={template.status === 'Active' ? `Pause recurring template ${template.name}` : `Resume recurring template ${template.name}`}
                           >
                             {template.status === 'Active' ? (
                               <PauseIcon fontSize="small" />
@@ -573,6 +575,7 @@ export function Recurring() {
                             size="small" 
                             onClick={() => handleOpenDialog(template)}
                             disabled={deletingId !== null}
+                            aria-label={`Edit recurring template ${template.name}`}
                           >
                             <EditIcon fontSize="small" />
                           </IconButton>
@@ -581,9 +584,10 @@ export function Recurring() {
                             onClick={() => handleDelete(template.id)} 
                             color="error"
                             disabled={deletingId !== null}
+                            aria-label={`Delete recurring template ${template.name}`}
                           >
                             {deletingId === template.id ? (
-                              <CircularProgress size={16} />
+                              <CircularProgress size={16} aria-label="Deleting" />
                             ) : (
                               <DeleteIcon fontSize="small" />
                             )}

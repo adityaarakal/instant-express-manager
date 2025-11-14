@@ -369,6 +369,7 @@ export function EMIs() {
           startIcon={<AddIcon />}
           onClick={() => handleOpenDialog()}
           disabled={accounts.length === 0}
+          aria-label={accounts.length === 0 ? 'Add EMI (requires at least one bank account)' : 'Add new EMI'}
         >
           Add EMI
         </Button>
@@ -381,7 +382,7 @@ export function EMIs() {
         </Tabs>
 
         <TableContainer>
-          <Table>
+          <Table aria-label={`${activeTab} EMIs table`}>
             <TableHead>
               <TableRow>
                 <TableCell>Name</TableCell>
@@ -470,6 +471,7 @@ export function EMIs() {
                             size="small"
                             onClick={() => handlePauseResume(emi)}
                             disabled={emi.status === 'Completed' || deletingId !== null}
+                            aria-label={emi.status === 'Active' ? `Pause EMI ${emi.name}` : `Resume EMI ${emi.name}`}
                           >
                             {emi.status === 'Active' ? (
                               <PauseIcon fontSize="small" />
@@ -481,6 +483,7 @@ export function EMIs() {
                             size="small" 
                             onClick={() => handleOpenDialog(emi)}
                             disabled={deletingId !== null}
+                            aria-label={`Edit EMI ${emi.name}`}
                           >
                             <EditIcon fontSize="small" />
                           </IconButton>
@@ -489,9 +492,10 @@ export function EMIs() {
                             onClick={() => handleDelete(emi.id)} 
                             color="error"
                             disabled={deletingId !== null}
+                            aria-label={`Delete EMI ${emi.name}`}
                           >
                             {deletingId === emi.id ? (
-                              <CircularProgress size={16} />
+                              <CircularProgress size={16} aria-label="Deleting" />
                             ) : (
                               <DeleteIcon fontSize="small" />
                             )}
@@ -524,6 +528,9 @@ export function EMIs() {
       <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
         <DialogTitle>{editingEMI ? 'Edit EMI' : 'Add EMI'}</DialogTitle>
         <DialogContent>
+          <div id="emi-dialog-description" className="sr-only">
+            {editingEMI ? `Edit details for ${editingEMI.name}` : 'Enter details for a new EMI'}
+          </div>
           <Stack spacing={2} sx={{ mt: 1 }}>
             <TextField
               label="EMI Name"

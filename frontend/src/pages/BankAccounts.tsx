@@ -261,7 +261,7 @@ export function BankAccounts() {
       )}
 
       <TableContainer component={Paper}>
-        <Table>
+        <Table aria-label="Bank accounts table">
           <TableHead>
             <TableRow>
               <TableCell>Account Name</TableCell>
@@ -318,7 +318,12 @@ export function BankAccounts() {
                     </TableCell>
                   )}
                   <TableCell align="right">
-                    <IconButton size="small" onClick={() => handleOpenDialog(account)} disabled={deletingId !== null}>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleOpenDialog(account)} 
+                      disabled={deletingId !== null}
+                      aria-label={`Edit account ${account.name}`}
+                    >
                       <EditIcon fontSize="small" />
                     </IconButton>
                     <IconButton 
@@ -326,9 +331,10 @@ export function BankAccounts() {
                       onClick={() => handleDelete(account.id)} 
                       color="error"
                       disabled={deletingId !== null}
+                      aria-label={`Delete account ${account.name}`}
                     >
                       {deletingId === account.id ? (
-                        <CircularProgress size={16} />
+                        <CircularProgress size={16} aria-label="Deleting" />
                       ) : (
                         <DeleteIcon fontSize="small" />
                       )}
@@ -344,6 +350,9 @@ export function BankAccounts() {
       <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
         <DialogTitle>{editingAccount ? 'Edit Account' : 'Add Account'}</DialogTitle>
         <DialogContent>
+          <div id="account-dialog-description" className="sr-only">
+            {editingAccount ? `Edit details for ${editingAccount.name}` : 'Enter details for a new bank account'}
+          </div>
           <Stack spacing={2} sx={{ mt: 1 }}>
             <TextField
               label="Account Name"

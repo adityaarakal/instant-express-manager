@@ -458,18 +458,23 @@ export function Transactions() {
             setActiveTab(v);
             setSelectedIds(new Set());
           }}
+          aria-label="Transaction type tabs"
         >
-          <Tab label="Income" value="income" />
-          <Tab label="Expense" value="expense" />
-          <Tab label="Savings/Investment" value="savings" />
+          <Tab label="Income" value="income" aria-controls="income-tabpanel" />
+          <Tab label="Expense" value="expense" aria-controls="expense-tabpanel" />
+          <Tab label="Savings/Investment" value="savings" aria-controls="savings-tabpanel" />
         </Tabs>
 
         <TableContainer>
-          <Table>
+          <Table aria-label={`${activeTab} transactions table`}>
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">
-                  <IconButton size="small" onClick={handleSelectAll}>
+                  <IconButton 
+                    size="small" 
+                    onClick={handleSelectAll}
+                    aria-label="Select all transactions on this page"
+                  >
                     {selectedIds.size === paginatedTransactions.length && paginatedTransactions.length > 0 ? (
                       <CheckBoxIcon fontSize="small" />
                     ) : (
@@ -526,6 +531,7 @@ export function Transactions() {
                             <IconButton
                               size="small"
                               onClick={() => handleSelectTransaction(transaction.id)}
+                              aria-label={`Select transaction ${transaction.description || transaction.id}`}
                             >
                               {selectedIds.has(transaction.id) ? (
                                 <CheckBoxIcon fontSize="small" />
@@ -551,6 +557,7 @@ export function Transactions() {
                               size="small" 
                               onClick={() => handleOpenDialog(transaction.id)}
                               disabled={isBulkOperating || deletingIds.has(transaction.id)}
+                              aria-label={`Edit transaction ${transaction.description || transaction.id}`}
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
@@ -559,9 +566,10 @@ export function Transactions() {
                               onClick={() => handleDelete(transaction.id, 'income')} 
                               color="error"
                               disabled={isBulkOperating || deletingIds.has(transaction.id)}
+                              aria-label={`Delete transaction ${transaction.description || transaction.id}`}
                             >
                               {deletingIds.has(transaction.id) ? (
-                                <CircularProgress size={16} />
+                                <CircularProgress size={16} aria-label="Deleting" />
                               ) : (
                                 <DeleteIcon fontSize="small" />
                               )}
@@ -595,6 +603,7 @@ export function Transactions() {
                             <IconButton
                               size="small"
                               onClick={() => handleSelectTransaction(transaction.id)}
+                              aria-label={`Select transaction ${transaction.description || transaction.id}`}
                             >
                               {selectedIds.has(transaction.id) ? (
                                 <CheckBoxIcon fontSize="small" />
@@ -621,6 +630,7 @@ export function Transactions() {
                               size="small" 
                               onClick={() => handleOpenDialog(transaction.id)}
                               disabled={isBulkOperating || deletingIds.has(transaction.id)}
+                              aria-label={`Edit transaction ${transaction.description || transaction.id}`}
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
@@ -629,9 +639,10 @@ export function Transactions() {
                               onClick={() => handleDelete(transaction.id, 'expense')} 
                               color="error"
                               disabled={isBulkOperating || deletingIds.has(transaction.id)}
+                              aria-label={`Delete transaction ${transaction.description || transaction.id}`}
                             >
                               {deletingIds.has(transaction.id) ? (
-                                <CircularProgress size={16} />
+                                <CircularProgress size={16} aria-label="Deleting" />
                               ) : (
                                 <DeleteIcon fontSize="small" />
                               )}
@@ -665,6 +676,7 @@ export function Transactions() {
                             <IconButton
                               size="small"
                               onClick={() => handleSelectTransaction(transaction.id)}
+                              aria-label={`Select transaction ${('description' in transaction ? transaction.description : transaction.destination) || transaction.id}`}
                             >
                               {selectedIds.has(transaction.id) ? (
                                 <CheckBoxIcon fontSize="small" />
@@ -691,6 +703,7 @@ export function Transactions() {
                               size="small" 
                               onClick={() => handleOpenDialog(transaction.id)}
                               disabled={isBulkOperating || deletingIds.has(transaction.id)}
+                              aria-label={`Edit transaction ${('description' in transaction ? transaction.description : transaction.destination) || transaction.id}`}
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
@@ -699,9 +712,10 @@ export function Transactions() {
                               onClick={() => handleDelete(transaction.id, 'savings')} 
                               color="error"
                               disabled={isBulkOperating || deletingIds.has(transaction.id)}
+                              aria-label={`Delete transaction ${('description' in transaction ? transaction.description : transaction.destination) || transaction.id}`}
                             >
                               {deletingIds.has(transaction.id) ? (
-                                <CircularProgress size={16} />
+                                <CircularProgress size={16} aria-label="Deleting" />
                               ) : (
                                 <DeleteIcon fontSize="small" />
                               )}

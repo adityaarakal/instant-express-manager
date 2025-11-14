@@ -174,6 +174,7 @@ export function Banks() {
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => handleOpenDialog()}
+          aria-label="Add new bank"
         >
           Add Bank
         </Button>
@@ -208,7 +209,7 @@ export function Banks() {
       </Paper>
 
       <TableContainer component={Paper}>
-        <Table>
+        <Table aria-label="Banks table">
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
@@ -239,7 +240,12 @@ export function Banks() {
                   <TableCell>{bank.country || '—'}</TableCell>
                   <TableCell>{bank.notes || '—'}</TableCell>
                   <TableCell align="right">
-                    <IconButton size="small" onClick={() => handleOpenDialog(bank)} disabled={deletingId !== null}>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleOpenDialog(bank)} 
+                      disabled={deletingId !== null}
+                      aria-label={`Edit bank ${bank.name}`}
+                    >
                       <EditIcon fontSize="small" />
                     </IconButton>
                     <IconButton 
@@ -247,9 +253,10 @@ export function Banks() {
                       onClick={() => handleDelete(bank.id)} 
                       color="error"
                       disabled={deletingId !== null}
+                      aria-label={`Delete bank ${bank.name}`}
                     >
                       {deletingId === bank.id ? (
-                        <CircularProgress size={16} />
+                        <CircularProgress size={16} aria-label="Deleting" />
                       ) : (
                         <DeleteIcon fontSize="small" />
                       )}
@@ -262,9 +269,19 @@ export function Banks() {
         </Table>
       </TableContainer>
 
-      <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>{editingBank ? 'Edit Bank' : 'Add Bank'}</DialogTitle>
+      <Dialog 
+        open={dialogOpen} 
+        onClose={handleCloseDialog} 
+        maxWidth="sm" 
+        fullWidth
+        aria-labelledby="bank-dialog-title"
+        aria-describedby="bank-dialog-description"
+      >
+        <DialogTitle id="bank-dialog-title">{editingBank ? 'Edit Bank' : 'Add Bank'}</DialogTitle>
         <DialogContent>
+          <div id="bank-dialog-description" className="sr-only">
+            {editingBank ? `Edit details for ${editingBank.name}` : 'Enter details for a new bank'}
+          </div>
           <Stack spacing={2} sx={{ mt: 1 }}>
             <TextField
               label="Bank Name"

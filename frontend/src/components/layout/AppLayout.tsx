@@ -148,6 +148,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 edge="start"
                 onClick={handleDrawerToggle}
                 size="small"
+                aria-label="Toggle navigation menu"
               >
                 <MenuIcon />
               </IconButton>
@@ -179,6 +180,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               size="small"
               onClick={() => setShortcutsHelpOpen(true)}
               title="Keyboard Shortcuts (?)"
+              aria-label="Show keyboard shortcuts help"
             >
               <HelpOutlineIcon fontSize="small" />
             </IconButton>
