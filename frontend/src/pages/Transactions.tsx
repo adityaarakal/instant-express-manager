@@ -118,9 +118,17 @@ export function Transactions() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Update URL when tab changes
+  useEffect(() => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('tab', activeTab);
+    setSearchParams(newParams, { replace: true });
+  }, [activeTab, searchParams, setSearchParams]);
+
   // Clear selection when tab changes
   useEffect(() => {
     setSelectedIds(new Set());
+    setPage(0); // Reset to first page when tab changes
   }, [activeTab]);
 
   const accountsMap = useMemo(() => {
