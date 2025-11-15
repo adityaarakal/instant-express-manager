@@ -153,6 +153,21 @@ Before considering the project "complete":
    - Ensure full-width layout and readable text colors
    - Add Print button to Planner page
    - StatusRibbon chips visible but non-interactive in print
+8. ✅ **Dashboard Monthly & Overall Metrics**: Enhanced dashboard with monthly and overall metrics - **COMPLETED**
+   - Added month selector dropdown (last 12 months) to Dashboard page
+   - Calculate and display monthly metrics for selected month:
+     - Monthly Income (received income in selected month)
+     - Monthly Expenses (expenses in selected month)
+     - Monthly Savings (savings transactions in selected month)
+     - Monthly Investments (SIP/LumpSum investments in selected month)
+   - Display overall metrics (all time) in separate section:
+     - Total Income (all received income)
+     - Total Expenses (all expenses)
+     - Total Savings (all completed savings/investments)
+     - Credit Card Outstanding (current balance)
+   - Monthly metrics default to current month if no month selected
+   - Clear visual separation between monthly and overall sections
+   - Updated dashboard utility to support month-based filtering
 
 ## Decision Points
 

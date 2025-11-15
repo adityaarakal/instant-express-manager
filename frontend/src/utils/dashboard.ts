@@ -7,11 +7,18 @@ import type { BankAccount } from '../types/bankAccounts';
 import { DEFAULT_BUCKETS } from '../config/plannedExpenses';
 
 export interface DashboardMetrics {
+  // Overall metrics (all time)
   totalIncome: number;
   totalExpenses: number;
   totalSavings: number;
   totalCCBills: number;
   creditCardOutstanding: number;
+  // Monthly metrics (for selected month)
+  monthlyIncome: number;
+  monthlyExpenses: number;
+  monthlySavings: number;
+  monthlyInvestments: number;
+  monthlyCCBills: number;
   upcomingDueDates: Array<{
     id: string;
     type: 'transaction' | 'emi' | 'recurring';
@@ -30,11 +37,17 @@ export const calculateDashboardMetrics = (
   expenseTransactions: ExpenseTransaction[],
   savingsTransactions: SavingsInvestmentTransaction[],
   accounts: BankAccount[],
+  monthId?: string | null, // Format: "YYYY-MM"
 ): DashboardMetrics => {
   let totalIncome = 0;
   let totalExpenses = 0;
   let totalSavings = 0;
   let totalCCBills = 0;
+  let monthlyIncome = 0;
+  let monthlyExpenses = 0;
+  let monthlySavings = 0;
+  let monthlyInvestments = 0;
+  let monthlyCCBills = 0;
   let creditCardOutstanding = 0;
   const upcomingDueDates: DashboardMetrics['upcomingDueDates'] = [];
   const savingsTrend: DashboardMetrics['savingsTrend'] = [];
@@ -44,10 +57,32 @@ export const calculateDashboardMetrics = (
   const next30Days = new Date(today);
   next30Days.setDate(today.getDate() + 30);
 
-  // Calculate totals
+  // Determine month range for monthly metrics
+  let monthStart: Date | null = null;
+  let monthEnd: Date | null = null;
+  if (monthId) {
+    const [year, month] = monthId.split('-').map(Number);
+    monthStart = new Date(year, month - 1, 1);
+    monthEnd = new Date(year, month, 0, 23, 59, 59, 999);
+  } else {
+    // Default to current month if no monthId provided
+    const now = new Date();
+    monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+  }
+
+  // Calculate overall totals and monthly metrics
   incomeTransactions.forEach((t) => {
     if (t.status === 'Received') {
       totalIncome += t.amount;
+      
+      // Check if transaction is in selected month
+      if (monthStart && monthEnd) {
+        const transactionDate = new Date(t.date);
+        if (transactionDate >= monthStart && transactionDate <= monthEnd) {
+          monthlyIncome += t.amount;
+        }
+      }
     }
   });
 
@@ -56,11 +91,35 @@ export const calculateDashboardMetrics = (
     if (t.bucket === 'CCBill') {
       totalCCBills += t.amount;
     }
+    
+    // Check if transaction is in selected month
+    if (monthStart && monthEnd) {
+      const transactionDate = new Date(t.date);
+      if (transactionDate >= monthStart && transactionDate <= monthEnd) {
+        monthlyExpenses += t.amount;
+        if (t.bucket === 'CCBill') {
+          monthlyCCBills += t.amount;
+        }
+      }
+    }
   });
 
   savingsTransactions.forEach((t) => {
     if (t.status === 'Completed') {
       totalSavings += t.amount;
+      
+      // Check if transaction is in selected month
+      if (monthStart && monthEnd) {
+        const transactionDate = new Date(t.date);
+        if (transactionDate >= monthStart && transactionDate <= monthEnd) {
+          // Separate savings and investments
+          if (t.type === 'SIP' || t.type === 'LumpSum') {
+            monthlyInvestments += t.amount;
+          } else {
+            monthlySavings += t.amount;
+          }
+        }
+      }
     }
   });
 
@@ -129,11 +188,18 @@ export const calculateDashboardMetrics = (
   });
 
   return {
+    // Overall metrics (all time)
     totalIncome: Number(totalIncome.toFixed(2)),
     totalExpenses: Number(totalExpenses.toFixed(2)),
     totalSavings: Number(totalSavings.toFixed(2)),
     totalCCBills: Number(totalCCBills.toFixed(2)),
     creditCardOutstanding: Number(creditCardOutstanding.toFixed(2)),
+    // Monthly metrics
+    monthlyIncome: Number(monthlyIncome.toFixed(2)),
+    monthlyExpenses: Number(monthlyExpenses.toFixed(2)),
+    monthlySavings: Number(monthlySavings.toFixed(2)),
+    monthlyInvestments: Number(monthlyInvestments.toFixed(2)),
+    monthlyCCBills: Number(monthlyCCBills.toFixed(2)),
     upcomingDueDates,
     savingsTrend,
   };

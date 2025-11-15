@@ -1,9 +1,11 @@
-import { useMemo, memo, lazy, Suspense } from 'react';
-import { Stack, Box, CircularProgress } from '@mui/material';
+import { useMemo, memo, lazy, Suspense, useState } from 'react';
+import { Stack, Box, CircularProgress, Paper, Typography, FormControl, InputLabel, Select, MenuItem, Divider } from '@mui/material';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import SavingsIcon from '@mui/icons-material/Savings';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore';
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
@@ -44,6 +46,39 @@ export const Dashboard = memo(function Dashboard() {
   const savingsTransactions = useSavingsInvestmentTransactionsStore((state) => state.transactions);
   const accounts = useBankAccountsStore((state) => state.accounts);
   const { activeMonthId } = usePlannerStore();
+  
+  // Get current month as default
+  const getCurrentMonthId = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  };
+  
+  const [selectedMonthId, setSelectedMonthId] = useState<string>(activeMonthId || getCurrentMonthId());
+
+  // Generate list of available months (last 12 months + current month)
+  const availableMonths = useMemo(() => {
+    const months: Array<{ id: string; label: string }> = [];
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthId = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const label = new Intl.DateTimeFormat('en-IN', {
+        month: 'long',
+        year: 'numeric',
+      }).format(date);
+      months.push({ id: monthId, label });
+    }
+    return months;
+  }, []);
+
+  const formatMonthDate = (monthId: string): string => {
+    const [year, month] = monthId.split('-').map(Number);
+    const date = new Date(year, month - 1, 1);
+    return new Intl.DateTimeFormat('en-IN', {
+      month: 'long',
+      year: 'numeric',
+    }).format(date);
+  };
 
   const metrics = useMemo(() => {
     return calculateDashboardMetrics(
@@ -51,53 +86,129 @@ export const Dashboard = memo(function Dashboard() {
       expenseTransactions,
       savingsTransactions,
       accounts,
+      selectedMonthId,
     );
-  }, [incomeTransactions, expenseTransactions, savingsTransactions, accounts]);
+  }, [incomeTransactions, expenseTransactions, savingsTransactions, accounts, selectedMonthId]);
 
   return (
     <Stack spacing={3}>
-      <Stack
-        direction={{ xs: 'column', md: 'row' }}
-        spacing={3}
-        sx={{ alignItems: 'stretch', width: '100%' }}
-      >
-        <SummaryCard
-          label="Total Income"
-          value={metrics.totalIncome}
-          description="Total received income from all transactions"
-          color="success"
-          icon={<AccountBalanceIcon fontSize="small" />}
-        />
-        <SummaryCard
-          label="Total Expenses"
-          value={metrics.totalExpenses}
-          description="Total expenses across all transactions"
-          color="error"
-          icon={<PendingActionsIcon fontSize="small" />}
-        />
-        <SummaryCard
-          label="Total Savings"
-          value={metrics.totalSavings}
-          description={
-            metrics.totalSavings > 0
-              ? 'Total completed savings/investment transactions'
-              : 'Start adding savings transfers to track progress'
-          }
-          color="success"
-          icon={<SavingsIcon fontSize="small" />}
-        />
-        <SummaryCard
-          label="Credit Card Outstanding"
-          value={metrics.creditCardOutstanding}
-          description={
-            metrics.creditCardOutstanding > 0
-              ? 'Total outstanding balance across all credit cards'
-              : 'No credit card outstanding balance'
-          }
-          color="warning"
-          icon={<CreditCardIcon fontSize="small" />}
-        />
-      </Stack>
+      {/* Month Selector */}
+      <Paper elevation={1} sx={{ p: 2, borderRadius: 2 }}>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <CalendarMonthIcon color="primary" />
+          <FormControl size="small" sx={{ minWidth: 200 }}>
+            <InputLabel>Select Month</InputLabel>
+            <Select
+              value={selectedMonthId}
+              label="Select Month"
+              onChange={(e) => setSelectedMonthId(e.target.value)}
+            >
+              {availableMonths.map((month) => (
+                <MenuItem key={month.id} value={month.id}>
+                  {month.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Typography variant="body2" color="text.secondary">
+            Viewing metrics for: <strong>{formatMonthDate(selectedMonthId)}</strong>
+          </Typography>
+        </Stack>
+      </Paper>
+
+      {/* Monthly Metrics Section */}
+      <Box>
+        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CalendarMonthIcon fontSize="small" />
+          Monthly Metrics - {formatMonthDate(selectedMonthId)}
+        </Typography>
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={3}
+          sx={{ alignItems: 'stretch', width: '100%' }}
+        >
+          <SummaryCard
+            label="Monthly Income"
+            value={metrics.monthlyIncome}
+            description={`Income received in ${formatMonthDate(selectedMonthId)}`}
+            color="success"
+            icon={<AccountBalanceIcon fontSize="small" />}
+          />
+          <SummaryCard
+            label="Monthly Expenses"
+            value={metrics.monthlyExpenses}
+            description={`Expenses in ${formatMonthDate(selectedMonthId)}`}
+            color="error"
+            icon={<PendingActionsIcon fontSize="small" />}
+          />
+          <SummaryCard
+            label="Monthly Savings"
+            value={metrics.monthlySavings}
+            description={`Savings in ${formatMonthDate(selectedMonthId)}`}
+            color="success"
+            icon={<SavingsIcon fontSize="small" />}
+          />
+          <SummaryCard
+            label="Monthly Investments"
+            value={metrics.monthlyInvestments}
+            description={`Investments (SIP/LumpSum) in ${formatMonthDate(selectedMonthId)}`}
+            color="info"
+            icon={<TrendingUpIcon fontSize="small" />}
+          />
+        </Stack>
+      </Box>
+
+      <Divider />
+
+      {/* Overall Metrics Section */}
+      <Box>
+        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <TrendingUpIcon fontSize="small" />
+          Overall Metrics (All Time)
+        </Typography>
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={3}
+          sx={{ alignItems: 'stretch', width: '100%' }}
+        >
+          <SummaryCard
+            label="Total Income"
+            value={metrics.totalIncome}
+            description="Total received income from all transactions"
+            color="success"
+            icon={<AccountBalanceIcon fontSize="small" />}
+          />
+          <SummaryCard
+            label="Total Expenses"
+            value={metrics.totalExpenses}
+            description="Total expenses across all transactions"
+            color="error"
+            icon={<PendingActionsIcon fontSize="small" />}
+          />
+          <SummaryCard
+            label="Total Savings"
+            value={metrics.totalSavings}
+            description={
+              metrics.totalSavings > 0
+                ? 'Total completed savings/investment transactions'
+                : 'Start adding savings transfers to track progress'
+            }
+            color="success"
+            icon={<SavingsIcon fontSize="small" />}
+          />
+          <SummaryCard
+            label="Credit Card Outstanding"
+            value={metrics.creditCardOutstanding}
+            description={
+              metrics.creditCardOutstanding > 0
+                ? 'Total outstanding balance across all credit cards'
+                : 'No credit card outstanding balance'
+            }
+            color="warning"
+            icon={<CreditCardIcon fontSize="small" />}
+          />
+        </Stack>
+      </Box>
 
       <DueSoonReminders reminders={metrics.upcomingDueDates} />
 
