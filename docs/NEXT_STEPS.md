@@ -178,6 +178,13 @@ Before considering the project "complete":
    - Balance updates when transaction amount or account changes
    - Handles account transfers correctly (updates both old and new accounts)
    - Integrated into all transaction stores (Income, Expense, Savings/Investment)
+10. ✅ **Balance Sync Utility**: Tool to sync existing account balances with transactions - **COMPLETED**
+   - Created balanceSync.ts utility to recalculate account balances from existing transactions
+   - Added Balance Sync section to Settings page
+   - Sync recalculates balances based on all transactions with "Received", "Paid", or "Completed" status
+   - Treats current balance as base and applies transaction effects on top
+   - Shows detailed sync results dialog with before/after balances and differences
+   - Useful for syncing old data created before automatic balance updates were implemented
 
 ## Decision Points
 

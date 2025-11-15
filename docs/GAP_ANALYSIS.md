@@ -462,6 +462,7 @@ The application has **excellent core functionality** with all CRUD operations, a
 - ✅ **Code Splitting for Routes**: All pages are now lazy-loaded using `React.lazy()` and `Suspense`, reducing initial bundle size
 - ✅ **Lazy Loading for Charts**: All chart components in Analytics and Dashboard pages are lazy-loaded, only loading when their tab/section is active
 - ✅ **Automatic Account Balance Updates**: Account balances automatically update when transactions are marked as "Received" (income), "Paid" (expense), or "Completed" (savings/investment). Balances also reverse when transactions are deleted or status changes back to "Pending"
+- ✅ **Balance Sync Utility**: Tool to sync existing account balances with transactions. Useful for syncing old data with new automatic balance update feature. Available in Settings page with detailed sync results
 - ✅ **Memoization**: Added `React.memo` to all chart components (IncomeTrendsChart, ExpenseBreakdownChart, SavingsProgressChart, InvestmentPerformanceChart, CreditCardAnalysisChart, BudgetVsActualChart, SavingsTrendChart, BudgetVsActual)
 - ✅ **Optimized Calculations**: Added `useMemo` and `useCallback` to expensive calculations in Planner page (month mapping, filter callbacks)
 - ✅ **Loading Fallbacks**: Added proper loading spinners for lazy-loaded components
@@ -752,6 +753,7 @@ Run tests with: `npm test` in the frontend directory.
 - ✅ **Export History** - COMPLETED
 - ✅ **Dashboard Monthly & Overall Metrics** - COMPLETED
 - ✅ **Automatic Account Balance Updates** - COMPLETED
+- ✅ **Balance Sync Utility** - COMPLETED
 
 ### Estimated Effort
 - **Phase 1 (Critical UX)**: ✅ **COMPLETED** (~40 hours)
@@ -786,6 +788,7 @@ Run tests with: `npm test` in the frontend directory.
   - ✅ Export History: **COMPLETED** (~2 hours)
   - ✅ Dashboard Monthly & Overall Metrics: **COMPLETED** (~4 hours)
   - ✅ Automatic Account Balance Updates: **COMPLETED** (~6 hours)
+  - ✅ Balance Sync Utility: **COMPLETED** (~3 hours)
 - **Total Estimated**: ~130 hours
 - **Total Completed**: ~148 hours (100%+)
 - **Remaining**: 0 hours
