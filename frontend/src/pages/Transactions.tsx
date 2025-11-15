@@ -193,7 +193,7 @@ export function Transactions() {
       transactions = savingsTransactions;
     }
 
-    return transactions.filter((t) => {
+    const filtered = transactions.filter((t) => {
       // Date range filter
       if (filters.dateFrom && t.date < filters.dateFrom) return false;
       if (filters.dateTo && t.date > filters.dateTo) return false;
