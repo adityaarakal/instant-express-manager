@@ -94,11 +94,15 @@ Key stores:
   - **Savings**: Labeled as "Transaction Date - Day of Month"
 - Forms include helper text explaining that day of month specifies which day of each month the transaction occurs
 
-**Deduction Date Methods**:
-- `updateDeductionDate(emiId/templateId, newDate, updateOption)`: Update deduction date with options:
-  - `'this-date-only'`: Only updates the deduction date
-  - `'all-future'`: Shifts all future pending transactions by the offset
-  - `'reset-schedule'`: Recalculates all future transactions from the new date
+**Day of Month / Deduction Date Methods**:
+- `updateDeductionDate(emiId/templateId, newDate, updateOption)`: Update deduction date (for EMIs) or day of month (for Recurring templates) with options:
+  - `'this-date-only'`: Only updates the next transaction date
+  - `'all-future'`: Updates date and shifts all future pending transactions by the offset
+  - `'reset-schedule'`: Resets date and recalculates all future transactions from the new date
+- **Recurring Templates**: Use `dayOfMonth` field (1-31) instead of full `deductionDate`
+  - UI shows context-aware labels: "Payment Date" for income, "Deduction Date" for expenses
+  - If `dayOfMonth` not set, defaults to day from `startDate`
+  - All transactions generated upfront when template is created
 
 ### Services
 
