@@ -362,6 +362,7 @@ export function Recurring() {
         frequency: expenseFrequency,
         startDate: formData.startDate,
         endDate: formData.endDate || undefined,
+        deductionDate: formData.deductionDate || undefined,
         status: 'Active' as const,
         notes: formData.notes || undefined,
       };
