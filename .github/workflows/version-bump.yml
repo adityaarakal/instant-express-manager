@@ -1,0 +1,271 @@
+name: Version Bump on Merge
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump-version:
+    name: Bump Version
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push' && 
+      !contains(github.event.head_commit.message, 'chore: Bump version') &&
+      github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Determine Version Bump Type
+        id: bump-type
+        run: |
+          BUMP_TYPE="patch"  # Default to patch
+          
+          # Check if manually triggered
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            BUMP_TYPE="${{ github.event.inputs.bump_type }}"
+            echo "Manual bump type: $BUMP_TYPE"
+          else
+            # Analyze commits in the push
+            LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+            echo "Last tag: $LAST_TAG"
+            
+            # Get commits since last tag (or all commits if no tag)
+            if [ "$LAST_TAG" != "v0.0.0" ]; then
+              COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"%s")
+            else
+              COMMITS=$(git log --pretty=format:"%s" -10)
+            fi
+            
+            echo "Analyzing commits:"
+            echo "$COMMITS"
+            
+            # Check for breaking changes
+            if echo "$COMMITS" | grep -qiE "(BREAKING CHANGE|!|breaking)"; then
+              BUMP_TYPE="major"
+              echo "Found breaking change"
+            # Check for features
+            elif echo "$COMMITS" | grep -qiE "^feat\(|^feat:"; then
+              BUMP_TYPE="minor"
+              echo "Found feature"
+            # Check for fixes
+            elif echo "$COMMITS" | grep -qiE "^fix\(|^fix:"; then
+              BUMP_TYPE="patch"
+              echo "Found fix"
+            # Check PR labels from commit message (if merged via PR)
+            elif echo "$COMMITS" | grep -qiE "\[major\]|\[breaking\]"; then
+              BUMP_TYPE="major"
+              echo "Found major label"
+            elif echo "$COMMITS" | grep -qiE "\[feature\]|\[enhancement\]|\[minor\]"; then
+              BUMP_TYPE="minor"
+              echo "Found feature label"
+            elif echo "$COMMITS" | grep -qiE "\[bug\]|\[fix\]|\[patch\]"; then
+              BUMP_TYPE="patch"
+              echo "Found bug label"
+            fi
+          fi
+          
+          echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
+          echo "Bump type determined: $BUMP_TYPE"
+      
+      - name: Install dependencies
+        run: |
+          npm install
+          cd frontend && npm install
+      
+      - name: Get Current Version
+        id: current-version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+      
+      - name: Bump Version
+        id: new-version
+        run: |
+          CURRENT_VERSION="${{ steps.current-version.outputs.current_version }}"
+          BUMP_TYPE="${{ steps.bump-type.outputs.bump_type }}"
+          
+          # Parse version
+          IFS='.' read -ra PARTS <<< "$CURRENT_VERSION"
+          MAJOR=${PARTS[0]}
+          MINOR=${PARTS[1]}
+          PATCH=${PARTS[2]}
+          
+          # Bump version
+          case "$BUMP_TYPE" in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+          
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version: $NEW_VERSION"
+          
+          # Update root package.json
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '$NEW_VERSION';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          
+          # Update frontend package.json
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('frontend/package.json', 'utf8'));
+            pkg.version = '$NEW_VERSION';
+            fs.writeFileSync('frontend/package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          
+          # Create/update VERSION.txt
+          echo "$NEW_VERSION" > VERSION.txt
+      
+      - name: Generate Changelog Entry
+        id: changelog
+        run: |
+          NEW_VERSION="${{ steps.new-version.outputs.new_version }}"
+          CURRENT_VERSION="${{ steps.current-version.outputs.current_version }}"
+          
+          # Get commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s (%h)" -20)
+          else
+            COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%h)")
+          fi
+          
+          # Categorize commits
+          ADDED=$(echo "$COMMITS" | grep -iE "^\- (feat|add)" || true)
+          FIXED=$(echo "$COMMITS" | grep -iE "^\- (fix|bug)" || true)
+          CHANGED=$(echo "$COMMITS" | grep -iE "^\- (refactor|change|update)" || true)
+          OTHER=$(echo "$COMMITS" | grep -ivE "(feat|add|fix|bug|refactor|change|update)" || true)
+          
+          CHANGELOG_ENTRY="## [$NEW_VERSION] - $(date +%Y-%m-%d)
+"
+          
+          if [ -n "$ADDED" ]; then
+            CHANGELOG_ENTRY+="
+### Added
+$ADDED
+"
+          fi
+          
+          if [ -n "$FIXED" ]; then
+            CHANGELOG_ENTRY+="
+### Fixed
+$FIXED
+"
+          fi
+          
+          if [ -n "$CHANGED" ]; then
+            CHANGELOG_ENTRY+="
+### Changed
+$CHANGED
+"
+          fi
+          
+          if [ -n "$OTHER" ]; then
+            CHANGELOG_ENTRY+="
+### Other
+$OTHER
+"
+          fi
+          
+          echo "changelog_entry<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG_ENTRY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      - name: Update CHANGELOG.md
+        run: |
+          NEW_VERSION="${{ steps.new-version.outputs.new_version }}"
+          CHANGELOG_ENTRY="${{ steps.changelog.outputs.changelog_entry }}"
+          
+          if [ ! -f CHANGELOG.md ]; then
+            cat > CHANGELOG.md << 'EOF'
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+EOF
+          fi
+          
+          # Insert changelog entry after the header
+          awk -v entry="$CHANGELOG_ENTRY" '
+            /^# Changelog/ { print; print ""; print entry; next }
+            /^## \[/ && !inserted { print entry; inserted=1 }
+            { print }
+          ' CHANGELOG.md > CHANGELOG.md.tmp
+          mv CHANGELOG.md.tmp CHANGELOG.md
+      
+      - name: Commit Version Bump
+        run: |
+          NEW_VERSION="${{ steps.new-version.outputs.new_version }}"
+          git add package.json frontend/package.json VERSION.txt CHANGELOG.md
+          git commit -m "chore: Bump version to $NEW_VERSION"
+          git push
+      
+      - name: Create Git Tag
+        run: |
+          NEW_VERSION="${{ steps.new-version.outputs.new_version }}"
+          git tag "v$NEW_VERSION"
+          git push origin "v$NEW_VERSION"
+      
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.new-version.outputs.new_version }}
+          release_name: Release v${{ steps.new-version.outputs.new_version }}
+          body: |
+            ## Changes in this release
+            
+            ${{ steps.changelog.outputs.changelog_entry }}
+            
+            See [CHANGELOG.md](CHANGELOG.md) for full details.
+          draft: false
+          prerelease: false
+

@@ -485,6 +485,17 @@ export function Settings() {
               Save Changes
             </Button>
           </Stack>
+          
+          <Divider />
+          
+          <Stack spacing={2} alignItems="center">
+            <Typography variant="body2" color="text.secondary">
+              Version: {import.meta.env.VITE_APP_VERSION || '1.0.0'}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Instant Express Manager
+            </Typography>
+          </Stack>
         </Stack>
       </Paper>
 
