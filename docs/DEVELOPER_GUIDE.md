@@ -103,10 +103,15 @@ Key stores:
   - `getNextDueDateFromEMI`: Calculates next due date for recurring template from EMI (uses deductionDate if set)
 - **Store Conversion Methods**: Store methods (`convertToRecurring` and `convertToEMI`) handle full conversion logic
   - **Important**: Conversion methods bypass `createTemplate()` and `createEMI()` to prevent auto-generation of transactions
-  - Transactions are captured BEFORE conversion and updated to reference the new entity
-  - Old entity is deleted after transactions are updated
-  - Any auto-generated transactions are cleaned up to maintain data integrity
-  - This ensures no extra transactions are created and no entities are lost during conversion
+  - **Conversion Flow**:
+    1. Capture original transactions and their IDs before conversion
+    2. Create new entity (EMI or Recurring) manually without auto-generation
+    3. Update all transactions to reference the new entity
+    4. **Verify** transactions were updated before deleting old entity
+    5. **Rollback** if verification fails (remove newly created entity)
+    6. Delete old entity (safe after verification)
+    7. Clean up any auto-generated transactions using transaction ID Set for efficient lookups
+  - **Data Integrity**: Ensures no extra transactions, no lost entities, and atomic conversions with rollback on failure
 - `src/utils/dateCalculations.ts`: Date calculation utilities for EMIs and Recurring Templates
   - `calculateEMINextDueDate`: Calculate next due date from start date and installments
   - `calculateNextDateFromDate`: Calculate next date from a given date based on frequency
