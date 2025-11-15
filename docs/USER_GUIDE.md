@@ -224,8 +224,9 @@ The app automatically updates account balances based on transaction status:
 4. Click the **Add EMI** button
 5. Fill in the form:
    - **Name**: EMI name (e.g., "Home Loan EMI")
-   - **Start Date**: EMI start date
-   - **End Date**: EMI end date (required for EMIs)
+   - **Start Date**: EMI start date (defines when the EMI period begins)
+   - **End Date**: EMI end date (required for EMIs, defines when the EMI period ends)
+   - **Deduction Date**: (Optional) Actual date when the next installment will be deducted. If not set, it's calculated automatically. This can be different from start/end dates.
    - **Amount**: EMI amount per installment
    - **Account**: Select the account
    - **Frequency**: Monthly or Quarterly
@@ -236,14 +237,41 @@ The app automatically updates account balances based on transaction status:
    - **Notes**: Optional notes
 6. Click **Save**
 
+> 💡 **Understanding Dates**: 
+> - **Start Date** and **End Date** define the overall EMI period
+> - **Deduction Date** is the actual date when money will be deducted (e.g., EMI starts on 1st Jan but deduction happens on 5th of each month)
+> - You can update the deduction date anytime with options to update just this date, or shift all future transactions
+
 ### Managing EMIs
 
 - **Pause/Resume**: Click the pause/resume button to pause or resume an EMI
 - **View Transactions**: Click the transaction count to view generated transactions
 - **Progress Tracking**: See "X / Y installments" progress bar showing completion status
+- **Update Deduction Date**: Click the calendar icon (📅) to update the deduction date with options:
+  - **Update this date only**: Only changes the next deduction date
+  - **Update all future transactions**: Shifts all future pending transactions by the same offset
+  - **Reset schedule from this date**: Recalculates all future transactions starting from the new date
 - **Convert to Recurring**: Click the swap icon (⇄) to convert this EMI to a Recurring Template (useful if you realize the payment doesn't have a fixed end date)
 - **Edit**: Click the edit icon to modify the EMI
 - **Delete**: Click the delete icon to remove the EMI (only if no transactions are linked)
+
+### Updating Deduction Date
+
+You can update the deduction date for an EMI at any time:
+
+1. Click the **calendar icon (📅)** next to the EMI
+2. Select the new deduction date
+3. Choose an update option:
+   - **Update this date only**: Only changes the next deduction date, future dates continue normally
+   - **Update all future transactions**: Shifts all pending future transactions by the same number of days
+   - **Reset schedule from this date**: Recalculates all future transactions based on the new date and frequency
+4. Click **Confirm**
+
+This is useful when:
+- Your bank changes the deduction date
+- You want to align with your payday
+- You need to adjust for holidays or weekends
+- The actual deduction date differs from the calculated schedule
 
 ### Converting EMIs to Recurring Templates
 
@@ -283,21 +311,49 @@ EMIs automatically generate transactions based on their schedule until all insta
    - **Amount**: Transaction amount
    - **Account**: Select the account
    - **Frequency**: Monthly, Weekly, Quarterly, Yearly, or Custom (more flexible than EMIs)
-   - **Start Date**: Start date
-   - **End Date**: End date (optional - can continue indefinitely)
+   - **Start Date**: Start date (defines when the recurring template period begins)
+   - **End Date**: End date (optional - can continue indefinitely, defines when the period ends)
+   - **Deduction Date**: (Optional) Actual date when the next transaction will be deducted/credited. If not set, it uses the next due date. This can be different from start/end dates.
    - **Category/Type**: Select category or type
    - Additional fields based on type
    - **Notes**: Optional notes
 6. Click **Save**
 
+> 💡 **Understanding Dates**: 
+> - **Start Date** and **End Date** define the overall recurring template period
+> - **Deduction Date** is the actual date when money will be deducted/credited (e.g., salary credited on 1st but template starts on 15th)
+> - You can update the deduction date anytime with options to update just this date, or shift all future transactions
+
 ### Managing Recurring Templates
 
 - **Pause/Resume**: Click the pause/resume button to pause or resume generation
 - **View Transactions**: Click the transaction count to view generated transactions
-- **Next Due Date**: See when the next transaction will be generated
+- **Next Due Date**: See when the next transaction will be generated (based on deduction date if set, otherwise next due date)
+- **Update Deduction Date**: Click the calendar icon (📅) to update the deduction date with options:
+  - **Update this date only**: Only changes the next deduction date
+  - **Update all future transactions**: Shifts all future pending transactions by the same offset
+  - **Reset schedule from this date**: Recalculates all future transactions starting from the new date
 - **Convert to EMI**: Click the swap icon (⇄) to convert this Recurring Template to an EMI (useful if you realize the payment has a fixed number of installments with a known end date)
 - **Edit**: Click the edit icon to modify the template
 - **Delete**: Click the delete icon to remove the template (only if no transactions are linked)
+
+### Updating Deduction Date
+
+You can update the deduction date for a Recurring Template at any time:
+
+1. Click the **calendar icon (📅)** next to the template
+2. Select the new deduction date
+3. Choose an update option:
+   - **Update this date only**: Only changes the next deduction date, future dates continue normally
+   - **Update all future transactions**: Shifts all pending future transactions by the same number of days
+   - **Reset schedule from this date**: Recalculates all future transactions based on the new date and frequency
+4. Click **Confirm**
+
+This is useful when:
+- Your employer changes the salary credit date
+- Your utility provider changes the billing date
+- You want to align with your payday
+- The actual transaction date differs from the schedule
 
 ### Converting Recurring Templates to EMIs
 

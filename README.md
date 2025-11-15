@@ -165,6 +165,8 @@ instant-express-manager/
 - Installment tracking with progress indicators
 - Pause/Resume functionality
 - Auto-generation of EMI transactions
+- **Deduction Date**: Separate field for actual transaction date (independent of start/end dates)
+- **Update Deduction Date**: Update deduction date with options (this date only, all future, reset schedule)
 - **Convert to Recurring**: Convert EMIs to Recurring Templates if you realize the payment doesn't have a fixed end date
 
 ### Recurring Transactions
@@ -174,6 +176,8 @@ instant-express-manager/
 - Multiple frequency options (Monthly, Weekly, Quarterly, Yearly, Custom)
 - Auto-generation of recurring transactions
 - Pause/Resume functionality
+- **Deduction Date**: Separate field for actual transaction date (independent of start/end dates)
+- **Update Deduction Date**: Update deduction date with options (this date only, all future, reset schedule)
 - **Convert to EMI**: Convert Recurring Templates to EMIs if you realize the payment has a fixed number of installments
 
 ### Planner
