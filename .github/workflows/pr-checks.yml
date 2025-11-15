@@ -25,15 +25,12 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
       
-      - name: Install root dependencies
-        run: npm install
-      
-      - name: Install frontend dependencies
-        working-directory: ./frontend
+      - name: Install dependencies
         run: |
-          npm install --force
-          # Ensure Rollup optional dependencies are installed
-          npm install @rollup/rollup-linux-x64-gnu --save-optional || true
+          # Install root workspace dependencies
+          npm install
+          # Install frontend workspace dependencies explicitly to ensure optional deps
+          cd frontend && npm install
       
       # ============================================================================
       # STEP 1: LINTING VALIDATION
