@@ -168,6 +168,7 @@ export function calculateAggregatedBucketTotals(
 
 /**
  * Get all available months from transactions
+ * Returns months sorted in descending order (latest first) to prioritize current/recent months
  */
 export function getAvailableMonths(
   incomeTransactions: IncomeTransaction[],
@@ -182,6 +183,35 @@ export function getAvailableMonths(
     monthSet.add(monthId);
   });
 
-  return Array.from(monthSet).sort();
+  // Sort in descending order (latest first) to prioritize current/recent months
+  return Array.from(monthSet).sort((a, b) => b.localeCompare(a));
+}
+
+/**
+ * Get the latest available month from transactions
+ * Returns current month if available, otherwise the most recent month with transactions
+ */
+export function getLatestAvailableMonth(
+  incomeTransactions: IncomeTransaction[],
+  expenseTransactions: ExpenseTransaction[],
+  savingsTransactions: SavingsInvestmentTransaction[],
+): string | null {
+  const availableMonths = getAvailableMonths(incomeTransactions, expenseTransactions, savingsTransactions);
+  
+  if (availableMonths.length === 0) {
+    return null;
+  }
+  
+  // Available months are already sorted latest first, so return the first one
+  // But also check if current month exists - if so, prefer that
+  const now = new Date();
+  const currentMonthId = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  
+  if (availableMonths.includes(currentMonthId)) {
+    return currentMonthId;
+  }
+  
+  // Return the latest available month
+  return availableMonths[0];
 }
 

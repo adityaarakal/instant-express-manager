@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Button,
   Dialog,
@@ -82,12 +82,13 @@ export function MonthComparisonDialog({
   currentMonthId,
   currentMonthStart,
 }: MonthComparisonDialogProps) {
-  const [compareMonthId, setCompareMonthId] = useState<string>('');
   const { getMonth, getAvailableMonths } = useAggregatedPlannedMonthsStore();
 
   const availableMonths = getAvailableMonths();
+  // Sort months in descending order (latest first) to prioritize current/recent months
   const compareMonthOptions = availableMonths
     .filter((monthId) => monthId !== currentMonthId)
+    .sort((a, b) => b.localeCompare(a)) // Latest first
     .map((monthId) => {
       const month = getMonth(monthId);
       return month
@@ -98,6 +99,21 @@ export function MonthComparisonDialog({
         : null;
     })
     .filter((m): m is { id: string; label: string } => m !== null);
+  
+  const [compareMonthId, setCompareMonthId] = useState<string>('');
+  
+  // Reset to default (current/latest month) when dialog opens - prioritize latest/future
+  useEffect(() => {
+    if (open && compareMonthOptions.length > 0) {
+      const now = new Date();
+      const currentMonthId = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const currentOption = compareMonthOptions.find((opt) => opt.id === currentMonthId);
+      const defaultMonth = currentOption ? currentOption.id : compareMonthOptions[0]?.id || '';
+      setCompareMonthId(defaultMonth);
+    } else if (!open) {
+      setCompareMonthId('');
+    }
+  }, [open, compareMonthOptions]);
 
   const currentMonth = getMonth(currentMonthId);
   const compareMonth = compareMonthId ? getMonth(compareMonthId) : null;

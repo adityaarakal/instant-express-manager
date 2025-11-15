@@ -260,8 +260,9 @@ This ensures your account balances are in sync with all your existing transactio
 ### Using the Planner
 
 1. Navigate to the **Planner** page
-2. Select a month from the dropdown
-3. View the aggregated financial data for that month:
+2. The planner **automatically defaults to the current month** (or the latest month with data if current month has no transactions)
+3. Select a different month from the dropdown if needed
+4. View the aggregated financial data for the selected month:
    - **Account Breakdown**: See allocations per account
    - **Bucket Totals**: See totals by expense bucket
    - **Status Tracking**: Track pending vs paid status
@@ -276,12 +277,29 @@ The Planner aggregates data from your transactions, EMIs, and recurring template
 
 ## Dashboard
 
+### Month Selector
+
+- The Dashboard **automatically defaults to the current month** for monthly metrics
+- Use the month selector at the top to view data for a different month
+- The month selector shows current and future months first, followed by past months (prioritizing latest/future-focused view)
+
 ### Overview Metrics
 
+The Dashboard shows both **Monthly Metrics** (for the selected month) and **Overall Metrics (All Time)**:
+
+**Monthly Metrics:**
+- **Monthly Income**: Income for the selected month
+- **Monthly Expenses**: Expenses for the selected month
+- **Monthly Savings**: Savings for the selected month
+- **Monthly Investments**: Investments for the selected month
+
+**Overall Metrics (All Time):**
 - **Total Income**: Sum of all income transactions
 - **Total Expenses**: Sum of all expense transactions
 - **Total Savings**: Sum of all savings/investment transactions
 - **Upcoming Due Dates**: Credit card due dates within 30 days
+
+**Important**: The Dashboard prioritizes the latest and current month by default. All monthly views throughout the app default to the current month (or latest available month) to keep you focused on the present and future.
 
 ### Charts
 

@@ -45,21 +45,34 @@ export const Dashboard = memo(function Dashboard() {
   const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
   const savingsTransactions = useSavingsInvestmentTransactionsStore((state) => state.transactions);
   const accounts = useBankAccountsStore((state) => state.accounts);
-  const { activeMonthId } = usePlannerStore();
-  
-  // Get current month as default
+  // Get current month as default - always prioritize current/latest month
   const getCurrentMonthId = () => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   };
   
-  const [selectedMonthId, setSelectedMonthId] = useState<string>(activeMonthId || getCurrentMonthId());
+  // Always default to current month - latest/future focused
+  const [selectedMonthId, setSelectedMonthId] = useState<string>(getCurrentMonthId());
 
-  // Generate list of available months (last 12 months + current month)
+  // Generate list of available months (current month first, then last 12 months)
+  // Prioritize latest and future months
   const availableMonths = useMemo(() => {
     const months: Array<{ id: string; label: string }> = [];
     const now = new Date();
-    for (let i = 0; i < 12; i++) {
+    
+    // Start with current month and future months (up to 3 months ahead)
+    for (let i = 0; i <= 3; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const monthId = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const label = new Intl.DateTimeFormat('en-IN', {
+        month: 'long',
+        year: 'numeric',
+      }).format(date);
+      months.push({ id: monthId, label });
+    }
+    
+    // Then add past months (last 12 months)
+    for (let i = 1; i <= 12; i++) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthId = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       const label = new Intl.DateTimeFormat('en-IN', {
@@ -68,6 +81,7 @@ export const Dashboard = memo(function Dashboard() {
       }).format(date);
       months.push({ id: monthId, label });
     }
+    
     return months;
   }, []);
 

@@ -81,6 +81,22 @@ Key stores:
   - `generateEMITransactions`: Generates transactions for active EMIs
   - `generateRecurringTransactions`: Generates transactions for active recurring templates
 
+### Month Selection Behavior
+
+The application prioritizes **latest and current months** across all monthly views:
+
+- **Dashboard**: Always defaults to current month for monthly metrics
+- **Planner**: Defaults to current month (or latest available month if current has no data)
+- **Month Selectors**: All month dropdowns show months sorted in descending order (latest first)
+- **Copy Month Dialog**: Defaults to current/latest month as target
+- **Month Comparison Dialog**: Defaults to current/latest month for comparison
+
+This ensures users always see the most recent and relevant data by default, while still allowing them to navigate to older months if needed.
+
+#### `getAvailableMonths` (in `src/utils/aggregation.ts`)
+- Returns months sorted in **descending order** (latest first) to prioritize current/recent months
+- Used throughout the app to ensure month lists show newest months at the top
+
 ### Utilities
 
 - `src/utils/accountBalanceUpdates.ts`: Automatic account balance updates

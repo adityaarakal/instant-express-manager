@@ -54,10 +54,20 @@ export const Planner = memo(function Planner() {
 
   const availableMonths = getAvailableMonths();
 
-  // Auto-select first month if none selected
+  // Auto-select latest/current month if none selected - prioritize latest and future
   useEffect(() => {
     if (!activeMonthId && availableMonths.length > 0) {
-      setActiveMonth(availableMonths[0]);
+      // Get current month or latest available month
+      const now = new Date();
+      const currentMonthId = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      
+      // Prioritize current month if it exists in available months
+      // Otherwise use the latest available month (first in sorted desc order)
+      const monthToSelect = availableMonths.includes(currentMonthId) 
+        ? currentMonthId 
+        : availableMonths[0]; // Latest month (first in desc sorted list)
+      
+      setActiveMonth(monthToSelect);
     }
   }, [activeMonthId, availableMonths, setActiveMonth]);
 
@@ -172,7 +182,7 @@ export const Planner = memo(function Planner() {
             []
           )}
         />
-        <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
+          <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
           <FormControl fullWidth size="small">
             <InputLabel id="month-select-label">Select Month</InputLabel>
             <Select
@@ -181,14 +191,17 @@ export const Planner = memo(function Planner() {
               label="Select Month"
               onChange={(e) => setActiveMonth(e.target.value)}
             >
-              {filteredMonths.map((monthId) => {
-                const month = getMonth(monthId);
-                return month ? (
-                  <MenuItem key={monthId} value={monthId}>
-                    {formatMonthDate(month.monthStart)}
-                  </MenuItem>
-                ) : null;
-              })}
+              {/* Sort months in descending order (latest first) to prioritize current/recent months */}
+              {filteredMonths
+                .sort((a, b) => b.localeCompare(a)) // Latest first
+                .map((monthId) => {
+                  const month = getMonth(monthId);
+                  return month ? (
+                    <MenuItem key={monthId} value={monthId}>
+                      {formatMonthDate(month.monthStart)}
+                    </MenuItem>
+                  ) : null;
+                })}
             </Select>
           </FormControl>
           {activeMonth && (

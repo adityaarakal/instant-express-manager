@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Button,
   Dialog,
@@ -63,18 +63,34 @@ const adjustDateToMonth = (dateString: string, targetMonthId: string): string =>
 };
 
 export function CopyMonthDialog({ open, onClose, sourceMonthId, sourceMonthStart }: CopyMonthDialogProps) {
-  const [targetMonthId, setTargetMonthId] = useState<string>('');
-  const [isCopying, setIsCopying] = useState(false);
   const { getAvailableMonths } = useAggregatedPlannedMonthsStore();
   const { showSuccess, showError } = useToastStore();
 
   const availableMonths = getAvailableMonths();
+  // Sort months in descending order (latest first) to prioritize current/recent months
   const targetMonthOptions = availableMonths
     .filter((monthId) => monthId !== sourceMonthId)
+    .sort((a, b) => b.localeCompare(a)) // Latest first
     .map((monthId) => ({
       id: monthId,
       label: formatMonthDate(getMonthStartDate(monthId)),
     }));
+  
+  const [targetMonthId, setTargetMonthId] = useState<string>('');
+  const [isCopying, setIsCopying] = useState(false);
+  
+  // Reset to default (current/latest month) when dialog opens - prioritize latest/future
+  useEffect(() => {
+    if (open && targetMonthOptions.length > 0) {
+      const now = new Date();
+      const currentMonthId = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const currentOption = targetMonthOptions.find((opt) => opt.id === currentMonthId);
+      const defaultMonth = currentOption ? currentOption.id : targetMonthOptions[0]?.id || '';
+      setTargetMonthId(defaultMonth);
+    } else if (!open) {
+      setTargetMonthId('');
+    }
+  }, [open, targetMonthOptions]);
 
   const handleCopy = async () => {
     if (!targetMonthId) {

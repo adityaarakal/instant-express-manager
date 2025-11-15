@@ -9,9 +9,9 @@ A comprehensive standalone financial management Progressive Web App (PWA) built 
 - 💰 **Transactions**: Track income, expenses, and savings/investment transactions
 - 📅 **EMIs**: Manage expense and savings/investment EMIs with installment tracking
 - 🔄 **Recurring Transactions**: Set up recurring income, expenses, and savings/investments
-- 📊 **Planner**: Monthly financial planning with bucket-based allocations
+- 📊 **Planner**: Monthly financial planning with bucket-based allocations (defaults to current/latest month)
 - 📈 **Analytics**: Comprehensive financial analytics and insights
-- 📱 **Dashboard**: Overview of your financial health
+- 📱 **Dashboard**: Overview of your financial health with monthly and overall metrics (defaults to current month)
 
 ### User Experience
 - ✅ **Toast Notifications**: Real-time feedback for all operations
