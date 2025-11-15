@@ -71,10 +71,14 @@ Key stores:
 - `src/store/useExpenseTransactionsStore.ts`: Expense transaction CRUD with automatic balance updates
 - `src/store/useSavingsInvestmentTransactionsStore.ts`: Savings/investment transaction CRUD with automatic balance updates
 - `src/store/useExpenseEMIsStore.ts`: Expense EMI CRUD with auto-generation, conversion to Recurring, and deduction date management
+  - `convertToRecurring(emiId)`: Converts EMI to Recurring template (bypasses auto-generation to prevent extra transactions)
 - `src/store/useSavingsInvestmentEMIsStore.ts`: Savings/investment EMI CRUD with conversion to Recurring and deduction date management
+  - `convertToRecurring(emiId)`: Converts EMI to Recurring template (bypasses auto-generation to prevent extra transactions)
 - `src/store/useRecurringIncomesStore.ts`: Recurring income template CRUD with deduction date management
 - `src/store/useRecurringExpensesStore.ts`: Recurring expense template CRUD with conversion to EMI and deduction date management
+  - `convertToEMI(templateId)`: Converts Recurring template to EMI (bypasses auto-generation to prevent extra transactions)
 - `src/store/useRecurringSavingsInvestmentsStore.ts`: Recurring savings/investment template CRUD with conversion to EMI and deduction date management
+  - `convertToEMI(templateId)`: Converts Recurring template to EMI (bypasses auto-generation to prevent extra transactions)
 
 **Form Integration**:
 - `src/pages/EMIs.tsx`: EMI form includes `deductionDate` field (optional, shown after end date)
