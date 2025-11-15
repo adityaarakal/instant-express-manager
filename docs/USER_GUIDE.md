@@ -226,6 +226,35 @@ EMIs automatically generate transactions based on their schedule. Generated tran
 
 Recurring templates automatically generate transactions based on their frequency. Generated transactions appear in the Transactions page.
 
+## Settings
+
+### Balance Sync
+
+If you have existing data created before automatic balance updates were implemented, you can sync account balances:
+
+1. Navigate to the **Settings** page
+2. Scroll to the **Balance Sync** section
+3. Click the **"Sync Account Balances"** button
+4. The sync will:
+   - Calculate what each account balance should be based on all transactions
+   - Update accounts that need adjustment
+   - Show a detailed report of changes
+
+**How it works:**
+- Treats your current account balance as the "base balance" (starting point)
+- Applies transaction effects: adds income received, subtracts expenses paid, subtracts savings completed
+- Sets new balance = base balance + (income - expenses - savings)
+
+This ensures your account balances are in sync with all your existing transactions.
+
+### Data Backup & Restore
+
+1. Navigate to the **Settings** page
+2. Scroll to the **Data Backup & Restore** section
+3. Click **"Export Backup"** to download all your data
+4. Click **"Import Backup"** to restore from a backup file
+5. Choose to either merge with existing data or replace all data
+
 ## Planner
 
 ### Using the Planner
