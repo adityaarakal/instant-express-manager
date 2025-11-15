@@ -1,0 +1,5 @@
+# Prevent deletion of hooks
+.husky/pre-commit -text merge=ours
+.husky/pre-push -text merge=ours
+.husky/commit-msg -text merge=ours
+scripts/git-wrapper.sh -text merge=ours

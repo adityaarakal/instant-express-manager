@@ -1,8 +1,7 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
 
 # ============================================================================
-# STRICT COMPLIANCE ENFORCEMENT - NO BYPASSING ALLOWED
+# STRICT COMPLIANCE ENFORCEMENT - ZERO TOLERANCE POLICY
 # ============================================================================
 
 echo "🚨 STRICT COMPLIANCE CHECK - ZERO TOLERANCE POLICY"
@@ -12,10 +11,13 @@ echo ""
 # ============================================================================
 # ABSOLUTE PROHIBITION: --no-verify DETECTION
 # ============================================================================
-# Check if --no-verify was used (this should never happen if hook is called)
-# But we check anyway to be absolutely certain
-echo "🔍 Checking for --no-verify usage..."
-if [ "$HUSKY_SKIP_HOOKS" = "1" ] || [ "$HUSKY" = "0" ]; then
+# Note: If we're running, --no-verify wasn't used (Git skips hooks with it)
+# But we check parent processes and environment anyway for maximum security
+
+echo "🔍 Checking for bypass attempts..."
+
+# Check environment variables
+if [ "$HUSKY_SKIP_HOOKS" = "1" ] || [ "$HUSKY" = "0" ] || [ "$SKIP_HOOKS" = "1" ]; then
     echo "❌ CRITICAL ERROR: Pre-commit hooks were bypassed!"
     echo "❌ This violates the ZERO TOLERANCE POLICY"
     echo "❌ All commits MUST pass all validation checks"
@@ -26,19 +28,20 @@ if [ "$HUSKY_SKIP_HOOKS" = "1" ] || [ "$HUSKY" = "0" ]; then
     exit 1
 fi
 
-# Check command line arguments for --no-verify
-# This is a safety check - if we're here, the hook is running
-# But we check parent processes for any --no-verify flags
-if ps -p $PPID -o args= 2>/dev/null | grep -- '--no-verify' > /dev/null 2>&1; then
-    echo "❌ CRITICAL ERROR: --no-verify flag detected in commit command!"
-    echo "❌ ABSOLUTE PROHIBITION: --no-verify is FORBIDDEN at all costs"
-    echo "❌ NO EXCEPTIONS - NOT EVEN WITH USER PERMISSION"
-    echo ""
-    echo "🔒 ENFORCEMENT: Commit blocked - --no-verify is ABSOLUTELY PROHIBITED"
-    echo "📋 REQUIRED: Fix all issues and commit without --no-verify"
-    echo "📋 RULE VIOLATION: This violates Zero Bypassing Tolerance"
-    echo ""
-    exit 1
+# Check parent process for --no-verify flag (works on Unix-like systems)
+if command -v ps >/dev/null 2>&1; then
+    PARENT_CMD=$(ps -p $PPID -o args= 2>/dev/null || echo "")
+    if echo "$PARENT_CMD" | grep -qE "(--no-verify|-n)"; then
+        echo "❌ CRITICAL ERROR: --no-verify flag detected in commit command!"
+        echo "❌ ABSOLUTE PROHIBITION: --no-verify is FORBIDDEN at all costs"
+        echo "❌ NO EXCEPTIONS - NOT EVEN WITH USER PERMISSION"
+        echo ""
+        echo "🔒 ENFORCEMENT: Commit blocked - --no-verify is ABSOLUTELY PROHIBITED"
+        echo "📋 REQUIRED: Fix all issues and commit without --no-verify"
+        echo "📋 RULE VIOLATION: This violates Zero Bypassing Tolerance"
+        echo ""
+        exit 1
+    fi
 fi
 
 # Check for other bypassing methods
@@ -54,7 +57,7 @@ fi
 # ============================================================================
 # PROTECTION: Prevent commits to main branch
 # ============================================================================
-current_branch=$(git rev-parse --abbrev-ref HEAD)
+current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
 if [ "$current_branch" = "main" ]; then
   echo "❌ Error: Direct commits to main branch are not allowed!"
   echo "Please create a feature branch and submit a pull request instead."
@@ -72,6 +75,24 @@ if [ "$current_branch" = "main" ]; then
 fi
 
 # ============================================================================
+# VERIFY GIT WRAPPER IS ACTIVE
+# ============================================================================
+# Check if git-wrapper is being used
+if command -v ps >/dev/null 2>&1; then
+    CMD_LINE=$(ps -p $$ -o args= 2>/dev/null || echo "")
+    if ! echo "$CMD_LINE" | grep -q "git-wrapper.sh"; then
+        # Check parent processes too
+        PARENT_LINE=$(ps -p $PPID -o args= 2>/dev/null || echo "")
+        if ! echo "$PARENT_LINE" | grep -q "git-wrapper.sh"; then
+            echo "⚠️  WARNING: Git wrapper not detected - protection may be bypassed"
+            echo "⚠️  Please run: bash scripts/install-git-protection.sh"
+            echo "⚠️  For now, continuing with hook checks..."
+            echo ""
+        fi
+    fi
+fi
+
+# ============================================================================
 # STEP 1: LINTING VALIDATION
 # ============================================================================
 echo "📋 Step 1/3: Linting Validation"
@@ -85,6 +106,7 @@ if [ $? -ne 0 ]; then
   echo "🔒 ENFORCEMENT: Commit blocked - Fix production code errors first"
   echo "📋 REQUIRED: Run 'npm run lint' and fix ALL production code errors/warnings"
   echo "ℹ️  Note: Test file errors are acceptable and excluded from this check"
+  cd ..
   exit 1
 fi
 cd ..
@@ -122,6 +144,7 @@ if [ $? -ne 0 ]; then
   echo "❌ Production build must succeed - no build errors allowed"
   echo "🔒 ENFORCEMENT: Commit blocked - Fix build errors first"
   echo "📋 REQUIRED: Run 'npm run build' and fix ALL build errors"
+  cd ..
   exit 1
 fi
 cd ..
