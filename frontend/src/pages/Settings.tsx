@@ -34,6 +34,14 @@ import { ThemeModeToggle } from '../components/layout/ThemeModeToggle';
 import { DataHealthCheck } from '../components/common/DataHealthCheck';
 import { ExportHistory } from '../components/common/ExportHistory';
 import { downloadBackup, readBackupFile, importBackup, exportBackup } from '../utils/backupService';
+import { syncAccountBalancesFromTransactions, type SyncResult } from '../utils/balanceSync';
+import SyncIcon from '@mui/icons-material/Sync';
+import TableContainer from '@mui/material/TableContainer';
+import Table from '@mui/material/Table';
+import TableHead from '@mui/material/TableHead';
+import TableBody from '@mui/material/TableBody';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
 
 const CURRENCIES = [
   { code: 'INR', name: 'Indian Rupee (₹)' },
@@ -51,6 +59,9 @@ export function Settings() {
   const [backupFile, setBackupFile] = useState<File | null>(null);
   const [backupInfo, setBackupInfo] = useState<{ version: string; timestamp: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [syncDialogOpen, setSyncDialogOpen] = useState(false);
+  const [syncResults, setSyncResults] = useState<SyncResult[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const handleSave = () => {
     updateSettings(localSettings);
@@ -137,9 +148,44 @@ export function Settings() {
     setImportDialogOpen(false);
     setBackupFile(null);
     setBackupInfo(null);
+    setImportReplaceMode(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const handleSyncBalances = () => {
+    try {
+      setIsSyncing(true);
+      const results = syncAccountBalancesFromTransactions();
+      setSyncResults(results);
+      setSyncDialogOpen(true);
+      
+      const updatedCount = results.filter((r) => r.updated).length;
+      if (updatedCount > 0) {
+        showSuccess(`Account balances synced successfully. ${updatedCount} account(s) updated.`);
+      } else {
+        showSuccess('All account balances are already in sync.');
+      }
+    } catch (error) {
+      showError(getUserFriendlyError(error, 'sync account balances'));
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleSyncDialogClose = () => {
+    setSyncDialogOpen(false);
+    setSyncResults([]);
+  };
+
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
   };
 
   const currentBackupInfo = exportBackup();
@@ -297,6 +343,31 @@ export function Settings() {
           <Divider />
 
           <Stack spacing={2}>
+            <Typography variant="h6">Balance Sync</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Sync account balances with existing transactions. This is useful if you have old data created before automatic balance updates were implemented.
+            </Typography>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <AlertTitle>How it works</AlertTitle>
+              <Typography variant="body2">
+                This tool will recalculate all account balances based on transactions with "Received", "Paid", or "Completed" status.
+                Your current balance will be treated as the base, and transaction effects will be applied on top.
+              </Typography>
+            </Alert>
+            <Button
+              variant="outlined"
+              startIcon={<SyncIcon />}
+              onClick={handleSyncBalances}
+              disabled={isSyncing}
+              fullWidth
+            >
+              {isSyncing ? 'Syncing...' : 'Sync Account Balances'}
+            </Button>
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
             <Typography variant="h6">Data Backup & Restore</Typography>
             <Typography variant="body2" color="text.secondary">
               Export all your data to a backup file or import from a previous backup.
@@ -415,6 +486,69 @@ export function Settings() {
             color={importReplaceMode ? 'error' : 'primary'}
           >
             {importReplaceMode ? 'Replace All Data' : 'Import & Merge'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={syncDialogOpen} onClose={handleSyncDialogClose} maxWidth="md" fullWidth>
+        <DialogTitle>Balance Sync Results</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2}>
+            {syncResults.length === 0 ? (
+              <Typography>No accounts to sync.</Typography>
+            ) : (
+              <>
+                <Typography variant="body2" color="text.secondary">
+                  {syncResults.filter((r) => r.updated).length} account(s) updated,{' '}
+                  {syncResults.filter((r) => !r.updated).length} account(s) already in sync.
+                </Typography>
+                <TableContainer>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Account</TableCell>
+                        <TableCell align="right">Previous Balance</TableCell>
+                        <TableCell align="right">New Balance</TableCell>
+                        <TableCell align="right">Difference</TableCell>
+                        <TableCell align="center">Status</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {syncResults.map((result) => (
+                        <TableRow key={result.accountId}>
+                          <TableCell>{result.accountName}</TableCell>
+                          <TableCell align="right">{formatCurrency(result.previousBalance)}</TableCell>
+                          <TableCell align="right">{formatCurrency(result.calculatedBalance)}</TableCell>
+                          <TableCell align="right">
+                            {result.balanceDifference !== 0 && (
+                              <Typography
+                                variant="body2"
+                                color={result.balanceDifference > 0 ? 'success.main' : 'error.main'}
+                              >
+                                {result.balanceDifference > 0 ? '+' : ''}
+                                {formatCurrency(result.balanceDifference)}
+                              </Typography>
+                            )}
+                          </TableCell>
+                          <TableCell align="center">
+                            {result.updated ? (
+                              <Chip label="Updated" color="success" size="small" />
+                            ) : (
+                              <Chip label="In Sync" size="small" />
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </>
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleSyncDialogClose} variant="contained">
+            Close
           </Button>
         </DialogActions>
       </Dialog>
