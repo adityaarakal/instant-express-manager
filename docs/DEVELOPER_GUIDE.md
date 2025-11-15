@@ -413,6 +413,14 @@ Output: `frontend/dist/`
 - Service worker generated only in production
 - Manifest configured for installability
 
+### Version Configuration
+
+The app version is injected at build time via Vite's `define` config:
+- **Source**: Root `package.json` (read in `frontend/vite.config.ts`)
+- **Injection**: `__APP_VERSION__` global variable
+- **Display**: Settings page reads `__APP_VERSION__` with fallback to `'1.0.0'`
+- **Important**: After version bump, restart dev server or rebuild to see updated version
+
 ## Common Tasks
 
 ### Adding a New Transaction Category
