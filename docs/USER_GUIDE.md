@@ -55,13 +55,15 @@ The app has the following main pages:
    - **Bank**: Select the bank from the dropdown
    - **Account Type**: Savings, Current, Credit Card, or Wallet
    - **Account Number**: Optional account number
-   - **Current Balance**: Current account balance
+   - **Current Balance**: Starting account balance (will be updated automatically as you add transactions)
    - **Credit Limit**: For credit cards only
    - **Outstanding Balance**: For credit cards only
    - **Statement Date**: For credit cards
    - **Due Date**: For credit cards
    - **Notes**: Optional notes
 4. Click **Save**
+
+**Note**: Account balances automatically update when you mark transactions as "Received", "Paid", or "Completed". You can also manually update the balance if needed.
 
 ### Editing an Account
 
@@ -89,10 +91,20 @@ The app has the following main pages:
    - **Category/Type**: Select the category or type
    - **Description**: Optional description
    - **Status**: Pending or Received/Paid/Completed
+     - **Income**: Default status is "Received" (can change to "Pending")
+     - **Expense**: Default status is "Pending" (can change to "Paid")
+     - **Savings/Investment**: Default status is "Pending" (can change to "Completed")
    - **Recurring Template**: If part of a recurring transaction
    - **EMI**: If part of an EMI
    - Additional fields based on transaction type
 5. Click **Save**
+
+**Automatic Balance Updates**: When you mark a transaction as:
+- **"Received"** (Income): The account balance **increases** by the transaction amount
+- **"Paid"** (Expense): The account balance **decreases** by the transaction amount
+- **"Completed"** (Savings/Investment): The account balance **decreases** by the transaction amount
+
+If you change a transaction's status back to "Pending", the balance change is automatically reversed. When you delete a transaction that was marked as "Received", "Paid", or "Completed", the balance change is also reversed.
 
 ### Filtering Transactions
 
@@ -102,6 +114,29 @@ Use the filter bar to:
 - **Account**: Filter by account
 - **Category**: Filter by category
 - **Status**: Filter by status
+
+### Understanding Transaction Status and Balance Updates
+
+The app automatically updates account balances based on transaction status:
+
+**Income Transactions:**
+- **"Received"**: Account balance increases by the transaction amount
+- **"Pending"**: No balance change (transaction planned but not yet received)
+
+**Expense Transactions:**
+- **"Paid"**: Account balance decreases by the transaction amount
+- **"Pending"**: No balance change (expense planned but not yet paid)
+
+**Savings/Investment Transactions:**
+- **"Completed"**: Account balance decreases by the transaction amount (money moved out of account)
+- **"Pending"**: No balance change (savings/investment planned but not yet completed)
+
+**Important Notes:**
+- Balance updates happen automatically when you create, update, or delete transactions
+- If you change a transaction's status (e.g., "Received" to "Pending"), the balance change is automatically reversed
+- If you change a transaction's amount, the balance adjusts by the difference
+- If you move a transaction to a different account, both accounts' balances are updated correctly
+- You can always manually update an account's balance in the Accounts page if needed
 
 ### Bulk Operations
 

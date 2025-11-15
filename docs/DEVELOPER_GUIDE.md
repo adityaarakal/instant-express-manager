@@ -65,10 +65,10 @@ interface StoreState {
 
 Key stores:
 - `src/store/useBanksStore.ts`: Bank CRUD operations
-- `src/store/useBankAccountsStore.ts`: Account CRUD operations with validation
-- `src/store/useIncomeTransactionsStore.ts`: Income transaction CRUD
-- `src/store/useExpenseTransactionsStore.ts`: Expense transaction CRUD
-- `src/store/useSavingsInvestmentTransactionsStore.ts`: Savings/investment transaction CRUD
+- `src/store/useBankAccountsStore.ts`: Account CRUD operations with validation and balance management
+- `src/store/useIncomeTransactionsStore.ts`: Income transaction CRUD with automatic balance updates
+- `src/store/useExpenseTransactionsStore.ts`: Expense transaction CRUD with automatic balance updates
+- `src/store/useSavingsInvestmentTransactionsStore.ts`: Savings/investment transaction CRUD with automatic balance updates
 - `src/store/useExpenseEMIsStore.ts`: Expense EMI CRUD with auto-generation
 - `src/store/useSavingsInvestmentEMIsStore.ts`: Savings/investment EMI CRUD
 - `src/store/useRecurringIncomesStore.ts`: Recurring income template CRUD
@@ -82,6 +82,14 @@ Key stores:
   - `generateRecurringTransactions`: Generates transactions for active recurring templates
 
 ### Utilities
+
+- `src/utils/accountBalanceUpdates.ts`: Automatic account balance updates
+  - `updateAccountBalanceForTransaction`: Updates account balance when transactions are created/updated
+  - `reverseAccountBalanceForTransaction`: Reverses balance changes when transactions are deleted
+  - Automatically handles income (increases balance when "Received"), expenses (decreases when "Paid"), and savings/investments (decreases when "Completed")
+  - Reverses balance changes when status changes back to "Pending"
+  - Handles account transfers (updates both old and new accounts)
+  - Integrated into all transaction stores
 
 - `src/utils/aggregation.ts`: Planner aggregation logic
   - `aggregateMonthData`: Aggregates transactions into monthly view

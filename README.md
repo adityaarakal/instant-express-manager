@@ -28,6 +28,7 @@ A comprehensive standalone financial management Progressive Web App (PWA) built 
 - ✅ **Data Validation**: Comprehensive validation and business rules
 - 🔍 **Data Health Checks**: Identify and fix data inconsistencies
 - 📤 **CSV Export**: Export transactions to CSV
+- 💰 **Automatic Balance Updates**: Account balances automatically update when transactions are received/paid/completed
 
 ## 🛠️ Tech Stack
 
@@ -113,6 +114,7 @@ instant-express-manager/
 │   │   ├── services/            # Business logic services
 │   │   │   └── autoGenerationService.ts # EMI/Recurring auto-generation
 │   │   ├── utils/              # Utility functions
+│   │   │   ├── accountBalanceUpdates.ts # Automatic balance updates
 │   │   │   ├── aggregation.ts  # Planner aggregation logic
 │   │   │   ├── backupService.ts # Backup/restore functionality
 │   │   │   ├── errorHandling.ts # Error message formatting
@@ -149,6 +151,7 @@ instant-express-manager/
 - **Income Transactions**: Track salary, bonuses, freelancing, etc.
 - **Expense Transactions**: Track utilities, responsibilities, CC bills, etc.
 - **Savings/Investment Transactions**: Track SIPs, lump sums, withdrawals, returns
+- **Automatic Balance Updates**: Account balances automatically update when transactions are marked as "Received" (income), "Paid" (expense), or "Completed" (savings/investment)
 - Filter by date range, account, category, and status
 - Bulk operations (delete, status update)
 - CSV export functionality
@@ -311,3 +314,5 @@ MIT
 - ✅ Improved navigation with React Router
 - ✅ Keyboard shortcuts
 - ✅ Enhanced error handling with user-friendly messages
+- ✅ Automatic account balance updates based on transaction status
+- ✅ Dashboard monthly and overall metrics with month selector
