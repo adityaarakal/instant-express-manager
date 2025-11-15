@@ -757,6 +757,7 @@ Run tests with: `npm test` in the frontend directory.
 - ✅ **Internal Account Transfers** - COMPLETED
 - ✅ **Automatic Account Balance Updates** - COMPLETED
 - ✅ **Balance Sync Utility** - COMPLETED
+- ✅ **EMI ↔ Recurring Template Conversion** - COMPLETED
 
 ### Estimated Effort
 - **Phase 1 (Critical UX)**: ✅ **COMPLETED** (~40 hours)
@@ -794,8 +795,10 @@ Run tests with: `npm test` in the frontend directory.
 - ✅ Internal Account Transfers: **COMPLETED** (~8 hours)
 - ✅ Automatic Account Balance Updates: **COMPLETED** (~6 hours)
 - ✅ Balance Sync Utility: **COMPLETED** (~3 hours)
+- ✅ EMIs vs Recurring Templates Guidance: **COMPLETED** (~2 hours)
+- ✅ EMI ↔ Recurring Template Conversion: **COMPLETED** (~6 hours)
 - **Total Estimated**: ~130 hours
-- **Total Completed**: ~148 hours (100%+)
+- **Total Completed**: ~156 hours (100%+)
 - **Remaining**: 0 hours
 
 ---
