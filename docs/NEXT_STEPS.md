@@ -202,6 +202,7 @@ Before considering the project "complete":
    - Conversion automatically updates all transaction references
    - Old entity is deleted after successful conversion
    - Handles field mapping differences (installment tracking, end date requirements, frequency options)
+   - **Bug Fix**: Conversion methods now bypass auto-generation (`createTemplate()`/`createEMI()`) to prevent unwanted transactions and maintain data integrity
 14. ✅ **Deduction Date Feature**: Separate deduction date field for EMIs and Recurring Templates - **COMPLETED** (Store Layer + Forms)
    - Added `deductionDate` field to all EMI and Recurring types (optional, independent of start/end dates)
    - Created date calculation utilities (`dateCalculations.ts`) for effective deduction date calculation

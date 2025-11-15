@@ -91,12 +91,18 @@ Key stores:
 
 - `src/services/autoGenerationService.ts`: Auto-generates transactions from EMIs and recurring templates
   - `generateEMITransactions`: Generates transactions for active EMIs
-- `src/utils/emiRecurringConversion.ts`: Conversion utilities between EMIs and Recurring Templates
-  - `convertExpenseEMIToRecurring`: Converts ExpenseEMI to RecurringExpense
-  - `convertSavingsEMIToRecurring`: Converts SavingsInvestmentEMI to RecurringSavingsInvestment
-  - `convertRecurringExpenseToEMI`: Converts RecurringExpense to ExpenseEMI
-  - `convertRecurringSavingsToEMI`: Converts RecurringSavingsInvestment to SavingsInvestmentEMI
+- `src/utils/emiRecurringConversion.ts`: Conversion utilities between EMIs and Recurring Templates (used by store methods)
+  - `convertExpenseEMIToRecurring`: Converts ExpenseEMI to RecurringExpense data structure
+  - `convertSavingsEMIToRecurring`: Converts SavingsInvestmentEMI to RecurringSavingsInvestment data structure
+  - `convertRecurringExpenseToEMI`: Converts RecurringExpense to ExpenseEMI data structure
+  - `convertRecurringSavingsToEMI`: Converts RecurringSavingsInvestment to SavingsInvestmentEMI data structure
   - `getNextDueDateFromEMI`: Calculates next due date for recurring template from EMI (uses deductionDate if set)
+- **Store Conversion Methods**: Store methods (`convertToRecurring` and `convertToEMI`) handle full conversion logic
+  - **Important**: Conversion methods bypass `createTemplate()` and `createEMI()` to prevent auto-generation of transactions
+  - Transactions are captured BEFORE conversion and updated to reference the new entity
+  - Old entity is deleted after transactions are updated
+  - Any auto-generated transactions are cleaned up to maintain data integrity
+  - This ensures no extra transactions are created and no entities are lost during conversion
 - `src/utils/dateCalculations.ts`: Date calculation utilities for EMIs and Recurring Templates
   - `calculateEMINextDueDate`: Calculate next due date from start date and installments
   - `calculateNextDateFromDate`: Calculate next date from a given date based on frequency
