@@ -133,7 +133,14 @@ The current version is displayed in the Settings page and can be accessed progra
 
 - **Settings Page**: Shows version at the bottom or in About section
 - **Version API**: `window.__APP_VERSION__` available globally
-- **Package Info**: Imported from package.json in build
+- **Build-time Injection**: Version is injected at build time via Vite's `define` config
+- **Source of Truth**: Version is read from root `package.json` in `vite.config.ts`
+
+### Important Notes
+
+- **Dev Server**: Restart required after version bump to see updated version
+- **Production Build**: Rebuild required after version bump to see updated version
+- **Version Source**: Always use root `package.json` as the single source of truth for version numbers
 
 ## Fallback Strategy
 
