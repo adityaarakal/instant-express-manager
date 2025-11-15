@@ -5,6 +5,9 @@ import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // GitHub Pages deployment - uncomment and set to your repository name
+  // base: process.env.NODE_ENV === 'production' ? '/instant-express-manager/' : '/',
+  base: '/', // For root domain or custom domain, use '/' instead
   plugins: [
     react(),
     VitePWA({
