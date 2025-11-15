@@ -1,5 +1,7 @@
-# Prevent deletion of hooks
+# Prevent deletion of hooks and enforcement scripts
 .husky/pre-commit -text merge=ours
 .husky/pre-push -text merge=ours
 .husky/commit-msg -text merge=ours
 scripts/git-wrapper.sh -text merge=ours
+scripts/validate-version-bump.sh -text merge=ours
+scripts/validate-enforcement-lock.sh -text merge=ours
