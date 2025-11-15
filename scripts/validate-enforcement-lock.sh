@@ -21,6 +21,7 @@ PROTECTED_FILES=(
   ".github/workflows/pr-checks.yml"
   "scripts/validate-enforcement-lock.sh"
   "scripts/install-git-protection.sh"
+  "scripts/validate-version-bump.sh"
 )
 
 # Create lock directory if it doesn't exist

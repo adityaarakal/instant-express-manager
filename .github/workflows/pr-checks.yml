@@ -38,13 +38,13 @@ jobs:
       # ============================================================================
       # STEP 1: LINTING VALIDATION
       # ============================================================================
-      - name: 📋 Step 1/3 - ESLint Validation
+      - name: 📋 Step 1/4 - ESLint Validation
         working-directory: ./frontend
         run: |
           echo "🚨 STRICT COMPLIANCE CHECK - ZERO TOLERANCE POLICY"
           echo "⚠️  NO BYPASSING METHODS ALLOWED - ALL CHECKS MUST PASS"
           echo ""
-          echo "📋 Step 1/3: Linting Validation"
+          echo "📋 Step 1/4: Linting Validation"
           echo "Running ESLint validation (excluding test files)..."
           # Run lint on production code only (exclude test files and __tests__ directories)
           npx eslint 'src/**/*.{ts,tsx}' \
@@ -66,11 +66,11 @@ jobs:
       # ============================================================================
       # STEP 2: TYPE CHECKING
       # ============================================================================
-      - name: 📋 Step 2/3 - TypeScript Type Checking
+      - name: 📋 Step 2/4 - TypeScript Type Checking
         working-directory: ./frontend
         run: |
           echo ""
-          echo "📋 Step 2/3: Type Checking"
+          echo "📋 Step 2/4: Type Checking"
           echo "Running TypeScript compilation check..."
           npx tsc --noEmit
           if [ $? -ne 0 ]; then
@@ -85,11 +85,11 @@ jobs:
       # ============================================================================
       # STEP 3: BUILD VALIDATION
       # ============================================================================
-      - name: 📋 Step 3/3 - Build Validation
+      - name: 📋 Step 3/4 - Build Validation
         working-directory: ./frontend
         run: |
           echo ""
-          echo "📋 Step 3/3: Build Validation"
+          echo "📋 Step 3/4: Build Validation"
           echo "Running production build validation..."
           npm run build
           if [ $? -ne 0 ]; then
@@ -100,6 +100,25 @@ jobs:
             exit 1
           fi
           echo "✅ Build validation passed!"
+      
+      # ============================================================================
+      # STEP 4: MANDATORY VERSION BUMP VALIDATION
+      # ============================================================================
+      - name: 📋 Step 4/4 - Mandatory Version Bump Validation
+        run: |
+          echo ""
+          echo "📋 Step 4/4: Mandatory Version Bump Validation"
+          echo "🚨 MANDATORY CHECK: PR cannot be merged without version bump"
+          echo ""
+          bash scripts/validate-version-bump.sh
+          if [ $? -ne 0 ]; then
+            echo "❌ CRITICAL: Version bump validation failed"
+            echo "❌ ENFORCEMENT: PR blocked - Version bump is MANDATORY"
+            echo "📋 REQUIRED: Head branch version must be exactly BASE_VERSION + 0.0.1 (PATCH)"
+            echo "⚠️  This check CANNOT BE BYPASSED - All PRs must have version bump"
+            exit 1
+          fi
+          echo "✅ Version bump validation passed!"
       
       # ============================================================================
       # SUCCESS - ALL CHECKS PASSED
@@ -127,7 +146,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '✅ **All Quality Checks Passed!**\n\n- ✅ ESLint validation passed (production code only)\n- ✅ TypeScript type checking passed\n- ✅ Build validation passed\n\nYour PR is ready for review! 🎉'
+              body: '✅ **All Quality Checks Passed!**\n\n- ✅ ESLint validation passed (production code only)\n- ✅ TypeScript type checking passed\n- ✅ Build validation passed\n- ✅ Mandatory version bump validation passed\n\nYour PR is ready for review! 🎉'
             })
       
       - name: Comment PR on Failure
@@ -139,6 +158,6 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '❌ **Quality Checks Failed**\n\nPlease fix the following issues:\n- ESLint errors/warnings in production code\n- TypeScript compilation errors\n- Build validation errors\n\n🔒 **ENFORCEMENT**: PR cannot be merged until all checks pass.\n\n📋 **REQUIRED**: Fix all errors and push again.'
+              body: '❌ **Quality Checks Failed**\n\nPlease fix the following issues:\n- ESLint errors/warnings in production code\n- TypeScript compilation errors\n- Build validation errors\n- **Mandatory version bump validation** (PR branch version must be BASE + 0.0.1)\n\n🔒 **ENFORCEMENT**: PR cannot be merged until all checks pass.\n\n📋 **REQUIRED**: Fix all errors and push again.'
             })
 
