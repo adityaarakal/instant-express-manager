@@ -57,7 +57,7 @@ export function TransactionFormDialog({
     accountId: accounts[0]?.id || '',
     amount: 0,
     description: '',
-    status: 'Pending' as 'Pending' | 'Paid' | 'Received' | 'Completed',
+    status: (type === 'income' ? 'Received' : 'Pending') as 'Pending' | 'Paid' | 'Received' | 'Completed',
     // Income specific
     category: 'Salary' as IncomeTransaction['category'],
     clientName: '',
@@ -218,7 +218,7 @@ export function TransactionFormDialog({
         accountId: accounts[0]?.id || '',
         amount: 0,
         description: '',
-        status: 'Pending',
+        status: (type === 'income' ? 'Received' : 'Pending') as 'Pending' | 'Paid' | 'Received' | 'Completed',
         category: 'Salary',
         clientName: '',
         projectName: '',
