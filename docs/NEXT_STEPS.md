@@ -180,12 +180,6 @@ Before considering the project "complete":
    - Focuses on present and future while still allowing navigation to older months
 10. ✅ **Automatic Account Balance Updates**: Account balances now automatically update based on transaction status - **COMPLETED**
 11. ✅ **Internal Account Transfers**: Feature to track money movements between user's own accounts - **COMPLETED**
-12. ✅ **EMIs vs Recurring Templates Guidance**: Added informational alerts to EMIs and Recurring pages - **COMPLETED**
-   - Added collapsible info alerts explaining when to use EMIs vs Recurring Templates
-   - EMIs page: Explains fixed-term commitments with installment tracking
-   - Recurring page: Explains ongoing/repeating transactions without fixed end dates
-   - Alerts are dismissible and help users understand which feature to use
-   - Cross-references each feature for better user guidance
    - Created TransferTransaction entity with from/to account support
    - Implemented automatic balance updates for both accounts when transfer is completed
    - Added Transfers tab to Transactions page with full CRUD operations
@@ -194,6 +188,12 @@ Before considering the project "complete":
    - CSV export functionality for transfers
    - Transfers excluded from income/expense calculations (only affect account balances)
    - Balance updates reversed when transfers are deleted or status changes to Pending
+12. ✅ **EMIs vs Recurring Templates Guidance**: Added informational alerts to EMIs and Recurring pages - **COMPLETED**
+   - Added collapsible info alerts explaining when to use EMIs vs Recurring Templates
+   - EMIs page: Explains fixed-term commitments with installment tracking
+   - Recurring page: Explains ongoing/repeating transactions without fixed end dates
+   - Alerts are dismissible and help users understand which feature to use
+   - Cross-references each feature for better user guidance
 12. ✅ **Balance Sync Utility**: Tool to sync existing account balances with transactions - **COMPLETED**
    - Created balanceSync.ts utility to recalculate account balances from existing transactions
    - Added Balance Sync section to Settings page
