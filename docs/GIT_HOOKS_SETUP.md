@@ -145,3 +145,15 @@ Workflows are configured in:
 
 **DO NOT** modify these hooks or workflows to bypass protections - they are enforced to ensure code quality.
 
+## Important Limitations
+
+### Client-Side Hooks Cannot Prevent Bypass
+
+**Critical Limitation**: Client-side Git hooks cannot detect when they are being bypassed.
+
+When you use `git commit --no-verify`, Git **completely skips calling the hooks**. The hooks never execute, so they cannot detect or prevent the bypass. This is a fundamental limitation of Git hooks.
+
+**Real Protection**: Server-side enforcement via GitHub Actions workflows cannot be bypassed. The `.github/workflows/pr-checks.yml` workflow provides true enforcement that runs on every PR and blocks merges if checks fail.
+
+For more details, see `docs/HOOK_LIMITATIONS.md`.
+
