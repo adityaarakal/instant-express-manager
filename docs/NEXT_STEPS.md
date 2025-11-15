@@ -136,7 +136,16 @@ Before considering the project "complete":
    - Added warning alert banner in Planner page showing accounts with negative remaining cash
    - Enhanced AccountTable with tooltips for negative remaining cash
    - Negative values displayed in red with helpful warning messages
-6. **Add Export History**: Track when exports were made
+6. ✅ **Add Export History**: Track when exports were made - **COMPLETED**
+   - Created useExportHistoryStore to track export history
+   - Track CSV exports (income, expense, savings transactions) with transaction counts
+   - Track backup exports with transaction counts
+   - Created ExportHistory component to display export history in Settings page
+   - Show last 20 exports in a table format
+   - Display export type, filename, transaction count, and timestamp
+   - Color-coded chips for different export types
+   - Clear history button
+   - Auto-trim to keep last 100 exports
 7. ✅ **Add Print View**: Optimized print stylesheet for month views - **COMPLETED**
    - Added comprehensive print CSS to index.css
    - Hide non-essential elements when printing (navigation, buttons, filters, alerts)
