@@ -55,6 +55,8 @@ This repository enforces strict code quality checks that **cannot be bypassed**:
 - ✅ **Git Wrapper**: Blocks `--no-verify` bypass attempts
 - ✅ **GitHub Actions**: Server-side enforcement on all PRs
 - ✅ **Branch Protection**: Requires status checks before merge
+- ✅ **Enforcement Lock System**: Checksum-based protection for enforcement files
+- ✅ **TypeScript**: Production code only (test files excluded from compilation)
 
 ### Protection Setup (Required)
 

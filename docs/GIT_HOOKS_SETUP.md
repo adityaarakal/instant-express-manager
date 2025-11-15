@@ -23,7 +23,10 @@ This repository uses **Husky** to enforce strict code quality and branch protect
    - Allows up to 3 warnings (for React Hook dependency warnings)
    - Blocks on errors in production code
    - Test file errors are acceptable and excluded
-2. **Type Checking**: TypeScript compilation check
+2. **Type Checking**: TypeScript compilation check (test files excluded)
+   - Excludes `src/**/__tests__/**`, `src/**/*.test.ts`, `src/**/*.test.tsx`
+   - Ensures production code is type-safe
+   - Test file type errors are acceptable and excluded
 3. **Build Validation**: Production build must succeed
 
 ### 2. Pre-push Hook (`.husky/pre-push`)
@@ -136,14 +139,20 @@ The `.github/workflows/pr-checks.yml` workflow enforces the same quality checks 
 ## Configuration
 
 Hooks are configured in:
-- `.husky/pre-commit` - Pre-commit validation
-- `.husky/pre-push` - Pre-push protection
-- `.husky/commit-msg` - Commit message validation
+- `.husky/pre-commit` - Pre-commit validation (no deprecated Husky lines)
+- `.husky/pre-push` - Pre-push protection (no deprecated Husky lines)
+- `.husky/commit-msg` - Commit message validation (no deprecated Husky lines)
 
 Workflows are configured in:
 - `.github/workflows/pr-checks.yml` - PR quality checks
 
+TypeScript configuration:
+- `frontend/tsconfig.json` - Excludes test files from compilation
+  - Excludes: `src/**/__tests__/**`, `src/**/*.test.ts`, `src/**/*.test.tsx`
+
 **DO NOT** modify these hooks or workflows to bypass protections - they are enforced to ensure code quality.
+
+**Note**: Deprecated Husky lines (`#!/usr/bin/env sh` and `. "$(dirname -- "$0")/_/husky.sh"`) have been removed from all hooks for Husky v10.0.0 compatibility.
 
 ## Enforcement Files Lock System
 
