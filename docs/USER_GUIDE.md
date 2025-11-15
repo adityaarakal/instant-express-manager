@@ -109,11 +109,53 @@ If you change a transaction's status back to "Pending", the balance change is au
 ### Filtering Transactions
 
 Use the filter bar to:
-- **Search**: Search by description
+- **Search**: Search by description (and account names for transfers)
 - **Date Range**: Filter by date from/to
-- **Account**: Filter by account
-- **Category**: Filter by category
+- **Account**: Filter by account (for transfers, matches From or To account)
+- **Category**: Filter by category/type
 - **Status**: Filter by status
+
+### Internal Account Transfers
+
+The **Transfers** tab allows you to track money movements between your own accounts. This is different from income (money coming in from external sources) or expenses (money going out to external parties).
+
+**Creating a Transfer:**
+1. Navigate to the **Transactions** page
+2. Click the **Transfers** tab
+3. Click **Add Transfer**
+4. Fill in the form:
+   - **Date**: Transfer date
+   - **From Account**: Source account (cannot be a Credit Card)
+   - **To Account**: Destination account
+   - **Amount**: Transfer amount
+   - **Category**: Account Maintenance, Credit Card Payment, Fund Rebalancing, Loan Repayment, or Other
+   - **Description**: Description of the transfer
+   - **Status**: Pending or Completed
+   - **Notes**: Optional notes
+5. Click **Save**
+
+**Transfer Rules:**
+- **From Account** cannot be a Credit Card (credit cards receive payments, not send)
+- **To Account** can be any account type, including Credit Cards (for paying off debt)
+- From and To accounts must be different
+- Transfers do NOT appear in income or expense calculations
+- Transfers DO affect account balances when status is "Completed"
+
+**Transfer Balance Updates:**
+- When status changes from "Pending" to "Completed":
+  - **From Account**: Balance decreases by transfer amount
+  - **To Account**: Balance increases by transfer amount
+- When status changes from "Completed" to "Pending":
+  - Balance changes are automatically reversed
+- When transfer is deleted:
+  - If status was "Completed", balance changes are reversed
+  - If status was "Pending", no balance change needed
+
+**Use Cases:**
+- **Credit Card Payment**: Transfer from Savings to Credit Card to pay off debt
+- **Account Maintenance**: Move money between savings accounts
+- **Fund Rebalancing**: Reallocate funds across accounts
+- **Loan Repayment**: Pay off a loan from another account
 
 ### Understanding Transaction Status and Balance Updates
 
@@ -130,6 +172,10 @@ The app automatically updates account balances based on transaction status:
 **Savings/Investment Transactions:**
 - **"Completed"**: Account balance decreases by the transaction amount (money moved out of account)
 - **"Pending"**: No balance change (savings/investment planned but not yet completed)
+
+**Transfer Transactions:**
+- **"Completed"**: From account balance decreases, To account balance increases
+- **"Pending"**: No balance change on either account
 
 **Important Notes:**
 - Balance updates happen automatically when you create, update, or delete transactions

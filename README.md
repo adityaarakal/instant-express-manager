@@ -152,9 +152,10 @@ instant-express-manager/
 - **Income Transactions**: Track salary, bonuses, freelancing, etc.
 - **Expense Transactions**: Track utilities, responsibilities, CC bills, etc.
 - **Savings/Investment Transactions**: Track SIPs, lump sums, withdrawals, returns
-- **Automatic Balance Updates**: Account balances automatically update when transactions are marked as "Received" (income), "Paid" (expense), or "Completed" (savings/investment)
+- **Internal Account Transfers**: Track money movements between your own accounts (paying off credit cards, fund rebalancing, etc.)
+- **Automatic Balance Updates**: Account balances automatically update when transactions are marked as "Received" (income), "Paid" (expense), or "Completed" (savings/investment), or when transfers are marked as "Completed" (from account decreases, to account increases)
 - Filter by date range, account, category, and status
-- Bulk operations (delete, status update)
+- Bulk operations (delete, status update) - Note: Transfers don't support bulk status update
 - CSV export functionality
 - Pagination for large lists
 
@@ -318,3 +319,4 @@ MIT
 - ✅ Latest/current month prioritization across all monthly views for present/future-focused experience
 - ✅ Dashboard monthly and overall metrics with month selector (defaults to current month)
 - ✅ Automatic account balance updates based on transaction status
+- ✅ Internal account transfers feature to track money movements between your own accounts

@@ -179,6 +179,15 @@ Before considering the project "complete":
    - Ensures users always see the most recent and relevant data by default
    - Focuses on present and future while still allowing navigation to older months
 10. ✅ **Automatic Account Balance Updates**: Account balances now automatically update based on transaction status - **COMPLETED**
+11. ✅ **Internal Account Transfers**: Feature to track money movements between user's own accounts - **COMPLETED**
+   - Created TransferTransaction entity with from/to account support
+   - Implemented automatic balance updates for both accounts when transfer is completed
+   - Added Transfers tab to Transactions page with full CRUD operations
+   - Transfer form with validation (credit cards cannot be from account, accounts must be different)
+   - Transfer categories: Account Maintenance, Credit Card Payment, Fund Rebalancing, Loan Repayment, Other
+   - CSV export functionality for transfers
+   - Transfers excluded from income/expense calculations (only affect account balances)
+   - Balance updates reversed when transfers are deleted or status changes to Pending
    - Created utility functions (`accountBalanceUpdates.ts`) to handle balance updates
    - Income transactions: Balance increases when status changes to "Received"
    - Expense transactions: Balance decreases when status changes to "Paid"

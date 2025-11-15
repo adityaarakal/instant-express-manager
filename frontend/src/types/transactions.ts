@@ -57,9 +57,28 @@ export interface SavingsInvestmentTransaction {
   updatedAt: string;
 }
 
+/**
+ * Internal Transfer Transaction entity
+ * Represents money transfer between user's own accounts
+ */
+export interface TransferTransaction {
+  id: string;
+  date: string; // ISO date string
+  amount: number;
+  fromAccountId: string; // Reference to BankAccount (source)
+  toAccountId: string; // Reference to BankAccount (destination)
+  category: 'AccountMaintenance' | 'CreditCardPayment' | 'FundRebalancing' | 'LoanRepayment' | 'Other';
+  description: string;
+  status: 'Pending' | 'Completed';
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type IncomeCategory = IncomeTransaction['category'];
 export type ExpenseCategory = ExpenseTransaction['category'];
 export type ExpenseBucket = ExpenseTransaction['bucket'];
 export type SavingsInvestmentType = SavingsInvestmentTransaction['type'];
+export type TransferCategory = TransferTransaction['category'];
 export type TransactionStatus = 'Pending' | 'Paid' | 'Received' | 'Completed';
 

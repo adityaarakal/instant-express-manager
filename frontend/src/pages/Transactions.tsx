@@ -41,6 +41,7 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore';
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
+import { useTransferTransactionsStore } from '../store/useTransferTransactionsStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useToastStore } from '../store/useToastStore';
 import { getUserFriendlyError } from '../utils/errorHandling';
@@ -54,11 +55,14 @@ import { TransactionFilters, type FilterState } from '../components/transactions
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import SavingsIcon from '@mui/icons-material/Savings';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { TransactionFormDialog } from '../components/transactions/TransactionFormDialog';
+import { TransferFormDialog } from '../components/transactions/TransferFormDialog';
 import {
   exportIncomeTransactionsToCSV,
   exportExpenseTransactionsToCSV,
   exportSavingsTransactionsToCSV,
+  exportTransferTransactionsToCSV,
   downloadCSV,
 } from '../utils/transactionExport';
 import { useExportHistoryStore } from '../store/useExportHistoryStore';
@@ -66,6 +70,7 @@ import type {
   IncomeTransaction,
   ExpenseTransaction,
   SavingsInvestmentTransaction,
+  TransferTransaction,
 } from '../types/transactions';
 
 const formatCurrency = (value: number): string => {
@@ -85,13 +90,13 @@ const formatDate = (dateString: string): string => {
   }).format(new Date(dateString));
 };
 
-type TabValue = 'income' | 'expense' | 'savings';
+type TabValue = 'income' | 'expense' | 'savings' | 'transfers';
 
 export function Transactions() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabValue>(() => {
     const tabParam = searchParams.get('tab');
-    if (tabParam === 'expense' || tabParam === 'savings') {
+    if (tabParam === 'expense' || tabParam === 'savings' || tabParam === 'transfers') {
       return tabParam;
     }
     return 'income';
@@ -99,13 +104,16 @@ export function Transactions() {
   const { transactions: incomeTransactions, createTransaction: createIncome, updateTransaction: updateIncome, deleteTransaction: deleteIncome } = useIncomeTransactionsStore();
   const { transactions: expenseTransactions, createTransaction: createExpense, updateTransaction: updateExpense, deleteTransaction: deleteExpense } = useExpenseTransactionsStore();
   const { transactions: savingsTransactions, createTransaction: createSavings, updateTransaction: updateSavings, deleteTransaction: deleteSavings } = useSavingsInvestmentTransactionsStore();
+  const { transfers: transferTransactions, createTransfer, updateTransfer, deleteTransfer } = useTransferTransactionsStore();
   const { accounts } = useBankAccountsStore();
   const { showSuccess, showError, showToast } = useToastStore();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [transferDialogOpen, setTransferDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<
     IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction | null
   >(null);
+  const [editingTransfer, setEditingTransfer] = useState<TransferTransaction | null>(null);
   const [filters, setFilters] = useState<FilterState>({
     dateFrom: '',
     dateTo: '',
@@ -183,14 +191,17 @@ export function Transactions() {
 
   // Filter transactions based on current filters
   const filteredAndSortedTransactions = useMemo(() => {
-    let transactions: (IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction)[] = [];
+    let transactions: Array<IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction | TransferTransaction> = [];
 
     if (activeTab === 'income') {
       transactions = incomeTransactions;
     } else if (activeTab === 'expense') {
       transactions = expenseTransactions;
-    } else {
+    } else if (activeTab === 'savings') {
       transactions = savingsTransactions;
+    } else {
+      // transfers tab
+      transactions = transferTransactions;
     }
 
     const filtered = transactions.filter((t) => {
@@ -199,13 +210,24 @@ export function Transactions() {
       if (filters.dateTo && t.date > filters.dateTo) return false;
 
       // Account filter
-      if (filters.accountId && t.accountId !== filters.accountId) return false;
+      if (filters.accountId) {
+        if (activeTab === 'transfers') {
+          const transfer = t as TransferTransaction;
+          if (transfer.fromAccountId !== filters.accountId && transfer.toAccountId !== filters.accountId) {
+            return false;
+          }
+        } else {
+          const transaction = t as IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction;
+          if (transaction.accountId !== filters.accountId) return false;
+        }
+      }
 
       // Category filter
       if (filters.category) {
         if (activeTab === 'income' && (t as IncomeTransaction).category !== filters.category) return false;
         if (activeTab === 'expense' && (t as ExpenseTransaction).category !== filters.category) return false;
         if (activeTab === 'savings' && (t as SavingsInvestmentTransaction).type !== filters.category) return false;
+        if (activeTab === 'transfers' && (t as TransferTransaction).category !== filters.category) return false;
       }
 
       // Status filter
@@ -214,10 +236,19 @@ export function Transactions() {
       // Search term filter
       if (filters.searchTerm) {
         const searchLower = filters.searchTerm.toLowerCase();
-        const description = 'description' in t ? (t.description || '') : (t.destination || '');
-        const matchesDescription = description.toLowerCase().includes(searchLower);
-        const matchesAccount = (accountsMap.get(t.accountId) || '').toLowerCase().includes(searchLower);
-        if (!matchesDescription && !matchesAccount) return false;
+        if (activeTab === 'transfers') {
+          const transfer = t as TransferTransaction;
+          const matchesDescription = transfer.description.toLowerCase().includes(searchLower);
+          const matchesFromAccount = (accountsMap.get(transfer.fromAccountId) || '').toLowerCase().includes(searchLower);
+          const matchesToAccount = (accountsMap.get(transfer.toAccountId) || '').toLowerCase().includes(searchLower);
+          if (!matchesDescription && !matchesFromAccount && !matchesToAccount) return false;
+        } else {
+          const transaction = t as IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction;
+          const description = 'description' in transaction ? (transaction.description || '') : (transaction.destination || '');
+          const matchesDescription = description.toLowerCase().includes(searchLower);
+          const matchesAccount = (accountsMap.get(transaction.accountId) || '').toLowerCase().includes(searchLower);
+          if (!matchesDescription && !matchesAccount) return false;
+        }
       }
 
       return true;
@@ -225,7 +256,7 @@ export function Transactions() {
 
     // Sort by date (newest first)
     return filtered.sort((a, b) => b.date.localeCompare(a.date));
-  }, [activeTab, incomeTransactions, expenseTransactions, savingsTransactions, filters, accountsMap]);
+  }, [activeTab, incomeTransactions, expenseTransactions, savingsTransactions, transferTransactions, filters, accountsMap]);
 
   // Pagination
   const paginatedTransactions = useMemo(() => {
@@ -263,9 +294,24 @@ export function Transactions() {
     setDialogOpen(true);
   };
 
+  const handleOpenTransferDialog = (transferId?: string) => {
+    if (transferId) {
+      const t = transferTransactions.find((t) => t.id === transferId);
+      setEditingTransfer(t || null);
+    } else {
+      setEditingTransfer(null);
+    }
+    setTransferDialogOpen(true);
+  };
+
   const handleCloseDialog = () => {
     setDialogOpen(false);
     setEditingTransaction(null);
+  };
+
+  const handleCloseTransferDialog = () => {
+    setTransferDialogOpen(false);
+    setEditingTransfer(null);
   };
 
   const handleDeleteClick = (id: string, type: TabValue) => {
@@ -281,6 +327,20 @@ export function Transactions() {
     setDeletingIds(new Set([id]));
     try {
       // Store the transaction data for undo before deleting
+      if (type === 'transfers') {
+        const transfer = transferTransactions.find((t) => t.id === id);
+        if (!transfer) {
+          showError('Transfer not found');
+          return;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        deleteTransfer(id);
+        // Transfers don't support undo yet (can be added later)
+        showSuccess('Transfer deleted successfully');
+        setDeletingIds(new Set());
+        return;
+      }
+
       let transaction: IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction | undefined;
       let entityType: 'IncomeTransaction' | 'ExpenseTransaction' | 'SavingsInvestmentTransaction';
       
@@ -344,7 +404,8 @@ export function Transactions() {
       selectedIds.forEach((id) => {
         if (activeTab === 'income') deleteIncome(id);
         else if (activeTab === 'expense') deleteExpense(id);
-        else deleteSavings(id);
+        else if (activeTab === 'savings') deleteSavings(id);
+        else if (activeTab === 'transfers') deleteTransfer(id);
       });
       setSelectedIds(new Set());
       showSuccess(`${count} transaction(s) deleted successfully`);
@@ -385,7 +446,7 @@ export function Transactions() {
   const handleExport = () => {
     let csvContent = '';
     let filename = '';
-    let exportType: 'income' | 'expense' | 'savings' = 'income';
+    let exportType: 'income' | 'expense' | 'savings' | 'transfers' = 'income';
     const transactionCount = filteredAndSortedTransactions.length;
 
     if (activeTab === 'income') {
@@ -396,10 +457,14 @@ export function Transactions() {
       csvContent = exportExpenseTransactionsToCSV(filteredAndSortedTransactions as ExpenseTransaction[], accounts);
       filename = `expense-transactions-${new Date().toISOString().split('T')[0]}.csv`;
       exportType = 'expense';
-    } else {
+    } else if (activeTab === 'savings') {
       csvContent = exportSavingsTransactionsToCSV(filteredAndSortedTransactions as SavingsInvestmentTransaction[], accounts);
       filename = `savings-transactions-${new Date().toISOString().split('T')[0]}.csv`;
       exportType = 'savings';
+    } else if (activeTab === 'transfers') {
+      csvContent = exportTransferTransactionsToCSV(filteredAndSortedTransactions as TransferTransaction[], accounts);
+      filename = `transfers-${new Date().toISOString().split('T')[0]}.csv`;
+      exportType = 'transfers';
     }
 
     downloadCSV(csvContent, filename);
@@ -453,7 +518,7 @@ export function Transactions() {
           spacing={2}
           sx={{ width: isMobile ? '100%' : 'auto' }}
         >
-          {selectedIds.size > 0 && (
+              {selectedIds.size > 0 && activeTab !== 'transfers' && (
             <>
               <ButtonWithLoading
                 variant="outlined"
@@ -493,18 +558,33 @@ export function Transactions() {
           >
             Export CSV
           </Button>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenDialog()}
-            disabled={accounts.length === 0}
-            title={accounts.length === 0 ? 'Please create at least one bank account first' : ''}
-            aria-label={accounts.length === 0 ? 'Add transaction (requires at least one bank account)' : 'Add new transaction'}
-            fullWidth={isMobile}
-            size={isMobile ? 'medium' : 'large'}
-          >
-            Add Transaction
-          </Button>
+          {activeTab === 'transfers' ? (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => handleOpenTransferDialog()}
+              disabled={accounts.length === 0}
+              title={accounts.length === 0 ? 'Please create at least one bank account first' : ''}
+              aria-label={accounts.length === 0 ? 'Add transfer (requires at least one bank account)' : 'Add new transfer'}
+              fullWidth={isMobile}
+              size={isMobile ? 'medium' : 'large'}
+            >
+              Add Transfer
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => handleOpenDialog()}
+              disabled={accounts.length === 0}
+              title={accounts.length === 0 ? 'Please create at least one bank account first' : ''}
+              aria-label={accounts.length === 0 ? 'Add transaction (requires at least one bank account)' : 'Add new transaction'}
+              fullWidth={isMobile}
+              size={isMobile ? 'medium' : 'large'}
+            >
+              Add Transaction
+            </Button>
+          )}
         </Stack>
       </Box>
 
@@ -522,6 +602,7 @@ export function Transactions() {
           <Tab label="Income" value="income" aria-controls="income-tabpanel" />
           <Tab label="Expense" value="expense" aria-controls="expense-tabpanel" />
           <Tab label="Savings/Investment" value="savings" aria-controls="savings-tabpanel" />
+          <Tab label="Transfers" value="transfers" aria-controls="transfers-tabpanel" />
         </Tabs>
 
         <TableContainer
@@ -550,7 +631,7 @@ export function Transactions() {
                   </IconButton>
                 </TableCell>
                 <TableCell>Date</TableCell>
-                <TableCell>Account</TableCell>
+                {activeTab !== 'transfers' && <TableCell>Account</TableCell>}
                 {activeTab === 'income' && <TableCell>Category</TableCell>}
                 {activeTab === 'expense' && (
                   <>
@@ -574,7 +655,7 @@ export function Transactions() {
               {isLoading ? (
                 <TableSkeleton 
                   rows={5} 
-                  columns={activeTab === 'income' ? 8 : activeTab === 'expense' ? 9 : 9} 
+                  columns={activeTab === 'income' ? 8 : activeTab === 'expense' ? 9 : activeTab === 'savings' ? 9 : 10} 
                 />
               ) : activeTab === 'income' && (
                 <>
@@ -850,6 +931,98 @@ export function Transactions() {
                   )}
                 </>
               )}
+
+              {activeTab === 'transfers' && (
+                <>
+                  {paginatedTransactions.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={10} align="center" sx={{ border: 'none', py: 4 }}>
+                        <EmptyState
+                          icon={<SwapHorizIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
+                          title={
+                            transferTransactions.length === 0
+                              ? 'No Transfers Yet'
+                              : filteredAndSortedTransactions.length === 0
+                              ? 'No Transfers Match Filters'
+                              : 'No Transfers on This Page'
+                          }
+                          description={
+                            transferTransactions.length === 0
+                              ? 'Start tracking transfers between your accounts. Record money movements from one account to another.'
+                              : filteredAndSortedTransactions.length === 0
+                              ? 'Try adjusting your search or filter criteria to find the transfers you\'re looking for.'
+                              : 'Navigate to a different page to see more transfers.'
+                          }
+                          action={
+                            transferTransactions.length === 0 && accounts.length > 0
+                              ? {
+                                  label: 'Add Transfer',
+                                  onClick: () => handleOpenTransferDialog(),
+                                  icon: <AddIcon />,
+                                }
+                              : undefined
+                          }
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    (paginatedTransactions as TransferTransaction[])
+                      .map((transfer) => (
+                        <TableRow key={transfer.id} hover>
+                          <TableCell padding="checkbox">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleSelectTransaction(transfer.id)}
+                              aria-label={`Select transfer ${transfer.description || transfer.id}`}
+                            >
+                              {selectedIds.has(transfer.id) ? (
+                                <CheckBoxIcon fontSize="small" />
+                              ) : (
+                                <CheckBoxOutlineBlankIcon fontSize="small" />
+                              )}
+                            </IconButton>
+                          </TableCell>
+                          <TableCell>{formatDate(transfer.date)}</TableCell>
+                          <TableCell>{accountsMap.get(transfer.fromAccountId) || '—'}</TableCell>
+                          <TableCell>{accountsMap.get(transfer.toAccountId) || '—'}</TableCell>
+                          <TableCell>{transfer.category}</TableCell>
+                          <TableCell>{transfer.description}</TableCell>
+                          <TableCell align="right">{formatCurrency(transfer.amount)}</TableCell>
+                          <TableCell>
+                            <Chip
+                              label={transfer.status}
+                              size="small"
+                              color={transfer.status === 'Completed' ? 'success' : 'warning'}
+                            />
+                          </TableCell>
+                          <TableCell align="right">
+                            <IconButton 
+                              size="small" 
+                              onClick={() => handleOpenTransferDialog(transfer.id)}
+                              disabled={isBulkOperating || deletingIds.has(transfer.id)}
+                              aria-label={`Edit transfer ${transfer.description || transfer.id}`}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton 
+                              size="small" 
+                              onClick={() => handleDeleteClick(transfer.id, 'transfers')} 
+                              color="error"
+                              disabled={isBulkOperating || deletingIds.has(transfer.id)}
+                              aria-label={`Delete transfer ${transfer.description || transfer.id}`}
+                            >
+                              {deletingIds.has(transfer.id) ? (
+                                <CircularProgress size={16} aria-label="Deleting" />
+                              ) : (
+                                <DeleteIcon fontSize="small" />
+                              )}
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                  )}
+                </>
+              )}
             </TableBody>
           </Table>
         </TableContainer>
@@ -921,6 +1094,13 @@ export function Transactions() {
             setIsSaving(false);
           }
         }}
+      />
+
+      <TransferFormDialog
+        open={transferDialogOpen}
+        onClose={handleCloseTransferDialog}
+        accounts={accounts}
+        editingTransfer={editingTransfer}
       />
 
       <ConfirmDialog

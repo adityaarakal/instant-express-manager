@@ -20,7 +20,7 @@ import type {
   SavingsInvestmentTransaction,
 } from '../../types/transactions';
 
-type TabValue = 'income' | 'expense' | 'savings';
+type TabValue = 'income' | 'expense' | 'savings' | 'transfers';
 
 interface TransactionFiltersProps {
   type: TabValue;
@@ -76,7 +76,8 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
       active.push({ key: 'accountId', label: 'Account', value: account?.name || filters.accountId });
     }
     if (filters.category) {
-      active.push({ key: 'category', label: type === 'savings' ? 'Type' : 'Category', value: filters.category });
+      const categoryLabel = type === 'savings' ? 'Type' : type === 'transfers' ? 'Category' : 'Category';
+      active.push({ key: 'category', label: categoryLabel, value: filters.category });
     }
     if (filters.status) {
       active.push({ key: 'status', label: 'Status', value: filters.status });
@@ -131,6 +132,14 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
     'LumpSum',
     'Withdrawal',
     'Return',
+  ];
+
+  const transferCategories: Array<'AccountMaintenance' | 'CreditCardPayment' | 'FundRebalancing' | 'LoanRepayment' | 'Other'> = [
+    'AccountMaintenance',
+    'CreditCardPayment',
+    'FundRebalancing',
+    'LoanRepayment',
+    'Other',
   ];
 
   return (
@@ -276,6 +285,27 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
                 </Select>
               </FormControl>
             )}
+            {type === 'transfers' && (
+              <FormControl size="small" sx={{ minWidth: 150 }}>
+                <InputLabel>Category</InputLabel>
+                <Select
+                  value={filters.category}
+                  label="Category"
+                  onChange={(e) => handleFilterChange('category', e.target.value)}
+                >
+                  <MenuItem value="">All Categories</MenuItem>
+                  {transferCategories.map((transferCategory) => (
+                    <MenuItem key={transferCategory} value={transferCategory}>
+                      {transferCategory === 'AccountMaintenance' ? 'Account Maintenance' :
+                       transferCategory === 'CreditCardPayment' ? 'Credit Card Payment' :
+                       transferCategory === 'FundRebalancing' ? 'Fund Rebalancing' :
+                       transferCategory === 'LoanRepayment' ? 'Loan Repayment' :
+                       transferCategory}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
             <FormControl size="small" sx={{ minWidth: 120 }}>
               <InputLabel>Status</InputLabel>
               <Select
@@ -297,6 +327,12 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
                   </>
                 )}
                 {type === 'savings' && (
+                  <>
+                    <MenuItem value="Pending">Pending</MenuItem>
+                    <MenuItem value="Completed">Completed</MenuItem>
+                  </>
+                )}
+                {type === 'transfers' && (
                   <>
                     <MenuItem value="Pending">Pending</MenuItem>
                     <MenuItem value="Completed">Completed</MenuItem>

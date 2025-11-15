@@ -6,6 +6,7 @@ import type {
   IncomeTransaction,
   ExpenseTransaction,
   SavingsInvestmentTransaction,
+  TransferTransaction,
 } from '../types/transactions';
 import type { BankAccount } from '../types/bankAccounts';
 
@@ -114,6 +115,38 @@ export const exportSavingsTransactionsToCSV = (
     t.amount,
     t.status,
     t.sipNumber || '',
+    t.notes || '',
+  ]);
+
+  return [headers.map(escapeCSV).join(','), ...rows.map((row) => row.map(escapeCSV).join(','))].join('\n');
+};
+
+export const exportTransferTransactionsToCSV = (
+  transfers: TransferTransaction[],
+  accounts: BankAccount[],
+): string => {
+  const accountsMap = new Map<string, string>();
+  accounts.forEach((acc) => accountsMap.set(acc.id, acc.name));
+
+  const headers = [
+    'Date',
+    'From Account',
+    'To Account',
+    'Amount',
+    'Category',
+    'Description',
+    'Status',
+    'Notes',
+  ];
+
+  const rows = transfers.map((t) => [
+    t.date,
+    accountsMap.get(t.fromAccountId) || t.fromAccountId,
+    accountsMap.get(t.toAccountId) || t.toAccountId,
+    t.amount,
+    t.category,
+    t.description,
+    t.status,
     t.notes || '',
   ]);
 

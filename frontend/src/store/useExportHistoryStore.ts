@@ -4,7 +4,7 @@ import { getLocalforageStorage } from '../utils/storage';
 
 export interface ExportHistoryEntry {
   id: string;
-  type: 'income' | 'expense' | 'savings' | 'backup';
+  type: 'income' | 'expense' | 'savings' | 'transfers' | 'backup';
   filename: string;
   timestamp: string;
   transactionCount?: number;

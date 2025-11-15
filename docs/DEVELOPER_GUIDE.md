@@ -14,6 +14,7 @@ This is a React PWA built with TypeScript, Material UI, and Zustand for state ma
   - `useIncomeTransactionsStore`: Manages income transactions
   - `useExpenseTransactionsStore`: Manages expense transactions
   - `useSavingsInvestmentTransactionsStore`: Manages savings/investment transactions
+  - `useTransferTransactionsStore`: Manages internal account transfers
   - `useExpenseEMIsStore`: Manages expense EMIs
   - `useSavingsInvestmentEMIsStore`: Manages savings/investment EMIs
   - `useRecurringIncomesStore`: Manages recurring income templates
@@ -99,7 +100,11 @@ This ensures users always see the most recent and relevant data by default, whil
 
 ### Utilities
 
-- `src/utils/accountBalanceUpdates.ts`: Automatic account balance updates
+- `src/utils/accountBalanceUpdates.ts`: Automatic account balance updates for income/expense/savings transactions
+- `src/utils/transferBalanceUpdates.ts`: Automatic account balance updates for transfer transactions
+  - `updateAccountBalancesForTransfer`: Updates both from and to account balances when transfer is completed
+  - `reverseAccountBalancesForTransfer`: Reverses balance changes when transfer is deleted or status changes to Pending
+  - `updateAccountBalancesForTransferUpdate`: Handles balance updates when transfer amount or accounts change
   - `updateAccountBalanceForTransaction`: Updates account balance when transactions are created/updated
   - `reverseAccountBalanceForTransaction`: Reverses balance changes when transactions are deleted
   - Automatically handles income (increases balance when "Received"), expenses (decreases when "Paid"), and savings/investments (decreases when "Completed")
@@ -131,8 +136,12 @@ This ensures users always see the most recent and relevant data by default, whil
   - `getEntityDependencies`: Gets entities that depend on a given entity
   - `checkEntityReferences`: Checks if entity is referenced by others
 
-- `src/utils/transactionExport.ts`: CSV export
-  - `exportTransactionsToCSV`: Exports transactions to CSV format
+- `src/utils/transactionExport.ts`: CSV export utilities
+  - `exportIncomeTransactionsToCSV`: Exports income transactions to CSV
+  - `exportExpenseTransactionsToCSV`: Exports expense transactions to CSV
+  - `exportSavingsTransactionsToCSV`: Exports savings/investment transactions to CSV
+  - `exportTransferTransactionsToCSV`: Exports transfer transactions to CSV
+  - `downloadCSV`: Downloads CSV file to user's device
 
 - `src/utils/undoRestore.ts`: Undo functionality
   - `restoreDeletedItem`: Restores a deleted item from undo store
