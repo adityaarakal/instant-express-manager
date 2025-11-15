@@ -746,6 +746,7 @@ Run tests with: `npm test` in the frontend directory.
 - ✅ **Quick Filters in Planner** - COMPLETED
 - ✅ **Auto-save Indicator** - COMPLETED
 - ✅ **Copy Month Feature** - COMPLETED
+- ✅ **Print View** - COMPLETED
 
 ### Estimated Effort
 - **Phase 1 (Critical UX)**: ✅ **COMPLETED** (~40 hours)
@@ -775,8 +776,9 @@ Run tests with: `npm test` in the frontend directory.
   - ✅ Quick Filters in Planner: **COMPLETED** (~3 hours)
   - ✅ Auto-save Indicator: **COMPLETED** (~3 hours)
   - ✅ Copy Month Feature: **COMPLETED** (~3 hours)
+  - ✅ Print View: **COMPLETED** (~2 hours)
 - **Total Estimated**: ~130 hours
-- **Total Completed**: ~141 hours (100%+)
+- **Total Completed**: ~143 hours (100%+)
 - **Remaining**: 0 hours
 
 ---
