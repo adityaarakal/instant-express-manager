@@ -56,6 +56,41 @@ validate_version() {
   return 0
 }
 
+# Compare two versions (returns 0 if v1 > v2, 1 otherwise)
+# Usage: compare_versions "1.0.1" "1.0.0" -> returns 0 (true, v1 > v2)
+compare_versions() {
+  local v1=$1
+  local v2=$2
+  
+  # Parse versions
+  local v1_parts=($(parse_version "$v1"))
+  local v2_parts=($(parse_version "$v2"))
+  
+  # Compare major
+  if [ "${v1_parts[0]}" -gt "${v2_parts[0]}" ]; then
+    return 0  # v1 > v2
+  elif [ "${v1_parts[0]}" -lt "${v2_parts[0]}" ]; then
+    return 1  # v1 < v2
+  fi
+  
+  # Compare minor
+  if [ "${v1_parts[1]}" -gt "${v2_parts[1]}" ]; then
+    return 0  # v1 > v2
+  elif [ "${v1_parts[1]}" -lt "${v2_parts[1]}" ]; then
+    return 1  # v1 < v2
+  fi
+  
+  # Compare patch
+  if [ "${v1_parts[2]}" -gt "${v2_parts[2]}" ]; then
+    return 0  # v1 > v2
+  elif [ "${v1_parts[2]}" -lt "${v2_parts[2]}" ]; then
+    return 1  # v1 < v2
+  fi
+  
+  # Equal
+  return 1  # v1 == v2, not greater than
+}
+
 # Set version in all files
 set_version() {
   local new_version=$1
@@ -99,5 +134,6 @@ export -f increment_major
 export -f increment_minor
 export -f increment_patch
 export -f validate_version
+export -f compare_versions
 export -f set_version
 

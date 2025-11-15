@@ -88,6 +88,10 @@ jobs:
             elif echo "$COMMITS" | grep -qiE "^(fix|Fix|FIX)(\(|:)"; then
               BUMP_TYPE="patch"
               echo "Found fix"
+            # Check for documentation updates (case-insensitive, with or without parentheses)
+            elif echo "$COMMITS" | grep -qiE "^(docs|Docs|DOCS)(\(|:)"; then
+              BUMP_TYPE="patch"
+              echo "Found documentation update"
             # Check PR labels from commit message (if merged via PR)
             elif echo "$COMMITS" | grep -qiE "\[major\]|\[breaking\]"; then
               BUMP_TYPE="major"
@@ -186,7 +190,8 @@ jobs:
           ADDED=$(echo "$COMMITS" | grep -iE "^\- (feat|add)" || true)
           FIXED=$(echo "$COMMITS" | grep -iE "^\- (fix|bug)" || true)
           CHANGED=$(echo "$COMMITS" | grep -iE "^\- (refactor|change|update)" || true)
-          OTHER=$(echo "$COMMITS" | grep -ivE "(feat|add|fix|bug|refactor|change|update)" || true)
+          DOCS=$(echo "$COMMITS" | grep -iE "^\- (docs)" || true)
+          OTHER=$(echo "$COMMITS" | grep -ivE "(feat|add|fix|bug|refactor|change|update|docs)" || true)
           
           CHANGELOG_ENTRY="## [$NEW_VERSION] - $(date +%Y-%m-%d)
 "
@@ -209,6 +214,13 @@ $FIXED
             CHANGELOG_ENTRY+="
 ### Changed
 $CHANGED
+"
+          fi
+          
+          if [ -n "$DOCS" ]; then
+            CHANGELOG_ENTRY+="
+### Documentation
+$DOCS
 "
           fi
           
