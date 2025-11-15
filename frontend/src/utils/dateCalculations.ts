@@ -69,13 +69,26 @@ export function addDaysToDate(date: string, days: number): string {
 }
 
 /**
- * Get effective next due date for EMI
- * Uses nextTransactionDate if set, otherwise calculates from installments
+ * Get effective deduction date for EMI
+ * Uses deductionDate if set, otherwise calculates from installments
  */
-export function getEffectiveEMINextDueDate(emi: ExpenseEMI | SavingsInvestmentEMI): string {
-  if (emi.nextTransactionDate) {
-    return emi.nextTransactionDate;
+export function getEffectiveEMIDeductionDate(emi: ExpenseEMI | SavingsInvestmentEMI): string {
+  if (emi.deductionDate) {
+    return emi.deductionDate;
   }
   return calculateEMINextDueDate(emi.startDate, emi.frequency, emi.completedInstallments);
+}
+
+/**
+ * Get effective deduction date for Recurring Template
+ * Uses deductionDate if set, otherwise uses nextDueDate
+ */
+export function getEffectiveRecurringDeductionDate(
+  template: RecurringExpense | RecurringIncome | RecurringSavingsInvestment
+): string {
+  if (template.deductionDate) {
+    return template.deductionDate;
+  }
+  return template.nextDueDate;
 }
 

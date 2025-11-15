@@ -7,7 +7,7 @@ import { useBankAccountsStore } from './useBankAccountsStore';
 import { validateDateRange, validateAmount, validateDate } from '../utils/validation';
 import { getLocalforageStorage } from '../utils/storage';
 import { convertExpenseEMIToRecurring, getNextDueDateFromEMI } from '../utils/emiRecurringConversion';
-import { getEffectiveEMINextDueDate, calculateNextDateFromDate, calculateDateOffset, addDaysToDate } from '../utils/dateCalculations';
+import { getEffectiveEMIDeductionDate, calculateNextDateFromDate, calculateDateOffset, addDaysToDate } from '../utils/dateCalculations';
 
 type ExpenseEMIsState = {
   emis: ExpenseEMI[];
@@ -29,7 +29,7 @@ type ExpenseEMIsState = {
   // Conversion
   convertToRecurring: (emiId: string) => string; // Returns new recurring template ID
   // Date Management
-  updateNextTransactionDate: (emiId: string, newDate: string, updateOption: 'this-date-only' | 'all-future' | 'reset-schedule') => void;
+  updateDeductionDate: (emiId: string, newDate: string, updateOption: 'this-date-only' | 'all-future' | 'reset-schedule') => void;
 };
 
 const storage = getLocalforageStorage('expense-emis');
@@ -226,19 +226,19 @@ export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
           const activeEMIs = get().getActiveEMIs();
           
           activeEMIs.forEach((emi) => {
-            // Use nextTransactionDate if set, otherwise calculate from installments
-            const nextDueDate = getEffectiveEMINextDueDate(emi);
+            // Use deductionDate if set, otherwise calculate from installments
+            const deductionDate = getEffectiveEMIDeductionDate(emi);
             
-            if (nextDueDate <= today && emi.completedInstallments < emi.totalInstallments) {
+            if (deductionDate <= today && emi.completedInstallments < emi.totalInstallments) {
               // Check if transaction already exists for this EMI and date
               const existingTransactions = useExpenseTransactionsStore.getState().transactions.filter(
-                (t) => t.emiId === emi.id && t.date === nextDueDate
+                (t) => t.emiId === emi.id && t.date === deductionDate
               );
               
               if (existingTransactions.length === 0) {
                 // Create transaction
                 useExpenseTransactionsStore.getState().createTransaction({
-                  date: nextDueDate,
+                  date: deductionDate,
                   amount: emi.amount,
                   accountId: emi.accountId,
                   category: emi.category === 'CCEMI' ? 'CCBill' : 'Other',
@@ -255,9 +255,9 @@ export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
                   status: newCompletedCount >= emi.totalInstallments ? 'Completed' : emi.status,
                 };
                 
-                // If nextTransactionDate was set, calculate next date based on frequency
-                if (emi.nextTransactionDate) {
-                  updateData.nextTransactionDate = calculateNextDateFromDate(nextDueDate, emi.frequency);
+                // If deductionDate was set, calculate next date based on frequency
+                if (emi.deductionDate) {
+                  updateData.deductionDate = calculateNextDateFromDate(deductionDate, emi.frequency);
                 }
                 
                 get().updateEMI(emi.id, updateData);
@@ -322,14 +322,14 @@ export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
 
           return newTemplate.id;
         },
-        updateNextTransactionDate: (emiId, newDate, updateOption) => {
+        updateDeductionDate: (emiId, newDate, updateOption) => {
           const emi = get().getEMI(emiId);
           if (!emi) {
             throw new Error(`EMI with id ${emiId} does not exist`);
           }
 
           // Validate new date
-          const dateValidation = validateDate(newDate, 'Next Transaction Date');
+          const dateValidation = validateDate(newDate, 'Deduction Date');
           if (!dateValidation.isValid) {
             throw new Error(`Date validation failed: ${dateValidation.errors.join(', ')}`);
           }
@@ -339,21 +339,21 @@ export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
 
           switch (updateOption) {
             case 'this-date-only':
-              // Just update the nextTransactionDate
-              get().updateEMI(emiId, { nextTransactionDate: newDate });
+              // Just update the deductionDate
+              get().updateEMI(emiId, { deductionDate: newDate });
               break;
 
             case 'all-future':
-              // Update nextTransactionDate and shift all future pending transactions by the offset
-              const currentNextDate = getEffectiveEMINextDueDate(emi);
-              const offset = calculateDateOffset(currentNextDate, newDate);
+              // Update deductionDate and shift all future pending transactions by the offset
+              const currentDeductionDate = getEffectiveEMIDeductionDate(emi);
+              const offset = calculateDateOffset(currentDeductionDate, newDate);
               
               // Update EMI
-              get().updateEMI(emiId, { nextTransactionDate: newDate });
+              get().updateEMI(emiId, { deductionDate: newDate });
               
               // Update all future pending transactions
               existingTransactions
-                .filter((t) => t.status === 'Pending' && t.date >= currentNextDate)
+                .filter((t) => t.status === 'Pending' && t.date >= currentDeductionDate)
                 .forEach((transaction) => {
                   const newTransactionDate = addDaysToDate(transaction.date, offset);
                   transactionsStore.updateTransaction(transaction.id, { date: newTransactionDate });
@@ -361,13 +361,13 @@ export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
               break;
 
             case 'reset-schedule':
-              // Reset nextTransactionDate and recalculate future transactions
-              get().updateEMI(emiId, { nextTransactionDate: newDate });
+              // Reset deductionDate and recalculate future transactions
+              get().updateEMI(emiId, { deductionDate: newDate });
               
               // Recalculate all future pending transactions based on new date
               let currentDate = newDate;
               existingTransactions
-                .filter((t) => t.status === 'Pending' && t.date >= getEffectiveEMINextDueDate(emi))
+                .filter((t) => t.status === 'Pending' && t.date >= getEffectiveEMIDeductionDate(emi))
                 .sort((a, b) => a.date.localeCompare(b.date))
                 .forEach((transaction, index) => {
                   if (index === 0) {

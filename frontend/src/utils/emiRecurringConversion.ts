@@ -7,8 +7,14 @@ import type { RecurringExpense, RecurringSavingsInvestment } from '../types/recu
 
 /**
  * Calculate next due date for recurring template based on EMI
+ * Uses deductionDate if set, otherwise calculates from installments
  */
 function calculateNextDueDateFromEMI(emi: ExpenseEMI | SavingsInvestmentEMI): string {
+  // If deductionDate is set, use it
+  if (emi.deductionDate) {
+    return emi.deductionDate;
+  }
+  
   const startDate = new Date(emi.startDate);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
