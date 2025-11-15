@@ -433,6 +433,44 @@ export function Transactions() {
     }
   };
 
+  // Determine which status buttons to show based on selected transactions
+  const getBulkStatusButtonConfig = () => {
+    if (selectedIds.size === 0 || activeTab === 'transfers') {
+      return { showReceivedPaidCompleted: false, showPending: false };
+    }
+
+    // Check all filtered transactions, not just paginated ones
+    const selectedTransactions = filteredAndSortedTransactions.filter((t) => selectedIds.has(t.id));
+    
+    if (selectedTransactions.length === 0) {
+      return { showReceivedPaidCompleted: false, showPending: false };
+    }
+
+    const hasPending = selectedTransactions.some((t) => {
+      if (activeTab === 'income') {
+        return (t as IncomeTransaction).status === 'Pending';
+      } else if (activeTab === 'expense') {
+        return (t as ExpenseTransaction).status === 'Pending';
+      } else {
+        return (t as SavingsInvestmentTransaction).status === 'Pending';
+      }
+    });
+    const hasNonPending = selectedTransactions.some((t) => {
+      if (activeTab === 'income') {
+        return (t as IncomeTransaction).status === 'Received';
+      } else if (activeTab === 'expense') {
+        return (t as ExpenseTransaction).status === 'Paid';
+      } else {
+        return (t as SavingsInvestmentTransaction).status === 'Completed';
+      }
+    });
+
+    return {
+      showReceivedPaidCompleted: hasPending, // Show if any are Pending
+      showPending: hasNonPending, // Show if any are non-Pending
+    };
+  };
+
   const { addExport } = useExportHistoryStore();
 
   const handleExport = () => {
@@ -510,35 +548,54 @@ export function Transactions() {
           spacing={2}
           sx={{ width: isMobile ? '100%' : 'auto' }}
         >
-              {selectedIds.size > 0 && activeTab !== 'transfers' && (
-            <>
-              <ButtonWithLoading
-                variant="outlined"
-                loading={isBulkOperating}
-                disabled={isBulkOperating}
-                onClick={() => {
-                  if (activeTab === 'income') {
-                    handleBulkStatusUpdate('Received');
-                  } else if (activeTab === 'expense') {
-                    handleBulkStatusUpdate('Paid');
-                  } else {
-                    handleBulkStatusUpdate('Completed');
-                  }
-                }}
-              >
-                Mark as {activeTab === 'income' ? 'Received' : activeTab === 'expense' ? 'Paid' : 'Completed'} ({selectedIds.size})
-              </ButtonWithLoading>
-              <ButtonWithLoading
-                variant="outlined"
-                color="error"
-                loading={isBulkOperating}
-                disabled={isBulkOperating}
-                onClick={handleBulkDeleteClick}
-              >
-                Delete ({selectedIds.size})
-              </ButtonWithLoading>
-            </>
-          )}
+              {selectedIds.size > 0 && activeTab !== 'transfers' && (() => {
+                const { showReceivedPaidCompleted, showPending } = getBulkStatusButtonConfig();
+                return (
+                  <>
+                    {showReceivedPaidCompleted && (
+                      <ButtonWithLoading
+                        variant="outlined"
+                        color="success"
+                        loading={isBulkOperating}
+                        disabled={isBulkOperating}
+                        onClick={() => {
+                          if (activeTab === 'income') {
+                            handleBulkStatusUpdate('Received');
+                          } else if (activeTab === 'expense') {
+                            handleBulkStatusUpdate('Paid');
+                          } else {
+                            handleBulkStatusUpdate('Completed');
+                          }
+                        }}
+                      >
+                        Mark as {activeTab === 'income' ? 'Received' : activeTab === 'expense' ? 'Paid' : 'Completed'} ({selectedIds.size})
+                      </ButtonWithLoading>
+                    )}
+                    {showPending && (
+                      <ButtonWithLoading
+                        variant="outlined"
+                        color="warning"
+                        loading={isBulkOperating}
+                        disabled={isBulkOperating}
+                        onClick={() => {
+                          handleBulkStatusUpdate('Pending');
+                        }}
+                      >
+                        Mark as Pending ({selectedIds.size})
+                      </ButtonWithLoading>
+                    )}
+                    <ButtonWithLoading
+                      variant="outlined"
+                      color="error"
+                      loading={isBulkOperating}
+                      disabled={isBulkOperating}
+                      onClick={handleBulkDeleteClick}
+                    >
+                      Delete ({selectedIds.size})
+                    </ButtonWithLoading>
+                  </>
+                );
+              })()}
           <Button
             variant="outlined"
             startIcon={<DownloadIcon />}
