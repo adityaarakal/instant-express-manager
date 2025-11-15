@@ -109,7 +109,11 @@ export function CopyMonthDialog({ open, onClose, sourceMonthId, sourceMonthStart
           date: newDate,
           description: transaction.description,
           category: transaction.category,
-          recurringTemplateId: undefined, // Don't copy recurring template reference
+          status: transaction.status,
+          clientName: transaction.clientName,
+          projectName: transaction.projectName,
+          notes: transaction.notes,
+          // Don't copy recurringTemplateId - these should be new standalone transactions
         });
         copiedCount++;
       }
@@ -126,8 +130,8 @@ export function CopyMonthDialog({ open, onClose, sourceMonthId, sourceMonthStart
           bucket: transaction.bucket,
           status: transaction.status,
           dueDate: transaction.dueDate ? adjustDateToMonth(transaction.dueDate, targetMonthId) : undefined,
-          recurringTemplateId: undefined, // Don't copy recurring template reference
-          emiId: undefined, // Don't copy EMI reference
+          notes: transaction.notes,
+          // Don't copy recurringTemplateId or emiId - these should be new standalone transactions
         });
         copiedCount++;
       }
@@ -142,8 +146,10 @@ export function CopyMonthDialog({ open, onClose, sourceMonthId, sourceMonthStart
           description: transaction.description,
           type: transaction.type,
           destination: transaction.destination,
-          recurringTemplateId: undefined, // Don't copy recurring template reference
-          emiId: undefined, // Don't copy EMI reference
+          sipNumber: transaction.sipNumber,
+          status: transaction.status,
+          notes: transaction.notes,
+          // Don't copy recurringTemplateId or emiId - these should be new standalone transactions
         });
         copiedCount++;
       }
