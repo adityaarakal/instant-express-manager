@@ -9,6 +9,7 @@ import { validateDate, validateAmount, validateDateRange } from '../utils/valida
 import { getLocalforageStorage } from '../utils/storage';
 import { convertRecurringExpenseToEMI } from '../utils/emiRecurringConversion';
 import { getEffectiveRecurringDeductionDate, calculateNextDateFromDate, calculateDateOffset, addDaysToDate } from '../utils/dateCalculations';
+import { generateRecurringTransactionDates } from '../utils/recurringTransactionsGenerator';
 
 type RecurringExpensesState = {
   templates: RecurringExpense[];
@@ -102,8 +103,30 @@ export const useRecurringExpensesStore = create<RecurringExpensesState>()(
           set((state) => ({
             templates: [...state.templates, newTemplate],
           }));
-          // Auto-generate first transaction if start date is today or past
-          get().checkAndGenerateTransactions();
+          
+          // Generate all transactions upfront for the entire recurring period
+          const transactionDates = generateRecurringTransactionDates(newTemplate);
+          const transactionsStore = useExpenseTransactionsStore.getState();
+          
+          transactionDates.forEach((date) => {
+            // Check if transaction already exists
+            const existing = transactionsStore.transactions.find(
+              (t) => t.recurringTemplateId === newTemplate.id && t.date === date
+            );
+            
+            if (!existing) {
+              transactionsStore.createTransaction({
+                date,
+                amount: newTemplate.amount,
+                accountId: newTemplate.accountId,
+                category: newTemplate.category,
+                bucket: newTemplate.bucket,
+                description: newTemplate.name,
+                status: 'Pending', // Default to pending for expenses
+                recurringTemplateId: newTemplate.id,
+              });
+            }
+          });
         },
         updateTemplate: (id, updates) => {
           // Validate accountId if being updated

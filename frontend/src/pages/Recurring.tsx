@@ -123,7 +123,8 @@ export function Recurring() {
     frequency: 'Monthly' | 'Weekly' | 'Yearly' | 'Custom' | 'Quarterly';
     startDate: string;
     endDate: string;
-    deductionDate: string; // Optional - actual date when next transaction will be deducted/credited
+    dayOfMonth: number | ''; // Optional - day of month (1-31) when transaction occurs (e.g., 1 for 1st of every month)
+    deductionDate: string; // DEPRECATED - kept for backward compatibility
     category: IncomeCategory;
     expenseCategory: ExpenseCategory;
     bucket: ExpenseBucket;
@@ -137,7 +138,8 @@ export function Recurring() {
     frequency: 'Monthly',
     startDate: new Date().toISOString().split('T')[0],
     endDate: '',
-    deductionDate: '', // Optional
+    dayOfMonth: '', // Optional - day of month (1-31)
+    deductionDate: '', // DEPRECATED
     // Income specific
     category: 'Salary',
     // Expense specific
@@ -202,6 +204,7 @@ export function Recurring() {
           frequency: t.frequency,
           startDate: t.startDate,
           endDate: t.endDate || '',
+          dayOfMonth: t.dayOfMonth || (t.deductionDate ? new Date(t.deductionDate).getDate() : ''),
           deductionDate: t.deductionDate || '',
           category: t.category,
           expenseCategory: 'Other',
@@ -219,6 +222,7 @@ export function Recurring() {
           frequency: t.frequency,
           startDate: t.startDate,
           endDate: t.endDate || '',
+          dayOfMonth: t.dayOfMonth || (t.deductionDate ? new Date(t.deductionDate).getDate() : ''),
           deductionDate: t.deductionDate || '',
           category: 'Salary',
           expenseCategory: t.category,
@@ -236,6 +240,7 @@ export function Recurring() {
           frequency: t.frequency as 'Monthly' | 'Quarterly' | 'Yearly', // Savings frequency type
           startDate: t.startDate,
           endDate: t.endDate || '',
+          dayOfMonth: t.dayOfMonth || (t.deductionDate ? new Date(t.deductionDate).getDate() : ''),
           deductionDate: t.deductionDate || '',
           category: 'Salary',
           expenseCategory: 'Other',
@@ -259,6 +264,7 @@ export function Recurring() {
         frequency: defaultFrequency,
         startDate: new Date().toISOString().split('T')[0],
         endDate: '',
+        dayOfMonth: '',
         deductionDate: '',
         category: 'Salary',
         expenseCategory: 'Other',
@@ -330,7 +336,8 @@ export function Recurring() {
         frequency: incomeFrequency,
         startDate: formData.startDate,
         endDate: formData.endDate || undefined,
-        deductionDate: formData.deductionDate || undefined,
+        dayOfMonth: formData.dayOfMonth ? Number(formData.dayOfMonth) : (formData.startDate ? new Date(formData.startDate).getDate() : undefined),
+        deductionDate: undefined, // Clear deprecated field
         status: 'Active' as const,
         notes: formData.notes || undefined,
       };
@@ -356,7 +363,8 @@ export function Recurring() {
         frequency: expenseFrequency,
         startDate: formData.startDate,
         endDate: formData.endDate || undefined,
-        deductionDate: formData.deductionDate || undefined,
+        dayOfMonth: formData.dayOfMonth ? Number(formData.dayOfMonth) : (formData.startDate ? new Date(formData.startDate).getDate() : undefined),
+        deductionDate: undefined, // Clear deprecated field
         status: 'Active' as const,
         notes: formData.notes || undefined,
       };
@@ -382,7 +390,8 @@ export function Recurring() {
         frequency: savingsFrequency,
         startDate: formData.startDate,
         endDate: formData.endDate || undefined,
-        deductionDate: formData.deductionDate || undefined,
+        dayOfMonth: formData.dayOfMonth ? Number(formData.dayOfMonth) : (formData.startDate ? new Date(formData.startDate).getDate() : undefined),
+        deductionDate: undefined, // Clear deprecated field
         status: 'Active' as const,
         notes: formData.notes || undefined,
       };
@@ -876,13 +885,31 @@ export function Recurring() {
               InputLabelProps={{ shrink: true }}
             />
             <TextField
-              label="Deduction Date (Optional)"
-              type="date"
-              value={formData.deductionDate}
-              onChange={(e) => setFormData({ ...formData, deductionDate: e.target.value })}
+              label={
+                activeTab === 'income'
+                  ? 'Payment Date - Day of Month (Optional)'
+                  : activeTab === 'expense'
+                  ? 'Deduction Date - Day of Month (Optional)'
+                  : 'Transaction Date - Day of Month (Optional)'
+              }
+              type="number"
+              inputProps={{ min: 1, max: 31 }}
+              value={formData.dayOfMonth}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  dayOfMonth: e.target.value === '' ? '' : Math.min(31, Math.max(1, Number(e.target.value))) || '',
+                })
+              }
               fullWidth
               InputLabelProps={{ shrink: true }}
-              helperText="Actual date when next transaction will be deducted/credited. If not set, uses next due date."
+              helperText={
+                activeTab === 'income'
+                  ? 'Day of month (1-31) when you receive the payment (e.g., 1 for 1st of every month). If not set, uses day from start date.'
+                  : activeTab === 'expense'
+                  ? 'Day of month (1-31) when payment is deducted (e.g., 1 for 1st of every month). If not set, uses day from start date.'
+                  : 'Day of month (1-31) when transaction occurs (e.g., 1 for 1st of every month). If not set, uses day from start date.'
+              }
             />
 
             {activeTab === 'income' && (
