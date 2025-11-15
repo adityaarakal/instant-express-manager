@@ -202,7 +202,7 @@ Before considering the project "complete":
    - Conversion automatically updates all transaction references
    - Old entity is deleted after successful conversion
    - Handles field mapping differences (installment tracking, end date requirements, frequency options)
-14. ✅ **Deduction Date Feature**: Separate deduction date field for EMIs and Recurring Templates - **COMPLETED** (Store Layer)
+14. ✅ **Deduction Date Feature**: Separate deduction date field for EMIs and Recurring Templates - **COMPLETED** (Store Layer + Forms)
    - Added `deductionDate` field to all EMI and Recurring types (optional, independent of start/end dates)
    - Created date calculation utilities (`dateCalculations.ts`) for effective deduction date calculation
    - Updated all stores to use `deductionDate` if set, otherwise fall back to calculated/nextDueDate
@@ -212,7 +212,10 @@ Before considering the project "complete":
      - `reset-schedule`: Recalculates all future transactions from the new date
    - Auto-generation now uses deduction date when available
    - After generating transaction, updates deduction date based on frequency if it was set
-   - **Remaining**: UI components (DeductionDateUpdateDialog, form fields, update buttons)
+   - ✅ Added `deductionDate` field to EMI forms (Expense and Savings tabs)
+   - ✅ Added `deductionDate` field to Recurring forms (Income, Expense, Savings tabs)
+   - ✅ Included `deductionDate` when creating/updating EMIs and Recurring templates
+   - **Remaining**: Update dialog component and "Update Deduction Date" buttons in list views (optional enhancement)
 15. ✅ **Balance Sync Utility**: Tool to sync existing account balances with transactions - **COMPLETED**
    - Created balanceSync.ts utility to recalculate account balances from existing transactions
    - Added Balance Sync section to Settings page

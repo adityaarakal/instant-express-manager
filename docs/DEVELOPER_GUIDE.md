@@ -76,6 +76,11 @@ Key stores:
 - `src/store/useRecurringExpensesStore.ts`: Recurring expense template CRUD with conversion to EMI and deduction date management
 - `src/store/useRecurringSavingsInvestmentsStore.ts`: Recurring savings/investment template CRUD with conversion to EMI and deduction date management
 
+**Form Integration**:
+- `src/pages/EMIs.tsx`: EMI form includes `deductionDate` field (optional, shown after end date)
+- `src/pages/Recurring.tsx`: Recurring form includes `deductionDate` field (optional, shown after end date)
+- Forms include helper text explaining that deduction date is independent of start/end dates
+
 **Deduction Date Methods**:
 - `updateDeductionDate(emiId/templateId, newDate, updateOption)`: Update deduction date with options:
   - `'this-date-only'`: Only updates the deduction date
