@@ -83,8 +83,8 @@ export function EMIs() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [activeTab, setActiveTab] = useState<TabValue>('expense');
-  const { emis: expenseEMIs, createEMI: createExpenseEMI, updateEMI: updateExpenseEMI, deleteEMI: deleteExpenseEMI, pauseEMI: pauseExpenseEMI, resumeEMI: resumeExpenseEMI, getGeneratedTransactions: getExpenseGeneratedTransactions } = useExpenseEMIsStore();
-  const { emis: savingsEMIs, createEMI: createSavingsEMI, updateEMI: updateSavingsEMI, deleteEMI: deleteSavingsEMI, pauseEMI: pauseSavingsEMI, resumeEMI: resumeSavingsEMI, getGeneratedTransactions: getSavingsGeneratedTransactions } = useSavingsInvestmentEMIsStore();
+  const { emis: expenseEMIs, createEMI: createExpenseEMI, updateEMI: updateExpenseEMI, deleteEMI: deleteExpenseEMI, pauseEMI: pauseExpenseEMI, resumeEMI: resumeExpenseEMI, getGeneratedTransactions: getExpenseGeneratedTransactions, convertToRecurring: convertExpenseEMIToRecurring } = useExpenseEMIsStore();
+  const { emis: savingsEMIs, createEMI: createSavingsEMI, updateEMI: updateSavingsEMI, deleteEMI: deleteSavingsEMI, pauseEMI: pauseSavingsEMI, resumeEMI: resumeSavingsEMI, getGeneratedTransactions: getSavingsGeneratedTransactions, convertToRecurring: convertSavingsEMIToRecurring } = useSavingsInvestmentEMIsStore();
   const { accounts } = useBankAccountsStore();
   const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
   const savingsTransactions = useSavingsInvestmentTransactionsStore((state) => state.transactions);
