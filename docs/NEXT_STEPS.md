@@ -194,7 +194,7 @@ Before considering the project "complete":
    - Recurring page: Explains ongoing/repeating transactions without fixed end dates
    - Alerts are dismissible and help users understand which feature to use
    - Cross-references each feature for better user guidance
-12. ✅ **Balance Sync Utility**: Tool to sync existing account balances with transactions - **COMPLETED**
+13. ✅ **Balance Sync Utility**: Tool to sync existing account balances with transactions - **COMPLETED**
    - Created balanceSync.ts utility to recalculate account balances from existing transactions
    - Added Balance Sync section to Settings page
    - Sync recalculates balances based on all transactions with "Received", "Paid", or "Completed" status
