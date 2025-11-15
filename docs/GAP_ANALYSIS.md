@@ -461,6 +461,7 @@ The application has **excellent core functionality** with all CRUD operations, a
 **Implementation**:
 - ✅ **Code Splitting for Routes**: All pages are now lazy-loaded using `React.lazy()` and `Suspense`, reducing initial bundle size
 - ✅ **Lazy Loading for Charts**: All chart components in Analytics and Dashboard pages are lazy-loaded, only loading when their tab/section is active
+- ✅ **Automatic Account Balance Updates**: Account balances automatically update when transactions are marked as "Received" (income), "Paid" (expense), or "Completed" (savings/investment). Balances also reverse when transactions are deleted or status changes back to "Pending"
 - ✅ **Memoization**: Added `React.memo` to all chart components (IncomeTrendsChart, ExpenseBreakdownChart, SavingsProgressChart, InvestmentPerformanceChart, CreditCardAnalysisChart, BudgetVsActualChart, SavingsTrendChart, BudgetVsActual)
 - ✅ **Optimized Calculations**: Added `useMemo` and `useCallback` to expensive calculations in Planner page (month mapping, filter callbacks)
 - ✅ **Loading Fallbacks**: Added proper loading spinners for lazy-loaded components
