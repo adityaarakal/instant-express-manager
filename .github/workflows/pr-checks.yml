@@ -31,8 +31,9 @@ jobs:
       - name: Install frontend dependencies
         working-directory: ./frontend
         run: |
-          rm -rf node_modules package-lock.json
-          npm install --legacy-peer-deps
+          npm install --force
+          # Ensure Rollup optional dependencies are installed
+          npm install @rollup/rollup-linux-x64-gnu --save-optional || true
       
       # ============================================================================
       # STEP 1: LINTING VALIDATION
