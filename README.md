@@ -30,6 +30,7 @@ A comprehensive standalone financial management Progressive Web App (PWA) built 
 - 📤 **CSV Export**: Export transactions to CSV
 - 💰 **Automatic Balance Updates**: Account balances automatically update when transactions are received/paid/completed
 - 🔄 **Balance Sync**: Sync existing account balances with transactions (useful for old data)
+- 🗑️ **Clear All Data**: Reset the app to a clean state by clearing all storage (irreversible)
 
 ## 🛠️ Tech Stack
 
@@ -372,3 +373,4 @@ MIT
 - ✅ Strict code quality enforcement with Git hooks and GitHub Actions
 - ✅ Enforcement lock system to protect enforcement files from modification
 - ✅ All TypeScript and ESLint errors resolved in production code
+- ✅ Clear all data functionality to reset the app to a clean state

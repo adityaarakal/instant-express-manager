@@ -484,6 +484,7 @@ The Dashboard shows both **Monthly Metrics** (for the selected month) and **Over
 
 ### Data Management
 
+- **Clear All Data**: Permanently delete all data and reset the app to a clean state (irreversible)
 - **Data Backup**: Export all your data to a JSON file
 - **Data Restore**: Import data from a backup file (replace or merge)
 - **Data Health Check**: Identify and fix data inconsistencies
