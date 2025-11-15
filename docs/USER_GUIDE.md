@@ -185,7 +185,11 @@ The app automatically updates account balances based on transaction status:
 - You can always manually update an account's balance in the Accounts page if needed
 
 **Auto-Generated Transactions (EMIs & Recurring Templates):**
-- Auto-generated transactions from EMIs and Recurring templates are created with status "Pending" by default
+- Auto-generated transactions from Recurring Templates are created with:
+  - **Income transactions**: Status "Received" by default
+  - **Expense/Savings transactions**: Status "Pending" by default
+- All transactions for the entire recurring period are generated upfront when you create the template
+- EMI transactions are created with status "Pending" by default and generated as they become due
 - This is intentional - they represent planned transactions that haven't been confirmed yet
 - When you mark an auto-generated transaction as "Received" (income), "Paid" (expense), or "Completed" (savings/investment), the balance will update automatically
 - Until then, the balance remains unchanged because the transaction is still "Pending"
@@ -321,39 +325,44 @@ EMIs automatically generate transactions based on their schedule until all insta
 
 > 💡 **Understanding Dates**: 
 > - **Start Date** and **End Date** define the overall recurring template period
-> - **Deduction Date** is the actual date when money will be deducted/credited (e.g., salary credited on 1st but template starts on 15th)
-> - You can update the deduction date anytime with options to update just this date, or shift all future transactions
+> - **Day of Month** (1-31) specifies which day of each month the transaction occurs (e.g., 1 for 1st of every month, 15 for 15th of every month)
+> - If you don't specify a day of month, the system uses the day from your start date
+> - All transactions for the entire recurring period are generated immediately when you create the template
+> - You can update the day of month anytime with options to update just the next date, or shift all future transactions
 
 ### Managing Recurring Templates
 
 - **Pause/Resume**: Click the pause/resume button to pause or resume generation
 - **View Transactions**: Click the transaction count to view generated transactions
-- **Next Due Date**: See when the next transaction will be generated (based on deduction date if set, otherwise next due date)
-- **Update Deduction Date**: Click the calendar icon (📅) to update the deduction date with options:
-  - **Update this date only**: Only changes the next deduction date
+- **Next Due Date**: See when the next transaction is scheduled
+- **Generated Transactions**: All transactions for the recurring period are created upfront when you create the template
+- **Update Deduction Date**: Click the calendar icon (📅) to update the day of month with options:
+  - **Update this date only**: Only changes the next transaction date
   - **Update all future transactions**: Shifts all future pending transactions by the same offset
   - **Reset schedule from this date**: Recalculates all future transactions starting from the new date
 - **Convert to EMI**: Click the swap icon (⇄) to convert this Recurring Template to an EMI (useful if you realize the payment has a fixed number of installments with a known end date)
 - **Edit**: Click the edit icon to modify the template
 - **Delete**: Click the delete icon to remove the template (only if no transactions are linked)
 
-### Updating Deduction Date
+### Updating Day of Month
 
-You can update the deduction date for a Recurring Template at any time:
+You can update the day of month for a Recurring Template at any time:
 
 1. Click the **calendar icon (📅)** next to the template
-2. Select the new deduction date
+2. Select the new date (which will determine the new day of month)
 3. Choose an update option:
-   - **Update this date only**: Only changes the next deduction date, future dates continue normally
+   - **Update this date only**: Only changes the next transaction date, future dates continue normally
    - **Update all future transactions**: Shifts all pending future transactions by the same number of days
    - **Reset schedule from this date**: Recalculates all future transactions based on the new date and frequency
 4. Click **Confirm**
 
 This is useful when:
-- Your employer changes the salary credit date
+- Your employer changes the salary credit date (e.g., from 1st to 5th of month)
 - Your utility provider changes the billing date
 - You want to align with your payday
 - The actual transaction date differs from the schedule
+
+**Note**: For Recurring Income templates, the label is "Payment Date - Day of Month" (instead of "Deduction Date") to better reflect that you're receiving money.
 
 ### Converting Recurring Templates to EMIs
 
@@ -370,7 +379,14 @@ If you created a Recurring Template but later realize it should be an EMI (e.g.,
 
 ### Auto-Generation
 
-Recurring templates automatically generate transactions based on their frequency. Generated transactions appear in the Transactions page with status "Pending" by default.
+Recurring templates automatically generate all transactions upfront when you create the template. The system generates transactions for the entire recurring period (from start date to end date, or 12 months ahead if no end date is set).
+
+**Transaction Status**:
+- **Income transactions**: Created with status "Received" by default (you can change to "Pending" if needed)
+- **Expense transactions**: Created with status "Pending" by default (you can mark as "Paid" when you make the payment)
+- **Savings/Investment transactions**: Created with status "Pending" by default (you can mark as "Completed" when the transaction is processed)
+
+All generated transactions appear in the Transactions page immediately after creating the template.
 
 **Key Features**:
 - No fixed term: End date is optional (can continue indefinitely)
