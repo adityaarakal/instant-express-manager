@@ -169,6 +169,41 @@ export function Recurring() {
     return map;
   }, [accounts]);
 
+  // Get valid frequency options for current tab
+  const frequencyOptions = useMemo(() => {
+    if (activeTab === 'savings') {
+      return [
+        { value: 'Monthly', label: 'Monthly' },
+        { value: 'Quarterly', label: 'Quarterly' },
+        { value: 'Yearly', label: 'Yearly' },
+      ];
+    } else {
+      return [
+        { value: 'Monthly', label: 'Monthly' },
+        { value: 'Weekly', label: 'Weekly' },
+        { value: 'Yearly', label: 'Yearly' },
+        { value: 'Custom', label: 'Custom' },
+      ];
+    }
+  }, [activeTab]);
+
+  // Reset frequency to valid value when dialog opens or tab changes
+  useEffect(() => {
+    if (dialogOpen && frequencyOptions.length > 0) {
+      setFormData((prev) => {
+        const currentFreq = prev.frequency;
+        const validValues = frequencyOptions.map(opt => opt.value);
+        const isValidForTab = currentFreq && validValues.includes(currentFreq);
+        
+        if (!isValidForTab) {
+          // Set to first valid option for current tab
+          return { ...prev, frequency: frequencyOptions[0].value as typeof prev.frequency };
+        }
+        return prev;
+      });
+    }
+  }, [dialogOpen, activeTab, frequencyOptions]);
+
   const handleOpenDialog = (template?: RecurringIncome | RecurringExpense | RecurringSavingsInvestment) => {
     if (template) {
       setEditingTemplate(template);
@@ -223,11 +258,16 @@ export function Recurring() {
       }
     } else {
       setEditingTemplate(null);
+      // Set frequency based on active tab - ensure it's valid for the current tab
+      const defaultFrequency = activeTab === 'savings' 
+        ? 'Monthly' as 'Monthly' | 'Quarterly' | 'Yearly'
+        : 'Monthly' as 'Monthly' | 'Weekly' | 'Yearly' | 'Custom';
+      
       setFormData({
         name: '',
         amount: 0,
         accountId: accounts[0]?.id || '',
-        frequency: 'Monthly',
+        frequency: defaultFrequency,
         startDate: new Date().toISOString().split('T')[0],
         endDate: '',
         category: 'Salary',
@@ -710,26 +750,18 @@ export function Recurring() {
             <FormControl fullWidth>
               <InputLabel>Frequency</InputLabel>
               <Select
-                value={formData.frequency}
+                value={formData.frequency || frequencyOptions[0]?.value || 'Monthly'}
                 label="Frequency"
-                onChange={(e) =>
-                  setFormData({ ...formData, frequency: e.target.value as RecurringIncome['frequency'] })
-                }
+                onChange={(e) => {
+                  const newFrequency = e.target.value as 'Monthly' | 'Weekly' | 'Yearly' | 'Custom' | 'Quarterly';
+                  setFormData({ ...formData, frequency: newFrequency });
+                }}
               >
-                {activeTab === 'savings' ? (
-                  <>
-                    <MenuItem value="Monthly">Monthly</MenuItem>
-                    <MenuItem value="Quarterly">Quarterly</MenuItem>
-                    <MenuItem value="Yearly">Yearly</MenuItem>
-                  </>
-                ) : (
-                  <>
-                    <MenuItem value="Monthly">Monthly</MenuItem>
-                    <MenuItem value="Weekly">Weekly</MenuItem>
-                    <MenuItem value="Yearly">Yearly</MenuItem>
-                    <MenuItem value="Custom">Custom</MenuItem>
-                  </>
-                )}
+                {frequencyOptions.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
             <TextField
