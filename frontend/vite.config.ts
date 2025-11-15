@@ -4,8 +4,8 @@ import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 import { readFileSync } from 'fs'
 
-// Read version from package.json (vite.config.ts is in frontend directory)
-const packageJson = JSON.parse(readFileSync('./package.json', 'utf-8'))
+// Read version from root package.json (source of truth for version)
+const packageJson = JSON.parse(readFileSync('../package.json', 'utf-8'))
 const version = packageJson.version
 
 // https://vitejs.dev/config/
