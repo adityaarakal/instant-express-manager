@@ -12,7 +12,8 @@ export interface RecurringIncome {
   frequency: 'Monthly' | 'Weekly' | 'Yearly' | 'Custom';
   startDate: string; // ISO date string
   endDate?: string; // ISO date string, optional
-  nextDueDate: string; // ISO date string
+  nextDueDate: string; // ISO date string - for internal scheduling
+  deductionDate?: string; // ISO date string, optional - actual date when next transaction will be deducted/credited (independent of start/end dates)
   status: 'Active' | 'Paused' | 'Completed';
   notes?: string;
   createdAt: string;
@@ -32,7 +33,8 @@ export interface RecurringExpense {
   frequency: 'Monthly' | 'Weekly' | 'Yearly' | 'Custom';
   startDate: string; // ISO date string
   endDate?: string; // ISO date string, optional
-  nextDueDate: string; // ISO date string
+  nextDueDate: string; // ISO date string - for internal scheduling
+  deductionDate?: string; // ISO date string, optional - actual date when next transaction will be deducted/credited (independent of start/end dates)
   status: 'Active' | 'Paused' | 'Completed';
   notes?: string;
   createdAt: string;
@@ -52,7 +54,8 @@ export interface RecurringSavingsInvestment {
   frequency: 'Monthly' | 'Quarterly' | 'Yearly';
   startDate: string; // ISO date string
   endDate?: string; // ISO date string, optional
-  nextDueDate: string; // ISO date string
+  nextDueDate: string; // ISO date string - for internal scheduling
+  deductionDate?: string; // ISO date string, optional - actual date when next transaction will be deducted/credited (independent of start/end dates)
   status: 'Active' | 'Paused' | 'Completed';
   notes?: string;
   createdAt: string;
