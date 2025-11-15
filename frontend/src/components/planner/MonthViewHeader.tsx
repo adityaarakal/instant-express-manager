@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { Box, Button, Chip, Paper, Stack, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import type { AggregatedMonth } from '../../types/plannedExpensesAggregated';
+import { CopyMonthDialog } from './CopyMonthDialog';
 
 interface MonthViewHeaderProps {
   month: AggregatedMonth;
@@ -30,16 +33,28 @@ const formatMonthDate = (dateString: string): string => {
 
 export function MonthViewHeader({ month }: MonthViewHeaderProps) {
   const navigate = useNavigate();
+  const [copyDialogOpen, setCopyDialogOpen] = useState(false);
 
   return (
-    <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
-      <Stack spacing={2}>
-        <Stack direction="row" spacing={2} alignItems="center">
-          <CalendarMonthIcon color="primary" />
-          <Typography variant="h5" component="h2">
-            {formatMonthDate(month.monthStart)}
-          </Typography>
-        </Stack>
+    <>
+      <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
+        <Stack spacing={2}>
+          <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+            <Stack direction="row" spacing={2} alignItems="center">
+              <CalendarMonthIcon color="primary" />
+              <Typography variant="h5" component="h2">
+                {formatMonthDate(month.monthStart)}
+              </Typography>
+            </Stack>
+            <Button
+              variant="outlined"
+              startIcon={<ContentCopyIcon />}
+              onClick={() => setCopyDialogOpen(true)}
+              size="small"
+            >
+              Copy Month
+            </Button>
+          </Stack>
 
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 200 }}>
@@ -92,6 +107,13 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
         </Stack>
       </Stack>
     </Paper>
+    <CopyMonthDialog
+      open={copyDialogOpen}
+      onClose={() => setCopyDialogOpen(false)}
+      sourceMonthId={month.id}
+      sourceMonthStart={month.monthStart}
+    />
+    </>
   );
 }
 
