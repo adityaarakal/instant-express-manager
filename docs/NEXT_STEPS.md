@@ -102,7 +102,14 @@ Before considering the project "complete":
 
 ## Quick Wins (Can Do Now)
 
-1. **Add Auto-save Indicator**: Show "Saving..." / "Saved" status when data changes
+1. ✅ **Add Auto-save Indicator**: Show "Saving..." / "Saved" status when data changes - **COMPLETED**
+   - Created useSaveStatusStore to track save status (idle, saving, saved, error)
+   - Added SaveStatusIndicator component in AppLayout toolbar
+   - Integrated save status tracking into storage utility
+   - Shows 'Saving...' with spinner during operations
+   - Shows 'Saved' with checkmark for 3 seconds after success
+   - Shows 'Save Failed' with error icon for 5 seconds on error
+   - Auto-hides when idle
 2. **Add Copy Month Feature**: Duplicate a month's allocations to a new month
 3. **Add Month Comparison View**: Compare two months side-by-side
 4. ✅ **Add Quick Filters**: Filter by account, bucket, or status in Planner - **COMPLETED**
