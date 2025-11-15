@@ -25,6 +25,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import RestoreIcon from '@mui/icons-material/Restore';
 import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useToastStore } from '../store/useToastStore';
 import { getUserFriendlyError } from '../utils/errorHandling';
@@ -33,6 +34,7 @@ import { DataHealthCheck } from '../components/common/DataHealthCheck';
 import { ExportHistory } from '../components/common/ExportHistory';
 import { downloadBackup, readBackupFile, importBackup, exportBackup } from '../utils/backupService';
 import { syncAccountBalancesFromTransactions, type SyncResult } from '../utils/balanceSync';
+import { clearAllData } from '../utils/clearAllData';
 import SyncIcon from '@mui/icons-material/Sync';
 import TableContainer from '@mui/material/TableContainer';
 import Table from '@mui/material/Table';
@@ -60,6 +62,8 @@ export function Settings() {
   const [syncDialogOpen, setSyncDialogOpen] = useState(false);
   const [syncResults, setSyncResults] = useState<SyncResult[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [clearDataDialogOpen, setClearDataDialogOpen] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   const handleSave = () => {
     updateSettings(localSettings);
@@ -175,6 +179,26 @@ export function Settings() {
   const handleSyncDialogClose = () => {
     setSyncDialogOpen(false);
     setSyncResults([]);
+  };
+
+  const handleClearAllData = async () => {
+    try {
+      setIsClearing(true);
+      await clearAllData();
+      showSuccess('All data cleared successfully. The app will reload.');
+      // Page will reload automatically after clearAllData completes
+    } catch (error) {
+      showError(getUserFriendlyError(error, 'clear all data'));
+      setIsClearing(false);
+    }
+  };
+
+  const handleClearDataDialogOpen = () => {
+    setClearDataDialogOpen(true);
+  };
+
+  const handleClearDataDialogClose = () => {
+    setClearDataDialogOpen(false);
   };
 
   const formatCurrency = (value: number): string => {
@@ -366,6 +390,32 @@ export function Settings() {
           <Divider />
 
           <Stack spacing={2}>
+            <Typography variant="h6">Clear All Data</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Permanently delete all your data and reset the application to a clean state.
+              This action cannot be undone. Make sure to export a backup first if you want to keep your data.
+            </Typography>
+            <Alert severity="error">
+              <AlertTitle>Warning: This action is irreversible</AlertTitle>
+              <Typography variant="body2">
+                This will delete all banks, accounts, transactions, EMIs, recurring items, planner data, and settings.
+                The app will automatically reload after clearing all data.
+              </Typography>
+            </Alert>
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<DeleteForeverIcon />}
+              onClick={handleClearDataDialogOpen}
+              fullWidth
+            >
+              Clear All Data
+            </Button>
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
             <Typography variant="h6">Data Backup & Restore</Typography>
             <Typography variant="body2" color="text.secondary">
               Export all your data to a backup file or import from a previous backup.
@@ -547,6 +597,52 @@ export function Settings() {
         <DialogActions>
           <Button onClick={handleSyncDialogClose} variant="contained">
             Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={clearDataDialogOpen} onClose={handleClearDataDialogClose} maxWidth="sm" fullWidth>
+        <DialogTitle>Clear All Data</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2}>
+            <Alert severity="error">
+              <AlertTitle>⚠️ This action cannot be undone!</AlertTitle>
+              <Typography variant="body2">
+                This will permanently delete ALL your data including:
+              </Typography>
+              <Box component="ul" sx={{ pl: 3, mt: 1 }}>
+                <li>All banks and bank accounts</li>
+                <li>All transactions (income, expense, savings/investment, transfers)</li>
+                <li>All EMIs (expense and savings/investment)</li>
+                <li>All recurring templates (income, expense, savings/investment)</li>
+                <li>All planner data and preferences</li>
+                <li>All settings (will reset to defaults)</li>
+                <li>All export history and undo data</li>
+              </Box>
+              <Typography variant="body2" sx={{ mt: 2, fontWeight: 'bold' }}>
+                The application will automatically reload after clearing all data.
+              </Typography>
+            </Alert>
+            <Alert severity="warning">
+              <AlertTitle>Recommendation</AlertTitle>
+              <Typography variant="body2">
+                Make sure to export a backup before proceeding if you want to keep your data.
+              </Typography>
+            </Alert>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClearDataDialogClose} disabled={isClearing}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleClearAllData}
+            variant="contained"
+            color="error"
+            disabled={isClearing}
+            startIcon={<DeleteForeverIcon />}
+          >
+            {isClearing ? 'Clearing...' : 'Yes, Clear All Data'}
           </Button>
         </DialogActions>
       </Dialog>
