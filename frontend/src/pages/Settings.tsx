@@ -485,6 +485,17 @@ export function Settings() {
               Save Changes
             </Button>
           </Stack>
+          
+          <Divider />
+          
+          <Stack spacing={2} alignItems="center">
+            <Typography variant="body2" color="text.secondary">
+              Version: {typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0'}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Instant Express Manager
+            </Typography>
+          </Stack>
         </Stack>
       </Paper>
 

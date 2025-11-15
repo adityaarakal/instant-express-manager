@@ -1,0 +1,40 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0] - 2025-11-15
+
+### Added
+- Initial release of Instant Express Manager
+- Core financial management features (Banks, Accounts, Transactions)
+- EMIs and Recurring Transactions
+- Planner and Dashboard
+- Analytics and Reporting
+- Data Backup/Restore
+- Clear All Data functionality
+- Strict code quality enforcement with Git hooks
+- Enforcement lock system
+- GitHub Actions PR workflow
+- PWA support with offline functionality
+
+### Features
+- Banks and Bank Accounts management
+- Income, Expense, and Savings/Investment transactions
+- Transfer transactions between accounts
+- Expense and Savings/Investment EMIs
+- Recurring Income, Expense, and Savings/Investment templates
+- Monthly financial planning with bucket-based allocations
+- Dashboard with monthly and overall metrics
+- Comprehensive analytics and insights
+- Automatic balance updates based on transaction status
+- Data health checks and balance sync
+- Keyboard shortcuts
+- Dark/Light theme support
+- Undo functionality for deletions
+
+[Unreleased]: https://github.com/adityaarakal/instant-express-manager/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/adityaarakal/instant-express-manager/releases/tag/v1.0.0
+
