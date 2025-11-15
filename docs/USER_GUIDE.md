@@ -399,6 +399,31 @@ If you have existing data created before automatic balance updates were implemen
 
 This ensures your account balances are in sync with all your existing transactions.
 
+### Clear All Data
+
+**⚠️ Warning: This action is irreversible!**
+
+The app provides an option to completely clear all data and reset to a clean state. This is useful if you want to start fresh or test the app.
+
+1. Navigate to the **Settings** page
+2. Scroll to the **Clear All Data** section
+3. Review the warning message carefully
+4. **Recommended**: Export a backup first if you want to keep your data
+5. Click **Clear All Data**
+6. Confirm the action in the dialog
+7. The app will automatically reload after clearing all data
+
+**What gets deleted:**
+- All banks and bank accounts
+- All transactions (income, expense, savings/investment, transfers)
+- All EMIs (expense and savings/investment)
+- All recurring templates (income, expense, savings/investment)
+- All planner data and preferences
+- All settings (will reset to defaults)
+- All export history and undo data
+
+**Note**: After clearing, the app will reload automatically and you'll have a completely clean application state.
+
 ### Data Backup & Restore
 
 1. Navigate to the **Settings** page
