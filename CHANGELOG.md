@@ -56,6 +56,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added ability to mark transactions as "Pending" from bulk actions
 - Added smart status button visibility based on selected transaction statuses
 
+## [Unreleased]
+
+### Fixed
+- Fixed version display in Settings page (now reads from root package.json as source of truth)
+
 [Unreleased]: https://github.com/adityaarakal/instant-express-manager/compare/v1.0.1...HEAD
 [1.0.1]: https://github.com/adityaarakal/instant-express-manager/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/adityaarakal/instant-express-manager/releases/tag/v1.0.0
