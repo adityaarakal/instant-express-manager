@@ -212,65 +212,88 @@ The app automatically updates account balances based on transaction status:
 
 ## EMIs
 
+**When to Use EMIs**: EMIs are for **fixed-term commitments with a known end date**. Use EMIs when you have a payment with a fixed number of installments (e.g., 12, 24, 36) that tracks progress toward completion. Examples: Home loans, car loans, credit card EMIs, personal loans.
+
+> 💡 **Note**: If your payment is ongoing without a fixed end date, use **Recurring Templates** instead (for subscriptions, utility bills, salary, etc.)
+
 ### Creating an EMI
 
 1. Navigate to the **EMIs** page
-2. Select the appropriate tab (Expense or Savings/Investment)
-3. Click the **Add EMI** button
-4. Fill in the form:
+2. An informational alert at the top explains when to use EMIs vs Recurring Templates
+3. Select the appropriate tab (Expense or Savings/Investment)
+4. Click the **Add EMI** button
+5. Fill in the form:
    - **Name**: EMI name (e.g., "Home Loan EMI")
    - **Start Date**: EMI start date
-   - **End Date**: EMI end date (optional)
-   - **Amount**: EMI amount
+   - **End Date**: EMI end date (required for EMIs)
+   - **Amount**: EMI amount per installment
    - **Account**: Select the account
    - **Frequency**: Monthly or Quarterly
-   - **Total Installments**: Total number of installments
-   - **Category**: For expense EMIs
-   - **Credit Card**: For credit card EMIs
+   - **Total Installments**: Total number of installments (e.g., 12, 24, 36)
+   - **Category**: For expense EMIs (CCEMI, Loan, Other)
+   - **Credit Card**: For credit card EMIs (optional)
    - **Destination**: For savings/investment EMIs
    - **Notes**: Optional notes
-5. Click **Save**
+6. Click **Save**
 
 ### Managing EMIs
 
 - **Pause/Resume**: Click the pause/resume button to pause or resume an EMI
 - **View Transactions**: Click the transaction count to view generated transactions
+- **Progress Tracking**: See "X / Y installments" progress bar showing completion status
 - **Edit**: Click the edit icon to modify the EMI
 - **Delete**: Click the delete icon to remove the EMI (only if no transactions are linked)
 
 ### Auto-Generation
 
-EMIs automatically generate transactions based on their schedule. Generated transactions appear in the Transactions page.
+EMIs automatically generate transactions based on their schedule until all installments are completed. Generated transactions appear in the Transactions page with status "Pending" by default.
+
+**Key Features**:
+- Tracks progress: Shows "X of Y installments" completed
+- Fixed term: Requires an end date
+- Progress indicator: Visual progress bar shows completion percentage
 
 ## Recurring Transactions
+
+**When to Use Recurring Templates**: Recurring Templates are for **ongoing/repeating transactions** that may or may not have an end date. Use Recurring Templates when you have regular income, subscriptions, bills, or investments that repeat on a schedule. Examples: Monthly salary, Netflix subscription, utility bills, SIP investments, insurance premiums.
+
+> 💡 **Note**: If your payment has a fixed number of installments with a known end date, use **EMIs** instead (for loans, credit card EMIs, etc.)
 
 ### Creating a Recurring Template
 
 1. Navigate to the **Recurring** page
-2. Select the appropriate tab (Income, Expense, or Savings/Investment)
-3. Click the **Add Recurring** button
-4. Fill in the form:
+2. An informational alert at the top explains when to use Recurring Templates vs EMIs
+3. Select the appropriate tab (Income, Expense, or Savings/Investment)
+4. Click the **Add Recurring** button
+5. Fill in the form:
    - **Name**: Template name (e.g., "Monthly Salary")
    - **Amount**: Transaction amount
    - **Account**: Select the account
-   - **Frequency**: Monthly, Weekly, Quarterly, Yearly, or Custom
+   - **Frequency**: Monthly, Weekly, Quarterly, Yearly, or Custom (more flexible than EMIs)
    - **Start Date**: Start date
-   - **End Date**: End date (optional)
+   - **End Date**: End date (optional - can continue indefinitely)
    - **Category/Type**: Select category or type
    - Additional fields based on type
    - **Notes**: Optional notes
-5. Click **Save**
+6. Click **Save**
 
 ### Managing Recurring Templates
 
 - **Pause/Resume**: Click the pause/resume button to pause or resume generation
 - **View Transactions**: Click the transaction count to view generated transactions
+- **Next Due Date**: See when the next transaction will be generated
 - **Edit**: Click the edit icon to modify the template
 - **Delete**: Click the delete icon to remove the template (only if no transactions are linked)
 
 ### Auto-Generation
 
-Recurring templates automatically generate transactions based on their frequency. Generated transactions appear in the Transactions page.
+Recurring templates automatically generate transactions based on their frequency. Generated transactions appear in the Transactions page with status "Pending" by default.
+
+**Key Features**:
+- No fixed term: End date is optional (can continue indefinitely)
+- Flexible frequencies: Monthly, Weekly, Quarterly, Yearly, or Custom
+- Next due date tracking: Shows when the next transaction will be generated
+- No progress tracking: Just tracks the next occurrence (no installment count)
 
 ## Settings
 
