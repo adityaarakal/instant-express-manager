@@ -508,6 +508,37 @@ export function Recurring() {
     }
   };
 
+  const handleConvertToEMIClick = (template: RecurringExpense | RecurringSavingsInvestment) => {
+    setTemplateToConvert(template);
+    setConversionWizardOpen(true);
+  };
+
+  const handleConversionConfirm = async () => {
+    if (!templateToConvert) return;
+    
+    setIsConverting(true);
+    try {
+      if (activeTab === 'expense') {
+        convertExpenseRecurringToEMI(templateToConvert.id);
+        showSuccess('Recurring Template converted to EMI successfully');
+      } else if (activeTab === 'savings') {
+        convertSavingsRecurringToEMI(templateToConvert.id);
+        showSuccess('Recurring Template converted to EMI successfully');
+      }
+      setConversionWizardOpen(false);
+      setTemplateToConvert(null);
+    } catch (error) {
+      showError(getUserFriendlyError(error, 'convert recurring template'));
+    } finally {
+      setIsConverting(false);
+    }
+  };
+
+  const handleConversionCancel = () => {
+    setConversionWizardOpen(false);
+    setTemplateToConvert(null);
+  };
+
   const allTemplates = useMemo(() => {
     if (activeTab === 'income') return incomeTemplates;
     if (activeTab === 'expense') return expenseTemplates;
