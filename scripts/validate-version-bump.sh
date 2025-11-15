@@ -3,15 +3,16 @@
 # ============================================================================
 # MANDATORY VERSION BUMP VALIDATION
 # ============================================================================
-# This script enforces that PR branch version must be exactly 0.0.1 (PATCH)
-# increment from the base branch (main) version.
+# This script enforces that PR branch version must be ahead (greater than)
+# the base branch (main) version.
 #
 # ENFORCEMENT: This check is MANDATORY and CANNOT BE BYPASSED
 # POLICY: PR cannot be merged without proper version bump
 #
 # Rules:
-# - PR branch version = main branch version + 0.0.1 (PATCH increment only)
-# - Must be exact - no other increments allowed
+# - PR branch version > base branch version (mandatory)
+# - Can be PATCH (0.0.1), MINOR (0.1.0), or MAJOR (1.0.0) increment
+# - Must be strictly greater than base version
 # - Applies to all PRs targeting main branch
 
 set -e
@@ -65,6 +66,7 @@ fi
 echo ""
 echo "🚨 MANDATORY VERSION BUMP VALIDATION"
 echo "⚠️  THIS CHECK CANNOT BE BYPASSED - ALL PRs MUST HAVE VERSION BUMP"
+echo "📋 REQUIRED: Incoming branch version must be ahead of base branch version"
 echo ""
 
 # Get base branch version
@@ -133,47 +135,49 @@ if ! validate_version "$HEAD_VERSION"; then
 fi
 
 # ============================================================================
-# CALCULATE EXPECTED VERSION (BASE + 0.0.1 PATCH)
+# VALIDATE VERSION BUMP (HEAD > BASE)
 # ============================================================================
-
-EXPECTED_VERSION=$(increment_patch "$BASE_VERSION")
 
 echo ""
 echo "📊 Version Bump Validation:"
 echo "   Base version:    $BASE_VERSION"
 echo "   Head version:    $HEAD_VERSION"
-echo "   Expected:        $EXPECTED_VERSION (BASE + 0.0.1 PATCH)"
+echo "   Required:        HEAD_VERSION > BASE_VERSION"
 echo ""
 
-# ============================================================================
-# VALIDATE VERSION BUMP
-# ============================================================================
-
-if [ "$HEAD_VERSION" != "$EXPECTED_VERSION" ]; then
+# Check if HEAD_VERSION > BASE_VERSION
+if ! compare_versions "$HEAD_VERSION" "$BASE_VERSION"; then
+  # Calculate minimum next versions for reference
+  NEXT_PATCH=$(increment_patch "$BASE_VERSION")
+  NEXT_MINOR=$(increment_minor "$BASE_VERSION")
+  NEXT_MAJOR=$(increment_major "$BASE_VERSION")
+  
   echo "❌ CRITICAL: Version bump validation FAILED"
-  echo "❌ Head branch version ($HEAD_VERSION) does NOT match expected version ($EXPECTED_VERSION)"
+  echo "❌ Head branch version ($HEAD_VERSION) is NOT ahead of base version ($BASE_VERSION)"
   echo ""
   echo "🔒 ENFORCEMENT: PR cannot be merged - Version bump is MANDATORY"
-  echo "📋 REQUIRED: Head branch version must be exactly BASE_VERSION + 0.0.1 (PATCH increment)"
+  echo "📋 REQUIRED: Incoming branch version must be ahead of base branch version"
   echo ""
   echo "📋 How to fix:"
   echo "   1. Ensure your branch is up to date with $BASE_BRANCH"
-  echo "   2. Bump version to $EXPECTED_VERSION:"
-  echo "      npm run version:patch"
+  echo "   2. Bump version (choose appropriate increment):"
+  echo "      - PATCH increment: npm run version:patch  (e.g., $BASE_VERSION -> $NEXT_PATCH)"
+  echo "      - MINOR increment: npm run version:minor  (e.g., $BASE_VERSION -> $NEXT_MINOR)"
+  echo "      - MAJOR increment: npm run version:major  (e.g., $BASE_VERSION -> $NEXT_MAJOR)"
   echo "      # Or manually update package.json, frontend/package.json, and VERSION.txt"
   echo "   3. Commit the version bump:"
   echo "      git add package.json frontend/package.json VERSION.txt"
-  echo "      git commit -m 'chore: Bump version to $EXPECTED_VERSION'"
+  echo "      git commit -m 'chore: Bump version to <NEW_VERSION>'"
   echo "   4. Push and try again"
   echo ""
   echo "⚠️  NOTE: This is a MANDATORY check - PR cannot be merged without proper version bump"
-  echo "⚠️  NOTE: Version bump must be exactly PATCH increment (0.0.1) - no other increments allowed"
+  echo "⚠️  NOTE: Version bump can be PATCH (0.0.1), MINOR (0.1.0), or MAJOR (1.0.0) increment"
   echo ""
   exit 1
 fi
 
 echo "✅ Version bump validation PASSED"
-echo "✅ Head branch version ($HEAD_VERSION) correctly incremented from base ($BASE_VERSION)"
+echo "✅ Head branch version ($HEAD_VERSION) is ahead of base version ($BASE_VERSION)"
 echo ""
 echo "🔒 ENFORCEMENT STATUS: COMPLIANT"
 echo "✅ Version bump requirement satisfied"

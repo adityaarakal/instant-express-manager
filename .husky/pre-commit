@@ -137,12 +137,13 @@ fi
 # ============================================================================
 echo "📋 Step 1/4: Mandatory Version Bump Validation"
 echo "🚨 MANDATORY CHECK: Commit cannot proceed without version bump"
+echo "📋 REQUIRED: Branch version must be ahead of main branch version"
 echo ""
 bash scripts/validate-version-bump.sh
 if [ $? -ne 0 ]; then
   echo "❌ CRITICAL: Version bump validation failed"
   echo "❌ ENFORCEMENT: Commit blocked - Version bump is MANDATORY"
-  echo "📋 REQUIRED: Branch version must be exactly main + 0.0.1 (PATCH)"
+  echo "📋 REQUIRED: Branch version must be ahead of main branch version"
   echo "⚠️  This check CANNOT BE BYPASSED - All branches must have version bump"
   exit 1
 fi

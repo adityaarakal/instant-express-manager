@@ -109,12 +109,13 @@ jobs:
           echo ""
           echo "📋 Step 4/4: Mandatory Version Bump Validation"
           echo "🚨 MANDATORY CHECK: PR cannot be merged without version bump"
+          echo "📋 REQUIRED: Incoming branch version must be ahead of base branch version"
           echo ""
           bash scripts/validate-version-bump.sh
           if [ $? -ne 0 ]; then
             echo "❌ CRITICAL: Version bump validation failed"
             echo "❌ ENFORCEMENT: PR blocked - Version bump is MANDATORY"
-            echo "📋 REQUIRED: Head branch version must be exactly BASE_VERSION + 0.0.1 (PATCH)"
+            echo "📋 REQUIRED: Incoming branch version must be ahead of base branch version"
             echo "⚠️  This check CANNOT BE BYPASSED - All PRs must have version bump"
             exit 1
           fi
@@ -158,6 +159,6 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '❌ **Quality Checks Failed**\n\nPlease fix the following issues:\n- ESLint errors/warnings in production code\n- TypeScript compilation errors\n- Build validation errors\n- **Mandatory version bump validation** (PR branch version must be BASE + 0.0.1)\n\n🔒 **ENFORCEMENT**: PR cannot be merged until all checks pass.\n\n📋 **REQUIRED**: Fix all errors and push again.'
+              body: '❌ **Quality Checks Failed**\n\nPlease fix the following issues:\n- ESLint errors/warnings in production code\n- TypeScript compilation errors\n- Build validation errors\n- **Mandatory version bump validation** (incoming branch version must be ahead of base branch version)\n\n🔒 **ENFORCEMENT**: PR cannot be merged until all checks pass.\n\n📋 **REQUIRED**: Fix all errors and push again.'
             })
 
