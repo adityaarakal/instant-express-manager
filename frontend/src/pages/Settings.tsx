@@ -74,28 +74,38 @@ export function Settings() {
   );
 
   // Fetch version dynamically at runtime
+  // This will automatically pick up version changes when package.json is updated (e.g., after git pull)
   useEffect(() => {
     const fetchVersion = async () => {
       try {
-        // Try to fetch from API endpoint (works in dev and production)
-        const response = await fetch('/api/version');
+        // Try to fetch from API endpoint (reads package.json at runtime - always fresh)
+        // Add timestamp and cache-busting headers to prevent any caching
+        const response = await fetch(`/api/version?t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+          },
+        });
         if (response.ok) {
           const data = await response.json();
-          if (data.version) {
+          if (data.version && data.version !== appVersion) {
             setAppVersion(data.version);
             return;
           }
         }
       } catch (error) {
-        // Fallback to version.json if API not available
+        // Fallback to version.json if API not available (production builds)
       }
       
       try {
-        // Try to fetch from version.json (static file)
-        const response = await fetch('/version.json?t=' + Date.now());
+        // Fallback to version.json static file (for production builds)
+        const response = await fetch(`/version.json?t=${Date.now()}`, {
+          cache: 'no-store',
+        });
         if (response.ok) {
           const data = await response.json();
-          if (data.version) {
+          if (data.version && data.version !== appVersion) {
             setAppVersion(data.version);
             return;
           }
@@ -105,13 +115,16 @@ export function Settings() {
       }
     };
 
+    // Fetch immediately on mount
     fetchVersion();
-    // Poll for version changes every 5 seconds in development
-    if (import.meta.env.DEV) {
-      const interval = setInterval(fetchVersion, 5000);
-      return () => clearInterval(interval);
-    }
-  }, []);
+    
+    // Poll for version changes continuously
+    // More frequent in dev mode to catch changes after git pull without restart
+    const pollInterval = import.meta.env.DEV ? 2000 : 10000; // 2s in dev, 10s in production
+    const interval = setInterval(fetchVersion, pollInterval);
+    
+    return () => clearInterval(interval);
+  }, [appVersion]); // Re-run effect if appVersion changes to continue polling with new value
 
   const handleSave = () => {
     updateSettings(localSettings);

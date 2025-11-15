@@ -19,14 +19,22 @@ function injectVersionMeta() {
     },
     configureServer(server) {
       // Middleware to serve version dynamically from package.json at runtime
+      // This reads the file fresh on every request, so it always reflects the current package.json
       server.middlewares.use('/api/version', (req, res, next) => {
         try {
+          // Always read fresh from package.json (no caching)
           const packageJsonPath = path.resolve(__dirname, '../package.json');
           const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+          
+          // Set headers to prevent any caching
           res.setHeader('Content-Type', 'application/json');
-          res.setHeader('Cache-Control', 'no-cache');
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
+          
           res.end(JSON.stringify({ version: packageJson.version }));
         } catch (error) {
+          console.error('Error reading version:', error);
           next();
         }
       });
