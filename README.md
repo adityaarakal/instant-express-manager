@@ -70,7 +70,7 @@ npm install
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173` (or the next available port)
+The app will be available at `http://localhost:7001`
 
 ## 🏗️ Project Structure
 

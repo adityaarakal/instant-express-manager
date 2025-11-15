@@ -101,7 +101,10 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000
   },
   server: {
-    port: 5173,
+    port: 7001,
+    strictPort: true, // Prevent port changes - IndexedDB is origin-scoped (includes port)
+    // If port 7001 is in use, Vite will fail instead of trying another port
+    // This ensures consistent IndexedDB access across restarts
     proxy: {
       '/api': {
         target: 'http://localhost:3000',
