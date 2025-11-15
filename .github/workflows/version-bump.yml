@@ -190,7 +190,8 @@ jobs:
           ADDED=$(echo "$COMMITS" | grep -iE "^\- (feat|add)" || true)
           FIXED=$(echo "$COMMITS" | grep -iE "^\- (fix|bug)" || true)
           CHANGED=$(echo "$COMMITS" | grep -iE "^\- (refactor|change|update)" || true)
-          OTHER=$(echo "$COMMITS" | grep -ivE "(feat|add|fix|bug|refactor|change|update)" || true)
+          DOCS=$(echo "$COMMITS" | grep -iE "^\- (docs)" || true)
+          OTHER=$(echo "$COMMITS" | grep -ivE "(feat|add|fix|bug|refactor|change|update|docs)" || true)
           
           CHANGELOG_ENTRY="## [$NEW_VERSION] - $(date +%Y-%m-%d)
 "
