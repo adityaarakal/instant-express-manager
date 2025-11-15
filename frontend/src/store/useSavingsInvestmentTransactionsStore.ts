@@ -6,6 +6,7 @@ import { useRecurringSavingsInvestmentsStore } from './useRecurringSavingsInvest
 import { useSavingsInvestmentEMIsStore } from './useSavingsInvestmentEMIsStore';
 import { useBankAccountsStore } from './useBankAccountsStore';
 import { validateDate, validateAmount } from '../utils/validation';
+import { updateAccountBalanceForTransaction, reverseAccountBalanceForTransaction } from '../utils/accountBalanceUpdates';
 
 type SavingsInvestmentTransactionsState = {
   transactions: SavingsInvestmentTransaction[];
@@ -78,6 +79,16 @@ export const useSavingsInvestmentTransactionsStore = create<SavingsInvestmentTra
           set((state) => ({
             transactions: [...state.transactions, newTransaction],
           }));
+
+          // Update account balance if transaction is marked as "Completed"
+          if (transactionData.status === 'Completed') {
+            updateAccountBalanceForTransaction(
+              transactionData.accountId,
+              transactionData.amount,
+              'savings',
+              transactionData.status,
+            );
+          }
         },
         updateTransaction: (id, updates) => {
           // Validate accountId if being updated
@@ -124,15 +135,82 @@ export const useSavingsInvestmentTransactionsStore = create<SavingsInvestmentTra
             }
           }
           
+          // Get the transaction before update to track status/amount changes
+          const existingTransaction = get().transactions.find((t) => t.id === id);
+          if (!existingTransaction) {
+            throw new Error(`Transaction with id ${id} does not exist`);
+          }
+
+          // Determine what changed for balance updates
+          const statusChanged = updates.status !== undefined && updates.status !== existingTransaction.status;
+          const amountChanged = updates.amount !== undefined && updates.amount !== existingTransaction.amount;
+          const accountChanged = updates.accountId !== undefined && updates.accountId !== existingTransaction.accountId;
+
+          // Create merged transaction for balance updates
+          const mergedTransaction = { ...existingTransaction, ...updates };
+
           set((state) => ({
             transactions: state.transactions.map((transaction) =>
               transaction.id === id
-                ? { ...transaction, ...updates, updatedAt: new Date().toISOString() }
+                ? { ...mergedTransaction, updatedAt: new Date().toISOString() }
                 : transaction
             ),
           }));
+
+          // Update account balance if status or amount changed
+          if (statusChanged || amountChanged || accountChanged) {
+            // If account changed, update both old and new accounts
+            if (accountChanged && existingTransaction.accountId !== mergedTransaction.accountId) {
+              // Reverse effect on old account
+              if (existingTransaction.status === 'Completed') {
+                updateAccountBalanceForTransaction(
+                  existingTransaction.accountId,
+                  existingTransaction.amount,
+                  'savings',
+                  'Pending', // Reverse by setting to Pending
+                  existingTransaction.status,
+                  existingTransaction.amount,
+                );
+              }
+              // Apply effect on new account
+              if (mergedTransaction.status === 'Completed') {
+                updateAccountBalanceForTransaction(
+                  mergedTransaction.accountId,
+                  mergedTransaction.amount,
+                  'savings',
+                  mergedTransaction.status,
+                );
+              }
+            } else {
+              // Same account, just update based on status/amount change
+              const accountId = mergedTransaction.accountId;
+              const newAmount = mergedTransaction.amount;
+              const newStatus = mergedTransaction.status;
+
+              updateAccountBalanceForTransaction(
+                accountId,
+                newAmount,
+                'savings',
+                newStatus,
+                existingTransaction.status,
+                existingTransaction.amount,
+              );
+            }
+          }
         },
         deleteTransaction: (id) => {
+          const transaction = get().transactions.find((t) => t.id === id);
+          if (transaction) {
+            // Reverse account balance change if transaction was "Completed"
+            if (transaction.status === 'Completed') {
+              reverseAccountBalanceForTransaction(
+                transaction.accountId,
+                transaction.amount,
+                'savings',
+                transaction.status,
+              );
+            }
+          }
           set((state) => ({
             transactions: state.transactions.filter((transaction) => transaction.id !== id),
           }));

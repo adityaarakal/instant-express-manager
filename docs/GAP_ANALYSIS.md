@@ -750,6 +750,7 @@ Run tests with: `npm test` in the frontend directory.
 - ✅ **Month Comparison View** - COMPLETED
 - ✅ **Export History** - COMPLETED
 - ✅ **Dashboard Monthly & Overall Metrics** - COMPLETED
+- ✅ **Automatic Account Balance Updates** - COMPLETED
 
 ### Estimated Effort
 - **Phase 1 (Critical UX)**: ✅ **COMPLETED** (~40 hours)
@@ -783,6 +784,7 @@ Run tests with: `npm test` in the frontend directory.
   - ✅ Month Comparison View: **COMPLETED** (~3 hours)
   - ✅ Export History: **COMPLETED** (~2 hours)
   - ✅ Dashboard Monthly & Overall Metrics: **COMPLETED** (~4 hours)
+  - ✅ Automatic Account Balance Updates: **COMPLETED** (~6 hours)
 - **Total Estimated**: ~130 hours
 - **Total Completed**: ~148 hours (100%+)
 - **Remaining**: 0 hours

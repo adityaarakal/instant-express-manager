@@ -168,6 +168,16 @@ Before considering the project "complete":
    - Monthly metrics default to current month if no month selected
    - Clear visual separation between monthly and overall sections
    - Updated dashboard utility to support month-based filtering
+9. ✅ **Automatic Account Balance Updates**: Account balances now automatically update based on transaction status - **COMPLETED**
+   - Created utility functions (`accountBalanceUpdates.ts`) to handle balance updates
+   - Income transactions: Balance increases when status changes to "Received"
+   - Expense transactions: Balance decreases when status changes to "Paid"
+   - Savings/Investment transactions: Balance decreases when status changes to "Completed"
+   - Balance automatically reverses when transactions are deleted
+   - Balance updates when transaction status changes (e.g., "Received" to "Pending")
+   - Balance updates when transaction amount or account changes
+   - Handles account transfers correctly (updates both old and new accounts)
+   - Integrated into all transaction stores (Income, Expense, Savings/Investment)
 
 ## Decision Points
 
