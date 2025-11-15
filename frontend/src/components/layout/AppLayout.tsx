@@ -32,6 +32,7 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 import { ThemeModeToggle } from './ThemeModeToggle';
 import { KeyboardShortcutsHelp } from '../common/KeyboardShortcutsHelp';
+import { SaveStatusIndicator } from '../common/SaveStatusIndicator';
 
 type AppLayoutProps = {
   children: ReactNode;
@@ -176,6 +177,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   )}
                 </NavLink>
               ))}
+            <SaveStatusIndicator />
             <IconButton
               size="small"
               onClick={() => setShortcutsHelpOpen(true)}
