@@ -7,6 +7,7 @@ import { useSavingsInvestmentEMIsStore } from './useSavingsInvestmentEMIsStore';
 import { useBankAccountsStore } from './useBankAccountsStore';
 import { validateDate, validateAmount } from '../utils/validation';
 import { updateAccountBalanceForTransaction, reverseAccountBalanceForTransaction } from '../utils/accountBalanceUpdates';
+import { calculateNextDateFromDate } from '../utils/dateCalculations';
 
 type SavingsInvestmentTransactionsState = {
   transactions: SavingsInvestmentTransaction[];
@@ -195,6 +196,52 @@ export const useSavingsInvestmentTransactionsStore = create<SavingsInvestmentTra
                 existingTransaction.status,
                 existingTransaction.amount,
               );
+            }
+          }
+
+          // Update recurring template's nextDueDate if transaction is linked to a template
+          // and status changed to/from Completed
+          if (statusChanged && mergedTransaction.recurringTemplateId) {
+            const template = useRecurringSavingsInvestmentsStore.getState().getTemplate(mergedTransaction.recurringTemplateId);
+            if (template) {
+              // Get all transactions for this template (using updated state), sorted by date
+              const allTransactions = get().transactions;
+              const templateTransactions = allTransactions
+                .filter((t) => t.recurringTemplateId === template.id)
+                .sort((a, b) => a.date.localeCompare(b.date));
+
+              // Find the earliest pending transaction
+              const nextPendingTransaction = templateTransactions.find((t) => t.status === 'Pending');
+
+              if (nextPendingTransaction) {
+                // Update nextDueDate to the earliest pending transaction date
+                useRecurringSavingsInvestmentsStore.getState().updateTemplate(template.id, {
+                  nextDueDate: nextPendingTransaction.date,
+                });
+              } else {
+                // All transactions are completed - find the last completed transaction and calculate next date
+                const completedTransactions = templateTransactions.filter((t) => t.status === 'Completed');
+                if (completedTransactions.length > 0) {
+                  const lastCompletedDate = completedTransactions[completedTransactions.length - 1].date;
+                  const nextDate = calculateNextDateFromDate(lastCompletedDate, template.frequency);
+                  
+                  // Check if nextDate is beyond endDate
+                  const isCompleted = template.endDate && nextDate > template.endDate;
+                  
+                  if (isCompleted) {
+                    // Mark template as completed
+                    useRecurringSavingsInvestmentsStore.getState().updateTemplate(template.id, {
+                      status: 'Completed',
+                      nextDueDate: template.endDate || nextDate,
+                    });
+                  } else {
+                    // Update nextDueDate to calculated next date
+                    useRecurringSavingsInvestmentsStore.getState().updateTemplate(template.id, {
+                      nextDueDate: nextDate,
+                    });
+                  }
+                }
+              }
             }
           }
         },

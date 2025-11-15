@@ -6,6 +6,7 @@ import { useRecurringIncomesStore } from './useRecurringIncomesStore';
 import { useBankAccountsStore } from './useBankAccountsStore';
 import { validateDate, validateAmount } from '../utils/validation';
 import { updateAccountBalanceForTransaction, reverseAccountBalanceForTransaction } from '../utils/accountBalanceUpdates';
+import { calculateNextDateFromDate } from '../utils/dateCalculations';
 
 type IncomeTransactionsState = {
   transactions: IncomeTransaction[];
@@ -174,6 +175,52 @@ export const useIncomeTransactionsStore = create<IncomeTransactionsState>()(
                 existingTransaction.status,
                 existingTransaction.amount,
               );
+            }
+          }
+
+          // Update recurring template's nextDueDate if transaction is linked to a template
+          // and status changed to/from Received
+          if (statusChanged && mergedTransaction.recurringTemplateId) {
+            const template = useRecurringIncomesStore.getState().getTemplate(mergedTransaction.recurringTemplateId);
+            if (template) {
+              // Get all transactions for this template (using updated state), sorted by date
+              const allTransactions = get().transactions;
+              const templateTransactions = allTransactions
+                .filter((t) => t.recurringTemplateId === template.id)
+                .sort((a, b) => a.date.localeCompare(b.date));
+
+              // Find the earliest pending transaction
+              const nextPendingTransaction = templateTransactions.find((t) => t.status === 'Pending');
+
+              if (nextPendingTransaction) {
+                // Update nextDueDate to the earliest pending transaction date
+                useRecurringIncomesStore.getState().updateTemplate(template.id, {
+                  nextDueDate: nextPendingTransaction.date,
+                });
+              } else {
+                // All transactions are received - find the last received transaction and calculate next date
+                const receivedTransactions = templateTransactions.filter((t) => t.status === 'Received');
+                if (receivedTransactions.length > 0) {
+                  const lastReceivedDate = receivedTransactions[receivedTransactions.length - 1].date;
+                  const nextDate = calculateNextDateFromDate(lastReceivedDate, template.frequency);
+                  
+                  // Check if nextDate is beyond endDate
+                  const isCompleted = template.endDate && nextDate > template.endDate;
+                  
+                  if (isCompleted) {
+                    // Mark template as completed
+                    useRecurringIncomesStore.getState().updateTemplate(template.id, {
+                      status: 'Completed',
+                      nextDueDate: template.endDate || nextDate,
+                    });
+                  } else {
+                    // Update nextDueDate to calculated next date
+                    useRecurringIncomesStore.getState().updateTemplate(template.id, {
+                      nextDueDate: nextDate,
+                    });
+                  }
+                }
+              }
             }
           }
         },
