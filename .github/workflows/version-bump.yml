@@ -88,6 +88,10 @@ jobs:
             elif echo "$COMMITS" | grep -qiE "^(fix|Fix|FIX)(\(|:)"; then
               BUMP_TYPE="patch"
               echo "Found fix"
+            # Check for documentation updates (case-insensitive, with or without parentheses)
+            elif echo "$COMMITS" | grep -qiE "^(docs|Docs|DOCS)(\(|:)"; then
+              BUMP_TYPE="patch"
+              echo "Found documentation update"
             # Check PR labels from commit message (if merged via PR)
             elif echo "$COMMITS" | grep -qiE "\[major\]|\[breaking\]"; then
               BUMP_TYPE="major"
@@ -209,6 +213,13 @@ $FIXED
             CHANGELOG_ENTRY+="
 ### Changed
 $CHANGED
+"
+          fi
+          
+          if [ -n "$DOCS" ]; then
+            CHANGELOG_ENTRY+="
+### Documentation
+$DOCS
 "
           fi
           
