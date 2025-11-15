@@ -28,6 +28,9 @@ import {
   Chip,
   Link,
   CircularProgress,
+  Alert,
+  AlertTitle,
+  Collapse,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -99,6 +102,7 @@ export function Recurring() {
   const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
+  const [infoAlertOpen, setInfoAlertOpen] = useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -545,6 +549,29 @@ export function Recurring() {
           Add Template
         </Button>
       </Box>
+
+      <Collapse in={infoAlertOpen}>
+        <Alert 
+          severity="info" 
+          onClose={() => setInfoAlertOpen(false)}
+          sx={{ mb: 2 }}
+        >
+          <AlertTitle>When to Use Recurring Templates</AlertTitle>
+          <Typography variant="body2" component="div" sx={{ mt: 1 }}>
+            <strong>Recurring Templates are for ongoing/repeating transactions:</strong>
+            <ul style={{ marginTop: '8px', marginBottom: '0', paddingLeft: '20px' }}>
+              <li><strong>No fixed number of installments</strong> (can be indefinite)</li>
+              <li>Track <strong>next due date</strong> instead of progress</li>
+              <li><strong>End date is optional</strong> (can continue indefinitely)</li>
+              <li>More <strong>flexible frequencies</strong> (Monthly, Weekly, Quarterly, Yearly, Custom)</li>
+              <li>Examples: Monthly salary, Netflix subscription, utility bills, SIP investments, insurance premiums</li>
+            </ul>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+              💡 <strong>Not sure?</strong> If your payment has a fixed number of installments with a known end date, use <strong>EMIs</strong> instead (for loans, credit card EMIs, etc.)
+            </Typography>
+          </Typography>
+        </Alert>
+      </Collapse>
 
       <Paper>
         <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>

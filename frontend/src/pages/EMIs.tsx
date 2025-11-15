@@ -29,6 +29,9 @@ import {
   LinearProgress,
   Link,
   CircularProgress,
+  Alert,
+  AlertTitle,
+  Collapse,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -94,6 +97,7 @@ export function EMIs() {
   const [emiToDelete, setEmiToDelete] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
+  const [infoAlertOpen, setInfoAlertOpen] = useState(true);
 
   // Simulate initial load
   useEffect(() => {
@@ -402,6 +406,28 @@ export function EMIs() {
           Add EMI
         </Button>
       </Box>
+
+      <Collapse in={infoAlertOpen}>
+        <Alert 
+          severity="info" 
+          onClose={() => setInfoAlertOpen(false)}
+          sx={{ mb: 2 }}
+        >
+          <AlertTitle>When to Use EMIs</AlertTitle>
+          <Typography variant="body2" component="div" sx={{ mt: 1 }}>
+            <strong>EMIs are for fixed-term commitments with a known end date:</strong>
+            <ul style={{ marginTop: '8px', marginBottom: '0', paddingLeft: '20px' }}>
+              <li>Have a <strong>fixed number of installments</strong> (e.g., 12, 24, 36)</li>
+              <li>Track <strong>progress</strong> (X of Y installments completed)</li>
+              <li>Require an <strong>end date</strong></li>
+              <li>Examples: Home loans, car loans, credit card EMIs, personal loans</li>
+            </ul>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+              💡 <strong>Not sure?</strong> If your payment is ongoing without a fixed end date, use <strong>Recurring Templates</strong> instead (for subscriptions, utility bills, salary, etc.)
+            </Typography>
+          </Typography>
+        </Alert>
+      </Collapse>
 
       <Paper>
         <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
