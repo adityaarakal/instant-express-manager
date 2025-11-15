@@ -180,21 +180,24 @@ export const useRecurringIncomesStore = create<RecurringIncomesState>()(
           const activeTemplates = get().getActiveTemplates();
           
           activeTemplates.forEach((template) => {
-            if (template.nextDueDate <= today) {
+            // Use deductionDate if set, otherwise use nextDueDate
+            const deductionDate = getEffectiveRecurringDeductionDate(template);
+            
+            if (deductionDate <= today) {
               // Check if transaction already exists for this template and date
               const existingTransactions = useIncomeTransactionsStore.getState().transactions.filter(
-                (t) => t.recurringTemplateId === template.id && t.date === template.nextDueDate
+                (t) => t.recurringTemplateId === template.id && t.date === deductionDate
               );
               
               if (existingTransactions.length === 0) {
                 // Create transaction
                 useIncomeTransactionsStore.getState().createTransaction({
-                  date: template.nextDueDate,
+                  date: deductionDate,
                   amount: template.amount,
                   accountId: template.accountId,
                   category: template.category,
                   description: template.name,
-                  status: 'Pending',
+                  status: 'Received',
                   recurringTemplateId: template.id,
                 });
                 
@@ -204,11 +207,17 @@ export const useRecurringIncomesStore = create<RecurringIncomesState>()(
                 // Check if end date reached
                 const isCompleted = template.endDate && nextDue > template.endDate;
                 
-                // Update template
-                get().updateTemplate(template.id, {
+                // Update template - if deductionDate was set, calculate next date based on frequency
+                const updateData: Partial<RecurringIncome> = {
                   nextDueDate: nextDue,
                   status: isCompleted ? 'Completed' : template.status,
-                });
+                };
+                
+                if (template.deductionDate) {
+                  updateData.deductionDate = calculateNextDateFromDate(deductionDate, template.frequency);
+                }
+                
+                get().updateTemplate(template.id, updateData);
               }
             }
           });

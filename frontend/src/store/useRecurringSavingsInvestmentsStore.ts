@@ -208,11 +208,17 @@ export const useRecurringSavingsInvestmentsStore = create<RecurringSavingsInvest
                 // Check if end date reached
                 const isCompleted = template.endDate && nextDue > template.endDate;
                 
-                // Update template
-                get().updateTemplate(template.id, {
+                // Update template - if deductionDate was set, calculate next date based on frequency
+                const updateData: Partial<RecurringSavingsInvestment> = {
                   nextDueDate: nextDue,
                   status: isCompleted ? 'Completed' : template.status,
-                });
+                };
+                
+                if (template.deductionDate) {
+                  updateData.deductionDate = calculateNextDateFromDate(deductionDate, template.frequency);
+                }
+                
+                get().updateTemplate(template.id, updateData);
               }
             }
           });
