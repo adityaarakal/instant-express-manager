@@ -758,6 +758,7 @@ Run tests with: `npm test` in the frontend directory.
 - ✅ **Automatic Account Balance Updates** - COMPLETED
 - ✅ **Balance Sync Utility** - COMPLETED
 - ✅ **EMI ↔ Recurring Template Conversion** - COMPLETED
+- ✅ **Deduction Date Feature (Store Layer)** - COMPLETED
 
 ### Estimated Effort
 - **Phase 1 (Critical UX)**: ✅ **COMPLETED** (~40 hours)
@@ -797,9 +798,10 @@ Run tests with: `npm test` in the frontend directory.
 - ✅ Balance Sync Utility: **COMPLETED** (~3 hours)
 - ✅ EMIs vs Recurring Templates Guidance: **COMPLETED** (~2 hours)
 - ✅ EMI ↔ Recurring Template Conversion: **COMPLETED** (~6 hours)
-- **Total Estimated**: ~130 hours
-- **Total Completed**: ~156 hours (100%+)
-- **Remaining**: 0 hours
+- ✅ Deduction Date Feature (Store Layer): **COMPLETED** (~4 hours)
+- **Total Estimated**: ~134 hours
+- **Total Completed**: ~160 hours (100%+)
+- **Remaining**: UI layer for deduction date feature (~6 hours, optional)
 
 ---
 
