@@ -110,7 +110,14 @@ Before considering the project "complete":
    - Shows 'Saved' with checkmark for 3 seconds after success
    - Shows 'Save Failed' with error icon for 5 seconds on error
    - Auto-hides when idle
-2. **Add Copy Month Feature**: Duplicate a month's allocations to a new month
+2. ✅ **Add Copy Month Feature**: Duplicate a month's allocations to a new month - **COMPLETED**
+   - Created CopyMonthDialog component with month selection
+   - Copy all transactions (income, expense, savings/investment) from source to target month
+   - Automatically adjust dates to match target month (handles month-end edge cases)
+   - Exclude recurring template and EMI references (creates standalone transactions)
+   - Preserve all transaction fields (status, notes, descriptions, etc.)
+   - Show success toast with count of copied transactions
+   - Add Copy Month button to MonthViewHeader
 3. **Add Month Comparison View**: Compare two months side-by-side
 4. ✅ **Add Quick Filters**: Filter by account, bucket, or status in Planner - **COMPLETED**
    - Added AccountFilters component with account, bucket, and negative cash filters
