@@ -11,9 +11,9 @@ import './index.css';
 const isDevelopment = import.meta.env.DEV;
 
 const app = (
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
 );
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(

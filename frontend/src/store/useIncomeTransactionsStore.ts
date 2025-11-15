@@ -127,7 +127,7 @@ export const useIncomeTransactionsStore = create<IncomeTransactionsState>()(
 
           // Create merged transaction for balance updates
           const mergedTransaction = { ...existingTransaction, ...updates };
-
+          
           set((state) => ({
             transactions: state.transactions.map((transaction) =>
               transaction.id === id

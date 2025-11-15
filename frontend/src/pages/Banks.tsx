@@ -84,14 +84,14 @@ export function Banks() {
   const filteredBanks = useMemo(() => {
     return banks
       .filter((bank) => {
-        const matchesSearch = searchTerm === '' || 
-          bank.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (bank.country && bank.country.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          (bank.notes && bank.notes.toLowerCase().includes(searchTerm.toLowerCase()));
-        
-        const matchesType = filterType === 'All' || bank.type === filterType;
-        
-        return matchesSearch && matchesType;
+      const matchesSearch = searchTerm === '' || 
+        bank.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (bank.country && bank.country.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (bank.notes && bank.notes.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      const matchesType = filterType === 'All' || bank.type === filterType;
+      
+      return matchesSearch && matchesType;
       })
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt)); // Newest first
   }, [banks, searchTerm, filterType]);

@@ -40,14 +40,14 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
 
   return (
     <>
-      <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
-        <Stack spacing={2}>
+    <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
+      <Stack spacing={2}>
           <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-            <Stack direction="row" spacing={2} alignItems="center">
-              <CalendarMonthIcon color="primary" />
-              <Typography variant="h5" component="h2">
-                {formatMonthDate(month.monthStart)}
-              </Typography>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <CalendarMonthIcon color="primary" />
+          <Typography variant="h5" component="h2">
+            {formatMonthDate(month.monthStart)}
+          </Typography>
             </Stack>
             <Stack direction="row" spacing={1}>
               <Button
@@ -69,7 +69,7 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
                 Copy Month
               </Button>
             </Stack>
-          </Stack>
+        </Stack>
 
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 200 }}>

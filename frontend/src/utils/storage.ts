@@ -23,7 +23,7 @@ export const getLocalforageStorage = (name: string) => {
       // Track save status
       try {
         useSaveStatusStore.getState().setSaving();
-        await namespacedStore.setItem(key, value);
+      await namespacedStore.setItem(key, value);
         useSaveStatusStore.getState().setSaved();
       } catch (error) {
         useSaveStatusStore.getState().setError();
@@ -33,7 +33,7 @@ export const getLocalforageStorage = (name: string) => {
     removeItem: async (key: string) => {
       try {
         useSaveStatusStore.getState().setSaving();
-        await namespacedStore.removeItem(key);
+      await namespacedStore.removeItem(key);
         useSaveStatusStore.getState().setSaved();
       } catch (error) {
         useSaveStatusStore.getState().setError();

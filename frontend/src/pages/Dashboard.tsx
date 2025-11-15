@@ -166,48 +166,48 @@ export const Dashboard = memo(function Dashboard() {
           <TrendingUpIcon fontSize="small" />
           Overall Metrics (All Time)
         </Typography>
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          spacing={3}
-          sx={{ alignItems: 'stretch', width: '100%' }}
-        >
-          <SummaryCard
-            label="Total Income"
-            value={metrics.totalIncome}
-            description="Total received income from all transactions"
-            color="success"
-            icon={<AccountBalanceIcon fontSize="small" />}
-          />
-          <SummaryCard
-            label="Total Expenses"
-            value={metrics.totalExpenses}
-            description="Total expenses across all transactions"
-            color="error"
-            icon={<PendingActionsIcon fontSize="small" />}
-          />
-          <SummaryCard
-            label="Total Savings"
-            value={metrics.totalSavings}
-            description={
-              metrics.totalSavings > 0
-                ? 'Total completed savings/investment transactions'
-                : 'Start adding savings transfers to track progress'
-            }
-            color="success"
-            icon={<SavingsIcon fontSize="small" />}
-          />
-          <SummaryCard
-            label="Credit Card Outstanding"
-            value={metrics.creditCardOutstanding}
-            description={
-              metrics.creditCardOutstanding > 0
-                ? 'Total outstanding balance across all credit cards'
-                : 'No credit card outstanding balance'
-            }
-            color="warning"
-            icon={<CreditCardIcon fontSize="small" />}
-          />
-        </Stack>
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        spacing={3}
+        sx={{ alignItems: 'stretch', width: '100%' }}
+      >
+        <SummaryCard
+          label="Total Income"
+          value={metrics.totalIncome}
+          description="Total received income from all transactions"
+          color="success"
+          icon={<AccountBalanceIcon fontSize="small" />}
+        />
+        <SummaryCard
+          label="Total Expenses"
+          value={metrics.totalExpenses}
+          description="Total expenses across all transactions"
+          color="error"
+          icon={<PendingActionsIcon fontSize="small" />}
+        />
+        <SummaryCard
+          label="Total Savings"
+          value={metrics.totalSavings}
+          description={
+            metrics.totalSavings > 0
+              ? 'Total completed savings/investment transactions'
+              : 'Start adding savings transfers to track progress'
+          }
+          color="success"
+          icon={<SavingsIcon fontSize="small" />}
+        />
+        <SummaryCard
+          label="Credit Card Outstanding"
+          value={metrics.creditCardOutstanding}
+          description={
+            metrics.creditCardOutstanding > 0
+              ? 'Total outstanding balance across all credit cards'
+              : 'No credit card outstanding balance'
+          }
+          color="warning"
+          icon={<CreditCardIcon fontSize="small" />}
+        />
+      </Stack>
       </Box>
 
       <DueSoonReminders reminders={metrics.upcomingDueDates} />

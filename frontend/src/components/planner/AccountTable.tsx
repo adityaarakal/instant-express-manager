@@ -130,17 +130,17 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
                   }
                   arrow
                 >
-                  <Typography
-                    variant="body2"
-                    color={
-                      account.remainingCash !== null && account.remainingCash < 0
-                        ? 'error'
-                        : 'text.primary'
-                    }
+                <Typography
+                  variant="body2"
+                  color={
+                    account.remainingCash !== null && account.remainingCash < 0
+                      ? 'error'
+                      : 'text.primary'
+                  }
                     sx={{ fontStyle: 'italic', cursor: 'help' }}
-                  >
-                    {formatCurrency(account.remainingCash)}
-                  </Typography>
+                >
+                  {formatCurrency(account.remainingCash)}
+                </Typography>
                 </Tooltip>
                 <Typography variant="caption" color="text.secondary">
                   (calculated)

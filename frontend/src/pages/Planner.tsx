@@ -257,7 +257,7 @@ export const Planner = memo(function Planner() {
               {filteredMonth.accounts.length > 0 ? (
                 <>
                   <AccountTable month={filteredMonth} />
-                  <TotalsFooter month={activeMonth} totals={totals} />
+          <TotalsFooter month={activeMonth} totals={totals} />
                 </>
               ) : (
                 <EmptyState
