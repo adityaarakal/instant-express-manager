@@ -157,6 +157,10 @@ This ensures users always see the most recent and relevant data by default, whil
 - `src/types/banks.ts`: Bank type definitions
 - `src/types/bankAccounts.ts`: Bank account type definitions
 - `src/types/transactions.ts`: Transaction type definitions
+  - `IncomeTransaction`: Income transaction type
+  - `ExpenseTransaction`: Expense transaction type
+  - `SavingsInvestmentTransaction`: Savings/investment transaction type
+  - `TransferTransaction`: Internal account transfer type
 - `src/types/emis.ts`: EMI type definitions
 - `src/types/recurring.ts`: Recurring template type definitions
 - `src/types/plannedExpensesAggregated.ts`: Planner aggregated data types
