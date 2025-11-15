@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import type { AggregatedMonth } from '../../types/plannedExpensesAggregated';
 import { CopyMonthDialog } from './CopyMonthDialog';
+import { MonthComparisonDialog } from './MonthComparisonDialog';
 
 interface MonthViewHeaderProps {
   month: AggregatedMonth;
@@ -34,6 +36,7 @@ const formatMonthDate = (dateString: string): string => {
 export function MonthViewHeader({ month }: MonthViewHeaderProps) {
   const navigate = useNavigate();
   const [copyDialogOpen, setCopyDialogOpen] = useState(false);
+  const [compareDialogOpen, setCompareDialogOpen] = useState(false);
 
   return (
     <>
@@ -46,15 +49,26 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
                 {formatMonthDate(month.monthStart)}
               </Typography>
             </Stack>
-            <Button
-              variant="outlined"
-              startIcon={<ContentCopyIcon />}
-              onClick={() => setCopyDialogOpen(true)}
-              size="small"
-              className="no-print"
-            >
-              Copy Month
-            </Button>
+            <Stack direction="row" spacing={1}>
+              <Button
+                variant="outlined"
+                startIcon={<CompareArrowsIcon />}
+                onClick={() => setCompareDialogOpen(true)}
+                size="small"
+                className="no-print"
+              >
+                Compare
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<ContentCopyIcon />}
+                onClick={() => setCopyDialogOpen(true)}
+                size="small"
+                className="no-print"
+              >
+                Copy Month
+              </Button>
+            </Stack>
           </Stack>
 
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
@@ -115,6 +129,12 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
       onClose={() => setCopyDialogOpen(false)}
       sourceMonthId={month.id}
       sourceMonthStart={month.monthStart}
+    />
+    <MonthComparisonDialog
+      open={compareDialogOpen}
+      onClose={() => setCompareDialogOpen(false)}
+      currentMonthId={month.id}
+      currentMonthStart={month.monthStart}
     />
     </>
   );
