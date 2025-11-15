@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -64,6 +64,54 @@ export function Settings() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [clearDataDialogOpen, setClearDataDialogOpen] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [appVersion, setAppVersion] = useState<string>(
+    (() => {
+      // Try to read from meta tag first (for automatic updates)
+      const metaVersion = document.querySelector('meta[name="app-version"]')?.getAttribute('content');
+      // Fallback to build-time constant, then default
+      return metaVersion || (typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0');
+    })()
+  );
+
+  // Fetch version dynamically at runtime
+  useEffect(() => {
+    const fetchVersion = async () => {
+      try {
+        // Try to fetch from API endpoint (works in dev and production)
+        const response = await fetch('/api/version');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.version) {
+            setAppVersion(data.version);
+            return;
+          }
+        }
+      } catch (error) {
+        // Fallback to version.json if API not available
+      }
+      
+      try {
+        // Try to fetch from version.json (static file)
+        const response = await fetch('/version.json?t=' + Date.now());
+        if (response.ok) {
+          const data = await response.json();
+          if (data.version) {
+            setAppVersion(data.version);
+            return;
+          }
+        }
+      } catch (error) {
+        // Keep existing version if fetch fails
+      }
+    };
+
+    fetchVersion();
+    // Poll for version changes every 5 seconds in development
+    if (import.meta.env.DEV) {
+      const interval = setInterval(fetchVersion, 5000);
+      return () => clearInterval(interval);
+    }
+  }, []);
 
   const handleSave = () => {
     updateSettings(localSettings);
@@ -490,12 +538,7 @@ export function Settings() {
           
           <Stack spacing={2} alignItems="center">
             <Typography variant="body2" color="text.secondary">
-              Version: {(() => {
-                // Try to read from meta tag first (for automatic updates)
-                const metaVersion = document.querySelector('meta[name="app-version"]')?.getAttribute('content');
-                // Fallback to build-time constant, then default
-                return metaVersion || (typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0');
-              })()}
+              Version: {appVersion}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Instant Express Manager

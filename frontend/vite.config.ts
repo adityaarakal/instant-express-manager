@@ -2,16 +2,35 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
-import { readFileSync } from 'fs'
+import { readFileSync, writeFileSync } from 'fs'
 
 // Read version from root package.json (source of truth for version)
 const packageJson = JSON.parse(readFileSync('../package.json', 'utf-8'))
 const version = packageJson.version
 
-// Vite plugin to inject version into HTML meta tag
+// Vite plugin to inject version into HTML meta tag and update version.json
 function injectVersionMeta() {
   return {
     name: 'inject-version-meta',
+    buildStart() {
+      // Update version.json in public folder on build start
+      const versionFile = path.resolve(__dirname, 'public/version.json');
+      writeFileSync(versionFile, JSON.stringify({ version }, null, 2) + '\n');
+    },
+    configureServer(server) {
+      // Middleware to serve version dynamically from package.json at runtime
+      server.middlewares.use('/api/version', (req, res, next) => {
+        try {
+          const packageJsonPath = path.resolve(__dirname, '../package.json');
+          const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Cache-Control', 'no-cache');
+          res.end(JSON.stringify({ version: packageJson.version }));
+        } catch (error) {
+          next();
+        }
+      });
+    },
     transformIndexHtml(html: string) {
       return html.replace(
         '<head>',
@@ -125,7 +144,7 @@ export default defineConfig({
     },
     chunkSizeWarningLimit: 1000
   },
-  server: {
+    server: {
     port: 7001,
     strictPort: true, // Prevent port changes - IndexedDB is origin-scoped (includes port)
     // If port 7001 is in use, Vite will fail instead of trying another port
@@ -135,7 +154,8 @@ export default defineConfig({
       ignored: ['!**/package.json'],
     },
     proxy: {
-      '/api': {
+      // Don't proxy /api/version - let the middleware handle it
+      '^(?!/api/version)/api': {
         target: 'http://localhost:3000',
         changeOrigin: true
       }
