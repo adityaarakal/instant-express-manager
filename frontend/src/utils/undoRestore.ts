@@ -1,4 +1,4 @@
-import { useUndoStore, type EntityType } from '../store/useUndoStore';
+import { useUndoStore } from '../store/useUndoStore';
 import { useBanksStore } from '../store/useBanksStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore';
@@ -171,7 +171,7 @@ export function restoreDeletedItem(itemId: string): boolean {
       }
 
       default:
-        showError(`Unknown entity type: ${(deletedItem as any).type}`);
+        showError(`Unknown entity type: ${(deletedItem as { type: string }).type}`);
         return false;
     }
 

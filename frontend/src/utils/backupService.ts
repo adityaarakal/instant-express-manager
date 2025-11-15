@@ -85,7 +85,7 @@ export function downloadBackup(): void {
 /**
  * Validates backup data structure
  */
-export function validateBackup(data: any): data is BackupData {
+export function validateBackup(data: unknown): data is BackupData {
   if (!data || typeof data !== 'object') {
     return false;
   }

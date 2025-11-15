@@ -148,7 +148,6 @@ export function calculateAggregatedBucketTotals(
 
   month.bucketOrder.forEach((bucketId) => {
     const bucketExpenses = monthExpenses.filter((t) => t.bucket === bucketId);
-    const status = month.statusByBucket[bucketId] || 'Pending';
 
     const pendingAmount = bucketExpenses
       .filter((t) => t.status === 'Pending')

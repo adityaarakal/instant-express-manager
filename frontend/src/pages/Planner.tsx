@@ -134,6 +134,34 @@ export const Planner = memo(function Planner() {
     setFilteredMonths(availableMonths);
   }, [availableMonths]);
 
+  // Memoize months data outside JSX (before early return)
+  const filteredMonthsData = useMemo(
+    () =>
+      availableMonths
+        .map((id) => {
+          const month = getMonth(id);
+          return month
+            ? {
+                id: month.id,
+                monthStart: month.monthStart,
+                accounts: month.accounts,
+              }
+            : null;
+        })
+        .filter(
+          (m): m is { id: string; monthStart: string; accounts: AggregatedMonth['accounts'] } => m !== null
+        ),
+    [availableMonths, getMonth]
+  );
+
+  // Memoize filter change handler (before early return)
+  const handleFilterChange = useCallback(
+    (filtered: Array<{ id: string; monthStart: string; accounts: AggregatedMonth['accounts'] }>) => {
+      setFilteredMonths(filtered.map((m) => m.id));
+    },
+    []
+  );
+
   if (availableMonths.length === 0) {
     return (
       <Stack spacing={3}>
@@ -157,30 +185,8 @@ export const Planner = memo(function Planner() {
     <Stack spacing={3}>
       <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }} className="no-print">
         <MonthSearchFilter
-          months={useMemo(
-            () =>
-              availableMonths
-                .map((id) => {
-                  const month = getMonth(id);
-                  return month
-                    ? {
-                        id: month.id,
-                        monthStart: month.monthStart,
-                        accounts: month.accounts,
-                      }
-                    : null;
-                })
-                .filter(
-                  (m): m is { id: string; monthStart: string; accounts: AggregatedMonth['accounts'] } => m !== null
-                ),
-            [availableMonths, getMonth]
-          )}
-          onFilterChange={useCallback(
-            (filtered) => {
-              setFilteredMonths(filtered.map((m) => m.id));
-            },
-            []
-          )}
+          months={filteredMonthsData}
+          onFilterChange={handleFilterChange}
         />
           <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
           <FormControl fullWidth size="small">

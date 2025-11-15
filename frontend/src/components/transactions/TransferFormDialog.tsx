@@ -75,7 +75,6 @@ export function TransferFormDialog({
 
   // Get account details for display
   const fromAccount = accounts.find((acc) => acc.id === formData.fromAccountId);
-  const toAccount = accounts.find((acc) => acc.id === formData.toAccountId);
 
   // Field-level validation
   const fieldErrors = useMemo(() => {

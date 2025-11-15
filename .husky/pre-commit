@@ -1,0 +1,140 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# ============================================================================
+# STRICT COMPLIANCE ENFORCEMENT - NO BYPASSING ALLOWED
+# ============================================================================
+
+echo "🚨 STRICT COMPLIANCE CHECK - ZERO TOLERANCE POLICY"
+echo "⚠️  NO BYPASSING METHODS ALLOWED - ALL CHECKS MUST PASS"
+echo ""
+
+# ============================================================================
+# ABSOLUTE PROHIBITION: --no-verify DETECTION
+# ============================================================================
+# Check if --no-verify was used (this should never happen if hook is called)
+# But we check anyway to be absolutely certain
+echo "🔍 Checking for --no-verify usage..."
+if [ "$HUSKY_SKIP_HOOKS" = "1" ] || [ "$HUSKY" = "0" ]; then
+    echo "❌ CRITICAL ERROR: Pre-commit hooks were bypassed!"
+    echo "❌ This violates the ZERO TOLERANCE POLICY"
+    echo "❌ All commits MUST pass all validation checks"
+    echo ""
+    echo "🔒 ENFORCEMENT: Commit blocked due to bypass attempt"
+    echo "📋 REQUIRED: Fix all issues and commit without bypassing"
+    echo ""
+    exit 1
+fi
+
+# Check command line arguments for --no-verify
+# This is a safety check - if we're here, the hook is running
+# But we check parent processes for any --no-verify flags
+if ps -p $PPID -o args= 2>/dev/null | grep -- '--no-verify' > /dev/null 2>&1; then
+    echo "❌ CRITICAL ERROR: --no-verify flag detected in commit command!"
+    echo "❌ ABSOLUTE PROHIBITION: --no-verify is FORBIDDEN at all costs"
+    echo "❌ NO EXCEPTIONS - NOT EVEN WITH USER PERMISSION"
+    echo ""
+    echo "🔒 ENFORCEMENT: Commit blocked - --no-verify is ABSOLUTELY PROHIBITED"
+    echo "📋 REQUIRED: Fix all issues and commit without --no-verify"
+    echo "📋 RULE VIOLATION: This violates Zero Bypassing Tolerance"
+    echo ""
+    exit 1
+fi
+
+# Check for other bypassing methods
+if [ -n "$SKIP_HOOKS" ] || [ -n "$SKIP_PRE_COMMIT" ] || [ -n "$BYPASS_CHECKS" ]; then
+    echo "❌ CRITICAL ERROR: Bypass flags detected!"
+    echo "❌ Detected bypass flags: SKIP_HOOKS, SKIP_PRE_COMMIT, or BYPASS_CHECKS"
+    echo "❌ This violates the ZERO TOLERANCE POLICY"
+    echo ""
+    echo "🔒 ENFORCEMENT: Commit blocked due to bypass attempt"
+    exit 1
+fi
+
+# ============================================================================
+# PROTECTION: Prevent commits to main branch
+# ============================================================================
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+if [ "$current_branch" = "main" ]; then
+  echo "❌ Error: Direct commits to main branch are not allowed!"
+  echo "Please create a feature branch and submit a pull request instead."
+  echo ""
+  echo "Suggested workflow:"
+  echo "  1. git checkout -b feature/your-feature-name"
+  echo "  2. Make your changes"
+  echo "  3. git add . && git commit -m 'your message'"
+  echo "  4. git push origin feature/your-feature-name"
+  echo "  5. Create a pull request on GitHub"
+  echo ""
+  echo "🔒 ENFORCEMENT: Main branch is protected"
+  echo "📋 REQUIRED: Use feature branches and PR workflow"
+  exit 1
+fi
+
+# ============================================================================
+# STEP 1: LINTING VALIDATION
+# ============================================================================
+echo "📋 Step 1/3: Linting Validation"
+echo "Running ESLint validation (excluding test files)..."
+cd frontend
+# Run lint on production code only (exclude test files and __tests__ directories)
+npx eslint 'src/**/*.{ts,tsx}' --ignore-pattern '**/__tests__/**' --ignore-pattern '**/*.test.ts' --ignore-pattern '**/*.test.tsx' --report-unused-disable-directives --max-warnings 3
+if [ $? -ne 0 ]; then
+  echo "❌ CRITICAL: ESLint errors or warnings found in production code."
+  echo "❌ ALL production code errors must be fixed before commit."
+  echo "🔒 ENFORCEMENT: Commit blocked - Fix production code errors first"
+  echo "📋 REQUIRED: Run 'npm run lint' and fix ALL production code errors/warnings"
+  echo "ℹ️  Note: Test file errors are acceptable and excluded from this check"
+  exit 1
+fi
+cd ..
+echo "✅ Production code linting validation passed!"
+echo ""
+
+# ============================================================================
+# STEP 2: TYPE CHECKING
+# ============================================================================
+echo "📋 Step 2/3: Type Checking"
+echo "Running TypeScript compilation check..."
+cd frontend
+npx tsc --noEmit
+if [ $? -ne 0 ]; then
+  echo "❌ CRITICAL: TypeScript compilation errors found."
+  echo "❌ ALL TypeScript errors must be fixed before commit."
+  echo "🔒 ENFORCEMENT: Commit blocked - Fix TypeScript errors first"
+  echo "📋 REQUIRED: Fix ALL TypeScript compilation errors"
+  cd ..
+  exit 1
+fi
+cd ..
+echo "✅ Type checking passed!"
+echo ""
+
+# ============================================================================
+# STEP 3: BUILD VALIDATION
+# ============================================================================
+echo "📋 Step 3/3: Build Validation"
+echo "Running production build validation..."
+cd frontend
+npm run build
+if [ $? -ne 0 ]; then
+  echo "❌ CRITICAL: Build validation failed."
+  echo "❌ Production build must succeed - no build errors allowed"
+  echo "🔒 ENFORCEMENT: Commit blocked - Fix build errors first"
+  echo "📋 REQUIRED: Run 'npm run build' and fix ALL build errors"
+  exit 1
+fi
+cd ..
+echo "✅ Build validation passed!"
+echo ""
+
+# ============================================================================
+# SUCCESS - ALL CHECKS PASSED
+# ============================================================================
+echo "🎉 ALL PRE-COMMIT VALIDATIONS PASSED!"
+echo "✅ Your code meets ALL quality standards"
+echo "✅ Ready to commit!"
+echo ""
+echo "🔒 ENFORCEMENT STATUS: COMPLIANT"
+echo "📋 POLICY: ZERO TOLERANCE - NO BYPASSING ALLOWED"
+echo "✅ RESULT: Commit approved - All standards met"

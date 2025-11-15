@@ -1,6 +1,4 @@
 import type { BankAccount } from './bankAccounts';
-import type { IncomeTransaction, ExpenseTransaction, SavingsInvestmentTransaction } from './transactions';
-import type { ExpenseBucket } from './transactions';
 
 /**
  * Aggregated month view - derived from transactions

@@ -10,7 +10,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
 import type { ExpenseTransaction } from '../../types/transactions';
@@ -68,7 +67,7 @@ export const ExpenseBreakdownChart = memo(function ExpenseBreakdownChart({ trans
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={(entry: any) => {
+                label={(entry: { name: string; percent?: number; value: number }) => {
                   const percent = entry.percent || 0;
                   return `${entry.name} ${(percent * 100).toFixed(0)}%`;
                 }}

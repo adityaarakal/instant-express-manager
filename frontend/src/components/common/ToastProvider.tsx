@@ -1,4 +1,4 @@
-import { Snackbar, Alert, AlertTitle, IconButton, Box, Button } from '@mui/material';
+import { Snackbar, Alert, IconButton, Box, Button } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useToastStore } from '../../store/useToastStore';
 

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -11,7 +10,6 @@ import {
   Box,
 } from '@mui/material';
 import KeyboardIcon from '@mui/icons-material/Keyboard';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 interface Shortcut {
   keys: string[];

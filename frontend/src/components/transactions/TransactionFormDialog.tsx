@@ -25,7 +25,6 @@ import {
   validateTransaction,
   validateAmount,
   validateDate,
-  validateDateRange,
 } from '../../utils/validation';
 import { useIncomeTransactionsStore } from '../../store/useIncomeTransactionsStore';
 import { useExpenseTransactionsStore } from '../../store/useExpenseTransactionsStore';
@@ -39,7 +38,7 @@ interface TransactionFormDialogProps {
   type: TabValue;
   accounts: BankAccount[];
   editingTransaction?: IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction | null;
-  onSave: (data: any) => void | Promise<void>;
+  onSave: (data: IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction) => void | Promise<void>;
   isSaving?: boolean;
 }
 

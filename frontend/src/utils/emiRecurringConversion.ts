@@ -55,9 +55,10 @@ function calculateTotalInstallments(
       return months;
     case 'Quarterly':
       return Math.ceil(months / 3);
-    case 'Weekly':
+    case 'Weekly': {
       const weeks = Math.ceil((end.getTime() - start.getTime()) / (7 * 24 * 60 * 60 * 1000));
       return weeks;
+    }
     case 'Yearly':
       return Math.ceil(months / 12);
     default:

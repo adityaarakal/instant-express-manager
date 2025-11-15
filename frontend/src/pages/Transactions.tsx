@@ -1,14 +1,10 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Alert,
   AlertTitle,
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Paper,
   Stack,
   Table,
@@ -18,13 +14,8 @@ import {
   TableHead,
   TableRow,
   TablePagination,
-  TextField,
   Typography,
   IconButton,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
   Tabs,
   Tab,
   Chip,
@@ -104,7 +95,7 @@ export function Transactions() {
   const { transactions: incomeTransactions, createTransaction: createIncome, updateTransaction: updateIncome, deleteTransaction: deleteIncome } = useIncomeTransactionsStore();
   const { transactions: expenseTransactions, createTransaction: createExpense, updateTransaction: updateExpense, deleteTransaction: deleteExpense } = useExpenseTransactionsStore();
   const { transactions: savingsTransactions, createTransaction: createSavings, updateTransaction: updateSavings, deleteTransaction: deleteSavings } = useSavingsInvestmentTransactionsStore();
-  const { transfers: transferTransactions, createTransfer, updateTransfer, deleteTransfer } = useTransferTransactionsStore();
+  const { transfers: transferTransactions, deleteTransfer } = useTransferTransactionsStore();
   const { accounts } = useBankAccountsStore();
   const { showSuccess, showError, showToast } = useToastStore();
 
@@ -154,34 +145,6 @@ export function Transactions() {
     setSelectedIds(new Set());
     setPage(0); // Reset to first page when tab changes
   }, [activeTab]);
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Ctrl/Cmd + N - Open new transaction dialog
-      if ((event.ctrlKey || event.metaKey) && event.key === 'n' && !dialogOpen) {
-        const target = event.target as HTMLElement;
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
-          event.preventDefault();
-          if (accounts.length > 0) {
-            handleOpenDialog();
-          }
-        }
-      }
-
-      // Ctrl/Cmd + K - Focus search input
-      if ((event.ctrlKey || event.metaKey) && event.key === 'k' && !dialogOpen) {
-        const target = event.target as HTMLElement;
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
-          event.preventDefault();
-          searchInputRef.current?.focus();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dialogOpen, accounts.length]);
 
   const accountsMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -276,7 +239,7 @@ export function Transactions() {
     setSelectedIds(new Set()); // Clear selection when changing page size
   };
 
-  const handleOpenDialog = (transactionId?: string) => {
+  const handleOpenDialog = useCallback((transactionId?: string) => {
     if (transactionId) {
       if (activeTab === 'income') {
         const t = incomeTransactions.find((t) => t.id === transactionId);
@@ -292,7 +255,35 @@ export function Transactions() {
       setEditingTransaction(null);
     }
     setDialogOpen(true);
-  };
+  }, [activeTab, incomeTransactions, expenseTransactions, savingsTransactions]);
+
+  // Keyboard shortcuts - moved after handleOpenDialog declaration
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl/Cmd + N - Open new transaction dialog
+      if ((event.ctrlKey || event.metaKey) && event.key === 'n' && !dialogOpen) {
+        const target = event.target as HTMLElement;
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+          event.preventDefault();
+          if (accounts.length > 0) {
+            handleOpenDialog();
+          }
+        }
+      }
+
+      // Ctrl/Cmd + K - Focus search input
+      if ((event.ctrlKey || event.metaKey) && event.key === 'k' && !dialogOpen) {
+        const target = event.target as HTMLElement;
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+          event.preventDefault();
+          searchInputRef.current?.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [dialogOpen, accounts.length, handleOpenDialog]);
 
   const handleOpenTransferDialog = (transferId?: string) => {
     if (transferId) {
@@ -1057,7 +1048,7 @@ export function Transactions() {
           accounts={accounts}
           editingTransaction={editingTransaction}
           isSaving={isSaving}
-        onSave={async (data: any) => {
+        onSave={async (data: IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction) => {
           setIsSaving(true);
           try {
             await new Promise((resolve) => setTimeout(resolve, 200));

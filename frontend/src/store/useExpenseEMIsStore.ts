@@ -35,13 +35,6 @@ type ExpenseEMIsState = {
 
 const storage = getLocalforageStorage('expense-emis');
 
-const calculateNextDueDate = (startDate: string, frequency: ExpenseEMI['frequency'], installmentNumber: number): string => {
-  const start = new Date(startDate);
-  const monthsToAdd = frequency === 'Monthly' ? installmentNumber : installmentNumber * 3;
-  const nextDate = new Date(start.getFullYear(), start.getMonth() + monthsToAdd, start.getDate());
-  return nextDate.toISOString().split('T')[0];
-};
-
 export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
   devtools(
     persist(
@@ -371,7 +364,7 @@ export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
               get().updateEMI(emiId, { deductionDate: newDate });
               break;
 
-            case 'all-future':
+            case 'all-future': {
               // Update deductionDate and shift all future pending transactions by the offset
               const currentDeductionDate = getEffectiveEMIDeductionDate(emi);
               const offset = calculateDateOffset(currentDeductionDate, newDate);
@@ -387,8 +380,9 @@ export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
                   transactionsStore.updateTransaction(transaction.id, { date: newTransactionDate });
                 });
               break;
+            }
 
-            case 'reset-schedule':
+            case 'reset-schedule': {
               // Reset deductionDate and recalculate future transactions
               get().updateEMI(emiId, { deductionDate: newDate });
               
@@ -406,6 +400,7 @@ export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
                   transactionsStore.updateTransaction(transaction.id, { date: currentDate });
                 });
               break;
+            }
           }
         },
       }),

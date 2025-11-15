@@ -1,7 +1,6 @@
 import { useMemo, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box,
   Paper,
   Stack,
   Table,

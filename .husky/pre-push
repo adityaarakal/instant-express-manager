@@ -1,0 +1,26 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# ============================================================================
+# PROTECTION: Prevent pushing to main branch
+# ============================================================================
+
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+if [ "$current_branch" = "main" ]; then
+  echo "❌ Error: Direct pushes to main branch are not allowed!"
+  echo "Please create a feature branch and submit a pull request instead."
+  echo ""
+  echo "Suggested workflow:"
+  echo "  1. git checkout -b feature/your-feature-name"
+  echo "  2. Make your changes"
+  echo "  3. git add . && git commit -m 'your message'"
+  echo "  4. git push origin feature/your-feature-name"
+  echo "  5. Create a pull request on GitHub"
+  echo ""
+  echo "🔒 ENFORCEMENT: Main branch is protected"
+  echo "📋 REQUIRED: Use feature branches and PR workflow"
+  exit 1
+fi
+
+echo "✅ Pre-push validation passed - Feature branch confirmed"
+
