@@ -138,6 +138,12 @@ The app automatically updates account balances based on transaction status:
 - If you move a transaction to a different account, both accounts' balances are updated correctly
 - You can always manually update an account's balance in the Accounts page if needed
 
+**Auto-Generated Transactions (EMIs & Recurring Templates):**
+- Auto-generated transactions from EMIs and Recurring templates are created with status "Pending" by default
+- This is intentional - they represent planned transactions that haven't been confirmed yet
+- When you mark an auto-generated transaction as "Received" (income), "Paid" (expense), or "Completed" (savings/investment), the balance will update automatically
+- Until then, the balance remains unchanged because the transaction is still "Pending"
+
 ### Bulk Operations
 
 1. Select multiple transactions using checkboxes

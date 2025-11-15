@@ -249,6 +249,21 @@ Each transaction store calls the balance update utility in:
 - `updateTransaction()`: After updating transaction, calculating the difference between old and new status/amount/account
 - `deleteTransaction()`: Before deleting transaction, reversing balance change if applicable
 
+### Auto-Generated Transactions
+
+**EMIs and Recurring Templates:**
+- Auto-generated transactions from EMIs and Recurring templates are created with `status: 'Pending'` by default
+- This is intentional design - auto-generated transactions represent planned/scheduled transactions that haven't been confirmed yet
+- Balance updates only occur when the user manually changes the status to "Received"/"Paid"/"Completed"
+- The following stores generate transactions with "Pending" status:
+  - `useExpenseEMIsStore`: Expense EMIs → `status: 'Pending'`
+  - `useSavingsInvestmentEMIsStore`: Savings/Investment EMIs → `status: 'Pending'`
+  - `useRecurringIncomesStore`: Recurring Income → `status: 'Pending'`
+  - `useRecurringExpensesStore`: Recurring Expense → `status: 'Pending'`
+  - `useRecurringSavingsInvestmentsStore`: Recurring Savings/Investment → `status: 'Pending'`
+
+This ensures that balance updates only happen when transactions are actually confirmed, not just scheduled.
+
 ## Validation & Business Rules
 
 ### Store-Level Validation
