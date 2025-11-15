@@ -241,8 +241,21 @@ The app automatically updates account balances based on transaction status:
 - **Pause/Resume**: Click the pause/resume button to pause or resume an EMI
 - **View Transactions**: Click the transaction count to view generated transactions
 - **Progress Tracking**: See "X / Y installments" progress bar showing completion status
+- **Convert to Recurring**: Click the swap icon (⇄) to convert this EMI to a Recurring Template (useful if you realize the payment doesn't have a fixed end date)
 - **Edit**: Click the edit icon to modify the EMI
 - **Delete**: Click the delete icon to remove the EMI (only if no transactions are linked)
+
+### Converting EMIs to Recurring Templates
+
+If you created an EMI but later realize it should be a Recurring Template (e.g., the payment doesn't have a fixed number of installments), you can convert it:
+
+1. Click the **swap icon (⇄)** next to the EMI you want to convert
+2. Review the conversion wizard that shows:
+   - What will change (installment tracking removed, end date becomes optional, etc.)
+   - A summary of field changes
+3. Click **Confirm Conversion**
+4. The EMI will be converted to a Recurring Template, and all existing transactions will be updated to reference the new template
+5. The old EMI will be deleted automatically
 
 ### Auto-Generation
 
@@ -282,8 +295,22 @@ EMIs automatically generate transactions based on their schedule until all insta
 - **Pause/Resume**: Click the pause/resume button to pause or resume generation
 - **View Transactions**: Click the transaction count to view generated transactions
 - **Next Due Date**: See when the next transaction will be generated
+- **Convert to EMI**: Click the swap icon (⇄) to convert this Recurring Template to an EMI (useful if you realize the payment has a fixed number of installments with a known end date)
 - **Edit**: Click the edit icon to modify the template
 - **Delete**: Click the delete icon to remove the template (only if no transactions are linked)
+
+### Converting Recurring Templates to EMIs
+
+If you created a Recurring Template but later realize it should be an EMI (e.g., you have a loan with a fixed number of installments), you can convert it:
+
+1. Click the **swap icon (⇄)** next to the Recurring Template you want to convert (available for Expense and Savings/Investment templates only)
+2. Review the conversion wizard that shows:
+   - What will change (installment tracking added, end date becomes required, etc.)
+   - A summary of field changes
+   - Note: If your template doesn't have an end date, one will be calculated (defaults to 1 year from start date)
+3. Click **Confirm Conversion**
+4. The Recurring Template will be converted to an EMI, and all existing transactions will be updated to reference the new EMI
+5. The old Recurring Template will be deleted automatically
 
 ### Auto-Generation
 

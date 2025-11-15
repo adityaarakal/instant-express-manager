@@ -2,9 +2,11 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type { RecurringExpense } from '../types/recurring';
 import { useExpenseTransactionsStore } from './useExpenseTransactionsStore';
+import { useExpenseEMIsStore } from './useExpenseEMIsStore';
 import { useBankAccountsStore } from './useBankAccountsStore';
 import { validateDate, validateAmount, validateDateRange } from '../utils/validation';
 import { getLocalforageStorage } from '../utils/storage';
+import { convertRecurringExpenseToEMI } from '../utils/emiRecurringConversion';
 
 type RecurringExpensesState = {
   templates: RecurringExpense[];
@@ -23,6 +25,8 @@ type RecurringExpensesState = {
   getActiveTemplates: () => RecurringExpense[];
   getTemplatesByAccount: (accountId: string) => RecurringExpense[];
   getTemplatesByStatus: (status: RecurringExpense['status']) => RecurringExpense[];
+  // Conversion
+  convertToEMI: (templateId: string) => string; // Returns new EMI ID
 };
 
 const storage = getLocalforageStorage('recurring-expenses');
@@ -225,6 +229,44 @@ export const useRecurringExpensesStore = create<RecurringExpensesState>()(
         },
         getTemplatesByStatus: (status) => {
           return get().templates.filter((template) => template.status === status);
+        },
+        convertToEMI: (templateId) => {
+          const template = get().getTemplate(templateId);
+          if (!template) {
+            throw new Error(`Recurring template with id ${templateId} does not exist`);
+          }
+
+          // Convert Recurring template to EMI
+          const convertedData = convertRecurringExpenseToEMI(template);
+
+          // Create new EMI
+          useExpenseEMIsStore.getState().createEMI(convertedData);
+
+          // Get the newly created EMI (find the most recent one that matches)
+          const allEMIs = useExpenseEMIsStore.getState().emis;
+          const matchingEMIs = allEMIs.filter(
+            (e) => e.name === template.name && e.accountId === template.accountId && e.amount === template.amount
+          );
+          // Sort by createdAt descending and get the first (most recent)
+          const newEMI = matchingEMIs.sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
+          
+          if (!newEMI) {
+            throw new Error('Failed to create EMI');
+          }
+
+          // Update all transactions that reference this recurring template to reference the new EMI
+          const transactions = useExpenseTransactionsStore.getState().transactions.filter((t) => t.recurringTemplateId === templateId);
+          transactions.forEach((transaction) => {
+            useExpenseTransactionsStore.getState().updateTransaction(transaction.id, {
+              recurringTemplateId: undefined,
+              emiId: newEMI.id,
+            });
+          });
+
+          // Delete the old recurring template
+          get().deleteTemplate(templateId);
+
+          return newEMI.id;
         },
       }),
       {

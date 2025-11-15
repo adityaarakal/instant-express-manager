@@ -2,9 +2,11 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type { RecurringSavingsInvestment } from '../types/recurring';
 import { useSavingsInvestmentTransactionsStore } from './useSavingsInvestmentTransactionsStore';
+import { useSavingsInvestmentEMIsStore } from './useSavingsInvestmentEMIsStore';
 import { useBankAccountsStore } from './useBankAccountsStore';
 import { validateDate, validateAmount, validateDateRange } from '../utils/validation';
 import { getLocalforageStorage } from '../utils/storage';
+import { convertRecurringSavingsToEMI } from '../utils/emiRecurringConversion';
 
 type RecurringSavingsInvestmentsState = {
   templates: RecurringSavingsInvestment[];
@@ -23,6 +25,8 @@ type RecurringSavingsInvestmentsState = {
   getActiveTemplates: () => RecurringSavingsInvestment[];
   getTemplatesByAccount: (accountId: string) => RecurringSavingsInvestment[];
   getTemplatesByStatus: (status: RecurringSavingsInvestment['status']) => RecurringSavingsInvestment[];
+  // Conversion
+  convertToEMI: (templateId: string) => string; // Returns new EMI ID
 };
 
 const storage = getLocalforageStorage('recurring-savings-investments');
@@ -224,6 +228,44 @@ export const useRecurringSavingsInvestmentsStore = create<RecurringSavingsInvest
         },
         getTemplatesByStatus: (status) => {
           return get().templates.filter((template) => template.status === status);
+        },
+        convertToEMI: (templateId) => {
+          const template = get().getTemplate(templateId);
+          if (!template) {
+            throw new Error(`Recurring template with id ${templateId} does not exist`);
+          }
+
+          // Convert Recurring template to EMI
+          const convertedData = convertRecurringSavingsToEMI(template);
+
+          // Create new EMI
+          useSavingsInvestmentEMIsStore.getState().createEMI(convertedData);
+
+          // Get the newly created EMI (find the most recent one that matches)
+          const allEMIs = useSavingsInvestmentEMIsStore.getState().emis;
+          const matchingEMIs = allEMIs.filter(
+            (e) => e.name === template.name && e.accountId === template.accountId && e.amount === template.amount
+          );
+          // Sort by createdAt descending and get the first (most recent)
+          const newEMI = matchingEMIs.sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
+          
+          if (!newEMI) {
+            throw new Error('Failed to create EMI');
+          }
+
+          // Update all transactions that reference this recurring template to reference the new EMI
+          const transactions = useSavingsInvestmentTransactionsStore.getState().transactions.filter((t) => t.recurringTemplateId === templateId);
+          transactions.forEach((transaction) => {
+            useSavingsInvestmentTransactionsStore.getState().updateTransaction(transaction.id, {
+              recurringTemplateId: undefined,
+              emiId: newEMI.id,
+            });
+          });
+
+          // Delete the old recurring template
+          get().deleteTemplate(templateId);
+
+          return newEMI.id;
         },
       }),
       {

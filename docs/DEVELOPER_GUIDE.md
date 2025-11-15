@@ -70,16 +70,23 @@ Key stores:
 - `src/store/useIncomeTransactionsStore.ts`: Income transaction CRUD with automatic balance updates
 - `src/store/useExpenseTransactionsStore.ts`: Expense transaction CRUD with automatic balance updates
 - `src/store/useSavingsInvestmentTransactionsStore.ts`: Savings/investment transaction CRUD with automatic balance updates
-- `src/store/useExpenseEMIsStore.ts`: Expense EMI CRUD with auto-generation
-- `src/store/useSavingsInvestmentEMIsStore.ts`: Savings/investment EMI CRUD
+- `src/store/useExpenseEMIsStore.ts`: Expense EMI CRUD with auto-generation and conversion to Recurring
+- `src/store/useSavingsInvestmentEMIsStore.ts`: Savings/investment EMI CRUD with conversion to Recurring
 - `src/store/useRecurringIncomesStore.ts`: Recurring income template CRUD
-- `src/store/useRecurringExpensesStore.ts`: Recurring expense template CRUD
-- `src/store/useRecurringSavingsInvestmentsStore.ts`: Recurring savings/investment template CRUD
+- `src/store/useRecurringExpensesStore.ts`: Recurring expense template CRUD with conversion to EMI
+- `src/store/useRecurringSavingsInvestmentsStore.ts`: Recurring savings/investment template CRUD with conversion to EMI
 
 ### Services
 
 - `src/services/autoGenerationService.ts`: Auto-generates transactions from EMIs and recurring templates
   - `generateEMITransactions`: Generates transactions for active EMIs
+- `src/utils/emiRecurringConversion.ts`: Conversion utilities between EMIs and Recurring Templates
+  - `convertExpenseEMIToRecurring`: Converts ExpenseEMI to RecurringExpense
+  - `convertSavingsEMIToRecurring`: Converts SavingsInvestmentEMI to RecurringSavingsInvestment
+  - `convertRecurringExpenseToEMI`: Converts RecurringExpense to ExpenseEMI
+  - `convertRecurringSavingsToEMI`: Converts RecurringSavingsInvestment to SavingsInvestmentEMI
+  - `getNextDueDateFromEMI`: Calculates next due date for recurring template from EMI
+- `src/components/common/ConversionWizard.tsx`: UI wizard for converting between EMIs and Recurring Templates
   - `generateRecurringTransactions`: Generates transactions for active recurring templates
 
 ### Month Selection Behavior

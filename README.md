@@ -165,6 +165,7 @@ instant-express-manager/
 - Installment tracking with progress indicators
 - Pause/Resume functionality
 - Auto-generation of EMI transactions
+- **Convert to Recurring**: Convert EMIs to Recurring Templates if you realize the payment doesn't have a fixed end date
 
 ### Recurring Transactions
 - **Recurring Income**: Set up recurring income streams
@@ -173,6 +174,7 @@ instant-express-manager/
 - Multiple frequency options (Monthly, Weekly, Quarterly, Yearly, Custom)
 - Auto-generation of recurring transactions
 - Pause/Resume functionality
+- **Convert to EMI**: Convert Recurring Templates to EMIs if you realize the payment has a fixed number of installments
 
 ### Planner
 - Monthly financial planning view

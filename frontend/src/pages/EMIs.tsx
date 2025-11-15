@@ -53,8 +53,10 @@ import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { EmptyState } from '../components/common/EmptyState';
+import { ConversionWizard } from '../components/common/ConversionWizard';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import SavingsIcon from '@mui/icons-material/Savings';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import type { ExpenseEMI, SavingsInvestmentEMI } from '../types/emis';
 
 const formatCurrency = (value: number): string => {
@@ -98,6 +100,9 @@ export function EMIs() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [infoAlertOpen, setInfoAlertOpen] = useState(true);
+  const [conversionWizardOpen, setConversionWizardOpen] = useState(false);
+  const [emiToConvert, setEmiToConvert] = useState<ExpenseEMI | SavingsInvestmentEMI | null>(null);
+  const [isConverting, setIsConverting] = useState(false);
 
   // Simulate initial load
   useEffect(() => {
@@ -362,6 +367,37 @@ export function EMIs() {
     }
   };
 
+  const handleConvertToRecurringClick = (emi: ExpenseEMI | SavingsInvestmentEMI) => {
+    setEmiToConvert(emi);
+    setConversionWizardOpen(true);
+  };
+
+  const handleConversionConfirm = async () => {
+    if (!emiToConvert) return;
+    
+    setIsConverting(true);
+    try {
+      if (activeTab === 'expense') {
+        convertExpenseEMIToRecurring(emiToConvert.id);
+        showSuccess('EMI converted to Recurring Template successfully');
+      } else {
+        convertSavingsEMIToRecurring(emiToConvert.id);
+        showSuccess('EMI converted to Recurring Template successfully');
+      }
+      setConversionWizardOpen(false);
+      setEmiToConvert(null);
+    } catch (error) {
+      showError(getUserFriendlyError(error, 'convert EMI'));
+    } finally {
+      setIsConverting(false);
+    }
+  };
+
+  const handleConversionCancel = () => {
+    setConversionWizardOpen(false);
+    setEmiToConvert(null);
+  };
+
   const allEMIs = useMemo(() => {
     return activeTab === 'expense' ? expenseEMIs : savingsEMIs;
   }, [activeTab, expenseEMIs, savingsEMIs]);
@@ -561,6 +597,16 @@ export function EMIs() {
                             ) : (
                               <PlayArrowIcon fontSize="small" />
                             )}
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleConvertToRecurringClick(emi)}
+                            disabled={deletingId !== null}
+                            aria-label={`Convert EMI ${emi.name} to Recurring Template`}
+                            title="Convert to Recurring Template"
+                            color="primary"
+                          >
+                            <SwapHorizIcon fontSize="small" />
                           </IconButton>
                           <IconButton 
                             size="small" 
@@ -778,6 +824,15 @@ export function EMIs() {
           setConfirmDeleteOpen(false);
           setEmiToDelete(null);
         }}
+      />
+
+      <ConversionWizard
+        open={conversionWizardOpen}
+        onClose={handleConversionCancel}
+        onConfirm={handleConversionConfirm}
+        conversionType="emi-to-recurring"
+        emi={emiToConvert || undefined}
+        isConverting={isConverting}
       />
     </Stack>
   );

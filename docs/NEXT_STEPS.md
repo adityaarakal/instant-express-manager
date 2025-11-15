@@ -194,6 +194,14 @@ Before considering the project "complete":
    - Recurring page: Explains ongoing/repeating transactions without fixed end dates
    - Alerts are dismissible and help users understand which feature to use
    - Cross-references each feature for better user guidance
+13. ✅ **EMI ↔ Recurring Template Conversion**: Added conversion wizard to convert between EMIs and Recurring Templates - **COMPLETED**
+   - Created conversion utility functions (`emiRecurringConversion.ts`) to handle data transformation
+   - Created ConversionWizard dialog component with detailed change preview
+   - Added "Convert to Recurring" button to EMIs page (swap icon)
+   - Added "Convert to EMI" button to Recurring page (swap icon, for Expense and Savings tabs only)
+   - Conversion automatically updates all transaction references
+   - Old entity is deleted after successful conversion
+   - Handles field mapping differences (installment tracking, end date requirements, frequency options)
 13. ✅ **Balance Sync Utility**: Tool to sync existing account balances with transactions - **COMPLETED**
    - Created balanceSync.ts utility to recalculate account balances from existing transactions
    - Added Balance Sync section to Settings page

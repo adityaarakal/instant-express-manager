@@ -54,7 +54,9 @@ import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { EmptyState } from '../components/common/EmptyState';
+import { ConversionWizard } from '../components/common/ConversionWizard';
 import RepeatIcon from '@mui/icons-material/Repeat';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import type {
   RecurringIncome,
   RecurringExpense,
@@ -85,8 +87,8 @@ export function Recurring() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabValue>('income');
   const { templates: incomeTemplates, createTemplate: createIncome, updateTemplate: updateIncome, deleteTemplate: deleteIncome, pauseTemplate: pauseIncome, resumeTemplate: resumeIncome, getGeneratedTransactions: getIncomeGeneratedTransactions } = useRecurringIncomesStore();
-  const { templates: expenseTemplates, createTemplate: createExpense, updateTemplate: updateExpense, deleteTemplate: deleteExpense, pauseTemplate: pauseExpense, resumeTemplate: resumeExpense, getGeneratedTransactions: getExpenseGeneratedTransactions } = useRecurringExpensesStore();
-  const { templates: savingsTemplates, createTemplate: createSavings, updateTemplate: updateSavings, deleteTemplate: deleteSavings, pauseTemplate: pauseSavings, resumeTemplate: resumeSavings, getGeneratedTransactions: getSavingsGeneratedTransactions } = useRecurringSavingsInvestmentsStore();
+  const { templates: expenseTemplates, createTemplate: createExpense, updateTemplate: updateExpense, deleteTemplate: deleteExpense, pauseTemplate: pauseExpense, resumeTemplate: resumeExpense, getGeneratedTransactions: getExpenseGeneratedTransactions, convertToEMI: convertExpenseRecurringToEMI } = useRecurringExpensesStore();
+  const { templates: savingsTemplates, createTemplate: createSavings, updateTemplate: updateSavings, deleteTemplate: deleteSavings, pauseTemplate: pauseSavings, resumeTemplate: resumeSavings, getGeneratedTransactions: getSavingsGeneratedTransactions, convertToEMI: convertSavingsRecurringToEMI } = useRecurringSavingsInvestmentsStore();
   const { accounts } = useBankAccountsStore();
   const incomeTransactions = useIncomeTransactionsStore((state) => state.transactions);
   const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
@@ -103,6 +105,9 @@ export function Recurring() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [infoAlertOpen, setInfoAlertOpen] = useState(true);
+  const [conversionWizardOpen, setConversionWizardOpen] = useState(false);
+  const [templateToConvert, setTemplateToConvert] = useState<RecurringExpense | RecurringSavingsInvestment | null>(null);
+  const [isConverting, setIsConverting] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -702,6 +707,18 @@ export function Recurring() {
                               <PlayArrowIcon fontSize="small" />
                             )}
                           </IconButton>
+                          {(activeTab === 'expense' || activeTab === 'savings') && (
+                            <IconButton
+                              size="small"
+                              onClick={() => handleConvertToEMIClick(template as RecurringExpense | RecurringSavingsInvestment)}
+                              disabled={deletingId !== null}
+                              aria-label={`Convert recurring template ${template.name} to EMI`}
+                              title="Convert to EMI"
+                              color="primary"
+                            >
+                              <SwapHorizIcon fontSize="small" />
+                            </IconButton>
+                          )}
                           <IconButton 
                             size="small" 
                             onClick={() => handleOpenDialog(template)}
@@ -954,6 +971,18 @@ export function Recurring() {
           setTemplateToDelete(null);
         }}
       />
+
+      {(activeTab === 'expense' || activeTab === 'savings') && (
+        <ConversionWizard
+          open={conversionWizardOpen}
+          onClose={handleConversionCancel}
+          onConfirm={handleConversionConfirm}
+          conversionType="recurring-to-emi"
+          recurringExpense={activeTab === 'expense' ? (templateToConvert as RecurringExpense) : undefined}
+          recurringSavings={activeTab === 'savings' ? (templateToConvert as RecurringSavingsInvestment) : undefined}
+          isConverting={isConverting}
+        />
+      )}
     </Stack>
   );
 }
