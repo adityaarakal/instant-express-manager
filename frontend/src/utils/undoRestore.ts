@@ -1,4 +1,4 @@
-import { useUndoStore, type EntityType } from '../store/useUndoStore';
+import { useUndoStore } from '../store/useUndoStore';
 import { useBanksStore } from '../store/useBanksStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore';
@@ -10,6 +10,11 @@ import { useRecurringIncomesStore } from '../store/useRecurringIncomesStore';
 import { useRecurringExpensesStore } from '../store/useRecurringExpensesStore';
 import { useRecurringSavingsInvestmentsStore } from '../store/useRecurringSavingsInvestmentsStore';
 import { useToastStore } from '../store/useToastStore';
+import type { Bank } from '../types/banks';
+import type { BankAccount } from '../types/bankAccounts';
+import type { IncomeTransaction, ExpenseTransaction, SavingsInvestmentTransaction } from '../types/transactions';
+import type { ExpenseEMI, SavingsInvestmentEMI } from '../types/emis';
+import type { RecurringIncome, RecurringExpense, RecurringSavingsInvestment } from '../types/recurring';
 
 /**
  * Restores a deleted item to its original store
@@ -30,7 +35,7 @@ export function restoreDeletedItem(itemId: string): boolean {
     switch (deletedItem.type) {
       case 'Bank': {
         // Restore with original ID and timestamps
-        const bankData = deletedItem.data;
+        const bankData = deletedItem.data as { id: string };
         const banks = useBanksStore.getState().banks;
         // Check if bank already exists (shouldn't happen, but safety check)
         if (banks.find((b) => b.id === bankData.id)) {
@@ -38,14 +43,14 @@ export function restoreDeletedItem(itemId: string): boolean {
           return false;
         }
         useBanksStore.setState((state) => ({
-          banks: [...state.banks, bankData],
+          banks: [...state.banks, deletedItem.data as Bank],
         }));
         showSuccess('Bank restored successfully');
         break;
       }
 
       case 'BankAccount': {
-        const accountData = deletedItem.data;
+        const accountData = deletedItem.data as BankAccount;
         const accounts = useBankAccountsStore.getState().accounts;
         if (accounts.find((a) => a.id === accountData.id)) {
           showError('Account already exists');
@@ -59,7 +64,7 @@ export function restoreDeletedItem(itemId: string): boolean {
       }
 
       case 'IncomeTransaction': {
-        const transactionData = deletedItem.data;
+        const transactionData = deletedItem.data as IncomeTransaction;
         const transactions = useIncomeTransactionsStore.getState().transactions;
         if (transactions.find((t) => t.id === transactionData.id)) {
           showError('Transaction already exists');
@@ -73,7 +78,7 @@ export function restoreDeletedItem(itemId: string): boolean {
       }
 
       case 'ExpenseTransaction': {
-        const transactionData = deletedItem.data;
+        const transactionData = deletedItem.data as ExpenseTransaction;
         const transactions = useExpenseTransactionsStore.getState().transactions;
         if (transactions.find((t) => t.id === transactionData.id)) {
           showError('Transaction already exists');
@@ -87,7 +92,7 @@ export function restoreDeletedItem(itemId: string): boolean {
       }
 
       case 'SavingsInvestmentTransaction': {
-        const transactionData = deletedItem.data;
+        const transactionData = deletedItem.data as SavingsInvestmentTransaction;
         const transactions = useSavingsInvestmentTransactionsStore.getState().transactions;
         if (transactions.find((t) => t.id === transactionData.id)) {
           showError('Transaction already exists');
@@ -101,7 +106,7 @@ export function restoreDeletedItem(itemId: string): boolean {
       }
 
       case 'ExpenseEMI': {
-        const emiData = deletedItem.data;
+        const emiData = deletedItem.data as ExpenseEMI;
         const emis = useExpenseEMIsStore.getState().emis;
         if (emis.find((e) => e.id === emiData.id)) {
           showError('EMI already exists');
@@ -115,7 +120,7 @@ export function restoreDeletedItem(itemId: string): boolean {
       }
 
       case 'SavingsInvestmentEMI': {
-        const emiData = deletedItem.data;
+        const emiData = deletedItem.data as SavingsInvestmentEMI;
         const emis = useSavingsInvestmentEMIsStore.getState().emis;
         if (emis.find((e) => e.id === emiData.id)) {
           showError('EMI already exists');
@@ -129,7 +134,7 @@ export function restoreDeletedItem(itemId: string): boolean {
       }
 
       case 'RecurringIncome': {
-        const templateData = deletedItem.data;
+        const templateData = deletedItem.data as RecurringIncome;
         const templates = useRecurringIncomesStore.getState().templates;
         if (templates.find((t) => t.id === templateData.id)) {
           showError('Template already exists');
@@ -143,7 +148,7 @@ export function restoreDeletedItem(itemId: string): boolean {
       }
 
       case 'RecurringExpense': {
-        const templateData = deletedItem.data;
+        const templateData = deletedItem.data as RecurringExpense;
         const templates = useRecurringExpensesStore.getState().templates;
         if (templates.find((t) => t.id === templateData.id)) {
           showError('Template already exists');
@@ -157,7 +162,7 @@ export function restoreDeletedItem(itemId: string): boolean {
       }
 
       case 'RecurringSavingsInvestment': {
-        const templateData = deletedItem.data;
+        const templateData = deletedItem.data as RecurringSavingsInvestment;
         const templates = useRecurringSavingsInvestmentsStore.getState().templates;
         if (templates.find((t) => t.id === templateData.id)) {
           showError('Template already exists');
@@ -171,7 +176,7 @@ export function restoreDeletedItem(itemId: string): boolean {
       }
 
       default:
-        showError(`Unknown entity type: ${(deletedItem as any).type}`);
+        showError(`Unknown entity type: ${(deletedItem as { type: string }).type}`);
         return false;
     }
 

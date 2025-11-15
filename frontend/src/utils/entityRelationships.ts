@@ -12,7 +12,6 @@ import { useRecurringIncomesStore } from '../store/useRecurringIncomesStore';
 import { useRecurringExpensesStore } from '../store/useRecurringExpensesStore';
 import { useRecurringSavingsInvestmentsStore } from '../store/useRecurringSavingsInvestmentsStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
-import { useBanksStore } from '../store/useBanksStore';
 
 export type EntityType =
   | 'Bank'

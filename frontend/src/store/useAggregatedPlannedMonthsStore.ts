@@ -8,7 +8,6 @@ import { useSavingsInvestmentTransactionsStore } from './useSavingsInvestmentTra
 import { useSettingsStore } from './useSettingsStore';
 import { aggregateMonth, calculateAggregatedBucketTotals, getAvailableMonths } from '../utils/aggregation';
 import { getLocalforageStorage } from '../utils/storage';
-import { DEFAULT_BUCKETS } from '../config/plannedExpenses';
 
 type AggregatedPlannedMonthsState = {
   // Aggregated months (derived, not stored)

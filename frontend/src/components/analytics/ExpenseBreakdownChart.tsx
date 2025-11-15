@@ -10,8 +10,8 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
+  type PieLabelRenderProps,
 } from 'recharts';
 import type { ExpenseTransaction } from '../../types/transactions';
 
@@ -68,9 +68,10 @@ export const ExpenseBreakdownChart = memo(function ExpenseBreakdownChart({ trans
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={(entry: any) => {
-                  const percent = entry.percent || 0;
-                  return `${entry.name} ${(percent * 100).toFixed(0)}%`;
+                label={(props: PieLabelRenderProps) => {
+                  const { name, percent } = props;
+                  const percentValue = typeof percent === 'number' ? percent * 100 : 0;
+                  return `${name} ${percentValue.toFixed(0)}%`;
                 }}
                 outerRadius={80}
                 fill="#8884d8"

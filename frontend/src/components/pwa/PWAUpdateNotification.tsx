@@ -5,17 +5,11 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 export function PWAUpdateNotification() {
   const [needRefresh, setNeedRefresh] = useState(false);
   const [open, setOpen] = useState(false);
-  const [updateServiceWorker, setUpdateServiceWorker] = useState<((reload?: boolean) => void) | null>(null);
 
   useEffect(() => {
-    // Try to use vite-plugin-pwa's useRegisterSW hook if available
-    // This will only work in production builds where PWA is enabled
+    // Listen for service worker updates manually
     const initPWA = async () => {
       try {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore - virtual module may not exist in dev
-        const { useRegisterSW } = await import('virtual:pwa-register/react');
-        
         // We can't use hooks conditionally, so we'll use a different approach
         // Listen for service worker updates manually
         if ('serviceWorker' in navigator) {
@@ -67,13 +61,9 @@ export function PWAUpdateNotification() {
   };
 
   const handleUpdate = () => {
-    if (updateServiceWorker) {
-      setNeedRefresh(false);
-      updateServiceWorker(true);
-    } else {
-      // Fallback: Reload the page
-      window.location.reload();
-    }
+    setNeedRefresh(false);
+    // Reload the page to apply updates
+    window.location.reload();
   };
 
   if (!needRefresh) {

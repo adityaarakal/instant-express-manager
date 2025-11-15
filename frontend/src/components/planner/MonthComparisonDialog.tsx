@@ -194,7 +194,7 @@ export function MonthComparisonDialog({
                   Summary Comparison
                 </Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={12} sm={4}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
                     <Typography variant="body2" color="text.secondary">
                       Inflow Total
                     </Typography>
@@ -210,7 +210,7 @@ export function MonthComparisonDialog({
                       Previous: {formatCurrency(compareMonth.inflowTotal)}
                     </Typography>
                   </Grid>
-                  <Grid item xs={12} sm={4}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
                     <Typography variant="body2" color="text.secondary">
                       Fixed Factor
                     </Typography>
@@ -226,7 +226,7 @@ export function MonthComparisonDialog({
               Previous: {formatCurrency(compareMonth.fixedFactor)}
             </Typography>
                   </Grid>
-                  <Grid item xs={12} sm={4}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
                     <Typography variant="body2" color="text.secondary">
                       Accounts Count
                     </Typography>

@@ -1,14 +1,10 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Alert,
   AlertTitle,
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Paper,
   Stack,
   Table,
@@ -18,13 +14,8 @@ import {
   TableHead,
   TableRow,
   TablePagination,
-  TextField,
   Typography,
   IconButton,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
   Tabs,
   Tab,
   Chip,
@@ -90,11 +81,12 @@ const formatDate = (dateString: string): string => {
   }).format(new Date(dateString));
 };
 
-type TabValue = 'income' | 'expense' | 'savings' | 'transfers';
+import type { TabValue } from '../components/transactions/TransactionFormDialog';
+type ExtendedTabValue = TabValue | 'transfers';
 
 export function Transactions() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<TabValue>(() => {
+  const [activeTab, setActiveTab] = useState<ExtendedTabValue>(() => {
     const tabParam = searchParams.get('tab');
     if (tabParam === 'expense' || tabParam === 'savings' || tabParam === 'transfers') {
       return tabParam;
@@ -104,7 +96,7 @@ export function Transactions() {
   const { transactions: incomeTransactions, createTransaction: createIncome, updateTransaction: updateIncome, deleteTransaction: deleteIncome } = useIncomeTransactionsStore();
   const { transactions: expenseTransactions, createTransaction: createExpense, updateTransaction: updateExpense, deleteTransaction: deleteExpense } = useExpenseTransactionsStore();
   const { transactions: savingsTransactions, createTransaction: createSavings, updateTransaction: updateSavings, deleteTransaction: deleteSavings } = useSavingsInvestmentTransactionsStore();
-  const { transfers: transferTransactions, createTransfer, updateTransfer, deleteTransfer } = useTransferTransactionsStore();
+  const { transfers: transferTransactions, deleteTransfer } = useTransferTransactionsStore();
   const { accounts } = useBankAccountsStore();
   const { showSuccess, showError, showToast } = useToastStore();
 
@@ -129,7 +121,7 @@ export function Transactions() {
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [confirmBulkDeleteOpen, setConfirmBulkDeleteOpen] = useState(false);
-  const [transactionToDelete, setTransactionToDelete] = useState<{ id: string; type: TabValue } | null>(null);
+  const [transactionToDelete, setTransactionToDelete] = useState<{ id: string; type: ExtendedTabValue } | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const theme = useTheme();
@@ -154,34 +146,6 @@ export function Transactions() {
     setSelectedIds(new Set());
     setPage(0); // Reset to first page when tab changes
   }, [activeTab]);
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Ctrl/Cmd + N - Open new transaction dialog
-      if ((event.ctrlKey || event.metaKey) && event.key === 'n' && !dialogOpen) {
-        const target = event.target as HTMLElement;
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
-          event.preventDefault();
-          if (accounts.length > 0) {
-            handleOpenDialog();
-          }
-        }
-      }
-
-      // Ctrl/Cmd + K - Focus search input
-      if ((event.ctrlKey || event.metaKey) && event.key === 'k' && !dialogOpen) {
-        const target = event.target as HTMLElement;
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
-          event.preventDefault();
-          searchInputRef.current?.focus();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dialogOpen, accounts.length]);
 
   const accountsMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -276,7 +240,7 @@ export function Transactions() {
     setSelectedIds(new Set()); // Clear selection when changing page size
   };
 
-  const handleOpenDialog = (transactionId?: string) => {
+  const handleOpenDialog = useCallback((transactionId?: string) => {
     if (transactionId) {
       if (activeTab === 'income') {
         const t = incomeTransactions.find((t) => t.id === transactionId);
@@ -292,7 +256,35 @@ export function Transactions() {
       setEditingTransaction(null);
     }
     setDialogOpen(true);
-  };
+  }, [activeTab, incomeTransactions, expenseTransactions, savingsTransactions]);
+
+  // Keyboard shortcuts - moved after handleOpenDialog declaration
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl/Cmd + N - Open new transaction dialog
+      if ((event.ctrlKey || event.metaKey) && event.key === 'n' && !dialogOpen) {
+        const target = event.target as HTMLElement;
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+          event.preventDefault();
+          if (accounts.length > 0) {
+            handleOpenDialog();
+          }
+        }
+      }
+
+      // Ctrl/Cmd + K - Focus search input
+      if ((event.ctrlKey || event.metaKey) && event.key === 'k' && !dialogOpen) {
+        const target = event.target as HTMLElement;
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+          event.preventDefault();
+          searchInputRef.current?.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [dialogOpen, accounts.length, handleOpenDialog]);
 
   const handleOpenTransferDialog = (transferId?: string) => {
     if (transferId) {
@@ -314,7 +306,7 @@ export function Transactions() {
     setEditingTransfer(null);
   };
 
-  const handleDeleteClick = (id: string, type: TabValue) => {
+  const handleDeleteClick = (id: string, type: ExtendedTabValue) => {
     setTransactionToDelete({ id, type });
     setConfirmDeleteOpen(true);
   };
@@ -1053,37 +1045,39 @@ export function Transactions() {
         <TransactionFormDialog
           open={dialogOpen}
           onClose={handleCloseDialog}
-          type={activeTab}
+          type={activeTab === 'transfers' ? 'income' : activeTab}
           accounts={accounts}
           editingTransaction={editingTransaction}
           isSaving={isSaving}
-        onSave={async (data: any) => {
+        onSave={async (data: Omit<IncomeTransaction, 'id' | 'createdAt' | 'updatedAt'> | Omit<ExpenseTransaction, 'id' | 'createdAt' | 'updatedAt'> | Omit<SavingsInvestmentTransaction, 'id' | 'createdAt' | 'updatedAt'>) => {
           setIsSaving(true);
           try {
             await new Promise((resolve) => setTimeout(resolve, 200));
             
             if (activeTab === 'income') {
               if (editingTransaction) {
-                updateIncome(editingTransaction.id, data);
+                // For updates, pass data as Partial<Omit<IncomeTransaction, 'id' | 'createdAt'>>
+                updateIncome(editingTransaction.id, data as Partial<Omit<IncomeTransaction, 'id' | 'createdAt'>>);
                 showSuccess('Income transaction updated successfully');
               } else {
-                createIncome(data);
+                // For creates, pass data as Omit<IncomeTransaction, 'id' | 'createdAt' | 'updatedAt'>
+                createIncome(data as Omit<IncomeTransaction, 'id' | 'createdAt' | 'updatedAt'>);
                 showSuccess('Income transaction created successfully');
               }
             } else if (activeTab === 'expense') {
               if (editingTransaction) {
-                updateExpense(editingTransaction.id, data);
+                updateExpense(editingTransaction.id, data as Partial<Omit<ExpenseTransaction, 'id' | 'createdAt'>>);
                 showSuccess('Expense transaction updated successfully');
               } else {
-                createExpense(data);
+                createExpense(data as Omit<ExpenseTransaction, 'id' | 'createdAt' | 'updatedAt'>);
                 showSuccess('Expense transaction created successfully');
               }
-            } else {
+            } else if (activeTab === 'savings') {
               if (editingTransaction) {
-                updateSavings(editingTransaction.id, data);
+                updateSavings(editingTransaction.id, data as Partial<Omit<SavingsInvestmentTransaction, 'id' | 'createdAt'>>);
                 showSuccess('Savings transaction updated successfully');
               } else {
-                createSavings(data);
+                createSavings(data as Omit<SavingsInvestmentTransaction, 'id' | 'createdAt' | 'updatedAt'>);
                 showSuccess('Savings transaction created successfully');
               }
             }

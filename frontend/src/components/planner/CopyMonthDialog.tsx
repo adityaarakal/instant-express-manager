@@ -36,12 +36,6 @@ const formatMonthDate = (dateString: string): string => {
   }).format(date);
 };
 
-const getMonthId = (dateString: string): string => {
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  return `${year}-${month}`;
-};
 
 const getMonthStartDate = (monthId: string): string => {
   return `${monthId}-01`;

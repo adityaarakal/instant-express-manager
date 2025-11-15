@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -10,7 +10,6 @@ import {
   Alert,
   AlertTitle,
   Box,
-  Divider,
   Table,
   TableBody,
   TableCell,
@@ -101,7 +100,7 @@ export function ConversionWizard({
     return null;
   }
 
-  const { type, data, original } = convertedData;
+  const { data, original } = convertedData;
 
   const getFieldLabel = (key: string): string => {
     const labels: Record<string, string> = {
@@ -124,13 +123,23 @@ export function ConversionWizard({
     return labels[key] || key;
   };
 
-  const getFieldValue = (key: string, value: any): string => {
+  const getFieldValue = (key: string, value: unknown): string => {
     if (value === undefined || value === null) return '—';
     if (key === 'accountId') return 'Account (same)';
     if (key === 'status') return String(value);
     if (key === 'frequency') return String(value);
-    if (key === 'amount') return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value);
-    if (key.includes('Date')) return new Date(value).toLocaleDateString('en-IN');
+    if (key === 'amount') {
+      if (typeof value === 'number') {
+        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value);
+      }
+      return String(value);
+    }
+    if (key.includes('Date')) {
+      if (typeof value === 'string' || value instanceof Date || typeof value === 'number') {
+        return new Date(value).toLocaleDateString('en-IN');
+      }
+      return String(value);
+    }
     return String(value);
   };
 
@@ -143,8 +152,8 @@ export function ConversionWizard({
     // Compare common fields
     const commonFields = originalFields.filter((key) => convertedFields.includes(key));
     commonFields.forEach((key) => {
-      const originalValue = (original as any)[key];
-      const convertedValue = (data as any)[key];
+      const originalValue = (original as unknown as Record<string, unknown>)[key];
+      const convertedValue = (data as unknown as Record<string, unknown>)[key];
       if (String(originalValue) !== String(convertedValue)) {
         changes.push({
           field: getFieldLabel(key),
@@ -159,7 +168,7 @@ export function ConversionWizard({
       if (!convertedFields.includes(key) && key !== 'nextDueDate') {
         changes.push({
           field: getFieldLabel(key),
-          from: getFieldValue(key, (original as any)[key]),
+          from: getFieldValue(key, (original as unknown as Record<string, unknown>)[key]),
           to: 'Removed',
         });
       }
@@ -171,7 +180,7 @@ export function ConversionWizard({
         changes.push({
           field: getFieldLabel(key),
           from: 'N/A',
-          to: getFieldValue(key, (data as any)[key]),
+          to: getFieldValue(key, (data as Record<string, unknown>)[key]),
         });
       }
     });

@@ -14,7 +14,6 @@ import {
   TextField,
   Typography,
   Chip,
-  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -24,7 +23,6 @@ import {
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import RestoreIcon from '@mui/icons-material/Restore';
-import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload';
 import { useSettingsStore } from '../store/useSettingsStore';

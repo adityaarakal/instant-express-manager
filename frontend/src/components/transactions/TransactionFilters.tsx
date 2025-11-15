@@ -9,7 +9,6 @@ import {
   TextField,
   Stack,
   Chip,
-  IconButton,
 } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ClearIcon from '@mui/icons-material/Clear';

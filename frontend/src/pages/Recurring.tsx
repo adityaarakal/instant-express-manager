@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -43,9 +43,6 @@ import { useRecurringIncomesStore } from '../store/useRecurringIncomesStore';
 import { useRecurringExpensesStore } from '../store/useRecurringExpensesStore';
 import { useRecurringSavingsInvestmentsStore } from '../store/useRecurringSavingsInvestmentsStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
-import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore';
-import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
-import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useToastStore } from '../store/useToastStore';
 import { getUserFriendlyError } from '../utils/errorHandling';
 import { useUndoStore } from '../store/useUndoStore';
@@ -90,9 +87,6 @@ export function Recurring() {
   const { templates: expenseTemplates, createTemplate: createExpense, updateTemplate: updateExpense, deleteTemplate: deleteExpense, pauseTemplate: pauseExpense, resumeTemplate: resumeExpense, getGeneratedTransactions: getExpenseGeneratedTransactions, convertToEMI: convertExpenseRecurringToEMI } = useRecurringExpensesStore();
   const { templates: savingsTemplates, createTemplate: createSavings, updateTemplate: updateSavings, deleteTemplate: deleteSavings, pauseTemplate: pauseSavings, resumeTemplate: resumeSavings, getGeneratedTransactions: getSavingsGeneratedTransactions, convertToEMI: convertSavingsRecurringToEMI } = useRecurringSavingsInvestmentsStore();
   const { accounts } = useBankAccountsStore();
-  const incomeTransactions = useIncomeTransactionsStore((state) => state.transactions);
-  const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
-  const savingsTransactions = useSavingsInvestmentTransactionsStore((state) => state.transactions);
   const { showSuccess, showError, showToast } = useToastStore();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -121,25 +115,6 @@ export function Recurring() {
   useEffect(() => {
     setPage(0);
   }, [activeTab]);
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Ctrl/Cmd + N - Open new recurring template dialog
-      if ((event.ctrlKey || event.metaKey) && event.key === 'n' && !dialogOpen) {
-        const target = event.target as HTMLElement;
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
-          event.preventDefault();
-          if (accounts.length > 0) {
-            handleOpenDialog();
-          }
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dialogOpen, accounts.length]);
 
   const [formData, setFormData] = useState<{
     name: string;
@@ -215,7 +190,7 @@ export function Recurring() {
     }
   }, [dialogOpen, activeTab, frequencyOptions]);
 
-  const handleOpenDialog = (template?: RecurringIncome | RecurringExpense | RecurringSavingsInvestment) => {
+  const handleOpenDialog = useCallback((template?: RecurringIncome | RecurringExpense | RecurringSavingsInvestment) => {
     if (template) {
       setEditingTemplate(template);
       if (activeTab === 'income') {
@@ -294,7 +269,26 @@ export function Recurring() {
       });
     }
     setDialogOpen(true);
-  };
+  }, [activeTab, accounts]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl/Cmd + N - Open new recurring template dialog
+      if ((event.ctrlKey || event.metaKey) && event.key === 'n' && !dialogOpen) {
+        const target = event.target as HTMLElement;
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+          event.preventDefault();
+          if (accounts.length > 0) {
+            handleOpenDialog();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [dialogOpen, accounts.length, handleOpenDialog]);
 
   const handleCloseDialog = () => {
     setDialogOpen(false);

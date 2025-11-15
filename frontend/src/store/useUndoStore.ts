@@ -17,14 +17,14 @@ export type EntityType =
 export interface DeletedItem {
   id: string;
   type: EntityType;
-  data: any; // The full entity data before deletion
+  data: unknown; // The full entity data before deletion
   deletedAt: string; // ISO timestamp
   expiresAt: string; // ISO timestamp (deletedAt + 10 minutes)
 }
 
 type UndoState = {
   deletedItems: DeletedItem[];
-  addDeletedItem: (type: EntityType, data: any) => string; // Returns the deleted item ID
+  addDeletedItem: (type: EntityType, data: unknown) => string; // Returns the deleted item ID
   removeDeletedItem: (id: string) => void;
   getDeletedItem: (id: string) => DeletedItem | undefined;
   clearExpiredItems: () => void;
@@ -46,7 +46,7 @@ export const useUndoStore = create<UndoState>()(
           const expiresAt = new Date(now.getTime() + EXPIRY_DURATION_MS);
 
           const deletedItem: DeletedItem = {
-            id: data.id,
+            id: (data as { id: string }).id,
             type,
             data,
             deletedAt: now.toISOString(),

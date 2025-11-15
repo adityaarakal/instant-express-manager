@@ -22,6 +22,7 @@ import type { BankAccount } from '../../types/bankAccounts';
 import { validateAmount, validateDate } from '../../utils/validation';
 import { useTransferTransactionsStore } from '../../store/useTransferTransactionsStore';
 import { useToastStore } from '../../store/useToastStore';
+import { useBanksStore } from '../../store/useBanksStore';
 
 interface TransferFormDialogProps {
   open: boolean;
@@ -45,6 +46,7 @@ export function TransferFormDialog({
   accounts,
   editingTransfer,
 }: TransferFormDialogProps) {
+  const { getBank } = useBanksStore();
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     fromAccountId: '',
@@ -75,7 +77,6 @@ export function TransferFormDialog({
 
   // Get account details for display
   const fromAccount = accounts.find((acc) => acc.id === formData.fromAccountId);
-  const toAccount = accounts.find((acc) => acc.id === formData.toAccountId);
 
   // Field-level validation
   const fieldErrors = useMemo(() => {
@@ -263,7 +264,7 @@ export function TransferFormDialog({
                     <Box>
                       <Typography variant="body1">{account.name}</Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {account.bankName} • {account.accountType}
+                        {getBank(account.bankId)?.name || 'Unknown Bank'} • {account.accountType}
                       </Typography>
                     </Box>
                     <Typography variant="body2" color="text.secondary">
@@ -294,7 +295,7 @@ export function TransferFormDialog({
                     <Box>
                       <Typography variant="body1">{account.name}</Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {account.bankName} • {account.accountType}
+                        {getBank(account.bankId)?.name || 'Unknown Bank'} • {account.accountType}
                       </Typography>
                     </Box>
                     <Typography variant="body2" color="text.secondary">

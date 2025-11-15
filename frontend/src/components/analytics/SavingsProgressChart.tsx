@@ -1,7 +1,6 @@
 import { useMemo, memo } from 'react';
 import { Paper, Typography, Box } from '@mui/material';
 import {
-  LineChart,
   Line,
   AreaChart,
   Area,

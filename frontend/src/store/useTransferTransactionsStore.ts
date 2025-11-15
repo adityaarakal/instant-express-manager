@@ -52,7 +52,8 @@ export const useTransferTransactionsStore = create<TransferTransactionsState>()(
           }
 
           // Validate from account is not Credit Card
-          if (fromAccount.accountType === 'CreditCard') {
+          const isCreditCard = fromAccount.accountType === 'CreditCard';
+          if (isCreditCard) {
             throw new Error('Credit Card cannot be the source account (from account)');
           }
 
@@ -74,9 +75,9 @@ export const useTransferTransactionsStore = create<TransferTransactionsState>()(
           }
 
           // Optional: Warn if from account has insufficient balance (for non-credit accounts)
+          // After the CreditCard check above, accountType can only be 'Savings' | 'Current' | 'Wallet'
           if (
             transferData.status === 'Completed' &&
-            fromAccount.accountType !== 'CreditCard' &&
             fromAccount.currentBalance < transferData.amount
           ) {
             console.warn(
@@ -127,7 +128,7 @@ export const useTransferTransactionsStore = create<TransferTransactionsState>()(
             if (!fromAccount) {
               throw new Error(`From account with id ${newFromAccountId} does not exist`);
             }
-            if (fromAccount.accountType === 'CreditCard') {
+            if (fromAccount.accountType === 'CreditCard' as const) {
               throw new Error('Credit Card cannot be the source account (from account)');
             }
 

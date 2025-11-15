@@ -10,8 +10,6 @@ import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore'
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
-import { useAggregatedPlannedMonthsStore } from '../store/useAggregatedPlannedMonthsStore';
-import { usePlannerStore } from '../store/usePlannerStore';
 import { calculateDashboardMetrics } from '../utils/dashboard';
 import { SummaryCard } from '../components/dashboard/SummaryCard';
 import { DueSoonReminders } from '../components/dashboard/DueSoonReminders';

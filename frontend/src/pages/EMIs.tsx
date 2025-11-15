@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -43,8 +43,6 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { useExpenseEMIsStore } from '../store/useExpenseEMIsStore';
 import { useSavingsInvestmentEMIsStore } from '../store/useSavingsInvestmentEMIsStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
-import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
-import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useToastStore } from '../store/useToastStore';
 import { getUserFriendlyError } from '../utils/errorHandling';
 import { useUndoStore } from '../store/useUndoStore';
@@ -86,8 +84,6 @@ export function EMIs() {
   const { emis: expenseEMIs, createEMI: createExpenseEMI, updateEMI: updateExpenseEMI, deleteEMI: deleteExpenseEMI, pauseEMI: pauseExpenseEMI, resumeEMI: resumeExpenseEMI, getGeneratedTransactions: getExpenseGeneratedTransactions, convertToRecurring: convertExpenseEMIToRecurring } = useExpenseEMIsStore();
   const { emis: savingsEMIs, createEMI: createSavingsEMI, updateEMI: updateSavingsEMI, deleteEMI: deleteSavingsEMI, pauseEMI: pauseSavingsEMI, resumeEMI: resumeSavingsEMI, getGeneratedTransactions: getSavingsGeneratedTransactions, convertToRecurring: convertSavingsEMIToRecurring } = useSavingsInvestmentEMIsStore();
   const { accounts } = useBankAccountsStore();
-  const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
-  const savingsTransactions = useSavingsInvestmentTransactionsStore((state) => state.transactions);
   const { showSuccess, showError, showToast } = useToastStore();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -115,25 +111,6 @@ export function EMIs() {
     setPage(0);
   }, [activeTab]);
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Ctrl/Cmd + N - Open new EMI dialog
-      if ((event.ctrlKey || event.metaKey) && event.key === 'n' && !dialogOpen) {
-        const target = event.target as HTMLElement;
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
-          event.preventDefault();
-          if (accounts.length > 0) {
-            handleOpenDialog();
-          }
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dialogOpen, accounts.length]);
-
   const [formData, setFormData] = useState({
     name: '',
     startDate: new Date().toISOString().split('T')[0],
@@ -151,13 +128,7 @@ export function EMIs() {
     notes: '',
   });
 
-  const accountsMap = useMemo(() => {
-    const map = new Map<string, string>();
-    accounts.forEach((acc) => map.set(acc.id, acc.name));
-    return map;
-  }, [accounts]);
-
-  const handleOpenDialog = (emi?: ExpenseEMI | SavingsInvestmentEMI) => {
+  const handleOpenDialog = useCallback((emi?: ExpenseEMI | SavingsInvestmentEMI) => {
     if (emi) {
       setEditingEMI(emi);
       if (activeTab === 'expense') {
@@ -202,16 +173,43 @@ export function EMIs() {
         deductionDate: '',
         amount: 0,
         accountId: accounts[0]?.id || '',
-        frequency: 'Monthly',
+        frequency: 'Monthly' as 'Monthly' | 'Quarterly',
         totalInstallments: 12,
-        category: 'Other',
+        // Expense specific
+        category: 'Other' as ExpenseEMI['category'],
         creditCardId: '',
+        // Savings specific
         destination: '',
         notes: '',
       });
     }
     setDialogOpen(true);
-  };
+  }, [activeTab, accounts]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl/Cmd + N - Open new EMI dialog
+      if ((event.ctrlKey || event.metaKey) && event.key === 'n' && !dialogOpen) {
+        const target = event.target as HTMLElement;
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+          event.preventDefault();
+          if (accounts.length > 0) {
+            handleOpenDialog();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [dialogOpen, accounts.length, handleOpenDialog]);
+
+  const accountsMap = useMemo(() => {
+    const map = new Map<string, string>();
+    accounts.forEach((acc) => map.set(acc.id, acc.name));
+    return map;
+  }, [accounts]);
 
   const handleCloseDialog = () => {
     setDialogOpen(false);

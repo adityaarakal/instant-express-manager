@@ -332,7 +332,7 @@ export const useRecurringExpensesStore = create<RecurringExpensesState>()(
               get().updateTemplate(templateId, { deductionDate: newDate });
               break;
 
-            case 'all-future':
+            case 'all-future': {
               // Update deductionDate and shift all future pending transactions by the offset
               const currentDeductionDate = getEffectiveRecurringDeductionDate(template);
               const offset = calculateDateOffset(currentDeductionDate, newDate);
@@ -348,8 +348,9 @@ export const useRecurringExpensesStore = create<RecurringExpensesState>()(
                   transactionsStore.updateTransaction(transaction.id, { date: newTransactionDate });
                 });
               break;
+            }
 
-            case 'reset-schedule':
+            case 'reset-schedule': {
               // Reset deductionDate and recalculate future transactions
               get().updateTemplate(templateId, { deductionDate: newDate });
               
@@ -367,6 +368,7 @@ export const useRecurringExpensesStore = create<RecurringExpensesState>()(
                   transactionsStore.updateTransaction(transaction.id, { date: currentDate });
                 });
               break;
+            }
           }
         },
       }),
