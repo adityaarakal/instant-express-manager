@@ -118,7 +118,15 @@ Before considering the project "complete":
    - Preserve all transaction fields (status, notes, descriptions, etc.)
    - Show success toast with count of copied transactions
    - Add Copy Month button to MonthViewHeader
-3. **Add Month Comparison View**: Compare two months side-by-side
+3. ✅ **Add Month Comparison View**: Compare two months side-by-side - **COMPLETED**
+   - Created MonthComparisonDialog component with month selection
+   - Show summary comparison (inflow, fixed factor, accounts count)
+   - Show account comparison table with remaining cash differences
+   - Show bucket totals comparison with differences highlighted
+   - Color-code differences (green for increase, red for decrease, yellow for changes)
+   - Show difference amounts in parentheses
+   - Handle accounts that exist in only one month
+   - Add Compare button to MonthViewHeader
 4. ✅ **Add Quick Filters**: Filter by account, bucket, or status in Planner - **COMPLETED**
    - Added AccountFilters component with account, bucket, and negative cash filters
    - Filter chips show active filters with individual remove buttons
