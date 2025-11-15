@@ -127,7 +127,12 @@ Key stores:
   - `calculateDateOffset`: Calculate date offset in days
   - `addDaysToDate`: Add days to a date
   - `getEffectiveEMIDeductionDate`: Get effective deduction date for EMI (uses deductionDate if set, otherwise calculates)
-  - `getEffectiveRecurringDeductionDate`: Get effective deduction date for Recurring (uses deductionDate if set, otherwise uses nextDueDate)
+  - `getEffectiveRecurringDeductionDate`: Get effective deduction date for Recurring (uses dayOfMonth/deductionDate if set, otherwise uses nextDueDate)
+- `src/utils/recurringTransactionsGenerator.ts`: Utilities for generating all recurring transactions upfront
+  - `getDayOfMonth`: Extracts day of month from date or template (checks dayOfMonth first, then deductionDate, then startDate)
+  - `generateRecurringTransactionDates`: Generates all transaction dates for a recurring template (entire period or 12 months)
+  - Handles edge cases (month-end dates, leap years, etc.)
+  - Returns array of ISO date strings for all transactions in the recurring period
 - `src/components/common/ConversionWizard.tsx`: UI wizard for converting between EMIs and Recurring Templates
   - `generateRecurringTransactions`: Generates transactions for active recurring templates
 
