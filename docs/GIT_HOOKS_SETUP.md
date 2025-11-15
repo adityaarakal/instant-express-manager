@@ -129,12 +129,14 @@ The `.github/workflows/pr-checks.yml` workflow enforces the same quality checks 
 - ✅ PR status checks (required for merge)
 - ✅ Comments on PR with check results
 - ✅ Protection even if hooks are disabled locally
+- ✅ Dependency caching for faster builds (uses root `package-lock.json`)
 
 **Workflow Status**:
 - Automatically runs on every PR to `main`
 - Can be manually triggered via `workflow_dispatch`
 - Blocks PR merge if any check fails
 - Adds comments to PR with pass/fail status
+- Uses npm dependency caching with root `package-lock.json` for performance
 
 ## Configuration
 

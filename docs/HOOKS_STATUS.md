@@ -28,6 +28,7 @@ All Git hooks have been successfully implemented and are **actively protecting t
    - TypeScript type checking
    - Build validation
    - Comments on PR with check results
+   - Dependency caching with root `package-lock.json`
    - **WORKING**: Automatically runs on every PR to `main`
 
 ### Current Situation
