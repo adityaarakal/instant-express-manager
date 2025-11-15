@@ -881,6 +881,15 @@ export function Recurring() {
               fullWidth
               InputLabelProps={{ shrink: true }}
             />
+            <TextField
+              label="Deduction Date (Optional)"
+              type="date"
+              value={formData.deductionDate}
+              onChange={(e) => setFormData({ ...formData, deductionDate: e.target.value })}
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+              helperText="Actual date when next transaction will be deducted/credited. If not set, uses next due date."
+            />
 
             {activeTab === 'income' && (
               <FormControl fullWidth>
