@@ -165,10 +165,20 @@ Before considering the project "complete":
      - Total Expenses (all expenses)
      - Total Savings (all completed savings/investments)
      - Credit Card Outstanding (current balance)
-   - Monthly metrics default to current month if no month selected
+   - Dashboard always defaults to current month (latest/future-focused)
+   - Month selector shows current + future months first (up to 3 months ahead), then past months
    - Clear visual separation between monthly and overall sections
    - Updated dashboard utility to support month-based filtering
-9. ✅ **Automatic Account Balance Updates**: Account balances now automatically update based on transaction status - **COMPLETED**
+9. ✅ **Latest/Current Month Prioritization**: Prioritize latest/current month across all monthly views - **COMPLETED**
+   - Dashboard always defaults to current month (independent of Planner store)
+   - Planner defaults to current/latest month instead of first available month
+   - All month selectors show months sorted descending (latest first)
+   - Copy Month Dialog defaults to current/latest month as target
+   - Month Comparison Dialog defaults to current/latest month for comparison
+   - Available months list sorted in descending order to prioritize current/recent months
+   - Ensures users always see the most recent and relevant data by default
+   - Focuses on present and future while still allowing navigation to older months
+10. ✅ **Automatic Account Balance Updates**: Account balances now automatically update based on transaction status - **COMPLETED**
    - Created utility functions (`accountBalanceUpdates.ts`) to handle balance updates
    - Income transactions: Balance increases when status changes to "Received"
    - Expense transactions: Balance decreases when status changes to "Paid"
