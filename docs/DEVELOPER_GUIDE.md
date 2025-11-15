@@ -91,6 +91,13 @@ Key stores:
   - Handles account transfers (updates both old and new accounts)
   - Integrated into all transaction stores
 
+- `src/utils/balanceSync.ts`: Balance sync utility for existing data
+  - `calculateAccountBalanceFromTransactions`: Calculates what an account balance should be based on transactions
+  - `syncAccountBalancesFromTransactions`: Syncs all account balances based on existing transactions
+  - Useful for syncing old data with new automatic balance update feature
+  - Treats current balance as base and applies transaction effects on top
+  - Returns detailed sync results showing which accounts were updated
+
 - `src/utils/aggregation.ts`: Planner aggregation logic
   - `aggregateMonthData`: Aggregates transactions into monthly view
   - `calculateBucketTotals`: Calculates bucket totals from transactions

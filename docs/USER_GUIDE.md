@@ -144,6 +144,13 @@ The app automatically updates account balances based on transaction status:
 - When you mark an auto-generated transaction as "Received" (income), "Paid" (expense), or "Completed" (savings/investment), the balance will update automatically
 - Until then, the balance remains unchanged because the transaction is still "Pending"
 
+**Syncing Existing Data:**
+- If you have old data created before automatic balance updates were implemented, you can sync account balances
+- Go to **Settings** → **Balance Sync** section
+- Click **"Sync Account Balances"** to recalculate all account balances based on existing transactions
+- This will update account balances to reflect all transactions with "Received", "Paid", or "Completed" status
+- The sync tool shows a detailed report of which accounts were updated and by how much
+
 ### Bulk Operations
 
 1. Select multiple transactions using checkboxes

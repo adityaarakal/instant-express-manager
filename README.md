@@ -29,6 +29,7 @@ A comprehensive standalone financial management Progressive Web App (PWA) built 
 - 🔍 **Data Health Checks**: Identify and fix data inconsistencies
 - 📤 **CSV Export**: Export transactions to CSV
 - 💰 **Automatic Balance Updates**: Account balances automatically update when transactions are received/paid/completed
+- 🔄 **Balance Sync**: Sync existing account balances with transactions (useful for old data)
 
 ## 🛠️ Tech Stack
 
