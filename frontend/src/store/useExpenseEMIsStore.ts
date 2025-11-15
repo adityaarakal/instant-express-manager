@@ -4,9 +4,10 @@ import type { ExpenseEMI } from '../types/emis';
 import { useExpenseTransactionsStore } from './useExpenseTransactionsStore';
 import { useRecurringExpensesStore } from './useRecurringExpensesStore';
 import { useBankAccountsStore } from './useBankAccountsStore';
-import { validateDateRange, validateAmount } from '../utils/validation';
+import { validateDateRange, validateAmount, validateDate } from '../utils/validation';
 import { getLocalforageStorage } from '../utils/storage';
 import { convertExpenseEMIToRecurring, getNextDueDateFromEMI } from '../utils/emiRecurringConversion';
+import { getEffectiveEMINextDueDate, calculateNextDateFromDate, calculateDateOffset, addDaysToDate } from '../utils/dateCalculations';
 
 type ExpenseEMIsState = {
   emis: ExpenseEMI[];
@@ -27,6 +28,8 @@ type ExpenseEMIsState = {
   getEMIsByStatus: (status: ExpenseEMI['status']) => ExpenseEMI[];
   // Conversion
   convertToRecurring: (emiId: string) => string; // Returns new recurring template ID
+  // Date Management
+  updateNextTransactionDate: (emiId: string, newDate: string, updateOption: 'this-date-only' | 'all-future' | 'reset-schedule') => void;
 };
 
 const storage = getLocalforageStorage('expense-emis');
@@ -223,7 +226,8 @@ export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
           const activeEMIs = get().getActiveEMIs();
           
           activeEMIs.forEach((emi) => {
-            const nextDueDate = calculateNextDueDate(emi.startDate, emi.frequency, emi.completedInstallments);
+            // Use nextTransactionDate if set, otherwise calculate from installments
+            const nextDueDate = getEffectiveEMINextDueDate(emi);
             
             if (nextDueDate <= today && emi.completedInstallments < emi.totalInstallments) {
               // Check if transaction already exists for this EMI and date
@@ -246,10 +250,17 @@ export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
                 
                 // Update EMI
                 const newCompletedCount = emi.completedInstallments + 1;
-                get().updateEMI(emi.id, {
+                const updateData: Partial<ExpenseEMI> = {
                   completedInstallments: newCompletedCount,
                   status: newCompletedCount >= emi.totalInstallments ? 'Completed' : emi.status,
-                });
+                };
+                
+                // If nextTransactionDate was set, calculate next date based on frequency
+                if (emi.nextTransactionDate) {
+                  updateData.nextTransactionDate = calculateNextDateFromDate(nextDueDate, emi.frequency);
+                }
+                
+                get().updateEMI(emi.id, updateData);
               }
             }
           });
@@ -310,6 +321,64 @@ export const useExpenseEMIsStore = create<ExpenseEMIsState>()(
           get().deleteEMI(emiId);
 
           return newTemplate.id;
+        },
+        updateNextTransactionDate: (emiId, newDate, updateOption) => {
+          const emi = get().getEMI(emiId);
+          if (!emi) {
+            throw new Error(`EMI with id ${emiId} does not exist`);
+          }
+
+          // Validate new date
+          const dateValidation = validateDate(newDate, 'Next Transaction Date');
+          if (!dateValidation.isValid) {
+            throw new Error(`Date validation failed: ${dateValidation.errors.join(', ')}`);
+          }
+
+          const transactionsStore = useExpenseTransactionsStore.getState();
+          const existingTransactions = transactionsStore.transactions.filter((t) => t.emiId === emiId);
+
+          switch (updateOption) {
+            case 'this-date-only':
+              // Just update the nextTransactionDate
+              get().updateEMI(emiId, { nextTransactionDate: newDate });
+              break;
+
+            case 'all-future':
+              // Update nextTransactionDate and shift all future pending transactions by the offset
+              const currentNextDate = getEffectiveEMINextDueDate(emi);
+              const offset = calculateDateOffset(currentNextDate, newDate);
+              
+              // Update EMI
+              get().updateEMI(emiId, { nextTransactionDate: newDate });
+              
+              // Update all future pending transactions
+              existingTransactions
+                .filter((t) => t.status === 'Pending' && t.date >= currentNextDate)
+                .forEach((transaction) => {
+                  const newTransactionDate = addDaysToDate(transaction.date, offset);
+                  transactionsStore.updateTransaction(transaction.id, { date: newTransactionDate });
+                });
+              break;
+
+            case 'reset-schedule':
+              // Reset nextTransactionDate and recalculate future transactions
+              get().updateEMI(emiId, { nextTransactionDate: newDate });
+              
+              // Recalculate all future pending transactions based on new date
+              let currentDate = newDate;
+              existingTransactions
+                .filter((t) => t.status === 'Pending' && t.date >= getEffectiveEMINextDueDate(emi))
+                .sort((a, b) => a.date.localeCompare(b.date))
+                .forEach((transaction, index) => {
+                  if (index === 0) {
+                    currentDate = newDate;
+                  } else {
+                    currentDate = calculateNextDateFromDate(currentDate, emi.frequency);
+                  }
+                  transactionsStore.updateTransaction(transaction.id, { date: currentDate });
+                });
+              break;
+          }
         },
       }),
       {

@@ -7,6 +7,7 @@ import { useBankAccountsStore } from './useBankAccountsStore';
 import { validateDate, validateAmount, validateDateRange } from '../utils/validation';
 import { getLocalforageStorage } from '../utils/storage';
 import { convertRecurringSavingsToEMI } from '../utils/emiRecurringConversion';
+import { calculateNextDateFromDate, calculateDateOffset, addDaysToDate } from '../utils/dateCalculations';
 
 type RecurringSavingsInvestmentsState = {
   templates: RecurringSavingsInvestment[];
@@ -27,6 +28,8 @@ type RecurringSavingsInvestmentsState = {
   getTemplatesByStatus: (status: RecurringSavingsInvestment['status']) => RecurringSavingsInvestment[];
   // Conversion
   convertToEMI: (templateId: string) => string; // Returns new EMI ID
+  // Date Management
+  updateNextDueDate: (templateId: string, newDate: string, updateOption: 'this-date-only' | 'all-future' | 'reset-schedule') => void;
 };
 
 const storage = getLocalforageStorage('recurring-savings-investments');
@@ -266,6 +269,64 @@ export const useRecurringSavingsInvestmentsStore = create<RecurringSavingsInvest
           get().deleteTemplate(templateId);
 
           return newEMI.id;
+        },
+        updateNextDueDate: (templateId, newDate, updateOption) => {
+          const template = get().getTemplate(templateId);
+          if (!template) {
+            throw new Error(`Recurring template with id ${templateId} does not exist`);
+          }
+
+          // Validate new date
+          const dateValidation = validateDate(newDate, 'Next Due Date');
+          if (!dateValidation.isValid) {
+            throw new Error(`Date validation failed: ${dateValidation.errors.join(', ')}`);
+          }
+
+          const transactionsStore = useSavingsInvestmentTransactionsStore.getState();
+          const existingTransactions = transactionsStore.transactions.filter((t) => t.recurringTemplateId === templateId);
+
+          switch (updateOption) {
+            case 'this-date-only':
+              // Just update the nextDueDate
+              get().updateTemplate(templateId, { nextDueDate: newDate });
+              break;
+
+            case 'all-future':
+              // Update nextDueDate and shift all future pending transactions by the offset
+              const currentNextDate = template.nextDueDate;
+              const offset = calculateDateOffset(currentNextDate, newDate);
+              
+              // Update template
+              get().updateTemplate(templateId, { nextDueDate: newDate });
+              
+              // Update all future pending transactions
+              existingTransactions
+                .filter((t) => t.status === 'Pending' && t.date >= currentNextDate)
+                .forEach((transaction) => {
+                  const newTransactionDate = addDaysToDate(transaction.date, offset);
+                  transactionsStore.updateTransaction(transaction.id, { date: newTransactionDate });
+                });
+              break;
+
+            case 'reset-schedule':
+              // Reset nextDueDate and recalculate future transactions
+              get().updateTemplate(templateId, { nextDueDate: newDate });
+              
+              // Recalculate all future pending transactions based on new date
+              let currentDate = newDate;
+              existingTransactions
+                .filter((t) => t.status === 'Pending' && t.date >= template.nextDueDate)
+                .sort((a, b) => a.date.localeCompare(b.date))
+                .forEach((transaction, index) => {
+                  if (index === 0) {
+                    currentDate = newDate;
+                  } else {
+                    currentDate = calculateNextDateFromDate(currentDate, template.frequency);
+                  }
+                  transactionsStore.updateTransaction(transaction.id, { date: currentDate });
+                });
+              break;
+          }
         },
       }),
       {
