@@ -22,6 +22,14 @@ All Git hooks have been successfully implemented and are **actively protecting t
    - Detects bypass attempts in commit messages
    - Blocks `--no-verify`, `skip hooks`, etc. in messages
 
+4. **GitHub Actions PR Workflow** (`.github/workflows/pr-checks.yml`): ✅ ACTIVE
+   - Enforces same quality checks on all PRs
+   - ESLint validation (production code only)
+   - TypeScript type checking
+   - Build validation
+   - Comments on PR with check results
+   - **WORKING**: Automatically runs on every PR to `main`
+
 ### Current Situation
 
 The hooks were **correctly blocking commits** initially because there were **138 lint errors and 3 warnings** in the codebase. This was the **expected behavior** - hooks are enforcing code quality.
@@ -66,12 +74,13 @@ Run the verification script:
 
 ### Protections Summary
 
-✅ **Direct commits to main**: BLOCKED
-✅ **Direct pushes to main**: BLOCKED  
-✅ **Bypass attempts**: BLOCKED
-✅ **Linting errors**: BLOCKED (currently enforcing)
-✅ **Type errors**: WILL BLOCK
-✅ **Build errors**: WILL BLOCK
+✅ **Direct commits to main**: BLOCKED (pre-commit hook)
+✅ **Direct pushes to main**: BLOCKED (pre-push hook)
+✅ **Bypass attempts**: BLOCKED (pre-commit + commit-msg hooks)
+✅ **Linting errors**: BLOCKED (pre-commit hook + PR workflow)
+✅ **Type errors**: BLOCKED (pre-commit hook + PR workflow)
+✅ **Build errors**: BLOCKED (pre-commit hook + PR workflow)
+✅ **PR quality checks**: ENFORCED (GitHub Actions workflow)
 
 ### Important Note
 

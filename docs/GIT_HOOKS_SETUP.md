@@ -109,6 +109,30 @@ All protections are **NON-BYPASSABLE**:
 - **Solution**: Run `npm run prepare` to reinstall hooks
 - **Solution**: Check `.husky/pre-commit` exists and is executable
 
+## GitHub Actions PR Workflow
+
+**Additional Protection**: All PR checks are also enforced via GitHub Actions workflows.
+
+The `.github/workflows/pr-checks.yml` workflow enforces the same quality checks on every pull request:
+
+1. **ESLint Validation**: Same rules as pre-commit hook
+   - Production code only (test files excluded)
+   - Max 3 warnings allowed
+2. **TypeScript Type Checking**: Compilation check
+3. **Build Validation**: Production build must succeed
+
+**Benefits**:
+- ✅ Server-side enforcement (cannot be bypassed)
+- ✅ PR status checks (required for merge)
+- ✅ Comments on PR with check results
+- ✅ Protection even if hooks are disabled locally
+
+**Workflow Status**:
+- Automatically runs on every PR to `main`
+- Can be manually triggered via `workflow_dispatch`
+- Blocks PR merge if any check fails
+- Adds comments to PR with pass/fail status
+
 ## Configuration
 
 Hooks are configured in:
@@ -116,5 +140,8 @@ Hooks are configured in:
 - `.husky/pre-push` - Pre-push protection
 - `.husky/commit-msg` - Commit message validation
 
-**DO NOT** modify these hooks to bypass protections - they are enforced to ensure code quality.
+Workflows are configured in:
+- `.github/workflows/pr-checks.yml` - PR quality checks
+
+**DO NOT** modify these hooks or workflows to bypass protections - they are enforced to ensure code quality.
 
