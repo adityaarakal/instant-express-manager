@@ -30,7 +30,7 @@ import { useIncomeTransactionsStore } from '../../store/useIncomeTransactionsSto
 import { useExpenseTransactionsStore } from '../../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../../store/useSavingsInvestmentTransactionsStore';
 
-type TabValue = 'income' | 'expense' | 'savings';
+export type TabValue = 'income' | 'expense' | 'savings';
 
 interface TransactionFormDialogProps {
   open: boolean;
@@ -38,7 +38,7 @@ interface TransactionFormDialogProps {
   type: TabValue;
   accounts: BankAccount[];
   editingTransaction?: IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction | null;
-  onSave: (data: IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction) => void | Promise<void>;
+  onSave: (data: Omit<IncomeTransaction, 'id' | 'createdAt' | 'updatedAt'> | Omit<ExpenseTransaction, 'id' | 'createdAt' | 'updatedAt'> | Omit<SavingsInvestmentTransaction, 'id' | 'createdAt' | 'updatedAt'>) => void | Promise<void>;
   isSaving?: boolean;
 }
 
@@ -256,9 +256,9 @@ export function TransactionFormDialog({
         description: formData.description,
         clientName: formData.clientName || undefined,
         projectName: formData.projectName || undefined,
-        status: formData.status,
+        status: formData.status === 'Received' || formData.status === 'Paid' || formData.status === 'Completed' ? 'Received' : formData.status as 'Pending' | 'Received',
         notes: formData.notes || undefined,
-      });
+      } as Omit<IncomeTransaction, 'id' | 'createdAt' | 'updatedAt'>);
     } else if (type === 'expense') {
       onSave({
         date: formData.date,
@@ -268,9 +268,9 @@ export function TransactionFormDialog({
         description: formData.description,
         bucket: formData.bucket,
         dueDate: formData.dueDate || undefined,
-        status: formData.status,
+        status: formData.status === 'Received' || formData.status === 'Completed' ? 'Pending' : formData.status as 'Pending' | 'Paid',
         notes: formData.notes || undefined,
-      });
+      } as Omit<ExpenseTransaction, 'id' | 'createdAt' | 'updatedAt'>);
     } else {
       onSave({
         date: formData.date,
@@ -279,9 +279,9 @@ export function TransactionFormDialog({
         destination: formData.destination,
         type: formData.savingsType,
         sipNumber: formData.sipNumber || undefined,
-        status: formData.status,
+        status: formData.status === 'Received' || formData.status === 'Paid' ? 'Pending' : formData.status as 'Pending' | 'Completed',
         notes: formData.notes || undefined,
-      });
+      } as Omit<SavingsInvestmentTransaction, 'id' | 'createdAt' | 'updatedAt'>);
     }
     onClose();
   };

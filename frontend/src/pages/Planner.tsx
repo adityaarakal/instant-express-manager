@@ -156,7 +156,7 @@ export const Planner = memo(function Planner() {
 
   // Memoize filter change handler (before early return)
   const handleFilterChange = useCallback(
-    (filtered: Array<{ id: string; monthStart: string; accounts: AggregatedMonth['accounts'] }>) => {
+    (filtered: Array<{ id: string; monthStart: string; accounts: Array<{ accountName: string }> }>) => {
       setFilteredMonths(filtered.map((m) => m.id));
     },
     []

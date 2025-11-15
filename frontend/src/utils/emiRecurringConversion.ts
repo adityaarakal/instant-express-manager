@@ -76,7 +76,7 @@ export function convertExpenseEMIToRecurring(emi: ExpenseEMI): Omit<RecurringExp
     accountId: emi.accountId,
     category: emi.category === 'CCEMI' ? 'CCBill' : emi.category === 'Loan' ? 'Other' : 'Other',
     bucket: 'CCBill', // Default, user can change
-    frequency: emi.frequency === 'Monthly' ? 'Monthly' : 'Quarterly',
+    frequency: 'Monthly' as 'Monthly' | 'Weekly' | 'Yearly' | 'Custom',
     startDate: emi.startDate,
     endDate: emi.endDate, // Keep end date, but it's now optional
     status: emi.status === 'Active' ? 'Active' : emi.status === 'Paused' ? 'Paused' : 'Completed',
@@ -94,7 +94,7 @@ export function convertSavingsEMIToRecurring(emi: SavingsInvestmentEMI): Omit<Re
     accountId: emi.accountId,
     destination: emi.destination,
     type: 'SIP', // Default to SIP
-    frequency: emi.frequency === 'Monthly' ? 'Monthly' : 'Quarterly',
+    frequency: (emi.frequency === 'Monthly' ? 'Monthly' : emi.frequency === 'Quarterly' ? 'Quarterly' : 'Monthly') as 'Monthly' | 'Quarterly' | 'Yearly',
     startDate: emi.startDate,
     endDate: emi.endDate, // Keep end date, but it's now optional
     status: emi.status === 'Active' ? 'Active' : emi.status === 'Paused' ? 'Paused' : 'Completed',
@@ -112,12 +112,10 @@ export function convertRecurringExpenseToEMI(template: RecurringExpense): Omit<E
   
   // Map frequency - Recurring has more options, EMI only has Monthly/Quarterly
   let emiFrequency: 'Monthly' | 'Quarterly' = 'Monthly';
-  if (template.frequency === 'Quarterly') {
-    emiFrequency = 'Quarterly';
-  } else if (template.frequency === 'Monthly') {
+  if (template.frequency === 'Monthly') {
     emiFrequency = 'Monthly';
   } else {
-    // For Weekly, Yearly, Custom - default to Monthly
+    // For Weekly, Yearly, Custom - default to Monthly for EMI
     emiFrequency = 'Monthly';
   }
   

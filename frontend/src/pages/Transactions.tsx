@@ -81,11 +81,12 @@ const formatDate = (dateString: string): string => {
   }).format(new Date(dateString));
 };
 
-type TabValue = 'income' | 'expense' | 'savings' | 'transfers';
+import type { TabValue } from '../components/transactions/TransactionFormDialog';
+type ExtendedTabValue = TabValue | 'transfers';
 
 export function Transactions() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<TabValue>(() => {
+  const [activeTab, setActiveTab] = useState<ExtendedTabValue>(() => {
     const tabParam = searchParams.get('tab');
     if (tabParam === 'expense' || tabParam === 'savings' || tabParam === 'transfers') {
       return tabParam;
@@ -120,7 +121,7 @@ export function Transactions() {
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [confirmBulkDeleteOpen, setConfirmBulkDeleteOpen] = useState(false);
-  const [transactionToDelete, setTransactionToDelete] = useState<{ id: string; type: TabValue } | null>(null);
+  const [transactionToDelete, setTransactionToDelete] = useState<{ id: string; type: ExtendedTabValue } | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const theme = useTheme();
@@ -305,7 +306,7 @@ export function Transactions() {
     setEditingTransfer(null);
   };
 
-  const handleDeleteClick = (id: string, type: TabValue) => {
+  const handleDeleteClick = (id: string, type: ExtendedTabValue) => {
     setTransactionToDelete({ id, type });
     setConfirmDeleteOpen(true);
   };
@@ -1044,37 +1045,39 @@ export function Transactions() {
         <TransactionFormDialog
           open={dialogOpen}
           onClose={handleCloseDialog}
-          type={activeTab}
+          type={activeTab === 'transfers' ? 'income' : activeTab}
           accounts={accounts}
           editingTransaction={editingTransaction}
           isSaving={isSaving}
-        onSave={async (data: IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction) => {
+        onSave={async (data: Omit<IncomeTransaction, 'id' | 'createdAt' | 'updatedAt'> | Omit<ExpenseTransaction, 'id' | 'createdAt' | 'updatedAt'> | Omit<SavingsInvestmentTransaction, 'id' | 'createdAt' | 'updatedAt'>) => {
           setIsSaving(true);
           try {
             await new Promise((resolve) => setTimeout(resolve, 200));
             
             if (activeTab === 'income') {
               if (editingTransaction) {
-                updateIncome(editingTransaction.id, data);
+                // For updates, pass data as Partial<Omit<IncomeTransaction, 'id' | 'createdAt'>>
+                updateIncome(editingTransaction.id, data as Partial<Omit<IncomeTransaction, 'id' | 'createdAt'>>);
                 showSuccess('Income transaction updated successfully');
               } else {
-                createIncome(data);
+                // For creates, pass data as Omit<IncomeTransaction, 'id' | 'createdAt' | 'updatedAt'>
+                createIncome(data as Omit<IncomeTransaction, 'id' | 'createdAt' | 'updatedAt'>);
                 showSuccess('Income transaction created successfully');
               }
             } else if (activeTab === 'expense') {
               if (editingTransaction) {
-                updateExpense(editingTransaction.id, data);
+                updateExpense(editingTransaction.id, data as Partial<Omit<ExpenseTransaction, 'id' | 'createdAt'>>);
                 showSuccess('Expense transaction updated successfully');
               } else {
-                createExpense(data);
+                createExpense(data as Omit<ExpenseTransaction, 'id' | 'createdAt' | 'updatedAt'>);
                 showSuccess('Expense transaction created successfully');
               }
-            } else {
+            } else if (activeTab === 'savings') {
               if (editingTransaction) {
-                updateSavings(editingTransaction.id, data);
+                updateSavings(editingTransaction.id, data as Partial<Omit<SavingsInvestmentTransaction, 'id' | 'createdAt'>>);
                 showSuccess('Savings transaction updated successfully');
               } else {
-                createSavings(data);
+                createSavings(data as Omit<SavingsInvestmentTransaction, 'id' | 'createdAt' | 'updatedAt'>);
                 showSuccess('Savings transaction created successfully');
               }
             }

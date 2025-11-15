@@ -47,6 +47,39 @@ A comprehensive standalone financial management Progressive Web App (PWA) built 
 - Installable on mobile/desktop
 - Offline-first architecture
 
+## 🔒 Strict Code Quality Enforcement
+
+This repository enforces strict code quality checks that **cannot be bypassed**:
+
+- ✅ **Git Hooks**: Pre-commit validation (ESLint, TypeScript, Build)
+- ✅ **Git Wrapper**: Blocks `--no-verify` bypass attempts
+- ✅ **GitHub Actions**: Server-side enforcement on all PRs
+- ✅ **Branch Protection**: Requires status checks before merge
+
+### Protection Setup (Required)
+
+After cloning, install protections:
+
+```bash
+npm install
+npm run install-protection
+source ~/.bashrc  # or ~/.zshrc (or restart terminal)
+```
+
+**Important**: Run `npm run install-protection` after `npm install` to enable strict local enforcement.
+
+**Zero Tolerance Policy**:
+- ❌ `--no-verify` is **ABSOLUTELY FORBIDDEN**
+- ❌ Direct commits to `main` are **BLOCKED**
+- ❌ Bypass attempts are **DETECTED AND BLOCKED**
+- ✅ All checks must pass before commit
+- ✅ Server-side checks provide ultimate enforcement
+
+For detailed documentation, see:
+- `docs/GIT_HOOKS_SETUP.md` - Setup and configuration
+- `docs/STRICT_ENFORCEMENT.md` - How protection layers work
+- `docs/HOOK_LIMITATIONS.md` - Known limitations
+
 ## 📦 Installation
 
 ### Prerequisites
@@ -61,13 +94,21 @@ git clone <repository-url>
 cd instant-express-manager
 ```
 
-2. Install dependencies:
+2. Install dependencies and protections:
+```bash
+npm install
+npm run install-protection
+source ~/.bashrc  # or ~/.zshrc (or restart terminal)
+```
+
+3. Install frontend dependencies:
 ```bash
 cd frontend
 npm install
+cd ..
 ```
 
-3. Start development server:
+4. Start development server:
 ```bash
 npm run dev
 ```

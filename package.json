@@ -11,7 +11,9 @@
     "build": "cd frontend && npm run build",
     "install:all": "npm install && cd frontend && npm install",
     "prepare": "husky",
-    "install-protection": "bash scripts/install-git-protection.sh"
+    "install-protection": "bash scripts/install-git-protection.sh",
+    "init-enforcement-lock": "bash scripts/validate-enforcement-lock.sh",
+    "unlock-enforcement": "bash scripts/unlock-enforcement.sh"
   },
   "keywords": [
     "react",

@@ -145,6 +145,40 @@ Workflows are configured in:
 
 **DO NOT** modify these hooks or workflows to bypass protections - they are enforced to ensure code quality.
 
+## Enforcement Files Lock System
+
+**CRITICAL**: All enforcement files are **LOCKED** and cannot be modified.
+
+### Lock Protection
+
+Enforcement files are protected by a checksum-based lock system that:
+- ✅ **Blocks modifications** to existing checks
+- ✅ **Prevents AI agents** from changing files (even with user permission)
+- ✅ **Prevents users** from accidentally modifying checks
+- ✅ **Allows adding NEW checks** via unlock procedure
+- ❌ **Does NOT allow** modifying existing checks
+- ❌ **Does NOT allow** removing checks
+- ❌ **Does NOT allow** disabling checks
+
+### Protected Files
+
+- `.husky/pre-commit`, `.husky/pre-push`, `.husky/commit-msg`
+- `scripts/git-wrapper.sh`
+- `.github/workflows/pr-checks.yml`
+- `scripts/validate-enforcement-lock.sh`, `scripts/install-git-protection.sh`
+
+### Unlock Procedure
+
+To add a **NEW** check (only allowed action):
+```bash
+npm run unlock-enforcement
+# Follow prompts - must specify reason for NEW check
+```
+
+**Important**: Only additions of NEW checks are allowed. Modifying existing checks is **FORBIDDEN**, even with user permission.
+
+See `docs/ENFORCEMENT_LOCK.md` for complete documentation.
+
 ## Important Limitations
 
 ### Client-Side Hooks Cannot Prevent Bypass

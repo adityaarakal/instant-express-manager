@@ -90,15 +90,16 @@ export function validateBackup(data: unknown): data is BackupData {
     return false;
   }
 
-  if (!data.version || typeof data.version !== 'string') {
+  const backup = data as { version?: unknown; timestamp?: unknown; data?: unknown };
+  if (!backup.version || typeof backup.version !== 'string') {
     return false;
   }
 
-  if (!data.timestamp || typeof data.timestamp !== 'string') {
+  if (!backup.timestamp || typeof backup.timestamp !== 'string') {
     return false;
   }
 
-  if (!data.data || typeof data.data !== 'object') {
+  if (!backup.data || typeof backup.data !== 'object' || backup.data === null) {
     return false;
   }
 
@@ -116,8 +117,9 @@ export function validateBackup(data: unknown): data is BackupData {
     'recurringSavingsInvestments',
   ];
 
+  const backupData = backup.data as Record<string, unknown>;
   for (const key of requiredKeys) {
-    if (!Array.isArray(data.data[key])) {
+    if (!Array.isArray(backupData[key])) {
       return false;
     }
   }

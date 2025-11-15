@@ -46,6 +46,15 @@ coverage/
 # Temporary files
 tmp/
 temp/
+**/tmp/
 
 # Local Python dependencies
 .pydeps/
+
+# Enforcement lock backups (keep lock directory tracked, but ignore backups)
+.enforcement-lock/*.backup.*
+.enforcement-lock/unlock-log.txt
+
+# Keep checksums.txt tracked (required for validation)
+!.enforcement-lock/checksums.txt
+!.enforcement-lock/README.md

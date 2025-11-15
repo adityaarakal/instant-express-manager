@@ -46,7 +46,7 @@ export const useUndoStore = create<UndoState>()(
           const expiresAt = new Date(now.getTime() + EXPIRY_DURATION_MS);
 
           const deletedItem: DeletedItem = {
-            id: data.id,
+            id: (data as { id: string }).id,
             type,
             data,
             deletedAt: now.toISOString(),

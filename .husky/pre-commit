@@ -93,6 +93,46 @@ if command -v ps >/dev/null 2>&1; then
 fi
 
 # ============================================================================
+# ENFORCEMENT FILES LOCK VALIDATION
+# ============================================================================
+# Validate that enforcement files are not modified (only new checks can be added)
+# THIS CHECK CANNOT BE REMOVED OR MODIFIED - IT IS PART OF THE LOCK SYSTEM
+# Skip lock validation on initial setup (when lock file doesn't exist yet)
+if [ -f "scripts/validate-enforcement-lock.sh" ]; then
+    if [ -f ".enforcement-lock/checksums.txt" ]; then
+        # Lock file exists - validate locks
+        echo "🔒 Validating enforcement file locks..."
+        bash scripts/validate-enforcement-lock.sh
+        lock_status=$?
+        if [ $lock_status -ne 0 ]; then
+            echo ""
+            echo "❌ CRITICAL: Enforcement file lock validation failed"
+            echo "❌ ENFORCEMENT: Commit blocked - Files are locked"
+            echo "❌ MODIFICATION OF ENFORCEMENT FILES IS FORBIDDEN"
+            echo "📋 REQUIRED: Only additions of NEW checks allowed, not modifications"
+            echo "📋 POLICY: AI agents and users cannot modify existing checks"
+            echo ""
+            echo "To add a NEW check (requires explicit unlock):"
+            echo "  1. Run: bash scripts/unlock-enforcement.sh"
+            echo "  2. Provide reason for NEW check"
+            echo "  3. Add new check (do not modify existing ones)"
+            echo "  4. Commit (locks will re-initialize)"
+            echo ""
+            echo "See docs/ENFORCEMENT_LOCK.md for details"
+            exit 1
+        fi
+        echo "✅ Enforcement file locks validated"
+        echo ""
+    else
+        # Lock file doesn't exist - initialize locks (first run)
+        echo "🔒 Initializing enforcement file locks..."
+        bash scripts/validate-enforcement-lock.sh
+        echo "✅ Enforcement locks initialized"
+        echo ""
+    fi
+fi
+
+# ============================================================================
 # STEP 1: LINTING VALIDATION
 # ============================================================================
 echo "📋 Step 1/3: Linting Validation"
@@ -116,6 +156,8 @@ echo ""
 # ============================================================================
 # STEP 2: TYPE CHECKING
 # ============================================================================
+# NOTE: This check can be modified, but only by adding NEW checks
+# Modifying existing TypeScript check logic is FORBIDDEN (enforced by lock)
 echo "📋 Step 2/3: Type Checking"
 echo "Running TypeScript compilation check..."
 cd frontend
@@ -135,6 +177,8 @@ echo ""
 # ============================================================================
 # STEP 3: BUILD VALIDATION
 # ============================================================================
+# NOTE: This check can be modified, but only by adding NEW checks
+# Modifying existing build validation is FORBIDDEN (enforced by lock)
 echo "📋 Step 3/3: Build Validation"
 echo "Running production build validation..."
 cd frontend

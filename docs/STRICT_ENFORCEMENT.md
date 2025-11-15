@@ -218,6 +218,44 @@ Even with all these protections, a determined developer could:
 - **Solution**: Fix TypeScript errors first (use `@ts-ignore` if absolutely necessary)
 - **Solution**: Remember server-side checks will still run on PR
 
+## Enforcement Files Lock System
+
+**CRITICAL**: All enforcement files are **LOCKED** and cannot be modified, even with user permission.
+
+### Protected Files (Locked)
+
+The following files are protected by a checksum-based lock system:
+- `.husky/pre-commit` - Cannot be modified
+- `.husky/pre-push` - Cannot be modified
+- `.husky/commit-msg` - Cannot be modified
+- `scripts/git-wrapper.sh` - Cannot be modified
+- `.github/workflows/pr-checks.yml` - Cannot be modified
+- `scripts/validate-enforcement-lock.sh` - Cannot be modified
+- `scripts/install-git-protection.sh` - Cannot be modified
+
+### Lock Protection
+
+- **Automatic Validation**: Checksums validated on every commit
+- **Modification Blocked**: Changes to protected files are blocked
+- **AI Agent Protection**: AI agents cannot modify files, even with user permission
+- **User Permission Does NOT Override**: Locks apply regardless of user requests
+- **Only New Checks Allowed**: Can add new checks via unlock procedure
+
+### Unlock Procedure
+
+To add a **NEW** check (only allowed action):
+```bash
+npm run unlock-enforcement
+# Or: bash scripts/unlock-enforcement.sh
+```
+
+**Requirements**:
+- Must specify reason for NEW check
+- Only additions allowed (no modifications to existing checks)
+- Locks re-initialize automatically after commit
+
+See `docs/ENFORCEMENT_LOCK.md` for complete details.
+
 ## Summary
 
 We've implemented **maximum local protection** against bypassing:
