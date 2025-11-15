@@ -752,6 +752,7 @@ Run tests with: `npm test` in the frontend directory.
 - ✅ **Month Comparison View** - COMPLETED
 - ✅ **Export History** - COMPLETED
 - ✅ **Dashboard Monthly & Overall Metrics** - COMPLETED
+- ✅ **Latest/Current Month Prioritization** - COMPLETED
 - ✅ **Automatic Account Balance Updates** - COMPLETED
 - ✅ **Balance Sync Utility** - COMPLETED
 
@@ -787,6 +788,7 @@ Run tests with: `npm test` in the frontend directory.
   - ✅ Month Comparison View: **COMPLETED** (~3 hours)
   - ✅ Export History: **COMPLETED** (~2 hours)
   - ✅ Dashboard Monthly & Overall Metrics: **COMPLETED** (~4 hours)
+  - ✅ Latest/Current Month Prioritization: **COMPLETED** (~2 hours)
   - ✅ Automatic Account Balance Updates: **COMPLETED** (~6 hours)
   - ✅ Balance Sync Utility: **COMPLETED** (~3 hours)
 - **Total Estimated**: ~130 hours
