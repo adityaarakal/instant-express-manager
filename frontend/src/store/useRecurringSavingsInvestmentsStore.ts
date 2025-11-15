@@ -184,16 +184,19 @@ export const useRecurringSavingsInvestmentsStore = create<RecurringSavingsInvest
           const activeTemplates = get().getActiveTemplates();
           
           activeTemplates.forEach((template) => {
-            if (template.nextDueDate <= today) {
+            // Use deductionDate if set, otherwise use nextDueDate
+            const deductionDate = getEffectiveRecurringDeductionDate(template);
+            
+            if (deductionDate <= today) {
               // Check if transaction already exists for this template and date
               const existingTransactions = useSavingsInvestmentTransactionsStore.getState().transactions.filter(
-                (t) => t.recurringTemplateId === template.id && t.date === template.nextDueDate
+                (t) => t.recurringTemplateId === template.id && t.date === deductionDate
               );
               
               if (existingTransactions.length === 0) {
                 // Create transaction
                 useSavingsInvestmentTransactionsStore.getState().createTransaction({
-                  date: template.nextDueDate,
+                  date: deductionDate,
                   amount: template.amount,
                   accountId: template.accountId,
                   destination: template.destination,

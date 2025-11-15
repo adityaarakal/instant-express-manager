@@ -14,6 +14,7 @@ export interface ExpenseEMI {
   status: 'Active' | 'Completed' | 'Paused';
   totalInstallments: number;
   completedInstallments: number;
+  deductionDate?: string; // ISO date string, optional - actual date when next installment will be deducted (independent of start/end dates)
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -34,6 +35,7 @@ export interface SavingsInvestmentEMI {
   status: 'Active' | 'Completed' | 'Paused';
   totalInstallments: number;
   completedInstallments: number;
+  deductionDate?: string; // ISO date string, optional - actual date when next installment will be deducted (independent of start/end dates)
   notes?: string;
   createdAt: string;
   updatedAt: string;
