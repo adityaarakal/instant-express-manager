@@ -185,11 +185,8 @@ The app automatically updates account balances based on transaction status:
 - You can always manually update an account's balance in the Accounts page if needed
 
 **Auto-Generated Transactions (EMIs & Recurring Templates):**
-- Auto-generated transactions from Recurring Templates are created with:
-  - **Income transactions**: Status "Received" by default
-  - **Expense/Savings transactions**: Status "Pending" by default
+- Auto-generated transactions from EMIs and Recurring Templates are created with status "Pending" by default
 - All transactions for the entire recurring period are generated upfront when you create the template
-- EMI transactions are created with status "Pending" by default and generated as they become due
 - This is intentional - they represent planned transactions that haven't been confirmed yet
 - When you mark an auto-generated transaction as "Received" (income), "Paid" (expense), or "Completed" (savings/investment), the balance will update automatically
 - Until then, the balance remains unchanged because the transaction is still "Pending"
@@ -382,9 +379,10 @@ If you created a Recurring Template but later realize it should be an EMI (e.g.,
 Recurring templates automatically generate all transactions upfront when you create the template. The system generates transactions for the entire recurring period (from start date to end date, or 12 months ahead if no end date is set).
 
 **Transaction Status**:
-- **Income transactions**: Created with status "Received" by default (you can change to "Pending" if needed)
-- **Expense transactions**: Created with status "Pending" by default (you can mark as "Paid" when you make the payment)
-- **Savings/Investment transactions**: Created with status "Pending" by default (you can mark as "Completed" when the transaction is processed)
+- All recurring transactions are created with status "Pending" by default
+- This represents planned/future transactions that haven't actually occurred yet
+- You can mark transactions as "Received" (income), "Paid" (expense), or "Completed" (savings/investment) when they actually occur
+- The account balance only updates when you mark the transaction as received/paid/completed
 
 All generated transactions appear in the Transactions page immediately after creating the template.
 

@@ -76,7 +76,7 @@ Key stores:
   - `convertToRecurring(emiId)`: Converts EMI to Recurring template (bypasses auto-generation to prevent extra transactions)
 - `src/store/useRecurringIncomesStore.ts`: Recurring income template CRUD with upfront transaction generation
   - Generates all transactions upfront when template is created (entire recurring period or 12 months if no end date)
-  - Income transactions default to status "Received"
+  - Transactions default to status "Pending" (user marks as "Received" when payment is actually received)
 - `src/store/useRecurringExpensesStore.ts`: Recurring expense template CRUD with conversion to EMI and upfront transaction generation
   - Generates all transactions upfront when template is created
   - Expense transactions default to status "Pending"
@@ -291,9 +291,8 @@ Key entities:
 - **deductionDate**: (Optional, DEPRECATED) Full ISO date string. Kept for backward compatibility. Prefer using `dayOfMonth` instead.
 - **nextDueDate**: (Recurring only) Internal scheduling date. Used if dayOfMonth/deductionDate is not set.
 - **Transaction Generation**: All transactions are generated upfront when template is created (entire recurring period or 12 months if no end date)
-  - Income transactions: Default status "Received"
-  - Expense transactions: Default status "Pending"
-  - Savings/investment transactions: Default status "Pending"
+  - All transactions default to status "Pending" (representing planned/future transactions)
+  - User marks transactions as "Received" (income), "Paid" (expense), or "Completed" (savings/investment) when they actually occur
 
 ### Entity Relationships
 

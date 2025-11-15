@@ -116,7 +116,7 @@ export const useRecurringIncomesStore = create<RecurringIncomesState>()(
                 accountId: newTemplate.accountId,
                 category: newTemplate.category,
                 description: newTemplate.name,
-                status: 'Received', // Default to received for income
+                status: 'Pending', // Default to pending - user can mark as received when payment is actually received
                 recurringTemplateId: newTemplate.id,
               });
             }
