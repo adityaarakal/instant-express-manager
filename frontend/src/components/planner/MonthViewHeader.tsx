@@ -51,6 +51,7 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
               startIcon={<ContentCopyIcon />}
               onClick={() => setCopyDialogOpen(true)}
               size="small"
+              className="no-print"
             >
               Copy Month
             </Button>
@@ -72,6 +73,7 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
                 navigate('/transactions?tab=income');
               }}
               sx={{ ml: 1 }}
+              className="no-print"
             >
               Edit
             </Button>
@@ -91,6 +93,7 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
                 navigate('/settings');
               }}
               sx={{ ml: 1 }}
+              className="no-print"
             >
               Edit
             </Button>

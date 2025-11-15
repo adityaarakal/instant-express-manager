@@ -46,7 +46,7 @@ export const AccountFilters = memo(function AccountFilters({
   const hasActiveFilters = selectedAccount !== null || selectedBucket !== null || showNegativeOnly;
 
   return (
-    <Paper elevation={1} sx={{ p: 2, borderRadius: 2 }}>
+    <Paper elevation={1} sx={{ p: 2, borderRadius: 2 }} className="no-print">
       <Stack spacing={2}>
         <Stack direction="row" spacing={1} alignItems="center">
           <FilterListIcon fontSize="small" color="action" />

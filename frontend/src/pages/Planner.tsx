@@ -16,6 +16,7 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ClearIcon from '@mui/icons-material/Clear';
+import PrintIcon from '@mui/icons-material/Print';
 import { useAggregatedPlannedMonthsStore } from '../store/useAggregatedPlannedMonthsStore';
 import { usePlannerStore } from '../store/usePlannerStore';
 import { MonthViewHeader } from '../components/planner/MonthViewHeader';
@@ -43,6 +44,10 @@ export const Planner = memo(function Planner() {
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
   const [selectedBucket, setSelectedBucket] = useState<string | null>(null);
   const [showNegativeOnly, setShowNegativeOnly] = useState<boolean>(false);
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   // Keyboard shortcuts removed - no longer needed for Planner page
 
@@ -139,7 +144,7 @@ export const Planner = memo(function Planner() {
 
   return (
     <Stack spacing={3}>
-      <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
+      <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }} className="no-print">
         <MonthSearchFilter
           months={useMemo(
             () =>
@@ -185,6 +190,17 @@ export const Planner = memo(function Planner() {
               })}
             </Select>
           </FormControl>
+          {activeMonth && (
+            <Button
+              variant="outlined"
+              startIcon={<PrintIcon />}
+              onClick={handlePrint}
+              size="small"
+              aria-label="Print month view"
+            >
+              Print
+            </Button>
+          )}
         </Stack>
       </Paper>
 
@@ -200,7 +216,7 @@ export const Planner = memo(function Planner() {
             }}
           />
           {negativeCashAccounts.length > 0 && (
-            <Alert severity="warning" icon={<WarningIcon />}>
+            <Alert severity="warning" icon={<WarningIcon />} className="no-print">
               <AlertTitle>Negative Remaining Cash Detected</AlertTitle>
               <Typography variant="body2" sx={{ mb: 1 }}>
                 The following {negativeCashAccounts.length === 1 ? 'account has' : 'accounts have'} negative remaining cash:

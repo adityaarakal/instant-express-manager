@@ -165,6 +165,7 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
                   onClick={() => {
                     navigate('/transactions');
                   }}
+                  className="no-print"
                 >
                   Add Transaction
                 </Button>

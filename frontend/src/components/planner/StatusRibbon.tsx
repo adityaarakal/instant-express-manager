@@ -39,6 +39,7 @@ export function StatusRibbon({ month, onStatusChange }: StatusRibbonProps) {
               variant={isPaid ? 'filled' : 'outlined'}
               size="small"
               onClick={() => handleStatusToggle(bucket.id, status)}
+              className="no-print-interactive"
               sx={{
                 cursor: 'pointer',
                 borderColor: isPaid ? undefined : bucket.color,

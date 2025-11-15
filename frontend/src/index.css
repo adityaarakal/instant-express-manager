@@ -47,3 +47,109 @@ body {
   }
 }
 
+/* Print styles */
+@media print {
+  /* Hide non-essential elements when printing */
+  .no-print,
+  .MuiAppBar-root,
+  .MuiDrawer-root,
+  .MuiFab-root,
+  button:not(.print-button),
+  .MuiAlert-root,
+  .MuiChip-root,
+  .MuiTooltip-popper {
+    display: none !important;
+  }
+
+  /* Optimize layout for printing */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Ensure full width for print */
+  .MuiContainer-root,
+  .MuiPaper-root {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Optimize tables for print */
+  .MuiTableContainer-root {
+    overflow: visible !important;
+    box-shadow: none !important;
+  }
+
+  .MuiTable-root {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  .MuiTableCell-root {
+    padding: 8px !important;
+    border: 1px solid #ddd !important;
+    font-size: 12px !important;
+  }
+
+  .MuiTableHead-root {
+    background-color: #f5f5f5 !important;
+  }
+
+  .MuiTableHead-root .MuiTableCell-root {
+    font-weight: bold !important;
+    background-color: #f5f5f5 !important;
+  }
+
+  /* Ensure text is readable */
+  .MuiTypography-root {
+    color: black !important;
+  }
+
+  /* Remove page breaks inside tables if possible */
+  .MuiTableRow-root {
+    page-break-inside: avoid;
+  }
+
+  /* Optimize spacing */
+  .MuiStack-root {
+    margin: 0 !important;
+    padding: 8px 0 !important;
+  }
+
+  /* Hide tooltips, icons, and interactive elements in print */
+  .MuiTooltip-root,
+  .MuiIconButton-root,
+  .no-print-interactive {
+    display: none !important;
+  }
+
+  /* Make StatusRibbon chips non-interactive but visible when printing */
+  .MuiChip-root.no-print-interactive {
+    display: inline-flex !important;
+    cursor: default !important;
+    pointer-events: none !important;
+  }
+
+  /* Show print-only content */
+  .print-only {
+    display: block !important;
+  }
+
+  /* Ensure month header prints well */
+  .MuiPaper-root h2,
+  .MuiPaper-root h5 {
+    margin: 0 0 8px 0 !important;
+  }
+
+  /* Optimize buttons that should print (like Edit) */
+  button {
+    border: 1px solid #ccc !important;
+    background: white !important;
+    color: black !important;
+  }
+}
+
