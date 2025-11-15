@@ -602,7 +602,7 @@ export function Recurring() {
                 </TableRow>
               ) : (
                 paginatedTemplates
-                  .sort((a, b) => a.nextDueDate.localeCompare(b.nextDueDate))
+                  .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
                   .map((template) => (
                     <TableRow key={template.id} hover>
                       <TableCell>

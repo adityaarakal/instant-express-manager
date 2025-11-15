@@ -113,11 +113,13 @@ export function BankAccounts() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const filteredAccounts = useMemo(() => {
-    return accounts.filter((account) => {
-      const matchesBank = filterBankId === 'All' || account.bankId === filterBankId;
-      const matchesType = filterAccountType === 'All' || account.accountType === filterAccountType;
-      return matchesBank && matchesType;
-    });
+    return accounts
+      .filter((account) => {
+        const matchesBank = filterBankId === 'All' || account.bankId === filterBankId;
+        const matchesType = filterAccountType === 'All' || account.accountType === filterAccountType;
+        return matchesBank && matchesType;
+      })
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt)); // Newest first
   }, [accounts, filterBankId, filterAccountType]);
 
   const hasActiveFilters = filterBankId !== 'All' || filterAccountType !== 'All';
