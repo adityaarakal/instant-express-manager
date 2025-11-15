@@ -8,6 +8,19 @@ import { readFileSync } from 'fs'
 const packageJson = JSON.parse(readFileSync('../package.json', 'utf-8'))
 const version = packageJson.version
 
+// Vite plugin to inject version into HTML meta tag
+function injectVersionMeta() {
+  return {
+    name: 'inject-version-meta',
+    transformIndexHtml(html: string) {
+      return html.replace(
+        '<head>',
+        `<head>\n    <meta name="app-version" content="${version}" />`
+      )
+    },
+  }
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
   define: {
@@ -17,6 +30,7 @@ export default defineConfig({
   // base: process.env.NODE_ENV === 'production' ? '/instant-express-manager/' : '/',
   base: '/', // For root domain or custom domain, use '/' instead
   plugins: [
+    injectVersionMeta(),
     react(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -116,6 +130,10 @@ export default defineConfig({
     strictPort: true, // Prevent port changes - IndexedDB is origin-scoped (includes port)
     // If port 7001 is in use, Vite will fail instead of trying another port
     // This ensures consistent IndexedDB access across restarts
+    watch: {
+      // Watch package.json for version changes
+      ignored: ['!**/package.json'],
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:3000',

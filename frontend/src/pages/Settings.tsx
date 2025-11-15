@@ -490,7 +490,12 @@ export function Settings() {
           
           <Stack spacing={2} alignItems="center">
             <Typography variant="body2" color="text.secondary">
-              Version: {typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0'}
+              Version: {(() => {
+                // Try to read from meta tag first (for automatic updates)
+                const metaVersion = document.querySelector('meta[name="app-version"]')?.getAttribute('content');
+                // Fallback to build-time constant, then default
+                return metaVersion || (typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0');
+              })()}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Instant Express Manager
