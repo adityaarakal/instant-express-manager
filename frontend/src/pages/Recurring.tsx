@@ -148,6 +148,7 @@ export function Recurring() {
     frequency: 'Monthly' | 'Weekly' | 'Yearly' | 'Custom' | 'Quarterly';
     startDate: string;
     endDate: string;
+    deductionDate: string; // Optional - actual date when next transaction will be deducted/credited
     category: IncomeCategory;
     expenseCategory: ExpenseCategory;
     bucket: ExpenseBucket;
@@ -161,6 +162,7 @@ export function Recurring() {
     frequency: 'Monthly',
     startDate: new Date().toISOString().split('T')[0],
     endDate: '',
+    deductionDate: '', // Optional
     // Income specific
     category: 'Salary',
     // Expense specific
@@ -225,6 +227,7 @@ export function Recurring() {
           frequency: t.frequency,
           startDate: t.startDate,
           endDate: t.endDate || '',
+          deductionDate: t.deductionDate || '',
           category: t.category,
           expenseCategory: 'Other',
           bucket: 'Expense',
@@ -241,6 +244,7 @@ export function Recurring() {
           frequency: t.frequency,
           startDate: t.startDate,
           endDate: t.endDate || '',
+          deductionDate: t.deductionDate || '',
           category: 'Salary',
           expenseCategory: t.category,
           bucket: t.bucket,
@@ -257,6 +261,7 @@ export function Recurring() {
           frequency: t.frequency as 'Monthly' | 'Quarterly' | 'Yearly', // Savings frequency type
           startDate: t.startDate,
           endDate: t.endDate || '',
+          deductionDate: t.deductionDate || '',
           category: 'Salary',
           expenseCategory: 'Other',
           bucket: 'Expense',
@@ -279,6 +284,7 @@ export function Recurring() {
         frequency: defaultFrequency,
         startDate: new Date().toISOString().split('T')[0],
         endDate: '',
+        deductionDate: '',
         category: 'Salary',
         expenseCategory: 'Other',
         bucket: 'Expense',
@@ -330,6 +336,7 @@ export function Recurring() {
         frequency: incomeFrequency,
         startDate: formData.startDate,
         endDate: formData.endDate || undefined,
+        deductionDate: formData.deductionDate || undefined,
         status: 'Active' as const,
         notes: formData.notes || undefined,
       };
@@ -380,6 +387,7 @@ export function Recurring() {
         frequency: savingsFrequency,
         startDate: formData.startDate,
         endDate: formData.endDate || undefined,
+        deductionDate: formData.deductionDate || undefined,
         status: 'Active' as const,
         notes: formData.notes || undefined,
       };

@@ -138,6 +138,7 @@ export function EMIs() {
     name: '',
     startDate: new Date().toISOString().split('T')[0],
     endDate: '',
+    deductionDate: '', // Optional - actual date when next installment will be deducted
     amount: 0,
     accountId: accounts[0]?.id || '',
     frequency: 'Monthly' as 'Monthly' | 'Quarterly',
@@ -165,6 +166,7 @@ export function EMIs() {
           name: e.name,
           startDate: e.startDate,
           endDate: e.endDate,
+          deductionDate: e.deductionDate || '',
           amount: e.amount,
           accountId: e.accountId,
           frequency: e.frequency,
@@ -180,6 +182,7 @@ export function EMIs() {
           name: s.name,
           startDate: s.startDate,
           endDate: s.endDate,
+          deductionDate: s.deductionDate || '',
           amount: s.amount,
           accountId: s.accountId,
           frequency: s.frequency,
@@ -196,6 +199,7 @@ export function EMIs() {
         name: '',
         startDate: new Date().toISOString().split('T')[0],
         endDate: '',
+        deductionDate: '',
         amount: 0,
         accountId: accounts[0]?.id || '',
         frequency: 'Monthly',
@@ -225,6 +229,7 @@ export function EMIs() {
         name: formData.name,
         startDate: formData.startDate,
         endDate: formData.endDate,
+        deductionDate: formData.deductionDate || undefined,
         amount: formData.amount,
         accountId: formData.accountId,
         category: formData.category,
@@ -247,6 +252,7 @@ export function EMIs() {
         name: formData.name,
         startDate: formData.startDate,
         endDate: formData.endDate,
+        deductionDate: formData.deductionDate || undefined,
         amount: formData.amount,
         accountId: formData.accountId,
         destination: formData.destination,
@@ -727,6 +733,15 @@ export function EMIs() {
               required
               fullWidth
               InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Deduction Date (Optional)"
+              type="date"
+              value={formData.deductionDate}
+              onChange={(e) => setFormData({ ...formData, deductionDate: e.target.value })}
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+              helperText="Actual date when next installment will be deducted. If not set, calculated automatically."
             />
             <TextField
               label="Total Installments"
