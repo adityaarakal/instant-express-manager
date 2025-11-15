@@ -32,6 +32,7 @@ import { useToastStore } from '../store/useToastStore';
 import { getUserFriendlyError } from '../utils/errorHandling';
 import { ThemeModeToggle } from '../components/layout/ThemeModeToggle';
 import { DataHealthCheck } from '../components/common/DataHealthCheck';
+import { ExportHistory } from '../components/common/ExportHistory';
 import { downloadBackup, readBackupFile, importBackup, exportBackup } from '../utils/backupService';
 
 const CURRENCIES = [
@@ -274,6 +275,16 @@ export function Settings() {
                 </Paper>
               ))}
             </Stack>
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Export History</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Track when you export transactions or backups.
+            </Typography>
+            <ExportHistory />
           </Stack>
 
           <Divider />

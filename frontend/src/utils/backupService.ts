@@ -8,6 +8,7 @@ import { useSavingsInvestmentEMIsStore } from '../store/useSavingsInvestmentEMIs
 import { useRecurringIncomesStore } from '../store/useRecurringIncomesStore';
 import { useRecurringExpensesStore } from '../store/useRecurringExpensesStore';
 import { useRecurringSavingsInvestmentsStore } from '../store/useRecurringSavingsInvestmentsStore';
+import { useExportHistoryStore } from '../store/useExportHistoryStore';
 
 export interface BackupData {
   version: string;
@@ -61,12 +62,24 @@ export function downloadBackup(): void {
   const blob = new Blob([jsonString], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
+  const filename = `financial-manager-backup-${new Date().toISOString().split('T')[0]}.json`;
   link.href = url;
-  link.download = `financial-manager-backup-${new Date().toISOString().split('T')[0]}.json`;
+  link.download = filename;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+
+  // Track export history
+  const totalTransactions =
+    backup.data.incomeTransactions.length +
+    backup.data.expenseTransactions.length +
+    backup.data.savingsInvestmentTransactions.length;
+  useExportHistoryStore.getState().addExport({
+    type: 'backup',
+    filename,
+    transactionCount: totalTransactions,
+  });
 }
 
 /**

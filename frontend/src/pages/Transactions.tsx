@@ -61,6 +61,7 @@ import {
   exportSavingsTransactionsToCSV,
   downloadCSV,
 } from '../utils/transactionExport';
+import { useExportHistoryStore } from '../store/useExportHistoryStore';
 import type {
   IncomeTransaction,
   ExpenseTransaction,
@@ -379,22 +380,36 @@ export function Transactions() {
     }
   };
 
+  const { addExport } = useExportHistoryStore();
+
   const handleExport = () => {
     let csvContent = '';
     let filename = '';
+    let exportType: 'income' | 'expense' | 'savings' = 'income';
+    const transactionCount = filteredAndSortedTransactions.length;
 
     if (activeTab === 'income') {
       csvContent = exportIncomeTransactionsToCSV(filteredAndSortedTransactions as IncomeTransaction[], accounts);
       filename = `income-transactions-${new Date().toISOString().split('T')[0]}.csv`;
+      exportType = 'income';
     } else if (activeTab === 'expense') {
       csvContent = exportExpenseTransactionsToCSV(filteredAndSortedTransactions as ExpenseTransaction[], accounts);
       filename = `expense-transactions-${new Date().toISOString().split('T')[0]}.csv`;
+      exportType = 'expense';
     } else {
       csvContent = exportSavingsTransactionsToCSV(filteredAndSortedTransactions as SavingsInvestmentTransaction[], accounts);
       filename = `savings-transactions-${new Date().toISOString().split('T')[0]}.csv`;
+      exportType = 'savings';
     }
 
     downloadCSV(csvContent, filename);
+    
+    // Track export history
+    addExport({
+      type: exportType,
+      filename,
+      transactionCount,
+    });
   };
 
   const handleSelectAll = () => {
