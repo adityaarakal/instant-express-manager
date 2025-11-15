@@ -9,6 +9,7 @@ import { validateDate, validateAmount, validateDateRange } from '../utils/valida
 import { getLocalforageStorage } from '../utils/storage';
 import { convertRecurringSavingsToEMI } from '../utils/emiRecurringConversion';
 import { getEffectiveRecurringDeductionDate, calculateNextDateFromDate, calculateDateOffset, addDaysToDate } from '../utils/dateCalculations';
+import { generateRecurringTransactionDates } from '../utils/recurringTransactionsGenerator';
 
 type RecurringSavingsInvestmentsState = {
   templates: RecurringSavingsInvestment[];
@@ -102,8 +103,30 @@ export const useRecurringSavingsInvestmentsStore = create<RecurringSavingsInvest
           set((state) => ({
             templates: [...state.templates, newTemplate],
           }));
-          // Auto-generate first transaction if start date is today or past
-          get().checkAndGenerateTransactions();
+          
+          // Generate all transactions upfront for the entire recurring period
+          const transactionDates = generateRecurringTransactionDates(newTemplate);
+          const transactionsStore = useSavingsInvestmentTransactionsStore.getState();
+          
+          transactionDates.forEach((date) => {
+            // Check if transaction already exists
+            const existing = transactionsStore.transactions.find(
+              (t) => t.recurringTemplateId === newTemplate.id && t.date === date
+            );
+            
+            if (!existing) {
+              transactionsStore.createTransaction({
+                date,
+                amount: newTemplate.amount,
+                accountId: newTemplate.accountId,
+                destination: newTemplate.destination,
+                type: newTemplate.type,
+                description: newTemplate.name,
+                status: 'Pending', // Default to pending for savings/investments
+                recurringTemplateId: newTemplate.id,
+              });
+            }
+          });
         },
         updateTemplate: (id, updates) => {
           // Validate accountId if being updated

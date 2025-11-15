@@ -13,7 +13,8 @@ export interface RecurringIncome {
   startDate: string; // ISO date string
   endDate?: string; // ISO date string, optional
   nextDueDate: string; // ISO date string - for internal scheduling
-  deductionDate?: string; // ISO date string, optional - actual date when next transaction will be deducted/credited (independent of start/end dates)
+  dayOfMonth?: number; // 1-31, optional - day of month when transaction occurs (e.g., 1 for 1st of every month)
+  deductionDate?: string; // ISO date string, optional - DEPRECATED: use dayOfMonth instead
   status: 'Active' | 'Paused' | 'Completed';
   notes?: string;
   createdAt: string;
@@ -34,7 +35,8 @@ export interface RecurringExpense {
   startDate: string; // ISO date string
   endDate?: string; // ISO date string, optional
   nextDueDate: string; // ISO date string - for internal scheduling
-  deductionDate?: string; // ISO date string, optional - actual date when next transaction will be deducted/credited (independent of start/end dates)
+  dayOfMonth?: number; // 1-31, optional - day of month when transaction occurs (e.g., 1 for 1st of every month)
+  deductionDate?: string; // ISO date string, optional - DEPRECATED: use dayOfMonth instead
   status: 'Active' | 'Paused' | 'Completed';
   notes?: string;
   createdAt: string;
@@ -55,7 +57,8 @@ export interface RecurringSavingsInvestment {
   startDate: string; // ISO date string
   endDate?: string; // ISO date string, optional
   nextDueDate: string; // ISO date string - for internal scheduling
-  deductionDate?: string; // ISO date string, optional - actual date when next transaction will be deducted/credited (independent of start/end dates)
+  dayOfMonth?: number; // 1-31, optional - day of month when transaction occurs (e.g., 1 for 1st of every month)
+  deductionDate?: string; // ISO date string, optional - DEPRECATED: use dayOfMonth instead
   status: 'Active' | 'Paused' | 'Completed';
   notes?: string;
   createdAt: string;

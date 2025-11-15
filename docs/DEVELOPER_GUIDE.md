@@ -74,22 +74,35 @@ Key stores:
   - `convertToRecurring(emiId)`: Converts EMI to Recurring template (bypasses auto-generation to prevent extra transactions)
 - `src/store/useSavingsInvestmentEMIsStore.ts`: Savings/investment EMI CRUD with conversion to Recurring and deduction date management
   - `convertToRecurring(emiId)`: Converts EMI to Recurring template (bypasses auto-generation to prevent extra transactions)
-- `src/store/useRecurringIncomesStore.ts`: Recurring income template CRUD with deduction date management
-- `src/store/useRecurringExpensesStore.ts`: Recurring expense template CRUD with conversion to EMI and deduction date management
+- `src/store/useRecurringIncomesStore.ts`: Recurring income template CRUD with upfront transaction generation
+  - Generates all transactions upfront when template is created (entire recurring period or 12 months if no end date)
+  - Transactions default to status "Pending" (user marks as "Received" when payment is actually received)
+- `src/store/useRecurringExpensesStore.ts`: Recurring expense template CRUD with conversion to EMI and upfront transaction generation
+  - Generates all transactions upfront when template is created
+  - Expense transactions default to status "Pending"
   - `convertToEMI(templateId)`: Converts Recurring template to EMI (bypasses auto-generation to prevent extra transactions)
-- `src/store/useRecurringSavingsInvestmentsStore.ts`: Recurring savings/investment template CRUD with conversion to EMI and deduction date management
+- `src/store/useRecurringSavingsInvestmentsStore.ts`: Recurring savings/investment template CRUD with conversion to EMI and upfront transaction generation
+  - Generates all transactions upfront when template is created
+  - Savings/investment transactions default to status "Pending"
   - `convertToEMI(templateId)`: Converts Recurring template to EMI (bypasses auto-generation to prevent extra transactions)
 
 **Form Integration**:
 - `src/pages/EMIs.tsx`: EMI form includes `deductionDate` field (optional, shown after end date)
-- `src/pages/Recurring.tsx`: Recurring form includes `deductionDate` field (optional, shown after end date)
-- Forms include helper text explaining that deduction date is independent of start/end dates
+- `src/pages/Recurring.tsx`: Recurring form includes `dayOfMonth` field (optional, 1-31, shown after end date)
+  - **Income**: Labeled as "Payment Date - Day of Month"
+  - **Expense**: Labeled as "Deduction Date - Day of Month"
+  - **Savings**: Labeled as "Transaction Date - Day of Month"
+- Forms include helper text explaining that day of month specifies which day of each month the transaction occurs
 
-**Deduction Date Methods**:
-- `updateDeductionDate(emiId/templateId, newDate, updateOption)`: Update deduction date with options:
-  - `'this-date-only'`: Only updates the deduction date
-  - `'all-future'`: Shifts all future pending transactions by the offset
-  - `'reset-schedule'`: Recalculates all future transactions from the new date
+**Day of Month / Deduction Date Methods**:
+- `updateDeductionDate(emiId/templateId, newDate, updateOption)`: Update deduction date (for EMIs) or day of month (for Recurring templates) with options:
+  - `'this-date-only'`: Only updates the next transaction date
+  - `'all-future'`: Updates date and shifts all future pending transactions by the offset
+  - `'reset-schedule'`: Resets date and recalculates all future transactions from the new date
+- **Recurring Templates**: Use `dayOfMonth` field (1-31) instead of full `deductionDate`
+  - UI shows context-aware labels: "Payment Date" for income, "Deduction Date" for expenses
+  - If `dayOfMonth` not set, defaults to day from `startDate`
+  - All transactions generated upfront when template is created
 
 ### Services
 
@@ -118,7 +131,12 @@ Key stores:
   - `calculateDateOffset`: Calculate date offset in days
   - `addDaysToDate`: Add days to a date
   - `getEffectiveEMIDeductionDate`: Get effective deduction date for EMI (uses deductionDate if set, otherwise calculates)
-  - `getEffectiveRecurringDeductionDate`: Get effective deduction date for Recurring (uses deductionDate if set, otherwise uses nextDueDate)
+  - `getEffectiveRecurringDeductionDate`: Get effective deduction date for Recurring (uses dayOfMonth/deductionDate if set, otherwise uses nextDueDate)
+- `src/utils/recurringTransactionsGenerator.ts`: Utilities for generating all recurring transactions upfront
+  - `getDayOfMonth`: Extracts day of month from date or template (checks dayOfMonth first, then deductionDate, then startDate)
+  - `generateRecurringTransactionDates`: Generates all transaction dates for a recurring template (entire period or 12 months)
+  - Handles edge cases (month-end dates, leap years, etc.)
+  - Returns array of ISO date strings for all transactions in the recurring period
 - `src/components/common/ConversionWizard.tsx`: UI wizard for converting between EMIs and Recurring Templates
   - `generateRecurringTransactions`: Generates transactions for active recurring templates
 
@@ -262,15 +280,19 @@ Key entities:
 - **SavingsInvestmentTransaction**: Savings/investment transaction (date, amount, account, type, etc.)
 - **ExpenseEMI**: Expense EMI (name, amount, account, installments, startDate, endDate, deductionDate, etc.)
 - **SavingsInvestmentEMI**: Savings/investment EMI (name, amount, account, installments, startDate, endDate, deductionDate, etc.)
-- **RecurringIncome**: Recurring income template (name, amount, frequency, startDate, endDate, nextDueDate, deductionDate, etc.)
-- **RecurringExpense**: Recurring expense template (name, amount, frequency, startDate, endDate, nextDueDate, deductionDate, etc.)
-- **RecurringSavingsInvestment**: Recurring savings/investment template (name, amount, frequency, startDate, endDate, nextDueDate, deductionDate, etc.)
+- **RecurringIncome**: Recurring income template (name, amount, frequency, startDate, endDate, nextDueDate, dayOfMonth, deductionDate, etc.)
+- **RecurringExpense**: Recurring expense template (name, amount, frequency, startDate, endDate, nextDueDate, dayOfMonth, deductionDate, etc.)
+- **RecurringSavingsInvestment**: Recurring savings/investment template (name, amount, frequency, startDate, endDate, nextDueDate, dayOfMonth, deductionDate, etc.)
 
 **Date Fields Explained**:
 - **startDate**: Defines when the EMI/Recurring template period begins
 - **endDate**: Defines when the EMI/Recurring template period ends (optional for Recurring templates)
-- **deductionDate**: (Optional) Actual date when the next transaction will be deducted/credited. Independent of start/end dates. Used for auto-generation if set.
-- **nextDueDate**: (Recurring only) Internal scheduling date. Used if deductionDate is not set.
+- **dayOfMonth**: (Optional, 1-31) Day of month when transaction occurs (e.g., 1 for 1st of every month). If not set, defaults to day from startDate. Used for generating transaction dates.
+- **deductionDate**: (Optional, DEPRECATED) Full ISO date string. Kept for backward compatibility. Prefer using `dayOfMonth` instead.
+- **nextDueDate**: (Recurring only) Internal scheduling date. Used if dayOfMonth/deductionDate is not set.
+- **Transaction Generation**: All transactions are generated upfront when template is created (entire recurring period or 12 months if no end date)
+  - All transactions default to status "Pending" (representing planned/future transactions)
+  - User marks transactions as "Received" (income), "Paid" (expense), or "Completed" (savings/investment) when they actually occur
 
 ### Entity Relationships
 

@@ -35,6 +35,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dark/Light theme support
 - Undo functionality for deletions
 
+## [Unreleased]
+
+### Changed
+- Improved recurring transaction generation to use day of month (1-31) instead of full dates
+- Changed recurring template UI labels to be context-aware:
+  - Income: "Payment Date - Day of Month"
+  - Expense: "Deduction Date - Day of Month"
+  - Savings: "Transaction Date - Day of Month"
+- Recurring templates now generate all transactions upfront when created (entire recurring period or 12 months)
+- All auto-generated transactions default to "Pending" status (income, expense, and savings)
+
+### Fixed
+- Fixed issue where recurring templates were only generating one transaction at a time
+- Fixed confusing "deduction date" terminology for income transactions (now "payment date")
+- Fixed date input to use day of month concept instead of specific dates
+
 [Unreleased]: https://github.com/adityaarakal/instant-express-manager/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/adityaarakal/instant-express-manager/releases/tag/v1.0.0
 

@@ -24,7 +24,7 @@ A comprehensive standalone financial management Progressive Web App (PWA) built 
 
 ### Data Management
 - 🔒 **Local Storage**: All data stored locally using IndexedDB (via localforage)
-- 🔄 **Auto-Generation**: Automatic EMI and recurring transaction generation
+- 🔄 **Auto-Generation**: Automatic EMI and recurring transaction generation (all recurring transactions generated upfront)
 - ✅ **Data Validation**: Comprehensive validation and business rules
 - 🔍 **Data Health Checks**: Identify and fix data inconsistencies
 - 📤 **CSV Export**: Export transactions to CSV
@@ -214,14 +214,16 @@ instant-express-manager/
 - **Convert to Recurring**: Convert EMIs to Recurring Templates if you realize the payment doesn't have a fixed end date
 
 ### Recurring Transactions
-- **Recurring Income**: Set up recurring income streams
-- **Recurring Expenses**: Set up recurring bills and payments
-- **Recurring Savings/Investments**: Set up recurring savings plans
+- **Recurring Income**: Set up recurring income streams (e.g., monthly salary)
+- **Recurring Expenses**: Set up recurring bills and payments (e.g., subscriptions, utilities)
+- **Recurring Savings/Investments**: Set up recurring savings plans (e.g., SIP investments)
 - Multiple frequency options (Monthly, Weekly, Quarterly, Yearly, Custom)
-- Auto-generation of recurring transactions
+- **Day of Month Input**: Specify day of month (1-31) when transaction occurs (e.g., 1 for 1st of every month)
+- **Context-Aware Labels**: "Payment Date" for income, "Deduction Date" for expenses
+- All transactions generated upfront when template is created (entire recurring period or 12 months)
+- Transactions default to "Pending" status (mark as "Received"/"Paid"/"Completed" when they actually occur)
 - Pause/Resume functionality
-- **Deduction Date**: Separate field for actual transaction date (independent of start/end dates)
-- **Update Deduction Date**: Update deduction date with options (this date only, all future, reset schedule)
+- **Update Day of Month**: Update day of month with options (this date only, all future, reset schedule)
 - **Convert to EMI**: Convert Recurring Templates to EMIs if you realize the payment has a fixed number of installments
 
 ### Planner
@@ -374,3 +376,5 @@ MIT
 - ✅ Enforcement lock system to protect enforcement files from modification
 - ✅ All TypeScript and ESLint errors resolved in production code
 - ✅ Clear all data functionality to reset the app to a clean state
+- ✅ Semantic versioning system with automatic version bumps
+- ✅ Improved recurring templates with day-of-month input and upfront transaction generation
