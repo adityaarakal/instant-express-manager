@@ -122,17 +122,26 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
                 )}
               </TableCell>
               <TableCell align="right">
-                <Typography
-                  variant="body2"
-                  color={
+                <Tooltip
+                  title={
                     account.remainingCash !== null && account.remainingCash < 0
-                      ? 'error'
-                      : 'text.primary'
+                      ? `Warning: This account has negative remaining cash. Consider adjusting transactions or adding income to balance it.`
+                      : 'Remaining cash after fixed balances, savings transfers, and bucket allocations'
                   }
-                  sx={{ fontStyle: 'italic' }}
+                  arrow
                 >
-                  {formatCurrency(account.remainingCash)}
-                </Typography>
+                  <Typography
+                    variant="body2"
+                    color={
+                      account.remainingCash !== null && account.remainingCash < 0
+                        ? 'error'
+                        : 'text.primary'
+                    }
+                    sx={{ fontStyle: 'italic', cursor: 'help' }}
+                  >
+                    {formatCurrency(account.remainingCash)}
+                  </Typography>
+                </Tooltip>
                 <Typography variant="caption" color="text.secondary">
                   (calculated)
                 </Typography>

@@ -106,7 +106,10 @@ Before considering the project "complete":
 2. **Add Copy Month Feature**: Duplicate a month's allocations to a new month
 3. **Add Month Comparison View**: Compare two months side-by-side
 4. **Add Quick Filters**: Filter by account, bucket, or status in Planner
-5. **Add Data Validation Warnings**: Warn when remaining cash goes negative
+5. ✅ **Add Data Validation Warnings**: Warn when remaining cash goes negative - **COMPLETED**
+   - Added warning alert banner in Planner page showing accounts with negative remaining cash
+   - Enhanced AccountTable with tooltips for negative remaining cash
+   - Negative values displayed in red with helpful warning messages
 6. **Add Export History**: Track when exports were made
 7. **Add Print View**: Optimized print stylesheet for month views
 

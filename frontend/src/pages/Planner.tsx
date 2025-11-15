@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Button,
+  Alert,
+  AlertTitle,
   FormControl,
   InputLabel,
   MenuItem,
@@ -11,8 +11,8 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+import WarningIcon from '@mui/icons-material/Warning';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import DownloadIcon from '@mui/icons-material/Download';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import { useAggregatedPlannedMonthsStore } from '../store/useAggregatedPlannedMonthsStore';
 import { usePlannerStore } from '../store/usePlannerStore';
@@ -51,6 +51,14 @@ export const Planner = memo(function Planner() {
 
   const activeMonth = activeMonthId ? getMonth(activeMonthId) : null;
   const totals = activeMonthId ? getBucketTotals(activeMonthId) : null;
+
+  // Find accounts with negative remaining cash
+  const negativeCashAccounts = useMemo(() => {
+    if (!activeMonth) return [];
+    return activeMonth.accounts.filter(
+      (account) => account.remainingCash !== null && account.remainingCash < 0
+    );
+  }, [activeMonth]);
 
   // Filter months based on search
   useEffect(() => {
@@ -138,6 +146,29 @@ export const Planner = memo(function Planner() {
               updateBucketStatus(activeMonth.id, bucketId, status);
             }}
           />
+          {negativeCashAccounts.length > 0 && (
+            <Alert severity="warning" icon={<WarningIcon />}>
+              <AlertTitle>Negative Remaining Cash Detected</AlertTitle>
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                The following {negativeCashAccounts.length === 1 ? 'account has' : 'accounts have'} negative remaining cash:
+              </Typography>
+              <Stack component="ul" sx={{ m: 0, pl: 2 }}>
+                {negativeCashAccounts.map((account) => (
+                  <Typography key={account.id} component="li" variant="body2">
+                    <strong>{account.accountName}</strong>: ₹
+                    {Math.abs(account.remainingCash ?? 0).toLocaleString('en-IN', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}{' '}
+                    negative remaining cash
+                  </Typography>
+                ))}
+              </Stack>
+              <Typography variant="body2" sx={{ mt: 1 }}>
+                Consider adjusting transactions or adding income to balance the accounts.
+              </Typography>
+            </Alert>
+          )}
           <AccountTable month={activeMonth} />
           <TotalsFooter month={activeMonth} totals={totals} />
         </Stack>
