@@ -91,7 +91,7 @@ The app has the following main pages:
    - **Category/Type**: Select the category or type
    - **Description**: Optional description
    - **Status**: Pending or Received/Paid/Completed
-     - **Income**: Default status is "Received" (can change to "Pending")
+     - All transactions default to "Pending" status (can mark as "Received"/"Paid"/"Completed" when they actually occur)
      - **Expense**: Default status is "Pending" (can change to "Paid")
      - **Savings/Investment**: Default status is "Pending" (can change to "Completed")
    - **Recurring Template**: If part of a recurring transaction

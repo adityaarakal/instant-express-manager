@@ -24,7 +24,7 @@ A comprehensive standalone financial management Progressive Web App (PWA) built 
 
 ### Data Management
 - 🔒 **Local Storage**: All data stored locally using IndexedDB (via localforage)
-- 🔄 **Auto-Generation**: Automatic EMI and recurring transaction generation
+- 🔄 **Auto-Generation**: Automatic EMI and recurring transaction generation (all recurring transactions generated upfront)
 - ✅ **Data Validation**: Comprehensive validation and business rules
 - 🔍 **Data Health Checks**: Identify and fix data inconsistencies
 - 📤 **CSV Export**: Export transactions to CSV
