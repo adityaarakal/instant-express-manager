@@ -376,3 +376,5 @@ MIT
 - ✅ Enforcement lock system to protect enforcement files from modification
 - ✅ All TypeScript and ESLint errors resolved in production code
 - ✅ Clear all data functionality to reset the app to a clean state
+- ✅ Semantic versioning system with automatic version bumps
+- ✅ Improved recurring templates with day-of-month input and upfront transaction generation
