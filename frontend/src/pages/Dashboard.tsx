@@ -231,7 +231,7 @@ export const Dashboard = memo(function Dashboard() {
       </Suspense>
 
       <Suspense fallback={<ChartLoader />}>
-        <BudgetVsActual monthId={activeMonthId} />
+        <BudgetVsActual monthId={selectedMonthId} />
       </Suspense>
     </Stack>
   );
