@@ -201,6 +201,54 @@ Key entities:
 
 See `docs/ENTITY_RELATIONSHIPS.md` for complete relationship documentation.
 
+## Automatic Account Balance Updates
+
+### Overview
+
+Account balances automatically update when transactions are created, updated, or deleted based on their status. This ensures that account balances always reflect the current state of transactions.
+
+### Implementation
+
+The automatic balance update system is implemented in:
+
+1. **`src/utils/accountBalanceUpdates.ts`**: Core utility functions
+   - `updateAccountBalanceForTransaction()`: Updates balance when transactions change
+   - `reverseAccountBalanceForTransaction()`: Reverses balance changes when transactions are deleted
+
+2. **Transaction Stores**: All transaction stores integrate balance updates
+   - `useIncomeTransactionsStore.ts`: Updates balance when income is "Received"
+   - `useExpenseTransactionsStore.ts`: Updates balance when expenses are "Paid"
+   - `useSavingsInvestmentTransactionsStore.ts`: Updates balance when savings/investments are "Completed"
+
+### Balance Update Rules
+
+**Income Transactions:**
+- Status "Received" → Balance increases by transaction amount
+- Status "Pending" → No balance change
+
+**Expense Transactions:**
+- Status "Paid" → Balance decreases by transaction amount
+- Status "Pending" → No balance change
+
+**Savings/Investment Transactions:**
+- Status "Completed" → Balance decreases by transaction amount (money moved out)
+- Status "Pending" → No balance change
+
+### Update Scenarios
+
+1. **Creating Transaction**: If created with status "Received"/"Paid"/"Completed", balance updates immediately
+2. **Updating Transaction Status**: Balance adjusts based on status change (e.g., "Pending" → "Received" adds to balance)
+3. **Updating Transaction Amount**: Balance adjusts by the difference
+4. **Changing Transaction Account**: Both old and new accounts update correctly
+5. **Deleting Transaction**: If transaction was "Received"/"Paid"/"Completed", balance change is reversed
+
+### Integration in Stores
+
+Each transaction store calls the balance update utility in:
+- `createTransaction()`: After creating transaction, if status is applicable
+- `updateTransaction()`: After updating transaction, calculating the difference between old and new status/amount/account
+- `deleteTransaction()`: Before deleting transaction, reversing balance change if applicable
+
 ## Validation & Business Rules
 
 ### Store-Level Validation
