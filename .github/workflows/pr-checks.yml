@@ -30,7 +30,10 @@ jobs:
           # Install root workspace dependencies
           npm install
           # Install frontend workspace dependencies explicitly to ensure optional deps
-          cd frontend && npm install
+          cd frontend
+          npm install
+          # Ensure Rollup optional dependencies are installed (fix for npm workspace bug)
+          npm install @rollup/rollup-linux-x64-gnu --save-optional || npm rebuild @rollup/rollup-linux-x64-gnu || true
       
       # ============================================================================
       # STEP 1: LINTING VALIDATION
