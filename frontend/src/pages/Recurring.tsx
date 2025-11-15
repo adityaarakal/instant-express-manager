@@ -287,7 +287,23 @@ export function Recurring() {
   };
 
   const handleSave = async () => {
-    if (!formData.name.trim() || !formData.accountId || formData.amount <= 0) return;
+    // Validate required fields
+    if (!formData.name.trim()) {
+      showError('Template name is required');
+      return;
+    }
+    if (!formData.accountId) {
+      showError('Account is required');
+      return;
+    }
+    if (formData.amount <= 0) {
+      showError('Amount must be greater than 0');
+      return;
+    }
+    if (activeTab === 'savings' && !formData.destination.trim()) {
+      showError('Destination is required for savings/investment templates');
+      return;
+    }
 
     setIsSaving(true);
     try {
