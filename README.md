@@ -315,5 +315,6 @@ MIT
 - ✅ Improved navigation with React Router
 - ✅ Keyboard shortcuts
 - ✅ Enhanced error handling with user-friendly messages
+- ✅ Latest/current month prioritization across all monthly views for present/future-focused experience
+- ✅ Dashboard monthly and overall metrics with month selector (defaults to current month)
 - ✅ Automatic account balance updates based on transaction status
-- ✅ Dashboard monthly and overall metrics with month selector
