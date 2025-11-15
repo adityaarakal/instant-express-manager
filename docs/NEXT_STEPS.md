@@ -202,7 +202,7 @@ Before considering the project "complete":
    - Conversion automatically updates all transaction references
    - Old entity is deleted after successful conversion
    - Handles field mapping differences (installment tracking, end date requirements, frequency options)
-13. ✅ **Balance Sync Utility**: Tool to sync existing account balances with transactions - **COMPLETED**
+14. ✅ **Balance Sync Utility**: Tool to sync existing account balances with transactions - **COMPLETED**
    - Created balanceSync.ts utility to recalculate account balances from existing transactions
    - Added Balance Sync section to Settings page
    - Sync recalculates balances based on all transactions with "Received", "Paid", or "Completed" status
