@@ -254,12 +254,12 @@ EOF
           git push origin "v$NEW_VERSION"
       
       - name: Create GitHub Release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ steps.new-version.outputs.new_version }}
-          release_name: Release v${{ steps.new-version.outputs.new_version }}
+          name: Release v${{ steps.new-version.outputs.new_version }}
           body: |
             ## Changes in this release
             
@@ -268,4 +268,5 @@ EOF
             See [CHANGELOG.md](CHANGELOG.md) for full details.
           draft: false
           prerelease: false
+          generate_release_notes: true
 
