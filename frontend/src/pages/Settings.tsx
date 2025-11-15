@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -64,6 +64,67 @@ export function Settings() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [clearDataDialogOpen, setClearDataDialogOpen] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [appVersion, setAppVersion] = useState<string>(
+    (() => {
+      // Try to read from meta tag first (for automatic updates)
+      const metaVersion = document.querySelector('meta[name="app-version"]')?.getAttribute('content');
+      // Fallback to build-time constant, then default
+      return metaVersion || (typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0');
+    })()
+  );
+
+  // Fetch version dynamically at runtime
+  // This will automatically pick up version changes when package.json is updated (e.g., after git pull)
+  useEffect(() => {
+    const fetchVersion = async () => {
+      try {
+        // Try to fetch from API endpoint (reads package.json at runtime - always fresh)
+        // Add timestamp and cache-busting headers to prevent any caching
+        const response = await fetch(`/api/version?t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.version && data.version !== appVersion) {
+            setAppVersion(data.version);
+            return;
+          }
+        }
+      } catch (error) {
+        // Fallback to version.json if API not available (production builds)
+      }
+      
+      try {
+        // Fallback to version.json static file (for production builds)
+        const response = await fetch(`/version.json?t=${Date.now()}`, {
+          cache: 'no-store',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.version && data.version !== appVersion) {
+            setAppVersion(data.version);
+            return;
+          }
+        }
+      } catch (error) {
+        // Keep existing version if fetch fails
+      }
+    };
+
+    // Fetch immediately on mount
+    fetchVersion();
+    
+    // Poll for version changes continuously
+    // More frequent in dev mode to catch changes after git pull without restart
+    const pollInterval = import.meta.env.DEV ? 2000 : 10000; // 2s in dev, 10s in production
+    const interval = setInterval(fetchVersion, pollInterval);
+    
+    return () => clearInterval(interval);
+  }, [appVersion]); // Re-run effect if appVersion changes to continue polling with new value
 
   const handleSave = () => {
     updateSettings(localSettings);
@@ -490,7 +551,7 @@ export function Settings() {
           
           <Stack spacing={2} alignItems="center">
             <Typography variant="body2" color="text.secondary">
-              Version: {typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0'}
+              Version: {appVersion}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Instant Express Manager

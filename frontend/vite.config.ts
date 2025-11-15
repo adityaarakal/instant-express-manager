@@ -2,11 +2,51 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
-import { readFileSync } from 'fs'
+import { readFileSync, writeFileSync } from 'fs'
 
 // Read version from root package.json (source of truth for version)
 const packageJson = JSON.parse(readFileSync('../package.json', 'utf-8'))
 const version = packageJson.version
+
+// Vite plugin to inject version into HTML meta tag and update version.json
+function injectVersionMeta() {
+  return {
+    name: 'inject-version-meta',
+    buildStart() {
+      // Update version.json in public folder on build start
+      const versionFile = path.resolve(__dirname, 'public/version.json');
+      writeFileSync(versionFile, JSON.stringify({ version }, null, 2) + '\n');
+    },
+    configureServer(server) {
+      // Middleware to serve version dynamically from package.json at runtime
+      // This reads the file fresh on every request, so it always reflects the current package.json
+      server.middlewares.use('/api/version', (req, res, next) => {
+        try {
+          // Always read fresh from package.json (no caching)
+          const packageJsonPath = path.resolve(__dirname, '../package.json');
+          const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+          
+          // Set headers to prevent any caching
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
+          
+          res.end(JSON.stringify({ version: packageJson.version }));
+        } catch (error) {
+          console.error('Error reading version:', error);
+          next();
+        }
+      });
+    },
+    transformIndexHtml(html: string) {
+      return html.replace(
+        '<head>',
+        `<head>\n    <meta name="app-version" content="${version}" />`
+      )
+    },
+  }
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -17,6 +57,7 @@ export default defineConfig({
   // base: process.env.NODE_ENV === 'production' ? '/instant-express-manager/' : '/',
   base: '/', // For root domain or custom domain, use '/' instead
   plugins: [
+    injectVersionMeta(),
     react(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -111,13 +152,18 @@ export default defineConfig({
     },
     chunkSizeWarningLimit: 1000
   },
-  server: {
+    server: {
     port: 7001,
     strictPort: true, // Prevent port changes - IndexedDB is origin-scoped (includes port)
     // If port 7001 is in use, Vite will fail instead of trying another port
     // This ensures consistent IndexedDB access across restarts
+    watch: {
+      // Watch package.json for version changes
+      ignored: ['!**/package.json'],
+    },
     proxy: {
-      '/api': {
+      // Don't proxy /api/version - let the middleware handle it
+      '^(?!/api/version)/api': {
         target: 'http://localhost:3000',
         changeOrigin: true
       }
