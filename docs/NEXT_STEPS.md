@@ -105,7 +105,11 @@ Before considering the project "complete":
 1. **Add Auto-save Indicator**: Show "Saving..." / "Saved" status when data changes
 2. **Add Copy Month Feature**: Duplicate a month's allocations to a new month
 3. **Add Month Comparison View**: Compare two months side-by-side
-4. **Add Quick Filters**: Filter by account, bucket, or status in Planner
+4. ✅ **Add Quick Filters**: Filter by account, bucket, or status in Planner - **COMPLETED**
+   - Added AccountFilters component with account, bucket, and negative cash filters
+   - Filter chips show active filters with individual remove buttons
+   - Filters automatically clear when month changes
+   - Empty state when no accounts match filters
 5. ✅ **Add Data Validation Warnings**: Warn when remaining cash goes negative - **COMPLETED**
    - Added warning alert banner in Planner page showing accounts with negative remaining cash
    - Enhanced AccountTable with tooltips for negative remaining cash
