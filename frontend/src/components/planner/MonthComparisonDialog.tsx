@@ -191,7 +191,7 @@ export function MonthComparisonDialog({
                       </Typography>
                     </Stack>
                     <Typography variant="caption" color="text.secondary">
-                      vs {formatCurrency(compareMonth.inflowTotal)}
+                      Previous: {formatCurrency(compareMonth.inflowTotal)}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} sm={4}>
