@@ -59,10 +59,18 @@ jobs:
             echo "Last tag: $LAST_TAG"
             
             # Get commits since last tag (or all commits if no tag)
+            # Get the merge commit message (which usually contains the PR description)
             if [ "$LAST_TAG" != "v0.0.0" ]; then
-              COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"%s")
+              # Get the merge commit message
+              MERGE_COMMIT=$(git log ${LAST_TAG}..HEAD --first-parent --pretty=format:"%s" -1)
+              # Also get all non-merge commits in case we need them
+              NON_MERGE_COMMITS=$(git log ${LAST_TAG}..HEAD --no-merges --pretty=format:"%s")
+              COMMITS="$MERGE_COMMIT"$'\n'"$NON_MERGE_COMMITS"
             else
-              COMMITS=$(git log --pretty=format:"%s" -10)
+              # Get the latest merge commit and recent non-merge commits
+              MERGE_COMMIT=$(git log --first-parent --pretty=format:"%s" -1)
+              NON_MERGE_COMMITS=$(git log --no-merges --pretty=format:"%s" -10)
+              COMMITS="$MERGE_COMMIT"$'\n'"$NON_MERGE_COMMITS"
             fi
             
             echo "Analyzing commits:"
@@ -72,12 +80,12 @@ jobs:
             if echo "$COMMITS" | grep -qiE "(BREAKING CHANGE|!|breaking)"; then
               BUMP_TYPE="major"
               echo "Found breaking change"
-            # Check for features
-            elif echo "$COMMITS" | grep -qiE "^feat\(|^feat:"; then
+            # Check for features (case-insensitive, with or without parentheses)
+            elif echo "$COMMITS" | grep -qiE "^(feat|Feat|FEAT)(\(|:)"; then
               BUMP_TYPE="minor"
               echo "Found feature"
-            # Check for fixes
-            elif echo "$COMMITS" | grep -qiE "^fix\(|^fix:"; then
+            # Check for fixes (case-insensitive, with or without parentheses)
+            elif echo "$COMMITS" | grep -qiE "^(fix|Fix|FIX)(\(|:)"; then
               BUMP_TYPE="patch"
               echo "Found fix"
             # Check PR labels from commit message (if merged via PR)
