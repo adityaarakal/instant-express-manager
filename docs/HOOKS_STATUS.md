@@ -9,10 +9,12 @@ All Git hooks have been successfully implemented and are **actively protecting t
 1. **Pre-commit Hook** (`.husky/pre-commit`): ✅ ACTIVE
    - Blocks direct commits to `main` branch
    - Blocks `--no-verify` and all bypass attempts
+   - Enforces mandatory version bump validation
    - Enforces linting (ESLint)
    - Enforces TypeScript type checking
    - Enforces build validation
-   - **WORKING**: Currently blocking commits due to lint errors (correct behavior)
+   - Auto-adds generated/modified files during pre-commit
+   - **WORKING**: All checks passing, files auto-added correctly
 
 2. **Pre-push Hook** (`.husky/pre-push`): ✅ ACTIVE
    - Blocks direct pushes to `main` branch

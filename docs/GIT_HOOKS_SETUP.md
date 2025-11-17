@@ -19,15 +19,29 @@ This repository uses **Husky** to enforce strict code quality and branch protect
 - ✅ Zero tolerance policy - **NO EXCEPTIONS**
 
 **Validation Checks** (ALL must pass):
-1. **Linting Validation**: ESLint on production code only (test files excluded)
+1. **Mandatory Version Bump Validation**: Branch version must be ahead of main
+   - Ensures all PRs have a version bump
+   - Can be PATCH (0.0.1), MINOR (0.1.0), or MAJOR (1.0.0) increment
+   - Strictly enforced - cannot be bypassed
+2. **Linting Validation**: ESLint on production code only (test files excluded)
    - Allows up to 3 warnings (for React Hook dependency warnings)
    - Blocks on errors in production code
    - Test file errors are acceptable and excluded
-2. **Type Checking**: TypeScript compilation check (test files excluded)
+3. **Type Checking**: TypeScript compilation check (test files excluded)
    - Excludes `src/**/__tests__/**`, `src/**/*.test.ts`, `src/**/*.test.tsx`
    - Ensures production code is type-safe
    - Test file type errors are acceptable and excluded
-3. **Build Validation**: Production build must succeed
+4. **Build Validation**: Production build must succeed
+
+**Auto-Add Generated Files**:
+- After all checks pass, the pre-commit hook automatically stages files that may have been generated or modified during the hook execution
+- Automatically adds:
+  - `.enforcement-lock/checksums.txt` (created/updated during enforcement lock validation)
+  - `VERSION.txt` (modified during version bumps)
+  - `frontend/public/version.json` (modified during version bumps)
+  - Any other files in `.enforcement-lock/` directory
+- These files are included in the same commit automatically
+- Ensures no generated files are left unstaged after pre-commit runs
 
 ### 2. Pre-push Hook (`.husky/pre-push`)
 
