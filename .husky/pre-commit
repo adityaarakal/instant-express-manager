@@ -214,8 +214,65 @@ echo "✅ Build validation passed!"
 echo ""
 
 # ============================================================================
+# AUTO-ADD GENERATED FILES
+# ============================================================================
+# Auto-add files that may have been created/modified during pre-commit hooks
+# These files should be included in the same commit
+
+echo ""
+echo "📋 Auto-adding generated/modified files..."
+
+# List of files that might be generated/modified during pre-commit
+GENERATED_FILES=(
+  ".enforcement-lock/checksums.txt"
+  "VERSION.txt"
+  "frontend/public/version.json"
+)
+
+FILES_ADDED=0
+
+# Check each file in the list
+for file in "${GENERATED_FILES[@]}"; do
+  if [ -f "$file" ]; then
+    # Check git status to see if file is untracked or modified
+    # Use git status --porcelain for reliable detection
+    FILE_STATUS=$(git status --porcelain "$file" 2>/dev/null || echo "")
+    
+    if [ -n "$FILE_STATUS" ]; then
+      # File has changes (modified or untracked)
+      # Check if it starts with ?? (untracked) or has changes (modified)
+      if echo "$FILE_STATUS" | grep -q "^??" || echo "$FILE_STATUS" | grep -qE "^ M|^M |^MM"; then
+        git add "$file" 2>/dev/null && echo "  ✅ Added: $file" && ((FILES_ADDED++)) || true
+      fi
+    fi
+  fi
+done
+
+# Also check for any other files in enforcement lock directory
+if [ -d ".enforcement-lock" ]; then
+  for file in .enforcement-lock/*; do
+    if [ -f "$file" ]; then
+      FILE_STATUS=$(git status --porcelain "$file" 2>/dev/null || echo "")
+      if [ -n "$FILE_STATUS" ]; then
+        # File has changes (modified or untracked)
+        if echo "$FILE_STATUS" | grep -q "^??" || echo "$FILE_STATUS" | grep -qE "^ M|^M |^MM"; then
+          git add "$file" 2>/dev/null && echo "  ✅ Added: $file" && ((FILES_ADDED++)) || true
+        fi
+      fi
+    fi
+  done
+fi
+
+if [ $FILES_ADDED -gt 0 ]; then
+  echo "✅ Auto-added $FILES_ADDED generated/modified file(s) to commit"
+else
+  echo "✅ No generated files to add"
+fi
+
+# ============================================================================
 # SUCCESS - ALL CHECKS PASSED
 # ============================================================================
+echo ""
 echo "🎉 ALL PRE-COMMIT VALIDATIONS PASSED!"
 echo "✅ Your code meets ALL quality standards"
 echo "✅ Ready to commit!"
