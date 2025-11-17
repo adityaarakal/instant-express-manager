@@ -242,10 +242,8 @@ export function TransactionFormDialog({
     if (!formData.accountId || formData.amount <= 0) return;
     
     // Check transaction-level validation
-    if (!validation.isValid) {
-      // Show errors but allow saving with warnings
-      console.warn('Validation errors:', validation.errors);
-    }
+    // Validation errors are already shown in the form fields via helperText
+    // No need to log to console
 
     if (type === 'income') {
       onSave({

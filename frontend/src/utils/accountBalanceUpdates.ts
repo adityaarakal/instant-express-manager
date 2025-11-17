@@ -3,6 +3,7 @@
  */
 
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
+import { useToastStore } from '../store/useToastStore';
 
 /**
  * Update account balance based on a transaction
@@ -25,7 +26,7 @@ export function updateAccountBalanceForTransaction(
   const account = bankAccountsStore.getAccount(accountId);
 
   if (!account) {
-    console.warn(`Account with id ${accountId} not found`);
+    // Account not found - return silently (should not happen with proper validation)
     return;
   }
 
@@ -66,11 +67,13 @@ export function updateAccountBalanceForTransaction(
     // For credit cards, we might allow negative balances (debt)
     // For other accounts, validate that balance doesn't go negative
     if (account.accountType !== 'CreditCard' && newBalance < 0) {
-      console.warn(
-        `Balance update would result in negative balance for account ${account.name}. ` +
-        `Current balance: ${account.currentBalance}, Change: ${balanceChange}, New balance: ${newBalance}`
+      // Show warning toast to user about negative balance
+      useToastStore.getState().showWarning(
+        `Warning: Account "${account.name}" balance will become negative (₹${newBalance.toFixed(2)}). ` +
+        `Please adjust the account balance if needed.`,
+        6000
       );
-      // Still update but log warning - user can manually adjust if needed
+      // Still update but warn user - user can manually adjust if needed
     }
 
     bankAccountsStore.updateAccountBalance(accountId, newBalance);
@@ -94,7 +97,7 @@ export function reverseAccountBalanceForTransaction(
   const account = bankAccountsStore.getAccount(accountId);
 
   if (!account) {
-    console.warn(`Account with id ${accountId} not found`);
+    // Account not found - return silently (should not happen with proper validation)
     return;
   }
 
