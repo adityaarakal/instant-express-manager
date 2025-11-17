@@ -70,11 +70,11 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
   const [filterName, setFilterName] = useState('');
   const [savedFiltersMenuAnchor, setSavedFiltersMenuAnchor] = useState<null | HTMLElement>(null);
   
-  const { saveFilter, getFiltersByType, loadFilter, deleteFilter, updateFilterLastUsed, savedFilters } = useSavedFiltersStore();
+  const { saveFilter, getFiltersByType, loadFilter, deleteFilter, updateFilterLastUsed } = useSavedFiltersStore();
   const { addSearch, getHistoryByType } = useSearchHistoryStore();
   const { showSuccess, showError } = useToastStore();
   
-  const savedFiltersForType = useMemo(() => getFiltersByType(type), [type, getFiltersByType, savedFilters]);
+  const savedFiltersForType = useMemo(() => getFiltersByType(type), [type, getFiltersByType]);
   const searchHistory = useMemo(() => getHistoryByType(type), [type, getHistoryByType]);
 
   const activeFilterCount = useMemo(() => {
