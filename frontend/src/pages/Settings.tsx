@@ -34,6 +34,7 @@ import { DataHealthCheck } from '../components/common/DataHealthCheck';
 import { ExportHistory } from '../components/common/ExportHistory';
 import { AccessibilityCheck } from '../components/common/AccessibilityCheck';
 import { SecurityCheck } from '../components/common/SecurityCheck';
+import { PerformanceMetricsDialog } from '../components/common/PerformanceMetricsDialog';
 import { downloadBackup, readBackupFile, importBackup, exportBackup } from '../utils/backupService';
 import { syncAccountBalancesFromTransactions, type SyncResult } from '../utils/balanceSync';
 import { clearAllData } from '../utils/clearAllData';
@@ -68,6 +69,7 @@ export function Settings() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [clearDataDialogOpen, setClearDataDialogOpen] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [performanceMetricsDialogOpen, setPerformanceMetricsDialogOpen] = useState(false);
   const [appVersion, setAppVersion] = useState<string>(
     (() => {
       // Try to read from meta tag first (for automatic updates)
@@ -485,15 +487,8 @@ export function Settings() {
                   return;
                 }
                 
-                // Log metrics to console for now (could be enhanced with a dialog)
-                // Performance metrics logging is intentional for user visibility
-                console.log('Performance Metrics:', {
-                  operationMetrics: metrics,
-                  webVitals: allMetrics.filter(m => m.type === 'web-vital'),
-                  slowOperations: allMetrics.filter(m => m.type === 'operation' && m.value > 100),
-                });
-                
-                showSuccess('Performance metrics logged to browser console (F12). Enable monitoring in localStorage for persistent tracking.');
+                // Open metrics dialog
+                setPerformanceMetricsDialogOpen(true);
               }}
               fullWidth
             >
@@ -811,6 +806,12 @@ export function Settings() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Performance Metrics Dialog */}
+      <PerformanceMetricsDialog
+        open={performanceMetricsDialogOpen}
+        onClose={() => setPerformanceMetricsDialogOpen(false)}
+      />
     </Stack>
   );
 }

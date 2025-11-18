@@ -339,10 +339,12 @@ The application is **highly functional** with comprehensive core features, excel
   - Error handling tests (24 tests) - network, storage, validation, permission errors
   - Accessibility tests (24 tests) - contrast, WCAG compliance, focus management
   - Security tests (35 tests) - sanitization, JSON parsing, file validation, XSS protection
-- ✅ **Total: 112+ utility function tests + 14 integration tests + 14 component tests + E2E tests** for critical paths
+- ✅ **Total: 141+ utility function tests + 14 integration tests + 14 component tests + E2E tests** for critical paths
 
 **Remaining**:
-- ⚠️ Additional utility function tests (transactionExport, balanceSync, etc.) - **Future enhancement**
+- ✅ **Utility function tests for transactionExport** - COMPLETED (29 tests added)
+- ✅ **Utility function tests for balanceSync** - COMPLETED (part of above 29 tests)
+- ⚠️ Additional utility function tests (other utilities) - **Future enhancement** (can be added as needed)
 - ⚠️ More E2E test scenarios - **Future enhancement** (can be added as needed)
 
 **Implementation Details**:
@@ -371,14 +373,18 @@ The application is **highly functional** with comprehensive core features, excel
 - ✅ `frontend/src/integration/__tests__/transactionCRUD.test.ts` - Transaction integration tests
 - ✅ `frontend/src/components/__tests__/ButtonWithLoading.test.tsx` - Component tests
 - ✅ `frontend/src/components/__tests__/ErrorBoundary.test.tsx` - Component tests
+- ✅ `frontend/src/utils/__tests__/transactionExport.test.ts` - Export utility tests (29 tests)
+- ✅ `frontend/src/utils/__tests__/balanceSync.test.ts` - Balance sync utility tests (part of 29 tests above)
+- ✅ `frontend/src/components/common/PerformanceMetricsDialog.tsx` - Performance metrics dialog component
 - ✅ `frontend/playwright.config.ts` - Playwright E2E configuration
 - ✅ `frontend/e2e/bank-account-flow.spec.ts` - E2E tests for bank/account flow
 - ✅ `frontend/e2e/transaction-flow.spec.ts` - E2E tests for transaction flow
 
 **Files Updated**:
 - ✅ `frontend/package.json` - Added test scripts, Playwright dependencies
+- ✅ `frontend/src/pages/Settings.tsx` - Added performance metrics dialog integration
 
-**Completed Date**: 2025-01-14 (integration/component/E2E tests: 2025-01-15)
+**Completed Date**: 2025-01-14 (integration/component/E2E tests: 2025-01-15, utility tests & metrics dialog: 2025-01-15)
 
 **Estimated Remaining Effort**: N/A (test coverage is comprehensive, additional tests are future enhancements)
 
@@ -425,7 +431,7 @@ The application is **highly functional** with comprehensive core features, excel
 **Completed Date**: 2025-01-14
 
 **Future Enhancements**:
-- ⚠️ UI dialog for viewing metrics (currently logs to console)
+- ✅ **UI dialog for viewing metrics** - COMPLETED (replaces console logging)
 - ⚠️ Bundle size monitoring (build-time injection)
 - ⚠️ Optional analytics integration (privacy-friendly)
 
