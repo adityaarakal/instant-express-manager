@@ -188,12 +188,17 @@ This document tracks high-priority tasks required to ensure the application is p
   - [x] ✅ **Integrated throughout application** (ErrorBoundary, AppProviders, Transactions)
 
 #### 3.4 Analytics Integration
-- [ ] **Task 3.4.1**: Add analytics (optional: Google Analytics, Plausible)
-  - [ ] Evaluate analytics solutions
-  - [ ] Choose privacy-friendly option (Plausible recommended)
-  - [ ] Integrate analytics
-  - [ ] Configure privacy settings
-  - [ ] Test analytics tracking
+- [x] **Task 3.4.1**: Add analytics (optional: Google Analytics, Plausible)
+  - [x] ✅ **Analytics utility created** (`analytics.ts`)
+  - [x] ✅ **Privacy-first approach** (disabled by default, user consent required)
+  - [x] ✅ **Plausible Analytics integration** (privacy-friendly, GDPR compliant)
+  - [x] ✅ **Google Analytics 4 integration** (IP anonymization enabled)
+  - [x] ✅ **Automatic page view tracking** (on route changes)
+  - [x] ✅ **Custom event tracking** support
+  - [x] ✅ **Data sanitization** (URLs, tokens, emails redacted)
+  - [x] ✅ **Configuration persistence** (IndexedDB)
+  - [x] ✅ **Settings page UI** (provider selection, configuration)
+  - [x] ✅ **Documentation created** (`ANALYTICS.md`)
 
 #### 3.5 IndexedDB Storage Monitoring
 - [ ] **Task 3.5.1**: Monitor IndexedDB storage usage
@@ -214,20 +219,21 @@ This document tracks high-priority tasks required to ensure the application is p
 
 ### Overall Progress
 - **Total Tasks**: 31
-- **Completed**: 7
+- **Completed**: 8
 - **In Progress**: 1 (Task 1.1.1 - Testing checklist created, waiting for deployment)
-- **Pending**: 23
+- **Pending**: 22
 
 ### By Category
 - **Production Deployment Verification**: 1/14 completed
   - ✅ Task 1.1.1: Testing checklist and scripts created (ready for deployment testing)
 - **User Acceptance Testing**: 0/6 completed
-- **Performance Monitoring**: 6/11 completed
+- **Performance Monitoring**: 7/11 completed
   - ✅ Task 3.1.1: Lighthouse audit setup (completed - configuration, scripts, CI workflow)
   - ✅ Task 3.1.2: Performance optimization (completed - lazy loading, bundle size reduction)
   - ✅ Task 3.2.1: Bundle size monitoring (already implemented, verified)
   - ✅ Task 3.3.1: Error tracking (completed - errorTracking.ts utility, production-safe logging)
   - ✅ Task 3.3.2: Production-safe error logging (completed - sanitization, local storage, Settings UI)
+  - ✅ Task 3.4.1: Analytics integration (completed - privacy-friendly, Plausible/GA4 support)
   - ✅ Task 3.5.1: IndexedDB storage monitoring (completed)
 
 ---
