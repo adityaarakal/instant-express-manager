@@ -38,23 +38,68 @@ import { useSearchHistoryStore } from '../../store/useSearchHistoryStore';
 import { useToastStore } from '../../store/useToastStore';
 import { AdvancedSearchDialog } from './AdvancedSearchDialog';
 
+/**
+ * Transaction Filters Component
+ * 
+ * Provides filtering and search functionality for transaction lists.
+ * Includes full-text search with debouncing, saved filters, search history, and advanced search dialog.
+ * Supports filtering by date range, account, category, status, and search term.
+ * 
+ * Features:
+ * - Full-text search across all transaction fields (300ms debounce)
+ * - Search history with autocomplete suggestions
+ * - Save/load/delete filter presets
+ * - Advanced search dialog for complex filter combinations
+ * - Visual filter chips showing active filters
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <TransactionFilters
+ *   ref={searchInputRef}
+ *   type="expense"
+ *   accounts={accounts}
+ *   onFilterChange={(filters) => setFilters(filters)}
+ * />
+ * ```
+ */
+
 type TabValue = 'income' | 'expense' | 'savings' | 'transfers';
 
+/**
+ * Props for TransactionFilters component
+ * @interface
+ */
 interface TransactionFiltersProps {
+  /** Type of transactions being filtered */
   type: TabValue;
+  /** List of bank accounts for account filter */
   accounts: BankAccount[];
+  /** Callback function called when filters change */
   onFilterChange: (filters: FilterState) => void;
 }
 
+/**
+ * Filter state for transactions
+ * Contains all filterable fields for transaction lists
+ * @interface
+ */
 export interface FilterState {
+  /** Start date for date range filter (ISO date string) */
   dateFrom: string;
+  /** End date for date range filter (ISO date string) */
   dateTo: string;
+  /** Selected account ID filter */
   accountId: string;
+  /** Selected category/type filter */
   category: string;
+  /** Selected status filter */
   status: string;
+  /** Search term for full-text search */
   searchTerm: string;
 }
 
+/** Default empty filter state */
 const defaultFilters: FilterState = {
   dateFrom: '',
   dateTo: '',
@@ -64,6 +109,14 @@ const defaultFilters: FilterState = {
   searchTerm: '',
 };
 
+/**
+ * TransactionFilters component
+ * Provides comprehensive filtering and search for transaction lists
+ * 
+ * @param props - TransactionFiltersProps
+ * @param searchInputRef - Ref to the search input element (for keyboard shortcuts)
+ * @returns Filter controls and search interface
+ */
 export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFiltersProps>(
   function TransactionFilters({ type, accounts, onFilterChange }, searchInputRef) {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);

@@ -1,20 +1,52 @@
+/**
+ * Error Boundary Component
+ * 
+ * Catches JavaScript errors anywhere in the child component tree and displays a fallback UI
+ * instead of crashing the entire app. This is a React error boundary implementation.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <ErrorBoundary onReset={() => window.location.reload()}>
+ *   <App />
+ * </ErrorBoundary>
+ * ```
+ */
+
 import { Component, type ReactNode } from 'react';
 import { Box, Button, Paper, Stack, Typography, Alert, AlertTitle } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import HomeIcon from '@mui/icons-material/Home';
 
+/**
+ * Props for ErrorBoundary component
+ * @interface
+ */
 interface ErrorBoundaryProps {
+  /** Child components to be wrapped by the error boundary */
   children: ReactNode;
+  /** Optional custom fallback UI to display when an error occurs */
   fallback?: ReactNode;
+  /** Optional callback function to execute when reset button is clicked */
   onReset?: () => void;
 }
 
+/**
+ * Internal state for ErrorBoundary component
+ * @interface
+ */
 interface ErrorBoundaryState {
+  /** Whether an error has been caught */
   hasError: boolean;
+  /** The error object that was caught */
   error: Error | null;
 }
 
+/**
+ * ErrorBoundary class component
+ * Implements React error boundary pattern to catch and handle errors
+ */
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);

@@ -1,3 +1,24 @@
+/**
+ * Advanced Search Dialog Component
+ * 
+ * A comprehensive search dialog that allows users to apply multiple filters at once for transactions.
+ * Provides a single interface for setting date ranges, account, category, status, and search term filters.
+ * Shows active filters as removable chips and provides clear/reset functionality.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <AdvancedSearchDialog
+ *   open={dialogOpen}
+ *   onClose={() => setDialogOpen(false)}
+ *   onApply={(filters) => handleFilterChange(filters)}
+ *   accounts={accounts}
+ *   currentFilters={currentFilters}
+ *   type="expense"
+ * />
+ * ```
+ */
+
 import { useState } from 'react';
 import {
   Dialog,
@@ -22,15 +43,32 @@ import ClearIcon from '@mui/icons-material/Clear';
 import type { BankAccount } from '../../types/bankAccounts';
 import type { FilterState } from './TransactionFilters';
 
+/**
+ * Props for AdvancedSearchDialog component
+ * @interface
+ */
 interface AdvancedSearchDialogProps {
+  /** Whether the dialog is open */
   open: boolean;
+  /** Callback function called when dialog is closed */
   onClose: () => void;
+  /** Callback function called when filters are applied */
   onApply: (filters: FilterState) => void;
+  /** List of bank accounts for account filter */
   accounts: BankAccount[];
+  /** Current filter state (initial values) */
   currentFilters: FilterState;
+  /** Type of transactions being filtered */
   type: 'income' | 'expense' | 'savings' | 'transfers';
 }
 
+/**
+ * Advanced Search Dialog component
+ * Provides a comprehensive interface for applying multiple transaction filters
+ * 
+ * @param props - AdvancedSearchDialogProps
+ * @returns Dialog component with filter controls
+ */
 export function AdvancedSearchDialog({
   open,
   onClose,
