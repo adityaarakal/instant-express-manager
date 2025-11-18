@@ -18,6 +18,7 @@ import { Box, Button, Paper, Stack, Typography, Alert, AlertTitle } from '@mui/m
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import HomeIcon from '@mui/icons-material/Home';
+import { captureException, ErrorSeverity } from '../../utils/errorTracking';
 
 /**
  * Props for ErrorBoundary component
@@ -58,15 +59,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // In production, log minimal error info to avoid exposing sensitive details
-    // Full error logging is safe in development
-    if (import.meta.env.DEV) {
-      // Error logging is intentional for debugging in development
-      console.error('ErrorBoundary caught an error:', error, errorInfo);
-    } else {
-      // In production, log only error type and message (no stack traces or component tree)
-      console.error('ErrorBoundary caught an error:', error.name, error.message);
-    }
+    // Track error using error tracking utility (production-safe)
+    captureException(error, {
+      component: 'ErrorBoundary',
+      action: 'component-error',
+      metadata: {
+        componentStack: import.meta.env.DEV ? errorInfo.componentStack : undefined,
+      },
+    }, ErrorSeverity.CRITICAL);
   }
 
   handleReset = () => {

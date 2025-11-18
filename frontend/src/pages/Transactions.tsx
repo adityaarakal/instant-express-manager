@@ -39,6 +39,7 @@ import { useTransferTransactionsStore } from '../store/useTransferTransactionsSt
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useToastStore } from '../store/useToastStore';
 import { getUserFriendlyError } from '../utils/errorHandling';
+import { captureException, ErrorSeverity } from '../utils/errorTracking';
 import { useUndoStore } from '../store/useUndoStore';
 import { restoreDeletedItem } from '../utils/undoRestore';
 import { TableSkeleton } from '../components/common/TableSkeleton';
@@ -650,7 +651,14 @@ export function Transactions() {
         `(${isSelected ? 'selected' : 'filtered'}) to ${format.toUpperCase()}`
       );
     } catch (error) {
-      console.error('Export error:', error);
+      // Track export errors (production-safe)
+      if (error instanceof Error) {
+        captureException(error, {
+          component: 'Transactions',
+          action: 'export',
+          metadata: { format, activeTab },
+        }, ErrorSeverity.MEDIUM);
+      }
       showError(`Failed to export ${format.toUpperCase()}: ${getUserFriendlyError(error, 'export transactions')}`);
     }
   };

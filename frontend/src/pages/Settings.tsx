@@ -36,12 +36,14 @@ import { AccessibilityCheck } from '../components/common/AccessibilityCheck';
 import { SecurityCheck } from '../components/common/SecurityCheck';
 import { PerformanceMetricsDialog } from '../components/common/PerformanceMetricsDialog';
 import { StorageMonitoring } from '../components/common/StorageMonitoring';
+import { ErrorTrackingDialog } from '../components/common/ErrorTrackingDialog';
 import { downloadBackup, readBackupFile, importBackup, exportBackup } from '../utils/backupService';
 import { syncAccountBalancesFromTransactions, type SyncResult } from '../utils/balanceSync';
 import { clearAllData } from '../utils/clearAllData';
 import { performanceMonitor } from '../utils/performanceMonitoring';
 import SyncIcon from '@mui/icons-material/Sync';
 import SpeedIcon from '@mui/icons-material/Speed';
+import BugReportIcon from '@mui/icons-material/BugReport';
 import TableContainer from '@mui/material/TableContainer';
 import Table from '@mui/material/Table';
 import TableHead from '@mui/material/TableHead';
@@ -71,6 +73,7 @@ export function Settings() {
   const [clearDataDialogOpen, setClearDataDialogOpen] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [performanceMetricsDialogOpen, setPerformanceMetricsDialogOpen] = useState(false);
+  const [errorTrackingDialogOpen, setErrorTrackingDialogOpen] = useState(false);
   const [appVersion, setAppVersion] = useState<string>(
     (() => {
       // Try to read from meta tag first (for automatic updates)
@@ -525,6 +528,34 @@ export function Settings() {
           <Divider />
 
           <Stack spacing={2}>
+            <Typography variant="h6">Error Tracking</Typography>
+            <Typography variant="body2" color="text.secondary">
+              View error logs and track application errors. Errors are stored locally and never sent to external servers unless configured.
+            </Typography>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <AlertTitle>Privacy First</AlertTitle>
+              <Typography variant="body2">
+                All errors are stored locally in your browser. No error data is sent to external services
+                unless you explicitly configure an external service (e.g., Sentry). Personal data is automatically
+                redacted from error logs.
+              </Typography>
+            </Alert>
+            <Button
+              variant="outlined"
+              startIcon={<BugReportIcon />}
+              onClick={() => setErrorTrackingDialogOpen(true)}
+              fullWidth
+            >
+              View Error Logs
+            </Button>
+            <Typography variant="caption" color="text.secondary">
+              View stored error logs and clear them if needed. Errors help identify and fix issues.
+            </Typography>
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
             <Typography variant="h6">Balance Sync</Typography>
             <Typography variant="body2" color="text.secondary">
               Sync account balances with existing transactions. This is useful if you have old data created before automatic balance updates were implemented.
@@ -822,6 +853,12 @@ export function Settings() {
       <PerformanceMetricsDialog
         open={performanceMetricsDialogOpen}
         onClose={() => setPerformanceMetricsDialogOpen(false)}
+      />
+
+      {/* Error Tracking Dialog */}
+      <ErrorTrackingDialog
+        open={errorTrackingDialogOpen}
+        onClose={() => setErrorTrackingDialogOpen(false)}
       />
     </Stack>
   );
