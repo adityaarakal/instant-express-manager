@@ -189,51 +189,83 @@ The application is **highly functional** with comprehensive core features, excel
 
 ---
 
-### 5. **Enhanced Export Features** ✅ **PARTIALLY COMPLETED**
+### 5. **Enhanced Export Features** ✅ **COMPLETED** (4/5 features - 1 future enhancement)
 **Impact**: Export formats expanded, user control improved  
-**Status**: ✅ **MAJOR PROGRESS** (3/5 features complete)  
+**Status**: ✅ **COMPLETED** (4/5 features - scheduled exports marked as future)  
 **Priority**: **MEDIUM**  
 
 **Completed**:
 - ✅ CSV export for transactions
 - ✅ JSON backup export
 - ✅ Excel export (.xlsx) for all transaction types
+- ✅ **PDF export for all transaction types** (new)
+  - Professional PDF reports with tables
+  - Auto-formatted columns and headers
+  - Total amounts displayed
+  - Currency formatting (INR)
+  - Supports income, expense, savings, and transfer transactions
 - ✅ Export filtered data only (auto-detects filtered transactions)
 - ✅ Export selected transactions only (when transactions are selected)
-- ✅ Export format selection dropdown (CSV/Excel)
+- ✅ Export format selection dropdown (CSV/Excel/PDF)
 - ✅ Smart export button showing transaction count
 - ✅ Export history tracking with format information
 
 **Remaining**:
-- ⚠️ PDF export (reports, statements) - Lower priority
-- ⚠️ Scheduled/automated exports - Future enhancement
+- ⚠️ Scheduled/automated exports - **Future enhancement** (requires background job scheduling, not critical for PWA)
 
 **Implementation Details**:
 - Excel export uses `xlsx` library
-- Auto-adjusts column widths for readability
+- **PDF export uses `jspdf` and `jspdf-autotable` libraries**
+- Auto-adjusts column widths for readability (Excel) and optimal table layout (PDF)
 - Supports all transaction types (income, expense, savings, transfers)
 - Button dynamically shows "Export Selected (N)" when items are selected
-- Export format menu provides easy selection between CSV and Excel
+- Export format menu provides easy selection between CSV, Excel, and PDF
 - Filename includes selection count when exporting selected items
+- PDF reports include title, metadata (generation date, transaction count), formatted tables, and total amounts
 
 **Benefits**:
 - Better compatibility with Excel for data analysis
+- **Professional PDF reports for sharing and archiving**
 - Users can export only what they need (selected/filtered)
 - Improved user experience with format selection
-- Professional Excel formatting with auto-adjusted columns
+- Professional formatting (Excel: auto-adjusted columns, PDF: formatted tables)
+- **Multiple export formats for different use cases**
 
-**Completed Date**: 2025-01-14
+**Files Created**:
+- PDF export functions added to `frontend/src/utils/transactionExport.ts`
 
-**Estimated Remaining Effort**: 4-6 hours (PDF export and scheduling)
+**Files Updated**:
+- ✅ `frontend/src/utils/transactionExport.ts` - Added PDF export functions
+- ✅ `frontend/src/pages/Transactions.tsx` - Added PDF export option to menu
+- ✅ `frontend/package.json` - Added `jspdf` and `jspdf-autotable` dependencies
+
+**Completed Date**: 2025-01-14 (PDF export: 2025-01-15)
+
+**Estimated Remaining Effort**: N/A (scheduled exports is a future enhancement, not a critical gap)
 
 ---
 
-### 6. **Enhanced Search & Filtering** ✅ **PARTIALLY COMPLETED**
+### 6. **Enhanced Search & Filtering** ✅ **COMPLETED**
 **Impact**: Search and filtering significantly improved  
-**Status**: ✅ **MAJOR PROGRESS** (3/6 features complete)  
+**Status**: ✅ **COMPLETED**  
 **Priority**: **MEDIUM**  
 
 **Completed**:
+- ✅ **Full-text search across all fields** (new)
+  - Searches description, account name, category, status, amount, date, notes, and type-specific fields
+  - For income: client name, project name
+  - For expense: bucket, due date
+  - For savings: destination, type, SIP number
+  - For transfers: from/to account names, category
+- ✅ **Advanced search dialog** (new)
+  - Single dialog for applying multiple filters at once
+  - Visual filter chips showing active filters
+  - Clear all and reset options
+  - Better UX for complex filter combinations
+- ✅ **Search performance improvements** (new)
+  - 300ms debounce delay for search input (reduces filtering overhead)
+  - Memoized filter calculations (already implemented)
+  - Optimized search field collection
 - ✅ Basic text search
 - ✅ Filter by account, category, status, date range
 - ✅ Saved search filters (save/load/delete filter combinations)
@@ -243,28 +275,38 @@ The application is **highly functional** with comprehensive core features, excel
 - ✅ Persistent storage for saved filters and search history
 
 **Remaining**:
-- ⚠️ Advanced search dialog (multiple criteria at once)
-- ⚠️ Full-text search across all fields (currently searches description only)
-- ⚠️ Search performance improvements for large datasets
+- None (all features completed)
 
 **Implementation Details**:
 - Created `useSavedFiltersStore` for managing filter presets
 - Created `useSearchHistoryStore` for tracking search history
+- **Created `AdvancedSearchDialog` component for advanced filtering**
+- **Implemented full-text search across all transaction fields**
+- **Added 300ms debounce for search input to improve performance**
 - Search history limited to 20 entries per type, shows max 10 in dropdown
 - Saved filters stored per transaction type with last used tracking
 - Replaced search TextField with Autocomplete for better UX
 - Added Save Filter dialog for naming presets
 - Added Saved Filters menu button showing count
+- **Advanced search button opens dialog with all filter options**
 
 **Benefits**:
+- **Comprehensive search across all transaction data**
+- **Better performance with debounced search**
 - Users can save frequently used filter combinations
 - Quick access to recent searches via autocomplete
 - Improved productivity with reusable filter presets
 - Better search experience with suggestions
+- **Advanced search dialog for complex filter combinations**
 
-**Completed Date**: 2025-01-14
+**Files Created**:
+- ✅ `frontend/src/components/transactions/AdvancedSearchDialog.tsx` - Advanced search dialog component
 
-**Estimated Remaining Effort**: 3-4 hours (advanced search dialog, full-text search)
+**Files Updated**:
+- ✅ `frontend/src/pages/Transactions.tsx` - Full-text search implementation
+- ✅ `frontend/src/components/transactions/TransactionFilters.tsx` - Debounced search, advanced search button
+
+**Completed Date**: 2025-01-14 (full-text search, advanced dialog, performance: 2025-01-15)
 
 ---
 

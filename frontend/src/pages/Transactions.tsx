@@ -61,6 +61,10 @@ import {
   exportExpenseTransactionsToExcel,
   exportSavingsTransactionsToExcel,
   exportTransferTransactionsToExcel,
+  exportIncomeTransactionsToPDF,
+  exportExpenseTransactionsToPDF,
+  exportSavingsTransactionsToPDF,
+  exportTransferTransactionsToPDF,
   downloadCSV,
   downloadExcel,
   type ExportFormat,
@@ -207,22 +211,80 @@ export function Transactions() {
       // Status filter
       if (filters.status && t.status !== filters.status) return false;
 
-      // Search term filter
+      // Full-text search across all fields
       if (filters.searchTerm) {
         const searchLower = filters.searchTerm.toLowerCase();
+        const searchFields: string[] = [];
+        
         if (activeTab === 'transfers') {
           const transfer = t as TransferTransaction;
-          const matchesDescription = transfer.description.toLowerCase().includes(searchLower);
-          const matchesFromAccount = (accountsMap.get(transfer.fromAccountId) || '').toLowerCase().includes(searchLower);
-          const matchesToAccount = (accountsMap.get(transfer.toAccountId) || '').toLowerCase().includes(searchLower);
-          if (!matchesDescription && !matchesFromAccount && !matchesToAccount) return false;
-        } else {
-          const transaction = t as IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction;
-          const description = 'description' in transaction ? (transaction.description || '') : (transaction.destination || '');
-          const matchesDescription = description.toLowerCase().includes(searchLower);
-          const matchesAccount = (accountsMap.get(transaction.accountId) || '').toLowerCase().includes(searchLower);
-          if (!matchesDescription && !matchesAccount) return false;
+          const fromAccount = accountsMap.get(transfer.fromAccountId) || '';
+          const toAccount = accountsMap.get(transfer.toAccountId) || '';
+          
+          // Search across all transfer fields
+          searchFields.push(
+            transfer.description.toLowerCase(),
+            fromAccount.toLowerCase(),
+            toAccount.toLowerCase(),
+            transfer.category.toLowerCase(),
+            transfer.status.toLowerCase(),
+            transfer.amount.toString(),
+            transfer.date,
+            (transfer.notes || '').toLowerCase()
+          );
+        } else if (activeTab === 'income') {
+          const transaction = t as IncomeTransaction;
+          const account = accountsMap.get(transaction.accountId) || '';
+          
+          // Search across all income transaction fields
+          searchFields.push(
+            transaction.description.toLowerCase(),
+            account.toLowerCase(),
+            transaction.category.toLowerCase(),
+            transaction.status.toLowerCase(),
+            transaction.amount.toString(),
+            transaction.date,
+            (transaction.clientName || '').toLowerCase(),
+            (transaction.projectName || '').toLowerCase(),
+            (transaction.notes || '').toLowerCase()
+          );
+        } else if (activeTab === 'expense') {
+          const transaction = t as ExpenseTransaction;
+          const account = accountsMap.get(transaction.accountId) || '';
+          
+          // Search across all expense transaction fields
+          searchFields.push(
+            transaction.description.toLowerCase(),
+            account.toLowerCase(),
+            transaction.category.toLowerCase(),
+            transaction.bucket.toLowerCase(),
+            transaction.status.toLowerCase(),
+            transaction.amount.toString(),
+            transaction.date,
+            (transaction.dueDate || '').toLowerCase(),
+            (transaction.notes || '').toLowerCase()
+          );
+        } else if (activeTab === 'savings') {
+          const transaction = t as SavingsInvestmentTransaction;
+          const account = accountsMap.get(transaction.accountId) || '';
+          
+          // Search across all savings transaction fields
+          searchFields.push(
+            (transaction.description || '').toLowerCase(),
+            account.toLowerCase(),
+            transaction.type.toLowerCase(),
+            transaction.destination.toLowerCase(),
+            transaction.status.toLowerCase(),
+            transaction.amount.toString(),
+            transaction.date,
+            (transaction.sipNumber || '').toLowerCase(),
+            (transaction.notes || '').toLowerCase()
+          );
         }
+        
+        // Check if search term matches any field
+        const matches = searchFields.some(field => field.includes(searchLower));
+        if (!matches) return false;
       }
 
       return true;
@@ -514,10 +576,13 @@ export function Transactions() {
         const csvContent = exportIncomeTransactionsToCSV(transactionsToExport as IncomeTransaction[], accounts);
         filename = `income-transactions${suffix}-${dateStr}.csv`;
         downloadCSV(csvContent, filename);
-      } else {
+      } else if (format === 'xlsx') {
         const excelData = exportIncomeTransactionsToExcel(transactionsToExport as IncomeTransaction[], accounts);
         filename = `income-transactions${suffix}-${dateStr}.xlsx`;
         downloadExcel(excelData, filename);
+      } else if (format === 'pdf') {
+        filename = `income-transactions${suffix}-${dateStr}.pdf`;
+        exportIncomeTransactionsToPDF(transactionsToExport as IncomeTransaction[], accounts, filename);
       }
     } else if (activeTab === 'expense') {
       exportType = 'expense';
@@ -525,10 +590,13 @@ export function Transactions() {
         const csvContent = exportExpenseTransactionsToCSV(transactionsToExport as ExpenseTransaction[], accounts);
         filename = `expense-transactions${suffix}-${dateStr}.csv`;
         downloadCSV(csvContent, filename);
-      } else {
+      } else if (format === 'xlsx') {
         const excelData = exportExpenseTransactionsToExcel(transactionsToExport as ExpenseTransaction[], accounts);
         filename = `expense-transactions${suffix}-${dateStr}.xlsx`;
         downloadExcel(excelData, filename);
+      } else if (format === 'pdf') {
+        filename = `expense-transactions${suffix}-${dateStr}.pdf`;
+        exportExpenseTransactionsToPDF(transactionsToExport as ExpenseTransaction[], accounts, filename);
       }
     } else if (activeTab === 'savings') {
       exportType = 'savings';
@@ -536,10 +604,13 @@ export function Transactions() {
         const csvContent = exportSavingsTransactionsToCSV(transactionsToExport as SavingsInvestmentTransaction[], accounts);
         filename = `savings-transactions${suffix}-${dateStr}.csv`;
         downloadCSV(csvContent, filename);
-      } else {
+      } else if (format === 'xlsx') {
         const excelData = exportSavingsTransactionsToExcel(transactionsToExport as SavingsInvestmentTransaction[], accounts);
         filename = `savings-transactions${suffix}-${dateStr}.xlsx`;
         downloadExcel(excelData, filename);
+      } else if (format === 'pdf') {
+        filename = `savings-transactions${suffix}-${dateStr}.pdf`;
+        exportSavingsTransactionsToPDF(transactionsToExport as SavingsInvestmentTransaction[], accounts, filename);
       }
     } else if (activeTab === 'transfers') {
       exportType = 'transfers';
@@ -547,10 +618,13 @@ export function Transactions() {
         const csvContent = exportTransferTransactionsToCSV(transactionsToExport as TransferTransaction[], accounts);
         filename = `transfers${suffix}-${dateStr}.csv`;
         downloadCSV(csvContent, filename);
-      } else {
+      } else if (format === 'xlsx') {
         const excelData = exportTransferTransactionsToExcel(transactionsToExport as TransferTransaction[], accounts);
         filename = `transfers${suffix}-${dateStr}.xlsx`;
         downloadExcel(excelData, filename);
+      } else if (format === 'pdf') {
+        filename = `transfers${suffix}-${dateStr}.pdf`;
+        exportTransferTransactionsToPDF(transactionsToExport as TransferTransaction[], accounts, filename);
       }
     }
 
@@ -706,6 +780,12 @@ export function Transactions() {
                 disabled={filteredAndSortedTransactions.length === 0 && selectedIds.size === 0}
               >
                 Export as Excel (.xlsx)
+              </MenuItem>
+              <MenuItem 
+                onClick={() => handleExport('pdf')}
+                disabled={filteredAndSortedTransactions.length === 0 && selectedIds.size === 0}
+              >
+                Export as PDF
               </MenuItem>
             </Menu>
           </Box>

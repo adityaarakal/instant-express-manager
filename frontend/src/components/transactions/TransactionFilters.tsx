@@ -1,4 +1,4 @@
-import { useState, useMemo, forwardRef } from 'react';
+import { useState, useMemo, forwardRef, useCallback, useRef, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -26,6 +26,7 @@ import BookmarkIcon from '@mui/icons-material/Bookmark';
 import HistoryIcon from '@mui/icons-material/History';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
+import SearchIcon from '@mui/icons-material/Search';
 import type { BankAccount } from '../../types/bankAccounts';
 import type {
   IncomeTransaction,
@@ -35,6 +36,7 @@ import type {
 import { useSavedFiltersStore } from '../../store/useSavedFiltersStore';
 import { useSearchHistoryStore } from '../../store/useSearchHistoryStore';
 import { useToastStore } from '../../store/useToastStore';
+import { AdvancedSearchDialog } from './AdvancedSearchDialog';
 
 type TabValue = 'income' | 'expense' | 'savings' | 'transfers';
 
@@ -65,10 +67,13 @@ const defaultFilters: FilterState = {
 export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFiltersProps>(
   function TransactionFilters({ type, accounts, onFilterChange }, searchInputRef) {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
+  const [searchInputValue, setSearchInputValue] = useState<string>('');
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [saveFilterDialogOpen, setSaveFilterDialogOpen] = useState(false);
   const [filterName, setFilterName] = useState('');
   const [savedFiltersMenuAnchor, setSavedFiltersMenuAnchor] = useState<null | HTMLElement>(null);
+  const [advancedSearchDialogOpen, setAdvancedSearchDialogOpen] = useState(false);
+  const searchDebounceTimer = useRef<NodeJS.Timeout | null>(null);
   
   const { saveFilter, getFiltersByType, loadFilter, deleteFilter, updateFilterLastUsed, savedFilters } = useSavedFiltersStore();
   const { addSearch, getHistoryByType, history } = useSearchHistoryStore();
@@ -76,6 +81,37 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
   
   const savedFiltersForType = useMemo(() => getFiltersByType(type), [type, getFiltersByType, savedFilters]);
   const searchHistory = useMemo(() => getHistoryByType(type), [type, getHistoryByType, history]);
+
+  // Sync searchInputValue with filters.searchTerm
+  useEffect(() => {
+    setSearchInputValue(filters.searchTerm);
+  }, [filters.searchTerm]);
+
+  // Debounced search - update filter after user stops typing
+  useEffect(() => {
+    if (searchDebounceTimer.current) {
+      clearTimeout(searchDebounceTimer.current);
+    }
+
+    searchDebounceTimer.current = setTimeout(() => {
+      if (searchInputValue !== filters.searchTerm) {
+        const newFilters = { ...filters, searchTerm: searchInputValue };
+        setFilters(newFilters);
+        onFilterChange(newFilters);
+        
+        // Track search history when search term changes
+        if (searchInputValue.trim()) {
+          addSearch(type, searchInputValue);
+        }
+      }
+    }, 300); // 300ms debounce delay
+
+    return () => {
+      if (searchDebounceTimer.current) {
+        clearTimeout(searchDebounceTimer.current);
+      }
+    };
+  }, [searchInputValue, filters, onFilterChange, addSearch, type]); // Dependencies for debounced search
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -115,7 +151,7 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
     return active;
   }, [filters, accounts, type]);
 
-  const handleFilterChange = (key: keyof FilterState, value: string) => {
+  const handleFilterChange = useCallback((key: keyof FilterState, value: string) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     onFilterChange(newFilters);
@@ -124,7 +160,7 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
     if (key === 'searchTerm' && value.trim()) {
       addSearch(type, value);
     }
-  };
+  }, [filters, onFilterChange, addSearch, type]);
   
   const handleSaveFilter = () => {
     if (!filterName.trim()) {
@@ -217,10 +253,13 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
         <Autocomplete
           freeSolo
           options={searchHistory.map((entry) => entry.searchTerm)}
-          value={filters.searchTerm}
-          onInputChange={(_, newValue) => handleFilterChange('searchTerm', newValue)}
+          value={searchInputValue}
+          onInputChange={(_, newValue) => {
+            setSearchInputValue(newValue || '');
+          }}
           onChange={(_, newValue) => {
             if (typeof newValue === 'string') {
+              setSearchInputValue(newValue);
               handleSearchHistorySelect(newValue);
             }
           }}
@@ -230,16 +269,26 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
             <TextField
               {...params}
               inputRef={searchInputRef}
-              placeholder="Search by description..."
+              placeholder="Search across all fields..."
               InputProps={{
                 ...params.InputProps,
-                startAdornment: searchHistory.length > 0 && filters.searchTerm ? (
+                startAdornment: searchHistory.length > 0 && searchInputValue ? (
                   <HistoryIcon sx={{ ml: 1, mr: 0.5, color: 'text.secondary' }} fontSize="small" />
                 ) : undefined,
               }}
             />
           )}
         />
+        <Tooltip title="Advanced Search">
+          <Button
+            variant="outlined"
+            startIcon={<SearchIcon />}
+            onClick={() => setAdvancedSearchDialogOpen(true)}
+            size="small"
+          >
+            Advanced
+          </Button>
+        </Tooltip>
         <Tooltip title="Saved Filters">
           <Button
             variant={savedFiltersMenuAnchor ? 'contained' : 'outlined'}
@@ -285,6 +334,20 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
         )}
       </Stack>
       
+      {/* Advanced Search Dialog */}
+      <AdvancedSearchDialog
+        open={advancedSearchDialogOpen}
+        onClose={() => setAdvancedSearchDialogOpen(false)}
+        onApply={(newFilters) => {
+          setFilters(newFilters);
+          setSearchInputValue(newFilters.searchTerm);
+          onFilterChange(newFilters);
+        }}
+        accounts={accounts}
+        currentFilters={filters}
+        type={type}
+      />
+
       {/* Saved Filters Menu */}
       <Menu
         anchorEl={savedFiltersMenuAnchor}
