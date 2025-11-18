@@ -66,9 +66,9 @@ function formatBytes(bytes: number): string {
 function bundleSizeAnalyzer() {
   return {
     name: 'bundle-size-analyzer',
-    buildEnd() {
-      // This runs after build completes
-      // Analyze dist folder in a separate async operation
+    closeBundle() {
+      // This runs after all bundles are written
+      // Use setTimeout to ensure files are fully written to disk
       setTimeout(() => {
         try {
           const outputDir = path.resolve(__dirname, 'dist');
@@ -97,14 +97,14 @@ function bundleSizeAnalyzer() {
 
           // Analyze JS files in dist/assets
           files.forEach((file: string) => {
-            if (typeof file === 'string' && file.endsWith('.js') && file.includes('assets')) {
+            if (typeof file === 'string' && file.endsWith('.js')) {
               try {
                 const filePath = path.resolve(outputDir, file);
                 const stats = statSync(filePath);
                 const size = stats.size;
                 const fileName = file.split('/').pop() || file;
                 const type = fileName.includes('vendor') ? 'vendor' : 
-                            fileName.includes('index') ? 'main' : 'chunk';
+                            fileName.includes('index') && !fileName.includes('.es') ? 'main' : 'chunk';
                 
                 bundleInfo.chunks.push({
                   name: fileName,
@@ -129,11 +129,13 @@ function bundleSizeAnalyzer() {
           const bundleInfoFile = path.resolve(__dirname, 'public/bundle-info.json');
           writeFileSync(bundleInfoFile, JSON.stringify(bundleInfo, null, 2) + '\n');
           
-          console.log(`📦 Bundle size: ${bundleInfo.totalSizeFormatted} (${bundleInfo.chunksCount} chunks)`);
+          if (bundleInfo.chunksCount > 0) {
+            console.log(`📦 Bundle size: ${bundleInfo.totalSizeFormatted} (${bundleInfo.chunksCount} chunks)`);
+          }
         } catch (error) {
           // Silently fail - bundle analysis is optional
         }
-      }, 100);
+      }, 500); // Increased delay to ensure files are written
     },
   }
 }
