@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Alert,
@@ -50,8 +50,17 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import SavingsIcon from '@mui/icons-material/Savings';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import { TransactionFormDialog } from '../components/transactions/TransactionFormDialog';
-import { TransferFormDialog } from '../components/transactions/TransferFormDialog';
+// Lazy load dialogs to reduce initial bundle size
+const TransactionFormDialog = lazy(() => 
+  import('../components/transactions/TransactionFormDialog').then((module) => ({ 
+    default: module.TransactionFormDialog 
+  }))
+);
+const TransferFormDialog = lazy(() => 
+  import('../components/transactions/TransferFormDialog').then((module) => ({ 
+    default: module.TransferFormDialog 
+  }))
+);
 import {
   exportIncomeTransactionsToCSV,
   exportExpenseTransactionsToCSV,
@@ -555,7 +564,7 @@ export function Transactions() {
     return filteredAndSortedTransactions;
   };
 
-  const handleExport = (format: ExportFormat = 'csv') => {
+  const handleExport = async (format: ExportFormat = 'csv') => {
     setExportMenuAnchor(null);
     
     const transactionsToExport = getTransactionsToExport();
@@ -570,75 +579,80 @@ export function Transactions() {
     let filename = '';
     let exportType: 'income' | 'expense' | 'savings' | 'transfers' = 'income';
 
-    if (activeTab === 'income') {
-      exportType = 'income';
-      if (format === 'csv') {
-        const csvContent = exportIncomeTransactionsToCSV(transactionsToExport as IncomeTransaction[], accounts);
-        filename = `income-transactions${suffix}-${dateStr}.csv`;
-        downloadCSV(csvContent, filename);
-      } else if (format === 'xlsx') {
-        const excelData = exportIncomeTransactionsToExcel(transactionsToExport as IncomeTransaction[], accounts);
-        filename = `income-transactions${suffix}-${dateStr}.xlsx`;
-        downloadExcel(excelData, filename);
-      } else if (format === 'pdf') {
-        filename = `income-transactions${suffix}-${dateStr}.pdf`;
-        exportIncomeTransactionsToPDF(transactionsToExport as IncomeTransaction[], accounts, filename);
+    try {
+      if (activeTab === 'income') {
+        exportType = 'income';
+        if (format === 'csv') {
+          const csvContent = exportIncomeTransactionsToCSV(transactionsToExport as IncomeTransaction[], accounts);
+          filename = `income-transactions${suffix}-${dateStr}.csv`;
+          downloadCSV(csvContent, filename);
+        } else if (format === 'xlsx') {
+          const excelData = exportIncomeTransactionsToExcel(transactionsToExport as IncomeTransaction[], accounts);
+          filename = `income-transactions${suffix}-${dateStr}.xlsx`;
+          downloadExcel(excelData, filename);
+        } else if (format === 'pdf') {
+          filename = `income-transactions${suffix}-${dateStr}.pdf`;
+          await exportIncomeTransactionsToPDF(transactionsToExport as IncomeTransaction[], accounts, filename);
+        }
+      } else if (activeTab === 'expense') {
+        exportType = 'expense';
+        if (format === 'csv') {
+          const csvContent = exportExpenseTransactionsToCSV(transactionsToExport as ExpenseTransaction[], accounts);
+          filename = `expense-transactions${suffix}-${dateStr}.csv`;
+          downloadCSV(csvContent, filename);
+        } else if (format === 'xlsx') {
+          const excelData = exportExpenseTransactionsToExcel(transactionsToExport as ExpenseTransaction[], accounts);
+          filename = `expense-transactions${suffix}-${dateStr}.xlsx`;
+          downloadExcel(excelData, filename);
+        } else if (format === 'pdf') {
+          filename = `expense-transactions${suffix}-${dateStr}.pdf`;
+          await exportExpenseTransactionsToPDF(transactionsToExport as ExpenseTransaction[], accounts, filename);
+        }
+      } else if (activeTab === 'savings') {
+        exportType = 'savings';
+        if (format === 'csv') {
+          const csvContent = exportSavingsTransactionsToCSV(transactionsToExport as SavingsInvestmentTransaction[], accounts);
+          filename = `savings-transactions${suffix}-${dateStr}.csv`;
+          downloadCSV(csvContent, filename);
+        } else if (format === 'xlsx') {
+          const excelData = exportSavingsTransactionsToExcel(transactionsToExport as SavingsInvestmentTransaction[], accounts);
+          filename = `savings-transactions${suffix}-${dateStr}.xlsx`;
+          downloadExcel(excelData, filename);
+        } else if (format === 'pdf') {
+          filename = `savings-transactions${suffix}-${dateStr}.pdf`;
+          await exportSavingsTransactionsToPDF(transactionsToExport as SavingsInvestmentTransaction[], accounts, filename);
+        }
+      } else if (activeTab === 'transfers') {
+        exportType = 'transfers';
+        if (format === 'csv') {
+          const csvContent = exportTransferTransactionsToCSV(transactionsToExport as TransferTransaction[], accounts);
+          filename = `transfers${suffix}-${dateStr}.csv`;
+          downloadCSV(csvContent, filename);
+        } else if (format === 'xlsx') {
+          const excelData = exportTransferTransactionsToExcel(transactionsToExport as TransferTransaction[], accounts);
+          filename = `transfers${suffix}-${dateStr}.xlsx`;
+          downloadExcel(excelData, filename);
+        } else if (format === 'pdf') {
+          filename = `transfers${suffix}-${dateStr}.pdf`;
+          await exportTransferTransactionsToPDF(transactionsToExport as TransferTransaction[], accounts, filename);
+        }
       }
-    } else if (activeTab === 'expense') {
-      exportType = 'expense';
-      if (format === 'csv') {
-        const csvContent = exportExpenseTransactionsToCSV(transactionsToExport as ExpenseTransaction[], accounts);
-        filename = `expense-transactions${suffix}-${dateStr}.csv`;
-        downloadCSV(csvContent, filename);
-      } else if (format === 'xlsx') {
-        const excelData = exportExpenseTransactionsToExcel(transactionsToExport as ExpenseTransaction[], accounts);
-        filename = `expense-transactions${suffix}-${dateStr}.xlsx`;
-        downloadExcel(excelData, filename);
-      } else if (format === 'pdf') {
-        filename = `expense-transactions${suffix}-${dateStr}.pdf`;
-        exportExpenseTransactionsToPDF(transactionsToExport as ExpenseTransaction[], accounts, filename);
-      }
-    } else if (activeTab === 'savings') {
-      exportType = 'savings';
-      if (format === 'csv') {
-        const csvContent = exportSavingsTransactionsToCSV(transactionsToExport as SavingsInvestmentTransaction[], accounts);
-        filename = `savings-transactions${suffix}-${dateStr}.csv`;
-        downloadCSV(csvContent, filename);
-      } else if (format === 'xlsx') {
-        const excelData = exportSavingsTransactionsToExcel(transactionsToExport as SavingsInvestmentTransaction[], accounts);
-        filename = `savings-transactions${suffix}-${dateStr}.xlsx`;
-        downloadExcel(excelData, filename);
-      } else if (format === 'pdf') {
-        filename = `savings-transactions${suffix}-${dateStr}.pdf`;
-        exportSavingsTransactionsToPDF(transactionsToExport as SavingsInvestmentTransaction[], accounts, filename);
-      }
-    } else if (activeTab === 'transfers') {
-      exportType = 'transfers';
-      if (format === 'csv') {
-        const csvContent = exportTransferTransactionsToCSV(transactionsToExport as TransferTransaction[], accounts);
-        filename = `transfers${suffix}-${dateStr}.csv`;
-        downloadCSV(csvContent, filename);
-      } else if (format === 'xlsx') {
-        const excelData = exportTransferTransactionsToExcel(transactionsToExport as TransferTransaction[], accounts);
-        filename = `transfers${suffix}-${dateStr}.xlsx`;
-        downloadExcel(excelData, filename);
-      } else if (format === 'pdf') {
-        filename = `transfers${suffix}-${dateStr}.pdf`;
-        exportTransferTransactionsToPDF(transactionsToExport as TransferTransaction[], accounts, filename);
-      }
+
+      // Track export history
+      addExport({
+        type: exportType,
+        filename,
+        transactionCount: transactionsToExport.length,
+      });
+
+      showSuccess(
+        `Exported ${transactionsToExport.length} transaction${transactionsToExport.length !== 1 ? 's' : ''} ` +
+        `(${isSelected ? 'selected' : 'filtered'}) to ${format.toUpperCase()}`
+      );
+    } catch (error) {
+      console.error('Export error:', error);
+      showError(`Failed to export ${format.toUpperCase()}: ${getUserFriendlyError(error, 'export transactions')}`);
     }
-
-    // Track export history
-    addExport({
-      type: exportType,
-      filename,
-      transactionCount: transactionsToExport.length,
-    });
-
-    showSuccess(
-      `Exported ${transactionsToExport.length} transaction${transactionsToExport.length !== 1 ? 's' : ''} ` +
-      `(${isSelected ? 'selected' : 'filtered'}) to ${format.toUpperCase()}`
-    );
   };
 
   const handleExportMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -1281,60 +1295,68 @@ export function Transactions() {
         )}
       </Paper>
 
-        <TransactionFormDialog
-          open={dialogOpen}
-          onClose={handleCloseDialog}
-          type={activeTab === 'transfers' ? 'income' : activeTab}
-          accounts={accounts}
-          editingTransaction={editingTransaction}
-          isSaving={isSaving}
-        onSave={async (data: Omit<IncomeTransaction, 'id' | 'createdAt' | 'updatedAt'> | Omit<ExpenseTransaction, 'id' | 'createdAt' | 'updatedAt'> | Omit<SavingsInvestmentTransaction, 'id' | 'createdAt' | 'updatedAt'>) => {
-          setIsSaving(true);
-          try {
-            await new Promise((resolve) => setTimeout(resolve, 200));
-            
-            if (activeTab === 'income') {
-              if (editingTransaction) {
-                // For updates, pass data as Partial<Omit<IncomeTransaction, 'id' | 'createdAt'>>
-                updateIncome(editingTransaction.id, data as Partial<Omit<IncomeTransaction, 'id' | 'createdAt'>>);
-                showSuccess('Income transaction updated successfully');
-              } else {
-                // For creates, pass data as Omit<IncomeTransaction, 'id' | 'createdAt' | 'updatedAt'>
-                createIncome(data as Omit<IncomeTransaction, 'id' | 'createdAt' | 'updatedAt'>);
-                showSuccess('Income transaction created successfully');
+      {dialogOpen && (
+        <Suspense fallback={<Box sx={{ display: 'none' }} />}>
+          <TransactionFormDialog
+            open={dialogOpen}
+            onClose={handleCloseDialog}
+            type={activeTab === 'transfers' ? 'income' : activeTab}
+            accounts={accounts}
+            editingTransaction={editingTransaction}
+            isSaving={isSaving}
+            onSave={async (data: Omit<IncomeTransaction, 'id' | 'createdAt' | 'updatedAt'> | Omit<ExpenseTransaction, 'id' | 'createdAt' | 'updatedAt'> | Omit<SavingsInvestmentTransaction, 'id' | 'createdAt' | 'updatedAt'>) => {
+              setIsSaving(true);
+              try {
+                await new Promise((resolve) => setTimeout(resolve, 200));
+                
+                if (activeTab === 'income') {
+                  if (editingTransaction) {
+                    // For updates, pass data as Partial<Omit<IncomeTransaction, 'id' | 'createdAt'>>
+                    updateIncome(editingTransaction.id, data as Partial<Omit<IncomeTransaction, 'id' | 'createdAt'>>);
+                    showSuccess('Income transaction updated successfully');
+                  } else {
+                    // For creates, pass data as Omit<IncomeTransaction, 'id' | 'createdAt' | 'updatedAt'>
+                    createIncome(data as Omit<IncomeTransaction, 'id' | 'createdAt' | 'updatedAt'>);
+                    showSuccess('Income transaction created successfully');
+                  }
+                } else if (activeTab === 'expense') {
+                  if (editingTransaction) {
+                    updateExpense(editingTransaction.id, data as Partial<Omit<ExpenseTransaction, 'id' | 'createdAt'>>);
+                    showSuccess('Expense transaction updated successfully');
+                  } else {
+                    createExpense(data as Omit<ExpenseTransaction, 'id' | 'createdAt' | 'updatedAt'>);
+                    showSuccess('Expense transaction created successfully');
+                  }
+                } else if (activeTab === 'savings') {
+                  if (editingTransaction) {
+                    updateSavings(editingTransaction.id, data as Partial<Omit<SavingsInvestmentTransaction, 'id' | 'createdAt'>>);
+                    showSuccess('Savings transaction updated successfully');
+                  } else {
+                    createSavings(data as Omit<SavingsInvestmentTransaction, 'id' | 'createdAt' | 'updatedAt'>);
+                    showSuccess('Savings transaction created successfully');
+                  }
+                }
+                handleCloseDialog();
+              } catch (error) {
+                showError(getUserFriendlyError(error, 'save transaction'));
+              } finally {
+                setIsSaving(false);
               }
-            } else if (activeTab === 'expense') {
-              if (editingTransaction) {
-                updateExpense(editingTransaction.id, data as Partial<Omit<ExpenseTransaction, 'id' | 'createdAt'>>);
-                showSuccess('Expense transaction updated successfully');
-              } else {
-                createExpense(data as Omit<ExpenseTransaction, 'id' | 'createdAt' | 'updatedAt'>);
-                showSuccess('Expense transaction created successfully');
-              }
-            } else if (activeTab === 'savings') {
-              if (editingTransaction) {
-                updateSavings(editingTransaction.id, data as Partial<Omit<SavingsInvestmentTransaction, 'id' | 'createdAt'>>);
-                showSuccess('Savings transaction updated successfully');
-              } else {
-                createSavings(data as Omit<SavingsInvestmentTransaction, 'id' | 'createdAt' | 'updatedAt'>);
-                showSuccess('Savings transaction created successfully');
-              }
-            }
-            handleCloseDialog();
-          } catch (error) {
-            showError(getUserFriendlyError(error, 'save transaction'));
-          } finally {
-            setIsSaving(false);
-          }
-        }}
-      />
+            }}
+          />
+        </Suspense>
+      )}
 
-      <TransferFormDialog
-        open={transferDialogOpen}
-        onClose={handleCloseTransferDialog}
-        accounts={accounts}
-        editingTransfer={editingTransfer}
-      />
+      {transferDialogOpen && (
+        <Suspense fallback={<Box sx={{ display: 'none' }} />}>
+          <TransferFormDialog
+            open={transferDialogOpen}
+            onClose={handleCloseTransferDialog}
+            accounts={accounts}
+            editingTransfer={editingTransfer}
+          />
+        </Suspense>
+      )}
 
       <ConfirmDialog
         open={confirmDeleteOpen}

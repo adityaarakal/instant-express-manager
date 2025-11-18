@@ -1,4 +1,4 @@
-import { useState, useMemo, forwardRef, useCallback, useRef, useEffect } from 'react';
+import { useState, useMemo, forwardRef, useCallback, useRef, useEffect, lazy, Suspense } from 'react';
 import {
   Box,
   Button,
@@ -36,7 +36,13 @@ import type {
 import { useSavedFiltersStore } from '../../store/useSavedFiltersStore';
 import { useSearchHistoryStore } from '../../store/useSearchHistoryStore';
 import { useToastStore } from '../../store/useToastStore';
-import { AdvancedSearchDialog } from './AdvancedSearchDialog';
+
+// Lazy load AdvancedSearchDialog to reduce initial bundle size
+const AdvancedSearchDialog = lazy(() => 
+  import('./AdvancedSearchDialog').then((module) => ({ 
+    default: module.AdvancedSearchDialog 
+  }))
+);
 
 /**
  * Transaction Filters Component
@@ -388,18 +394,22 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
       </Stack>
       
       {/* Advanced Search Dialog */}
-      <AdvancedSearchDialog
-        open={advancedSearchDialogOpen}
-        onClose={() => setAdvancedSearchDialogOpen(false)}
-        onApply={(newFilters) => {
-          setFilters(newFilters);
-          setSearchInputValue(newFilters.searchTerm);
-          onFilterChange(newFilters);
-        }}
-        accounts={accounts}
-        currentFilters={filters}
-        type={type}
-      />
+      {advancedSearchDialogOpen && (
+        <Suspense fallback={null}>
+          <AdvancedSearchDialog
+            open={advancedSearchDialogOpen}
+            onClose={() => setAdvancedSearchDialogOpen(false)}
+            onApply={(newFilters) => {
+              setFilters(newFilters);
+              setSearchInputValue(newFilters.searchTerm);
+              onFilterChange(newFilters);
+            }}
+            accounts={accounts}
+            currentFilters={filters}
+            type={type}
+          />
+        </Suspense>
+      )}
 
       {/* Saved Filters Menu */}
       <Menu
