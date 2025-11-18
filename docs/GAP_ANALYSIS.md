@@ -344,8 +344,10 @@ The application is **highly functional** with comprehensive core features, excel
 **Remaining**:
 - ✅ **Utility function tests for transactionExport** - COMPLETED (29 tests added)
 - ✅ **Utility function tests for balanceSync** - COMPLETED (part of above 29 tests)
+- ✅ **E2E test scenarios for recurring templates** - COMPLETED (4 test scenarios)
+- ✅ **E2E test scenarios for EMIs** - COMPLETED (4 test scenarios)
+- ✅ **E2E test scenarios for conversions** - COMPLETED (3 test scenarios)
 - ⚠️ Additional utility function tests (other utilities) - **Future enhancement** (can be added as needed)
-- ⚠️ More E2E test scenarios - **Future enhancement** (can be added as needed)
 
 **Implementation Details**:
 - Comprehensive test coverage for migration, error handling, accessibility, and security utilities
@@ -432,7 +434,7 @@ The application is **highly functional** with comprehensive core features, excel
 
 **Future Enhancements**:
 - ✅ **UI dialog for viewing metrics** - COMPLETED (replaces console logging)
-- ⚠️ Bundle size monitoring (build-time injection)
+- ✅ **Bundle size monitoring** - COMPLETED (build-time injection with vite plugin)
 - ⚠️ Optional analytics integration (privacy-friendly)
 
 ---

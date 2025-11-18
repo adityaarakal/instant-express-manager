@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
-import { readFileSync, writeFileSync } from 'fs'
+import { readFileSync, writeFileSync, statSync, readdirSync } from 'fs'
 
 // Read version from root package.json (source of truth for version)
 const packageJson = JSON.parse(readFileSync('../package.json', 'utf-8'))
@@ -48,6 +48,96 @@ function injectVersionMeta() {
   }
 }
 
+/**
+ * Format bytes to human-readable size
+ */
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+}
+
+/**
+ * Vite plugin to analyze and inject bundle size information
+ * Analyzes dist folder after build completes
+ */
+function bundleSizeAnalyzer() {
+  return {
+    name: 'bundle-size-analyzer',
+    buildEnd() {
+      // This runs after build completes
+      // Analyze dist folder in a separate async operation
+      setTimeout(() => {
+        try {
+          const outputDir = path.resolve(__dirname, 'dist');
+          const assetsDir = path.resolve(outputDir, 'assets');
+          
+          // Check if assets directory exists
+          let files: string[] = [];
+          try {
+            const assetsFiles = readdirSync(assetsDir);
+            files = assetsFiles.map(f => `assets/${f}`);
+          } catch {
+            // Assets directory doesn't exist or can't read
+          }
+          
+          const bundleInfo: {
+            chunks: Array<{ name: string; size: number; sizeFormatted: string; type: string }>;
+            totalSize: number;
+            totalSizeFormatted: string;
+            chunksCount: number;
+          } = {
+            chunks: [],
+            totalSize: 0,
+            totalSizeFormatted: '',
+            chunksCount: 0,
+          };
+
+          // Analyze JS files in dist/assets
+          files.forEach((file: string) => {
+            if (typeof file === 'string' && file.endsWith('.js') && file.includes('assets')) {
+              try {
+                const filePath = path.resolve(outputDir, file);
+                const stats = statSync(filePath);
+                const size = stats.size;
+                const fileName = file.split('/').pop() || file;
+                const type = fileName.includes('vendor') ? 'vendor' : 
+                            fileName.includes('index') ? 'main' : 'chunk';
+                
+                bundleInfo.chunks.push({
+                  name: fileName,
+                  size,
+                  sizeFormatted: formatBytes(size),
+                  type,
+                });
+                bundleInfo.totalSize += size;
+              } catch {
+                // File doesn't exist or error reading
+              }
+            }
+          });
+
+          bundleInfo.totalSizeFormatted = formatBytes(bundleInfo.totalSize);
+          bundleInfo.chunksCount = bundleInfo.chunks.length;
+
+          // Sort chunks by size (largest first)
+          bundleInfo.chunks.sort((a, b) => b.size - a.size);
+
+          // Write bundle info to public folder for runtime access
+          const bundleInfoFile = path.resolve(__dirname, 'public/bundle-info.json');
+          writeFileSync(bundleInfoFile, JSON.stringify(bundleInfo, null, 2) + '\n');
+          
+          console.log(`📦 Bundle size: ${bundleInfo.totalSizeFormatted} (${bundleInfo.chunksCount} chunks)`);
+        } catch (error) {
+          // Silently fail - bundle analysis is optional
+        }
+      }, 100);
+    },
+  }
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
   define: {
@@ -58,6 +148,7 @@ export default defineConfig({
   base: '/', // For root domain or custom domain, use '/' instead
   plugins: [
     injectVersionMeta(),
+    bundleSizeAnalyzer(),
     react(),
     VitePWA({
       registerType: 'autoUpdate',

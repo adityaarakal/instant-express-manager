@@ -38,7 +38,8 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { performanceMonitor, type PerformanceMetric } from '../../utils/performanceMonitoring';
+import { useState, useEffect } from 'react';
+import { performanceMonitor, type PerformanceMetric, getBundleInfo, type BundleInfo } from '../../utils/performanceMonitoring';
 
 /**
  * Props for PerformanceMetricsDialog component
@@ -124,6 +125,13 @@ export function PerformanceMetricsDialog({ open, onClose }: PerformanceMetricsDi
   const allMetrics = performanceMonitor.getMetrics();
   const webVitals = allMetrics.filter((m) => m.type === 'web-vital');
   const slowOperations = allMetrics.filter((m) => m.type === 'operation' && m.value > 100);
+  const [bundleInfo, setBundleInfo] = useState<BundleInfo | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      getBundleInfo().then(setBundleInfo).catch(() => setBundleInfo(null));
+    }
+  }, [open]);
 
   // Get latest Web Vital for each type
   const latestWebVitals: Record<string, PerformanceMetric> = {};
@@ -217,6 +225,68 @@ export function PerformanceMetricsDialog({ open, onClose }: PerformanceMetricsDi
                         </TableRow>
                       );
                     })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          )}
+
+          {/* Bundle Size Information */}
+          {bundleInfo && (
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Bundle Size
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                JavaScript bundle sizes from the last build. Helps identify large dependencies and optimize loading.
+              </Typography>
+              <Alert severity="info" sx={{ mb: 2 }}>
+                <AlertTitle>Bundle Summary</AlertTitle>
+                <Typography variant="body2">
+                  Total Size: <strong>{bundleInfo.totalSizeFormatted}</strong> ({bundleInfo.chunksCount} chunks)
+                </Typography>
+              </Alert>
+              <TableContainer component={Paper} variant="outlined">
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Chunk Name</TableCell>
+                      <TableCell align="right">Size</TableCell>
+                      <TableCell align="center">Type</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {bundleInfo.chunks.slice(0, 15).map((chunk) => (
+                      <TableRow key={chunk.name}>
+                        <TableCell>
+                          <Typography variant="body2" fontWeight="medium" sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
+                            {chunk.name}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body2" fontFamily="monospace">
+                            {chunk.sizeFormatted}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="center">
+                          <Chip
+                            label={chunk.type}
+                            size="small"
+                            variant="outlined"
+                            color={chunk.type === 'vendor' ? 'primary' : chunk.type === 'main' ? 'secondary' : 'default'}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {bundleInfo.chunks.length > 15 && (
+                      <TableRow>
+                        <TableCell colSpan={3}>
+                          <Typography variant="caption" color="text.secondary">
+                            ... and {bundleInfo.chunks.length - 15} more chunks
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -349,7 +419,8 @@ export function PerformanceMetricsDialog({ open, onClose }: PerformanceMetricsDi
           {/* Empty State */}
           {Object.keys(latestWebVitals).length === 0 &&
             Object.keys(operationMetrics).length === 0 &&
-            slowOperations.length === 0 && (
+            slowOperations.length === 0 &&
+            !bundleInfo && (
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <Typography variant="body1" color="text.secondary">
                   No performance metrics available yet.

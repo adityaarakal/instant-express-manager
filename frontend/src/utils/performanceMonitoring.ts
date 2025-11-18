@@ -331,22 +331,46 @@ export function trackWebVitals(): void {
 }
 
 /**
- * Get bundle size information (from build output)
+ * Bundle size information interface
  */
-export function getBundleInfo(): { 
-  estimatedSize?: string;
-  chunks?: number;
-} {
+export interface BundleInfo {
+  chunks: Array<{
+    name: string;
+    size: number;
+    sizeFormatted: string;
+    type: string;
+  }>;
+  totalSize: number;
+  totalSizeFormatted: string;
+  chunksCount: number;
+}
+
+/**
+ * Get bundle size information (from build output)
+ * Reads bundle-info.json generated at build time
+ */
+export async function getBundleInfo(): Promise<BundleInfo | null> {
   if (typeof window === 'undefined') {
-    return {};
+    return null;
   }
 
   try {
-    // This would need to be injected at build time
-    // For now, return empty - could be enhanced with build-time injection
-    return {};
+    // Fetch bundle info from public folder (generated at build time)
+    const response = await fetch('/bundle-info.json', {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+      },
+    });
+
+    if (response.ok) {
+      const bundleInfo: BundleInfo = await response.json();
+      return bundleInfo;
+    }
+    return null;
   } catch {
-    return {};
+    return null;
   }
 }
 
