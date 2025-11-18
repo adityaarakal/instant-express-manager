@@ -29,7 +29,8 @@ export function PWAUpdateNotification() {
                 await registration.update();
               }
             } catch (error) {
-              console.error('Error checking for updates:', error);
+              // Silently fail - PWA update check is non-critical
+              // Error handling is not critical for update checking
             }
           };
 
@@ -43,7 +44,7 @@ export function PWAUpdateNotification() {
         }
       } catch (error) {
         // PWA module not available (dev mode or PWA disabled)
-        console.log('PWA update notification not available in dev mode');
+        // Silently ignore - PWA features are only available in production
       }
     };
 

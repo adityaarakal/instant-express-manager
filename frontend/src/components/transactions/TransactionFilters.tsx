@@ -1,4 +1,4 @@
-import { useState, useMemo, forwardRef } from 'react';
+import { useState, useMemo, forwardRef, useCallback, useRef, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -9,33 +9,97 @@ import {
   TextField,
   Stack,
   Chip,
+  Menu,
+  Autocomplete,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Tooltip,
+  Typography,
 } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ClearIcon from '@mui/icons-material/Clear';
+import SaveIcon from '@mui/icons-material/Save';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
+import HistoryIcon from '@mui/icons-material/History';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
+import SearchIcon from '@mui/icons-material/Search';
 import type { BankAccount } from '../../types/bankAccounts';
 import type {
   IncomeTransaction,
   ExpenseTransaction,
   SavingsInvestmentTransaction,
 } from '../../types/transactions';
+import { useSavedFiltersStore } from '../../store/useSavedFiltersStore';
+import { useSearchHistoryStore } from '../../store/useSearchHistoryStore';
+import { useToastStore } from '../../store/useToastStore';
+import { AdvancedSearchDialog } from './AdvancedSearchDialog';
+
+/**
+ * Transaction Filters Component
+ * 
+ * Provides filtering and search functionality for transaction lists.
+ * Includes full-text search with debouncing, saved filters, search history, and advanced search dialog.
+ * Supports filtering by date range, account, category, status, and search term.
+ * 
+ * Features:
+ * - Full-text search across all transaction fields (300ms debounce)
+ * - Search history with autocomplete suggestions
+ * - Save/load/delete filter presets
+ * - Advanced search dialog for complex filter combinations
+ * - Visual filter chips showing active filters
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <TransactionFilters
+ *   ref={searchInputRef}
+ *   type="expense"
+ *   accounts={accounts}
+ *   onFilterChange={(filters) => setFilters(filters)}
+ * />
+ * ```
+ */
 
 type TabValue = 'income' | 'expense' | 'savings' | 'transfers';
 
+/**
+ * Props for TransactionFilters component
+ * @interface
+ */
 interface TransactionFiltersProps {
+  /** Type of transactions being filtered */
   type: TabValue;
+  /** List of bank accounts for account filter */
   accounts: BankAccount[];
+  /** Callback function called when filters change */
   onFilterChange: (filters: FilterState) => void;
 }
 
+/**
+ * Filter state for transactions
+ * Contains all filterable fields for transaction lists
+ * @interface
+ */
 export interface FilterState {
+  /** Start date for date range filter (ISO date string) */
   dateFrom: string;
+  /** End date for date range filter (ISO date string) */
   dateTo: string;
+  /** Selected account ID filter */
   accountId: string;
+  /** Selected category/type filter */
   category: string;
+  /** Selected status filter */
   status: string;
+  /** Search term for full-text search */
   searchTerm: string;
 }
 
+/** Default empty filter state */
 const defaultFilters: FilterState = {
   dateFrom: '',
   dateTo: '',
@@ -45,10 +109,62 @@ const defaultFilters: FilterState = {
   searchTerm: '',
 };
 
+/**
+ * TransactionFilters component
+ * Provides comprehensive filtering and search for transaction lists
+ * 
+ * @param props - TransactionFiltersProps
+ * @param searchInputRef - Ref to the search input element (for keyboard shortcuts)
+ * @returns Filter controls and search interface
+ */
 export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFiltersProps>(
   function TransactionFilters({ type, accounts, onFilterChange }, searchInputRef) {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
+  const [searchInputValue, setSearchInputValue] = useState<string>('');
   const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [saveFilterDialogOpen, setSaveFilterDialogOpen] = useState(false);
+  const [filterName, setFilterName] = useState('');
+  const [savedFiltersMenuAnchor, setSavedFiltersMenuAnchor] = useState<null | HTMLElement>(null);
+  const [advancedSearchDialogOpen, setAdvancedSearchDialogOpen] = useState(false);
+  const searchDebounceTimer = useRef<NodeJS.Timeout | null>(null);
+  
+  const { saveFilter, getFiltersByType, loadFilter, deleteFilter, updateFilterLastUsed, savedFilters } = useSavedFiltersStore();
+  const { addSearch, getHistoryByType, history } = useSearchHistoryStore();
+  const { showSuccess, showError } = useToastStore();
+  
+  const savedFiltersForType = useMemo(() => getFiltersByType(type), [type, getFiltersByType, savedFilters]);
+  const searchHistory = useMemo(() => getHistoryByType(type), [type, getHistoryByType, history]);
+
+  // Sync searchInputValue with filters.searchTerm
+  useEffect(() => {
+    setSearchInputValue(filters.searchTerm);
+  }, [filters.searchTerm]);
+
+  // Debounced search - update filter after user stops typing
+  useEffect(() => {
+    if (searchDebounceTimer.current) {
+      clearTimeout(searchDebounceTimer.current);
+    }
+
+    searchDebounceTimer.current = setTimeout(() => {
+      if (searchInputValue !== filters.searchTerm) {
+        const newFilters = { ...filters, searchTerm: searchInputValue };
+        setFilters(newFilters);
+        onFilterChange(newFilters);
+        
+        // Track search history when search term changes
+        if (searchInputValue.trim()) {
+          addSearch(type, searchInputValue);
+        }
+      }
+    }, 300); // 300ms debounce delay
+
+    return () => {
+      if (searchDebounceTimer.current) {
+        clearTimeout(searchDebounceTimer.current);
+      }
+    };
+  }, [searchInputValue, filters, onFilterChange, addSearch, type]); // Dependencies for debounced search
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -88,10 +204,53 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
     return active;
   }, [filters, accounts, type]);
 
-  const handleFilterChange = (key: keyof FilterState, value: string) => {
+  const handleFilterChange = useCallback((key: keyof FilterState, value: string) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     onFilterChange(newFilters);
+    
+    // Track search history when search term changes
+    if (key === 'searchTerm' && value.trim()) {
+      addSearch(type, value);
+    }
+  }, [filters, onFilterChange, addSearch, type]);
+  
+  const handleSaveFilter = () => {
+    if (!filterName.trim()) {
+      showError('Please enter a name for the filter');
+      return;
+    }
+    
+    if (activeFilterCount === 0) {
+      showError('Please apply at least one filter before saving');
+      return;
+    }
+    
+    saveFilter(filterName.trim(), type, filters);
+    setSaveFilterDialogOpen(false);
+    setFilterName('');
+    showSuccess(`Filter "${filterName.trim()}" saved successfully`);
+  };
+  
+  const handleLoadFilter = (filterId: string) => {
+    const savedFilter = loadFilter(filterId);
+    if (savedFilter) {
+      setFilters(savedFilter.filters);
+      onFilterChange(savedFilter.filters);
+      updateFilterLastUsed(filterId);
+      setSavedFiltersMenuAnchor(null);
+      showSuccess(`Filter "${savedFilter.name}" loaded`);
+    }
+  };
+  
+  const handleDeleteFilter = (e: React.MouseEvent, filterId: string) => {
+    e.stopPropagation();
+    deleteFilter(filterId);
+    showSuccess('Filter deleted');
+  };
+  
+  const handleSearchHistorySelect = (searchTerm: string) => {
+    handleFilterChange('searchTerm', searchTerm);
   };
 
   const handleClearFilters = () => {
@@ -144,14 +303,69 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
   return (
     <Box sx={{ mb: 2 }}>
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-        <TextField
-          inputRef={searchInputRef}
-          placeholder="Search by description..."
-          value={filters.searchTerm}
-          onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
+        <Autocomplete
+          freeSolo
+          options={searchHistory.map((entry) => entry.searchTerm)}
+          value={searchInputValue}
+          onInputChange={(_, newValue) => {
+            setSearchInputValue(newValue || '');
+          }}
+          onChange={(_, newValue) => {
+            if (typeof newValue === 'string') {
+              setSearchInputValue(newValue);
+              handleSearchHistorySelect(newValue);
+            }
+          }}
           size="small"
           sx={{ flex: 1 }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              inputRef={searchInputRef}
+              placeholder="Search across all fields..."
+              InputProps={{
+                ...params.InputProps,
+                startAdornment: searchHistory.length > 0 && searchInputValue ? (
+                  <HistoryIcon sx={{ ml: 1, mr: 0.5, color: 'text.secondary' }} fontSize="small" />
+                ) : undefined,
+              }}
+            />
+          )}
         />
+        <Tooltip title="Advanced Search">
+          <Button
+            variant="outlined"
+            startIcon={<SearchIcon />}
+            onClick={() => setAdvancedSearchDialogOpen(true)}
+            size="small"
+          >
+            Advanced
+          </Button>
+        </Tooltip>
+        <Tooltip title="Saved Filters">
+          <Button
+            variant={savedFiltersMenuAnchor ? 'contained' : 'outlined'}
+            startIcon={<BookmarkIcon />}
+            onClick={(e) => setSavedFiltersMenuAnchor(e.currentTarget)}
+            disabled={savedFiltersForType.length === 0}
+            size="small"
+          >
+            Saved ({savedFiltersForType.length})
+          </Button>
+        </Tooltip>
+        {activeFilterCount > 0 && (
+          <Tooltip title="Save Current Filters">
+            <Button
+              size="small"
+              onClick={() => setSaveFilterDialogOpen(true)}
+              startIcon={<SaveIcon />}
+              variant="outlined"
+              color="primary"
+            >
+              Save
+            </Button>
+          </Tooltip>
+        )}
         <Button
           variant={filtersExpanded ? 'contained' : 'outlined'}
           startIcon={<FilterListIcon />}
@@ -172,6 +386,103 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
           </Button>
         )}
       </Stack>
+      
+      {/* Advanced Search Dialog */}
+      <AdvancedSearchDialog
+        open={advancedSearchDialogOpen}
+        onClose={() => setAdvancedSearchDialogOpen(false)}
+        onApply={(newFilters) => {
+          setFilters(newFilters);
+          setSearchInputValue(newFilters.searchTerm);
+          onFilterChange(newFilters);
+        }}
+        accounts={accounts}
+        currentFilters={filters}
+        type={type}
+      />
+
+      {/* Saved Filters Menu */}
+      <Menu
+        anchorEl={savedFiltersMenuAnchor}
+        open={Boolean(savedFiltersMenuAnchor)}
+        onClose={() => setSavedFiltersMenuAnchor(null)}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+      >
+        {savedFiltersForType.length === 0 ? (
+          <MenuItem disabled>No saved filters for this type</MenuItem>
+        ) : (
+          savedFiltersForType.map((savedFilter) => (
+            <MenuItem
+              key={savedFilter.id}
+              onClick={() => handleLoadFilter(savedFilter.id)}
+              sx={{ minWidth: 300, justifyContent: 'space-between', pr: 1 }}
+            >
+              <Box>
+                <Box component="div">{savedFilter.name}</Box>
+                <Typography variant="caption" color="text.secondary">
+                  {new Date(savedFilter.lastUsedAt).toLocaleDateString()}
+                </Typography>
+              </Box>
+              <IconButton
+                size="small"
+                onClick={(e) => handleDeleteFilter(e, savedFilter.id)}
+                sx={{ ml: 1 }}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </MenuItem>
+          ))
+        )}
+      </Menu>
+      
+      {/* Save Filter Dialog */}
+      <Dialog open={saveFilterDialogOpen} onClose={() => setSaveFilterDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          Save Filter
+          <IconButton
+            aria-label="close"
+            onClick={() => setSaveFilterDialogOpen(false)}
+            sx={{ position: 'absolute', right: 8, top: 8 }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Filter Name"
+            fullWidth
+            variant="outlined"
+            value={filterName}
+            onChange={(e) => setFilterName(e.target.value)}
+            placeholder="e.g., Monthly Expenses, Pending Items"
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleSaveFilter();
+              }
+            }}
+          />
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="caption" color="text.secondary">
+              Current filters: {activeFilterCount} active
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSaveFilterDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleSaveFilter} variant="contained" disabled={!filterName.trim()}>
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Filter Chips */}
       {activeFilters.length > 0 && (

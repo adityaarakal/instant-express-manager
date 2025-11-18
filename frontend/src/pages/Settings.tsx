@@ -32,10 +32,15 @@ import { getUserFriendlyError } from '../utils/errorHandling';
 import { ThemeModeToggle } from '../components/layout/ThemeModeToggle';
 import { DataHealthCheck } from '../components/common/DataHealthCheck';
 import { ExportHistory } from '../components/common/ExportHistory';
+import { AccessibilityCheck } from '../components/common/AccessibilityCheck';
+import { SecurityCheck } from '../components/common/SecurityCheck';
+import { PerformanceMetricsDialog } from '../components/common/PerformanceMetricsDialog';
 import { downloadBackup, readBackupFile, importBackup, exportBackup } from '../utils/backupService';
 import { syncAccountBalancesFromTransactions, type SyncResult } from '../utils/balanceSync';
 import { clearAllData } from '../utils/clearAllData';
+import { performanceMonitor } from '../utils/performanceMonitoring';
 import SyncIcon from '@mui/icons-material/Sync';
+import SpeedIcon from '@mui/icons-material/Speed';
 import TableContainer from '@mui/material/TableContainer';
 import Table from '@mui/material/Table';
 import TableHead from '@mui/material/TableHead';
@@ -52,7 +57,7 @@ const CURRENCIES = [
 
 export function Settings() {
   const { settings, updateSettings, reset } = useSettingsStore();
-  const { showSuccess, showError } = useToastStore();
+  const { showSuccess, showError, showWarning, showInfo } = useToastStore();
   const [localSettings, setLocalSettings] = useState(settings);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importReplaceMode, setImportReplaceMode] = useState(false);
@@ -64,6 +69,7 @@ export function Settings() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [clearDataDialogOpen, setClearDataDialogOpen] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [performanceMetricsDialogOpen, setPerformanceMetricsDialogOpen] = useState(false);
   const [appVersion, setAppVersion] = useState<string>(
     (() => {
       // Try to read from meta tag first (for automatic updates)
@@ -190,12 +196,25 @@ export function Settings() {
 
     try {
       const backupData = await readBackupFile(backupFile);
-      importBackup(backupData, importReplaceMode);
-      showSuccess(
-        importReplaceMode
-          ? 'Backup imported successfully. All existing data has been replaced.'
-          : 'Backup imported successfully. Data has been merged with existing records.'
-      );
+      const importResult = importBackup(backupData, importReplaceMode);
+      
+      // Show warnings if any
+      if (importResult.warnings && importResult.warnings.length > 0) {
+        importResult.warnings.forEach((warning) => {
+          showWarning(warning);
+        });
+      }
+      
+      // Show success message
+      let successMessage = importReplaceMode
+        ? 'Backup imported successfully. All existing data has been replaced.'
+        : 'Backup imported successfully. Data has been merged with existing records.';
+      
+      if (importResult.migrated) {
+        successMessage += ` Data migrated from version ${importResult.backupVersion} to current version.`;
+      }
+      
+      showSuccess(successMessage);
       setImportDialogOpen(false);
       setBackupFile(null);
       setBackupInfo(null);
@@ -421,6 +440,75 @@ export function Settings() {
           <Stack spacing={2}>
             <Typography variant="h6">Data Health</Typography>
             <DataHealthCheck />
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Security</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Check security status including XSS protection, data sanitization, and secure context.
+            </Typography>
+            <SecurityCheck />
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Accessibility</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Check accessibility compliance including color contrast ratios and WCAG standards.
+            </Typography>
+            <AccessibilityCheck />
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Performance Monitoring</Typography>
+            <Typography variant="body2" color="text.secondary">
+              View performance metrics and operation timings. Monitoring is enabled automatically in production.
+            </Typography>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <AlertTitle>Performance Metrics</AlertTitle>
+              <Typography variant="body2">
+                Metrics are tracked locally and not sent to any server. This helps identify slow operations.
+              </Typography>
+            </Alert>
+            <Button
+              variant="outlined"
+              startIcon={<SpeedIcon />}
+              onClick={() => {
+                const metrics = performanceMonitor.getOperationMetrics();
+                const allMetrics = performanceMonitor.getMetrics();
+                
+                if (Object.keys(metrics).length === 0 && allMetrics.length === 0) {
+                  showInfo('No performance metrics available yet. Metrics are collected as you use the app.');
+                  return;
+                }
+                
+                // Open metrics dialog
+                setPerformanceMetricsDialogOpen(true);
+              }}
+              fullWidth
+            >
+              View Performance Metrics
+            </Button>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={performanceMonitor.getEnabled()}
+                  onChange={(e) => {
+                    performanceMonitor.setEnabled(e.target.checked);
+                    showSuccess(`Performance monitoring ${e.target.checked ? 'enabled' : 'disabled'}`);
+                  }}
+                />
+              }
+              label="Enable Performance Monitoring"
+            />
+            <Typography variant="caption" color="text.secondary">
+              When enabled, performance metrics are stored locally and can be viewed above.
+            </Typography>
           </Stack>
 
           <Divider />
@@ -718,6 +806,12 @@ export function Settings() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Performance Metrics Dialog */}
+      <PerformanceMetricsDialog
+        open={performanceMetricsDialogOpen}
+        onClose={() => setPerformanceMetricsDialogOpen(false)}
+      />
     </Stack>
   );
 }

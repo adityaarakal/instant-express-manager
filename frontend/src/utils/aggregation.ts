@@ -20,9 +20,18 @@ import { DEFAULT_BUCKETS } from '../config/plannedExpenses';
 
 /**
  * Aggregate transactions into a monthly view
+ * Filters transactions by month, calculates totals, and organizes by account and bucket
+ * @param monthId - Month identifier in format "YYYY-MM"
+ * @param accounts - List of bank accounts to aggregate
+ * @param incomeTransactions - All income transactions
+ * @param expenseTransactions - All expense transactions
+ * @param savingsTransactions - All savings/investment transactions
+ * @param fixedFactor - Fixed factor value for the month
+ * @param statusByBucket - Status mapping for each bucket (Pending/Paid)
+ * @returns Aggregated month data or null if monthId is invalid
  */
 export function aggregateMonth(
-  monthId: string, // Format: "YYYY-MM"
+  monthId: string,
   accounts: BankAccount[],
   incomeTransactions: IncomeTransaction[],
   expenseTransactions: ExpenseTransaction[],
@@ -128,7 +137,10 @@ export function aggregateMonth(
 }
 
 /**
- * Calculate bucket totals for a month
+ * Calculate bucket totals for a month by status (pending, paid, all)
+ * @param month - The aggregated month data
+ * @param expenseTransactions - All expense transactions to filter by month
+ * @returns Object containing pending, paid, and all totals for each bucket
  */
 export function calculateAggregatedBucketTotals(
   month: AggregatedMonth,
@@ -167,7 +179,12 @@ export function calculateAggregatedBucketTotals(
 
 /**
  * Get all available months from transactions
- * Returns months sorted in descending order (latest first) to prioritize current/recent months
+ * Extracts unique months from all transaction dates and sorts them in descending order
+ * (latest first) to prioritize current/recent months
+ * @param incomeTransactions - All income transactions
+ * @param expenseTransactions - All expense transactions
+ * @param savingsTransactions - All savings/investment transactions
+ * @returns Array of month IDs (format: "YYYY-MM") sorted latest first
  */
 export function getAvailableMonths(
   incomeTransactions: IncomeTransaction[],
@@ -188,7 +205,11 @@ export function getAvailableMonths(
 
 /**
  * Get the latest available month from transactions
- * Returns current month if available, otherwise the most recent month with transactions
+ * Returns current month if it has transactions, otherwise the most recent month with transactions
+ * @param incomeTransactions - All income transactions
+ * @param expenseTransactions - All expense transactions
+ * @param savingsTransactions - All savings/investment transactions
+ * @returns Latest available month ID (format: "YYYY-MM") or null if no transactions exist
  */
 export function getLatestAvailableMonth(
   incomeTransactions: IncomeTransaction[],

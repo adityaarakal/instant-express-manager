@@ -62,8 +62,7 @@ export const useBankAccountsStore = create<BankAccountsState>()(
           
           if (!amountValidation.isValid || !balanceValidation.isValid) {
             const allErrors = [...amountValidation.errors, ...balanceValidation.errors];
-            console.warn('Account validation errors:', allErrors);
-            // Still create the account but log warnings
+            // Errors are thrown below, so no need to log here
             if (allErrors.length > 0 && !allErrors.some(e => e.includes('negative'))) {
               throw new Error(allErrors.join(', '));
             }
@@ -105,8 +104,7 @@ export const useBankAccountsStore = create<BankAccountsState>()(
               
               if (!amountValidation.isValid || !balanceValidation.isValid) {
                 const allErrors = [...amountValidation.errors, ...balanceValidation.errors];
-                console.warn('Account update validation errors:', allErrors);
-                // Still update but log warnings
+                // Errors are thrown below, so no need to log here
                 if (allErrors.length > 0 && !allErrors.some(e => e.includes('negative'))) {
                   throw new Error(allErrors.join(', '));
                 }
@@ -182,8 +180,7 @@ export const useBankAccountsStore = create<BankAccountsState>()(
             
             if (!amountValidation.isValid || !balanceValidation.isValid) {
               const allErrors = [...amountValidation.errors, ...balanceValidation.errors];
-              console.warn('Balance update validation errors:', allErrors);
-              // Still update but log warnings
+              // Errors are thrown below, so no need to log here
               if (allErrors.length > 0 && !allErrors.some(e => e.includes('negative'))) {
                 throw new Error(allErrors.join(', '));
               }

@@ -3,6 +3,7 @@
  */
 
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
+import { useToastStore } from '../store/useToastStore';
 import type { TransferTransaction } from '../types/transactions';
 
 /**
@@ -14,13 +15,8 @@ export function updateAccountBalancesForTransfer(transfer: TransferTransaction):
   const fromAccount = bankAccountsStore.getAccount(transfer.fromAccountId);
   const toAccount = bankAccountsStore.getAccount(transfer.toAccountId);
 
-  if (!fromAccount) {
-    console.warn(`From account with id ${transfer.fromAccountId} not found`);
-    return;
-  }
-
-  if (!toAccount) {
-    console.warn(`To account with id ${transfer.toAccountId} not found`);
+  if (!fromAccount || !toAccount) {
+    // Account not found - return silently (should not happen with proper validation)
     return;
   }
 
@@ -31,11 +27,13 @@ export function updateAccountBalancesForTransfer(transfer: TransferTransaction):
     
     // Validate from account balance (only for non-credit accounts)
     if (fromAccount.accountType !== 'CreditCard' && newFromBalance < 0) {
-      console.warn(
-        `Transfer would result in negative balance for account ${fromAccount.name}. ` +
-        `Current balance: ${fromAccount.currentBalance}, Transfer amount: ${transfer.amount}, New balance: ${newFromBalance}`
+      // Show warning toast to user about negative balance
+      useToastStore.getState().showWarning(
+        `Warning: Transfer will result in negative balance for account "${fromAccount.name}" ` +
+        `(₹${newFromBalance.toFixed(2)}). Please adjust the account balance if needed.`,
+        6000
       );
-      // Still update but log warning - user can manually adjust if needed
+      // Still update but warn user - user can manually adjust if needed
     }
 
     // To account: increase balance
@@ -56,7 +54,7 @@ export function reverseAccountBalancesForTransfer(transfer: TransferTransaction)
   const toAccount = bankAccountsStore.getAccount(transfer.toAccountId);
 
   if (!fromAccount || !toAccount) {
-    console.warn(`Account not found for transfer reversal`);
+    // Account not found - return silently (should not happen with proper validation)
     return;
   }
 

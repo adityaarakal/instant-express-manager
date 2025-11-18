@@ -76,15 +76,8 @@ export const useTransferTransactionsStore = create<TransferTransactionsState>()(
 
           // Optional: Warn if from account has insufficient balance (for non-credit accounts)
           // After the CreditCard check above, accountType can only be 'Savings' | 'Current' | 'Wallet'
-          if (
-            transferData.status === 'Completed' &&
-            fromAccount.currentBalance < transferData.amount
-          ) {
-            console.warn(
-              `Transfer amount (${transferData.amount}) exceeds from account balance (${fromAccount.currentBalance})`
-            );
-            // Still allow - user might want to record future transfers or have pending deposits
-          }
+          // Note: Warning is shown via toast in transferBalanceUpdates utility if balance goes negative
+          // Still allow - user might want to record future transfers or have pending deposits
 
           const now = new Date().toISOString();
           const newTransfer: TransferTransaction = {

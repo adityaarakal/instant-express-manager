@@ -38,6 +38,12 @@ yarn-error.log*
 coverage/
 .nyc_output/
 
+# Test output files
+*.pdf
+*.xlsx
+*.csv
+test.xlsx
+
 # PWA
 **/service-worker.js
 **/sw.js
