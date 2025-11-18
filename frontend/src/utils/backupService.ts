@@ -27,14 +27,33 @@ export interface BackupData {
   };
 }
 
-const BACKUP_VERSION = '1.0.0';
+/**
+ * Get current app version
+ * Uses __APP_VERSION__ from vite.config.ts (injected at build time)
+ * Falls back to reading from package.json or default version
+ */
+function getAppVersion(): string {
+  // Try to get version from Vite-injected constant
+  if (typeof __APP_VERSION__ !== 'undefined') {
+    return __APP_VERSION__;
+  }
+  
+  // Fallback: try to get from version.json (for production)
+  try {
+    // In browser, we can't read package.json directly
+    // Use a default or fetch from version.json endpoint
+    return '1.0.0'; // Default fallback
+  } catch {
+    return '1.0.0'; // Final fallback
+  }
+}
 
 /**
  * Exports all application data to a JSON backup
  */
 export function exportBackup(): BackupData {
   const backup: BackupData = {
-    version: BACKUP_VERSION,
+    version: getAppVersion(),
     timestamp: new Date().toISOString(),
     data: {
       banks: useBanksStore.getState().banks,
@@ -131,10 +150,49 @@ export function validateBackup(data: unknown): data is BackupData {
  * Imports backup data into all stores
  * @param backupData The backup data to import
  * @param replaceExisting If true, replaces all existing data. If false, merges with existing data.
+ * @returns Object with import status and migration info
  */
-export function importBackup(backupData: BackupData, replaceExisting: boolean = false): void {
+export function importBackup(
+  backupData: BackupData,
+  replaceExisting: boolean = false
+): { success: boolean; migrated: boolean; backupVersion: string; warnings?: string[] } {
   if (!validateBackup(backupData)) {
     throw new Error('Invalid backup file format');
+  }
+
+  const warnings: string[] = [];
+  
+  // Check if backup version is older than current app version
+  const currentVersion = getAppVersion();
+  const backupVersion = backupData.version;
+  
+  // Compare versions (simple semantic version comparison)
+  const compareVersions = (v1: string, v2: string): number => {
+    const parts1 = v1.split('.').map(Number);
+    const parts2 = v2.split('.').map(Number);
+    for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+      const part1 = parts1[i] || 0;
+      const part2 = parts2[i] || 0;
+      if (part1 > part2) return 1;
+      if (part1 < part2) return -1;
+    }
+    return 0;
+  };
+
+  const versionComparison = compareVersions(backupVersion, currentVersion);
+  
+  if (versionComparison < 0) {
+    // Backup is from an older version
+    warnings.push(
+      `Backup was created with version ${backupVersion}, current app version is ${currentVersion}. ` +
+      `Data will be imported and may be migrated automatically.`
+    );
+  } else if (versionComparison > 0) {
+    // Backup is from a newer version (unusual)
+    warnings.push(
+      `Warning: Backup was created with version ${backupVersion}, which is newer than current app version ${currentVersion}. ` +
+      `Some features may not work correctly. Consider updating the app.`
+    );
   }
 
   if (replaceExisting) {
@@ -229,6 +287,18 @@ export function importBackup(backupData: BackupData, replaceExisting: boolean = 
     useRecurringExpensesStore.setState({ templates: mergedRecurringExpenses });
     useRecurringSavingsInvestmentsStore.setState({ templates: mergedRecurringSavings });
   }
+
+  // After import, update schema version to current
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { useSchemaVersionStore } = require('../store/useSchemaVersionStore');
+  useSchemaVersionStore.getState().setSchemaVersion(currentVersion);
+
+  return {
+    success: true,
+    migrated: versionComparison < 0,
+    backupVersion,
+    warnings: warnings.length > 0 ? warnings : undefined,
+  };
 }
 
 /**

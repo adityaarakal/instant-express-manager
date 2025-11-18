@@ -52,7 +52,7 @@ const CURRENCIES = [
 
 export function Settings() {
   const { settings, updateSettings, reset } = useSettingsStore();
-  const { showSuccess, showError } = useToastStore();
+  const { showSuccess, showError, showWarning } = useToastStore();
   const [localSettings, setLocalSettings] = useState(settings);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importReplaceMode, setImportReplaceMode] = useState(false);
@@ -190,12 +190,25 @@ export function Settings() {
 
     try {
       const backupData = await readBackupFile(backupFile);
-      importBackup(backupData, importReplaceMode);
-      showSuccess(
-        importReplaceMode
-          ? 'Backup imported successfully. All existing data has been replaced.'
-          : 'Backup imported successfully. Data has been merged with existing records.'
-      );
+      const importResult = importBackup(backupData, importReplaceMode);
+      
+      // Show warnings if any
+      if (importResult.warnings && importResult.warnings.length > 0) {
+        importResult.warnings.forEach((warning) => {
+          showWarning(warning);
+        });
+      }
+      
+      // Show success message
+      let successMessage = importReplaceMode
+        ? 'Backup imported successfully. All existing data has been replaced.'
+        : 'Backup imported successfully. Data has been merged with existing records.';
+      
+      if (importResult.migrated) {
+        successMessage += ` Data migrated from version ${importResult.backupVersion} to current version.`;
+      }
+      
+      showSuccess(successMessage);
       setImportDialogOpen(false);
       setBackupFile(null);
       setBackupInfo(null);
