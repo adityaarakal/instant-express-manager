@@ -37,6 +37,12 @@ import { SecurityCheck } from '../components/common/SecurityCheck';
 import { PerformanceMetricsDialog } from '../components/common/PerformanceMetricsDialog';
 import { StorageMonitoring } from '../components/common/StorageMonitoring';
 import { ErrorTrackingDialog } from '../components/common/ErrorTrackingDialog';
+import {
+  enableAnalytics,
+  disableAnalytics,
+  updateAnalyticsConfig,
+  getAnalyticsConfig,
+} from '../utils/analytics';
 import { downloadBackup, readBackupFile, importBackup, exportBackup } from '../utils/backupService';
 import { syncAccountBalancesFromTransactions, type SyncResult } from '../utils/balanceSync';
 import { clearAllData } from '../utils/clearAllData';
@@ -74,6 +80,22 @@ export function Settings() {
   const [isClearing, setIsClearing] = useState(false);
   const [performanceMetricsDialogOpen, setPerformanceMetricsDialogOpen] = useState(false);
   const [errorTrackingDialogOpen, setErrorTrackingDialogOpen] = useState(false);
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
+  const [analyticsProvider, setAnalyticsProvider] = useState<'plausible' | 'google-analytics' | null>(null);
+  const [plausibleDomain, setPlausibleDomain] = useState('');
+  const [gaMeasurementId, setGaMeasurementId] = useState('');
+
+  // Load analytics config on mount
+  useEffect(() => {
+    getAnalyticsConfig().then((config) => {
+      setAnalyticsEnabled(config.enabled && config.userConsent);
+      setAnalyticsProvider(
+        config.provider === 'plausible' || config.provider === 'google-analytics' ? config.provider : null
+      );
+      setPlausibleDomain(config.providerConfig?.domain || '');
+      setGaMeasurementId(config.providerConfig?.measurementId || '');
+    });
+  }, []);
   const [appVersion, setAppVersion] = useState<string>(
     (() => {
       // Try to read from meta tag first (for automatic updates)
@@ -550,6 +572,131 @@ export function Settings() {
             </Button>
             <Typography variant="caption" color="text.secondary">
               View stored error logs and clear them if needed. Errors help identify and fix issues.
+            </Typography>
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Analytics</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Optional privacy-friendly analytics to understand how the app is used. Analytics are disabled by default and only enabled when you explicitly configure them.
+            </Typography>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <AlertTitle>Privacy First</AlertTitle>
+              <Typography variant="body2">
+                Analytics are <strong>disabled by default</strong>. No data is tracked or sent to external services
+                unless you explicitly enable and configure analytics. We recommend Plausible for privacy-friendly analytics
+                (GDPR compliant, no cookies, open-source).
+              </Typography>
+            </Alert>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={analyticsEnabled}
+                  onChange={(e) => {
+                    const enabled = e.target.checked;
+                    setAnalyticsEnabled(enabled);
+                    
+                    if (enabled) {
+                      // Validate provider configuration
+                      if (!analyticsProvider) {
+                        showWarning('Please select an analytics provider first.');
+                        setAnalyticsEnabled(false);
+                        return;
+                      }
+                      
+                      if (analyticsProvider === 'plausible' && !plausibleDomain) {
+                        showWarning('Please enter a Plausible domain.');
+                        setAnalyticsEnabled(false);
+                        return;
+                      }
+                      
+                      if (analyticsProvider === 'google-analytics' && !gaMeasurementId) {
+                        showWarning('Please enter a Google Analytics Measurement ID.');
+                        setAnalyticsEnabled(false);
+                        return;
+                      }
+                      
+                      // Enable analytics
+                      updateAnalyticsConfig({
+                        enabled: true,
+                        provider: analyticsProvider,
+                        providerConfig: analyticsProvider === 'plausible'
+                          ? { domain: plausibleDomain }
+                          : { measurementId: gaMeasurementId },
+                        trackPageViews: true,
+                        userConsent: true,
+                      }).then(() => {
+                        enableAnalytics(true).then(() => {
+                          showSuccess('Analytics enabled. Page views and events will be tracked.');
+                        });
+                      });
+                    } else {
+                      disableAnalytics().then(() => {
+                        showSuccess('Analytics disabled. No data will be tracked.');
+                      });
+                    }
+                  }}
+                />
+              }
+              label="Enable Analytics"
+            />
+            <FormControl fullWidth disabled={analyticsEnabled}>
+              <InputLabel>Analytics Provider</InputLabel>
+              <Select
+                value={analyticsProvider || ''}
+                label="Analytics Provider"
+                onChange={(e) => {
+                  const provider = e.target.value as 'plausible' | 'google-analytics' | '';
+                  setAnalyticsProvider(provider === '' ? null : provider);
+                  
+                  // Clear configuration when changing provider
+                  setPlausibleDomain('');
+                  setGaMeasurementId('');
+                }}
+              >
+                <MenuItem value="">None (Disabled)</MenuItem>
+                <MenuItem value="plausible">Plausible (Privacy-friendly, recommended)</MenuItem>
+                <MenuItem value="google-analytics">Google Analytics 4</MenuItem>
+              </Select>
+            </FormControl>
+            {analyticsProvider === 'plausible' && (
+              <TextField
+                label="Plausible Domain"
+                value={plausibleDomain}
+                onChange={(e) => setPlausibleDomain(e.target.value)}
+                placeholder="yourdomain.com"
+                disabled={analyticsEnabled}
+                helperText="Enter your Plausible Analytics domain"
+                fullWidth
+              />
+            )}
+            {analyticsProvider === 'google-analytics' && (
+              <TextField
+                label="Google Analytics Measurement ID"
+                value={gaMeasurementId}
+                onChange={(e) => setGaMeasurementId(e.target.value)}
+                placeholder="G-XXXXXXXXXX"
+                disabled={analyticsEnabled}
+                helperText="Enter your Google Analytics 4 Measurement ID"
+                fullWidth
+              />
+            )}
+            {analyticsEnabled && (
+              <Alert severity="success">
+                <AlertTitle>Analytics Active</AlertTitle>
+                <Typography variant="body2">
+                  Analytics is enabled and tracking page views and events. You can disable it at any time.
+                </Typography>
+              </Alert>
+            )}
+            <Typography variant="caption" color="text.secondary">
+              {analyticsProvider === 'plausible'
+                ? 'Plausible is a privacy-friendly analytics tool that is GDPR compliant, does not use cookies, and is open-source.'
+                : analyticsProvider === 'google-analytics'
+                ? 'Google Analytics 4 tracks page views and events. IP addresses are anonymized for privacy.'
+                : 'Analytics are disabled. No data is tracked or sent to external services.'}
             </Typography>
           </Stack>
 
