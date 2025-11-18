@@ -35,6 +35,7 @@ import { ExportHistory } from '../components/common/ExportHistory';
 import { AccessibilityCheck } from '../components/common/AccessibilityCheck';
 import { SecurityCheck } from '../components/common/SecurityCheck';
 import { PerformanceMetricsDialog } from '../components/common/PerformanceMetricsDialog';
+import { StorageMonitoring } from '../components/common/StorageMonitoring';
 import { downloadBackup, readBackupFile, importBackup, exportBackup } from '../utils/backupService';
 import { syncAccountBalancesFromTransactions, type SyncResult } from '../utils/balanceSync';
 import { clearAllData } from '../utils/clearAllData';
@@ -509,6 +510,16 @@ export function Settings() {
             <Typography variant="caption" color="text.secondary">
               When enabled, performance metrics are stored locally and can be viewed above.
             </Typography>
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Storage Usage</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Monitor IndexedDB storage quota and usage. Warnings will appear when storage is getting full.
+            </Typography>
+            <StorageMonitoring />
           </Stack>
 
           <Divider />
