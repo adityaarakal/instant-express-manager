@@ -32,6 +32,7 @@ import { getUserFriendlyError } from '../utils/errorHandling';
 import { ThemeModeToggle } from '../components/layout/ThemeModeToggle';
 import { DataHealthCheck } from '../components/common/DataHealthCheck';
 import { ExportHistory } from '../components/common/ExportHistory';
+import { AccessibilityCheck } from '../components/common/AccessibilityCheck';
 import { downloadBackup, readBackupFile, importBackup, exportBackup } from '../utils/backupService';
 import { syncAccountBalancesFromTransactions, type SyncResult } from '../utils/balanceSync';
 import { clearAllData } from '../utils/clearAllData';
@@ -436,6 +437,16 @@ export function Settings() {
           <Stack spacing={2}>
             <Typography variant="h6">Data Health</Typography>
             <DataHealthCheck />
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Accessibility</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Check accessibility compliance including color contrast ratios and WCAG standards.
+            </Typography>
+            <AccessibilityCheck />
           </Stack>
 
           <Divider />

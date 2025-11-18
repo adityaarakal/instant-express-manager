@@ -11,6 +11,17 @@ import { trackWebVitals } from './utils/performanceMonitoring';
 // Zustand persist middleware rehydration and cause data loss
 const isDevelopment = import.meta.env.DEV;
 
+// Initialize accessibility testing in development
+if (isDevelopment && typeof window !== 'undefined') {
+  import('@axe-core/react').then((axe) => {
+    // Initialize axe-core with default configuration
+    // Color contrast is checked manually via AccessibilityCheck component in Settings
+    axe.default(React, ReactDOM, 1000);
+  }).catch(() => {
+    // Silently fail if axe-core is not available
+  });
+}
+
 // Initialize performance monitoring
 trackWebVitals();
 
