@@ -18,7 +18,12 @@
     "version:set": "bash scripts/version-utils.sh && bash -c 'set_version $1' _",
     "version:major": "bash scripts/bump-version.sh major",
     "version:minor": "bash scripts/bump-version.sh minor",
-    "version:patch": "bash scripts/bump-version.sh patch"
+    "version:patch": "bash scripts/bump-version.sh patch",
+    "test:all": "bash scripts/run-all-tests.sh",
+    "test:e2e": "cd frontend && npm run test:e2e",
+    "test:e2e:browsers": "cd frontend && npm run test:e2e -- --project=chromium --project=firefox --project=webkit",
+    "lighthouse": "cd frontend && npm run lighthouse",
+    "test:deployment": "bash scripts/test-deployment.sh"
   },
   "keywords": [
     "react",
