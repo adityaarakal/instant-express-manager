@@ -37,12 +37,16 @@ import { SecurityCheck } from '../components/common/SecurityCheck';
 import { PerformanceMetricsDialog } from '../components/common/PerformanceMetricsDialog';
 import { StorageMonitoring } from '../components/common/StorageMonitoring';
 import { ErrorTrackingDialog } from '../components/common/ErrorTrackingDialog';
+import { StorageCleanupDialog } from '../components/common/StorageCleanupDialog';
 import {
   enableAnalytics,
   disableAnalytics,
   updateAnalyticsConfig,
   getAnalyticsConfig,
 } from '../utils/analytics';
+import {
+  getStorageStatistics,
+} from '../utils/storageCleanup';
 import { downloadBackup, readBackupFile, importBackup, exportBackup } from '../utils/backupService';
 import { syncAccountBalancesFromTransactions, type SyncResult } from '../utils/balanceSync';
 import { clearAllData } from '../utils/clearAllData';
@@ -50,6 +54,7 @@ import { performanceMonitor } from '../utils/performanceMonitoring';
 import SyncIcon from '@mui/icons-material/Sync';
 import SpeedIcon from '@mui/icons-material/Speed';
 import BugReportIcon from '@mui/icons-material/BugReport';
+import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import TableContainer from '@mui/material/TableContainer';
 import Table from '@mui/material/Table';
 import TableHead from '@mui/material/TableHead';
@@ -84,6 +89,14 @@ export function Settings() {
   const [analyticsProvider, setAnalyticsProvider] = useState<'plausible' | 'google-analytics' | null>(null);
   const [plausibleDomain, setPlausibleDomain] = useState('');
   const [gaMeasurementId, setGaMeasurementId] = useState('');
+  const [cleanupDialogOpen, setCleanupDialogOpen] = useState(false);
+  const [storageStats, setStorageStats] = useState<{
+    transactions: number;
+    emis: number;
+    recurringTemplates: number;
+    undoItems: number;
+    exportHistoryItems: number;
+  } | null>(null);
 
   // Load analytics config on mount
   useEffect(() => {
@@ -96,6 +109,15 @@ export function Settings() {
       setGaMeasurementId(config.providerConfig?.measurementId || '');
     });
   }, []);
+
+  // Load storage statistics
+  useEffect(() => {
+    getStorageStatistics()
+      .then(setStorageStats)
+      .catch((error) => {
+        console.error('Failed to load storage statistics:', error);
+      });
+  }, [cleanupDialogOpen]);
   const [appVersion, setAppVersion] = useState<string>(
     (() => {
       // Try to read from meta tag first (for automatic updates)
@@ -545,6 +567,40 @@ export function Settings() {
               Monitor IndexedDB storage quota and usage. Warnings will appear when storage is getting full.
             </Typography>
             <StorageMonitoring />
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Storage Cleanup</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Clean up old data to free up storage space and improve app performance. Configure cleanup options to automatically manage your data.
+            </Typography>
+            {storageStats && (
+              <Alert severity="info" sx={{ mb: 2 }}>
+                <AlertTitle>Current Storage Statistics</AlertTitle>
+                <Typography variant="body2">
+                  Transactions: {storageStats.transactions} | EMIs: {storageStats.emis} | Recurring Templates: {storageStats.recurringTemplates} | Undo Items: {storageStats.undoItems} | Export History: {storageStats.exportHistoryItems}
+                </Typography>
+              </Alert>
+            )}
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              <AlertTitle>Warning</AlertTitle>
+              <Typography variant="body2">
+                Storage cleanup is irreversible. Make sure to export a backup before cleaning up data. Deleted data cannot be recovered.
+              </Typography>
+            </Alert>
+            <Button
+              variant="outlined"
+              startIcon={<DeleteSweepIcon />}
+              onClick={() => setCleanupDialogOpen(true)}
+              fullWidth
+            >
+              Configure Storage Cleanup
+            </Button>
+            <Typography variant="caption" color="text.secondary">
+              Configure and run storage cleanup to remove old data and optimize storage usage.
+            </Typography>
           </Stack>
 
           <Divider />
@@ -1006,6 +1062,12 @@ export function Settings() {
       <ErrorTrackingDialog
         open={errorTrackingDialogOpen}
         onClose={() => setErrorTrackingDialogOpen(false)}
+      />
+
+      {/* Storage Cleanup Dialog */}
+      <StorageCleanupDialog
+        open={cleanupDialogOpen}
+        onClose={() => setCleanupDialogOpen(false)}
       />
     </Stack>
   );
