@@ -33,7 +33,12 @@ function calculateNextDueDateFromEMI(emi: ExpenseEMI | SavingsInvestmentEMI): st
 }
 
 /**
- * Calculate total installments from start and end dates
+ * Calculate total installments from start and end dates based on frequency
+ * Handles monthly, quarterly, weekly, and yearly frequencies
+ * @param startDate - Start date (ISO string format)
+ * @param endDate - End date (ISO string format)
+ * @param frequency - Frequency of installments ('Monthly', 'Quarterly', 'Weekly', 'Yearly', or 'Custom')
+ * @returns Total number of installments (minimum 1)
  */
 function calculateTotalInstallments(
   startDate: string,
