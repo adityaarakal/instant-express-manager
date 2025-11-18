@@ -1,13 +1,16 @@
 {
   "name": "instant-express-manager-frontend",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "test": "vitest"
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
@@ -39,6 +42,7 @@
   },
   "devDependencies": {
     "@axe-core/react": "^4.11.0",
+    "@playwright/test": "^1.56.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -54,6 +58,7 @@
     "eslint-plugin-react-refresh": "^0.4.5",
     "husky": "^9.1.7",
     "jsdom": "^27.2.0",
+    "playwright": "^1.56.1",
     "typescript": "^5.2.2",
     "vite": "^5.0.8",
     "vite-plugin-pwa": "^0.17.4",
