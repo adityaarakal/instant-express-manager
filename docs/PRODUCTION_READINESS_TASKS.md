@@ -208,10 +208,15 @@ This document tracks high-priority tasks required to ensure the application is p
   - [ ] Warn when approaching limit
   - [ ] Document storage optimization strategies
 
-- [ ] **Task 3.5.2**: Implement storage cleanup if needed
-  - [ ] Add option to clear old data
-  - [ ] Implement data retention policies
-  - [ ] Optimize storage usage
+- [x] **Task 3.5.2**: Implement storage cleanup if needed
+  - [x] ✅ **Storage cleanup utility created** (`storageCleanup.ts`)
+  - [x] ✅ **Data retention policies** (delete old transactions, completed EMIs by date)
+  - [x] ✅ **Expired recurring templates deletion** (templates with endDate in past)
+  - [x] ✅ **Undo history limits** (max items, oldest deleted first)
+  - [x] ✅ **Export history limits** (max items, oldest deleted first)
+  - [x] ✅ **Storage statistics** (counts of all data types)
+  - [x] ✅ **StorageCleanupDialog component** (configuration UI, cleanup results)
+  - [x] ✅ **Integrated into Settings page** (statistics display, cleanup button)
 
 ---
 
@@ -219,15 +224,15 @@ This document tracks high-priority tasks required to ensure the application is p
 
 ### Overall Progress
 - **Total Tasks**: 31
-- **Completed**: 8
+- **Completed**: 9
 - **In Progress**: 1 (Task 1.1.1 - Testing checklist created, waiting for deployment)
-- **Pending**: 22
+- **Pending**: 21
 
 ### By Category
 - **Production Deployment Verification**: 1/14 completed
   - ✅ Task 1.1.1: Testing checklist and scripts created (ready for deployment testing)
 - **User Acceptance Testing**: 0/6 completed
-- **Performance Monitoring**: 7/11 completed
+- **Performance Monitoring**: 8/11 completed
   - ✅ Task 3.1.1: Lighthouse audit setup (completed - configuration, scripts, CI workflow)
   - ✅ Task 3.1.2: Performance optimization (completed - lazy loading, bundle size reduction)
   - ✅ Task 3.2.1: Bundle size monitoring (already implemented, verified)
@@ -235,6 +240,7 @@ This document tracks high-priority tasks required to ensure the application is p
   - ✅ Task 3.3.2: Production-safe error logging (completed - sanitization, local storage, Settings UI)
   - ✅ Task 3.4.1: Analytics integration (completed - privacy-friendly, Plausible/GA4 support)
   - ✅ Task 3.5.1: IndexedDB storage monitoring (completed)
+  - ✅ Task 3.5.2: Storage cleanup strategies (completed - cleanup utility, retention policies, Settings UI)
 
 ---
 
