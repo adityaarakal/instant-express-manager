@@ -4,6 +4,7 @@
  */
 
 import { useSchemaVersionStore, CURRENT_SCHEMA_VERSION } from '../store/useSchemaVersionStore';
+import { performanceMonitor } from './performanceMonitoring';
 
 export interface MigrationResult {
   success: boolean;
@@ -35,53 +36,66 @@ function compareVersions(v1: string, v2: string): number {
  * Currently handles simple version updates (future: add actual schema migrations)
  */
 export async function migrateData(): Promise<MigrationResult> {
-  const schemaVersionStore = useSchemaVersionStore.getState();
-  const currentStoredVersion = schemaVersionStore.schemaVersion;
-  const targetVersion = CURRENT_SCHEMA_VERSION;
+  return performanceMonitor.trackOperationAsync('migrateData', async () => {
+    const schemaVersionStore = useSchemaVersionStore.getState();
+    const currentStoredVersion = schemaVersionStore.schemaVersion;
+    const targetVersion = CURRENT_SCHEMA_VERSION;
 
-  // If versions match, no migration needed
-  if (currentStoredVersion === targetVersion) {
-    return {
-      success: true,
-      migrated: false,
-      fromVersion: currentStoredVersion,
-      toVersion: targetVersion,
-    };
-  }
-
-  const errors: string[] = [];
-
-  try {
-    // Check if stored version is older than current
-    if (compareVersions(currentStoredVersion, targetVersion) < 0) {
-      // Need to migrate from older version to newer
-      
-      // For now, we just update the schema version
-      // In the future, add actual migration logic here based on version differences
-      // Example:
-      // if (compareVersions(currentStoredVersion, '1.1.0') < 0) {
-      //   await migrateTo1_1_0();
-      // }
-      // if (compareVersions(currentStoredVersion, '1.2.0') < 0) {
-      //   await migrateTo1_2_0();
-      // }
-
-      // Update schema version to current
-      schemaVersionStore.setSchemaVersion(targetVersion);
-
+    // If versions match, no migration needed
+    if (currentStoredVersion === targetVersion) {
       return {
         success: true,
-        migrated: true,
+        migrated: false,
         fromVersion: currentStoredVersion,
         toVersion: targetVersion,
       };
-    } else {
-      // Stored version is newer than current (shouldn't happen in normal flow)
-      // This could happen if user downgrades the app
-      errors.push(
-        `Stored data version (${currentStoredVersion}) is newer than app version (${targetVersion}). ` +
-        `Some features may not work correctly.`
-      );
+    }
+
+    const errors: string[] = [];
+
+    try {
+      // Check if stored version is older than current
+      if (compareVersions(currentStoredVersion, targetVersion) < 0) {
+        // Need to migrate from older version to newer
+        
+        // For now, we just update the schema version
+        // In the future, add actual migration logic here based on version differences
+        // Example:
+        // if (compareVersions(currentStoredVersion, '1.1.0') < 0) {
+        //   await migrateTo1_1_0();
+        // }
+        // if (compareVersions(currentStoredVersion, '1.2.0') < 0) {
+        //   await migrateTo1_2_0();
+        // }
+
+        // Update schema version to current
+        schemaVersionStore.setSchemaVersion(targetVersion);
+
+        return {
+          success: true,
+          migrated: true,
+          fromVersion: currentStoredVersion,
+          toVersion: targetVersion,
+        };
+      } else {
+        // Stored version is newer than current (shouldn't happen in normal flow)
+        // This could happen if user downgrades the app
+        errors.push(
+          `Stored data version (${currentStoredVersion}) is newer than app version (${targetVersion}). ` +
+          `Some features may not work correctly.`
+        );
+
+        return {
+          success: false,
+          migrated: false,
+          fromVersion: currentStoredVersion,
+          toVersion: targetVersion,
+          errors,
+        };
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown migration error';
+      errors.push(`Migration failed: ${errorMessage}`);
 
       return {
         success: false,
@@ -91,18 +105,7 @@ export async function migrateData(): Promise<MigrationResult> {
         errors,
       };
     }
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown migration error';
-    errors.push(`Migration failed: ${errorMessage}`);
-
-    return {
-      success: false,
-      migrated: false,
-      fromVersion: currentStoredVersion,
-      toVersion: targetVersion,
-      errors,
-    };
-  }
+  });
 }
 
 /**
@@ -122,7 +125,8 @@ export function initializeSchemaVersion(): void {
  * Checks for common data inconsistencies
  */
 export function validateDataIntegrity(): { isValid: boolean; errors: string[] } {
-  const errors: string[] = [];
+  return performanceMonitor.trackOperation('validateDataIntegrity', () => {
+    const errors: string[] = [];
 
   try {
     // Import stores dynamically to avoid circular dependencies
@@ -175,14 +179,15 @@ export function validateDataIntegrity(): { isValid: boolean; errors: string[] } 
     });
 
     // Additional validations can be added here
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown validation error';
-    errors.push(`Data validation error: ${errorMessage}`);
-  }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown validation error';
+      errors.push(`Data validation error: ${errorMessage}`);
+    }
 
-  return {
-    isValid: errors.length === 0,
-    errors,
-  };
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  });
 }
 

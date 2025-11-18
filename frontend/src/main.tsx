@@ -4,11 +4,15 @@ import { BrowserRouter } from 'react-router-dom';
 
 import App from './App';
 import './index.css';
+import { trackWebVitals } from './utils/performanceMonitoring';
 
 // Conditionally enable StrictMode only in production to avoid persist issues in development
 // In development, React.StrictMode double-mounts components which can interfere with
 // Zustand persist middleware rehydration and cause data loss
 const isDevelopment = import.meta.env.DEV;
+
+// Initialize performance monitoring
+trackWebVitals();
 
 const app = (
     <BrowserRouter>

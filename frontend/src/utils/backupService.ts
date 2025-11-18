@@ -9,6 +9,7 @@ import { useRecurringIncomesStore } from '../store/useRecurringIncomesStore';
 import { useRecurringExpensesStore } from '../store/useRecurringExpensesStore';
 import { useRecurringSavingsInvestmentsStore } from '../store/useRecurringSavingsInvestmentsStore';
 import { useExportHistoryStore } from '../store/useExportHistoryStore';
+import { performanceMonitor } from './performanceMonitoring';
 
 export interface BackupData {
   version: string;
@@ -52,24 +53,26 @@ function getAppVersion(): string {
  * Exports all application data to a JSON backup
  */
 export function exportBackup(): BackupData {
-  const backup: BackupData = {
-    version: getAppVersion(),
-    timestamp: new Date().toISOString(),
-    data: {
-      banks: useBanksStore.getState().banks,
-      bankAccounts: useBankAccountsStore.getState().accounts,
-      incomeTransactions: useIncomeTransactionsStore.getState().transactions,
-      expenseTransactions: useExpenseTransactionsStore.getState().transactions,
-      savingsInvestmentTransactions: useSavingsInvestmentTransactionsStore.getState().transactions,
-      expenseEMIs: useExpenseEMIsStore.getState().emis,
-      savingsInvestmentEMIs: useSavingsInvestmentEMIsStore.getState().emis,
-      recurringIncomes: useRecurringIncomesStore.getState().templates,
-      recurringExpenses: useRecurringExpensesStore.getState().templates,
-      recurringSavingsInvestments: useRecurringSavingsInvestmentsStore.getState().templates,
-    },
-  };
+  return performanceMonitor.trackOperation('exportBackup', () => {
+    const backup: BackupData = {
+      version: getAppVersion(),
+      timestamp: new Date().toISOString(),
+      data: {
+        banks: useBanksStore.getState().banks,
+        bankAccounts: useBankAccountsStore.getState().accounts,
+        incomeTransactions: useIncomeTransactionsStore.getState().transactions,
+        expenseTransactions: useExpenseTransactionsStore.getState().transactions,
+        savingsInvestmentTransactions: useSavingsInvestmentTransactionsStore.getState().transactions,
+        expenseEMIs: useExpenseEMIsStore.getState().emis,
+        savingsInvestmentEMIs: useSavingsInvestmentEMIsStore.getState().emis,
+        recurringIncomes: useRecurringIncomesStore.getState().templates,
+        recurringExpenses: useRecurringExpensesStore.getState().templates,
+        recurringSavingsInvestments: useRecurringSavingsInvestmentsStore.getState().templates,
+      },
+    };
 
-  return backup;
+    return backup;
+  });
 }
 
 /**

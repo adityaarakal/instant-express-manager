@@ -35,7 +35,9 @@ import { ExportHistory } from '../components/common/ExportHistory';
 import { downloadBackup, readBackupFile, importBackup, exportBackup } from '../utils/backupService';
 import { syncAccountBalancesFromTransactions, type SyncResult } from '../utils/balanceSync';
 import { clearAllData } from '../utils/clearAllData';
+import { performanceMonitor } from '../utils/performanceMonitoring';
 import SyncIcon from '@mui/icons-material/Sync';
+import SpeedIcon from '@mui/icons-material/Speed';
 import TableContainer from '@mui/material/TableContainer';
 import Table from '@mui/material/Table';
 import TableHead from '@mui/material/TableHead';
@@ -52,7 +54,7 @@ const CURRENCIES = [
 
 export function Settings() {
   const { settings, updateSettings, reset } = useSettingsStore();
-  const { showSuccess, showError, showWarning } = useToastStore();
+  const { showSuccess, showError, showWarning, showInfo } = useToastStore();
   const [localSettings, setLocalSettings] = useState(settings);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importReplaceMode, setImportReplaceMode] = useState(false);
@@ -434,6 +436,62 @@ export function Settings() {
           <Stack spacing={2}>
             <Typography variant="h6">Data Health</Typography>
             <DataHealthCheck />
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Performance Monitoring</Typography>
+            <Typography variant="body2" color="text.secondary">
+              View performance metrics and operation timings. Monitoring is enabled automatically in production.
+            </Typography>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <AlertTitle>Performance Metrics</AlertTitle>
+              <Typography variant="body2">
+                Metrics are tracked locally and not sent to any server. This helps identify slow operations.
+              </Typography>
+            </Alert>
+            <Button
+              variant="outlined"
+              startIcon={<SpeedIcon />}
+              onClick={() => {
+                const metrics = performanceMonitor.getOperationMetrics();
+                const allMetrics = performanceMonitor.getMetrics();
+                
+                if (Object.keys(metrics).length === 0 && allMetrics.length === 0) {
+                  showInfo('No performance metrics available yet. Metrics are collected as you use the app.');
+                  return;
+                }
+                
+                // Log metrics to console for now (could be enhanced with a dialog)
+                // Performance metrics logging is intentional for user visibility
+                console.log('Performance Metrics:', {
+                  operationMetrics: metrics,
+                  webVitals: allMetrics.filter(m => m.type === 'web-vital'),
+                  slowOperations: allMetrics.filter(m => m.type === 'operation' && m.value > 100),
+                });
+                
+                showSuccess('Performance metrics logged to browser console (F12). Enable monitoring in localStorage for persistent tracking.');
+              }}
+              fullWidth
+            >
+              View Performance Metrics
+            </Button>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={performanceMonitor.getEnabled()}
+                  onChange={(e) => {
+                    performanceMonitor.setEnabled(e.target.checked);
+                    showSuccess(`Performance monitoring ${e.target.checked ? 'enabled' : 'disabled'}`);
+                  }}
+                />
+              }
+              label="Enable Performance Monitoring"
+            />
+            <Typography variant="caption" color="text.secondary">
+              When enabled, performance metrics are stored locally and can be viewed above.
+            </Typography>
           </Stack>
 
           <Divider />
