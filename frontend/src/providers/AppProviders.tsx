@@ -74,7 +74,11 @@ export function AppProviders({ children }: AppProvidersProps) {
         if (!validationResult.isValid && validationResult.errors.length > 0) {
           // Log integrity errors but don't block the app
           // In production, these could be sent to error tracking
-          console.warn('Data integrity issues found:', validationResult.errors);
+          // Log data integrity issues (safe - these are user-facing validation errors)
+          // Error logging is intentional for user visibility in development
+          if (import.meta.env.DEV) {
+            console.warn('Data integrity issues found:', validationResult.errors);
+          }
           
           // Optionally show critical errors to user
           const criticalErrors = validationResult.errors.filter(
@@ -92,7 +96,14 @@ export function AppProviders({ children }: AppProvidersProps) {
         setMigrationComplete(true);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error('Startup checks failed:', error);
+        // Log startup errors (safe - startup errors need visibility for debugging)
+        // Error logging is intentional for debugging
+        if (import.meta.env.DEV) {
+          console.error('Startup checks failed:', error);
+        } else {
+          // In production, log only error type and message
+          console.error('Startup checks failed:', error instanceof Error ? error.message : 'Unknown error');
+        }
         showError(`Startup initialization error: ${errorMessage}`);
         // Still allow app to continue even if migration fails
         setMigrationComplete(true);

@@ -10,6 +10,7 @@ import { useRecurringExpensesStore } from '../store/useRecurringExpensesStore';
 import { useRecurringSavingsInvestmentsStore } from '../store/useRecurringSavingsInvestmentsStore';
 import { useExportHistoryStore } from '../store/useExportHistoryStore';
 import { performanceMonitor } from './performanceMonitoring';
+import { safeJsonParse, validateFile, validateBackupStructure } from './security';
 
 export interface BackupData {
   version: string;
@@ -306,14 +307,41 @@ export function importBackup(
 
 /**
  * Reads a backup file and returns the parsed data
+ * Includes security validation for file type, size, and content
  */
 export function readBackupFile(file: File): Promise<BackupData> {
   return new Promise((resolve, reject) => {
+    // Validate file type and size before reading
+    const fileValidation = validateFile(file, ['application/json', 'text/json'], 10 * 1024 * 1024); // 10MB max
+    if (!fileValidation.valid) {
+      reject(new Error(fileValidation.error || 'Invalid file'));
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const text = e.target?.result as string;
-        const data = JSON.parse(text);
+        if (!text || typeof text !== 'string') {
+          reject(new Error('Failed to read file content'));
+          return;
+        }
+
+        // Use safe JSON parsing to prevent prototype pollution
+        const data = safeJsonParse<BackupData>(text, 10 * 1024 * 1024);
+        if (!data) {
+          reject(new Error('Failed to parse backup file - invalid JSON or too large'));
+          return;
+        }
+
+        // Validate backup structure
+        const structureValidation = validateBackupStructure(data);
+        if (!structureValidation.valid) {
+          reject(new Error(structureValidation.error || 'Invalid backup file format'));
+          return;
+        }
+
+        // Additional validation using existing validateBackup
         if (validateBackup(data)) {
           resolve(data);
         } else {

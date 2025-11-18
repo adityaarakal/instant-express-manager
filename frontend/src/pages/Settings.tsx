@@ -33,6 +33,7 @@ import { ThemeModeToggle } from '../components/layout/ThemeModeToggle';
 import { DataHealthCheck } from '../components/common/DataHealthCheck';
 import { ExportHistory } from '../components/common/ExportHistory';
 import { AccessibilityCheck } from '../components/common/AccessibilityCheck';
+import { SecurityCheck } from '../components/common/SecurityCheck';
 import { downloadBackup, readBackupFile, importBackup, exportBackup } from '../utils/backupService';
 import { syncAccountBalancesFromTransactions, type SyncResult } from '../utils/balanceSync';
 import { clearAllData } from '../utils/clearAllData';
@@ -437,6 +438,16 @@ export function Settings() {
           <Stack spacing={2}>
             <Typography variant="h6">Data Health</Typography>
             <DataHealthCheck />
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Security</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Check security status including XSS protection, data sanitization, and secure context.
+            </Typography>
+            <SecurityCheck />
           </Stack>
 
           <Divider />
