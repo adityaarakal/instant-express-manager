@@ -1,6 +1,6 @@
 {
   "name": "instant-express-manager-frontend",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "lighthouse": "bash ../scripts/run-lighthouse.sh",
-    "lighthouse:url": "bash ../scripts/run-lighthouse.sh"
+    "lighthouse:url": "bash ../scripts/run-lighthouse.sh",
+    "test:deployment": "bash ../scripts/test-deployment.sh"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
