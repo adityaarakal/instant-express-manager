@@ -8,6 +8,7 @@
 
 ## 📊 Overall Scores
 
+### Initial Audit (Before Optimization)
 | Category | Score | Status | Target |
 |----------|-------|--------|--------|
 | **Performance** | **87/100** | ⚠️ **Below Target** | 90+ |
@@ -15,11 +16,19 @@
 | **Best Practices** | **96/100** | ✅ **Pass** | 90+ |
 | **SEO** | **91/100** | ✅ **Pass** | 90+ |
 
+### After Optimization (Task 3.1.2)
+| Category | Score | Status | Target | Change |
+|----------|-------|--------|--------|--------|
+| **Performance** | **88/100** | ⚠️ **Below Target** | 90+ | +1 ⬆️ |
+| **Accessibility** | **94/100** | ✅ **Pass** | 90+ | = |
+| **Best Practices** | **96/100** | ✅ **Pass** | 90+ | = |
+| **SEO** | **91/100** | ✅ **Pass** | 90+ | = |
+
 ### Summary
 
 - ✅ **3/4 categories meet target (90+)**  
-- ⚠️ **1 category below target** (Performance: 87/100)
-- **Overall Status**: Needs optimization for Performance
+- ⚠️ **1 category below target** (Performance: 88/100, improved from 87/100)
+- **Overall Status**: Performance improved by 1 point; still needs optimization to reach 90+
 
 ---
 
@@ -27,6 +36,7 @@
 
 ### Core Web Vitals
 
+#### Before Optimization
 | Metric | Value | Status | Target | Score |
 |--------|-------|--------|--------|-------|
 | **First Contentful Paint (FCP)** | **2.6s** | ❌ **Poor** | < 1.8s | 65/100 |
@@ -36,6 +46,17 @@
 | **Speed Index** | **2.6s** | ✅ **Good** | < 3.4s | 97/100 |
 | **Time to Interactive (TTI)** | **3.4s** | ✅ **Good** | < 3.8s | 93/100 |
 | **Max FID** | **56ms** | ✅ **Good** | < 100ms | 100/100 |
+
+#### After Optimization (Task 3.1.2)
+| Metric | Value | Status | Target | Score | Change |
+|--------|-------|--------|--------|-------|--------|
+| **First Contentful Paint (FCP)** | **2.39s** | ❌ **Poor** | < 1.8s | 71/100 | ⬆️ -0.21s |
+| **Largest Contentful Paint (LCP)** | **3.43s** | ❌ **Poor** | < 2.5s | 66/100 | ⬆️ +0.03s |
+| **Total Blocking Time (TBT)** | **20ms** | ✅ **Good** | < 200ms | 100/100 | ⬆️ -2ms |
+| **Cumulative Layout Shift (CLS)** | **0** | ✅ **Good** | < 0.1 | 100/100 | = |
+| **Speed Index** | **2.39s** | ✅ **Good** | < 3.4s | 98/100 | ⬆️ +1 |
+| **Time to Interactive (TTI)** | **3.43s** | ✅ **Good** | < 3.8s | 93/100 | = |
+| **Max FID** | **53.5ms** | ✅ **Good** | < 100ms | 100/100 | ⬆️ -2.5ms |
 
 ### Performance Issues Identified
 
