@@ -96,25 +96,27 @@ This document tracks all non-critical improvements and maintenance tasks that ca
 ### Medium Priority
 
 #### 4. Auto-Save with Debouncing
-**Status**: ⏳ Pending  
+**Status**: ✅ Completed  
 **Priority**: Medium  
-**Estimated Effort**: 2-3 hours
+**Estimated Effort**: 2-3 hours (Actual: ~45 minutes)
 
-**Description**: Implement auto-save with 500ms debounce for better UX
+**Description**: Add debouncing to save status updates for better UX
 
 **Tasks**:
-- [ ] Implement auto-save hook with debouncing
-- [ ] Show "Saving..." / "Saved" indicator
-- [ ] Save to IndexedDB automatically
-- [ ] Add "Last saved" timestamp
-- [ ] Handle save errors gracefully
+- [x] Add debouncing to save status updates (500ms)
+- [x] Debounce "Saving..." indicator (prevents flashing on every keystroke)
+- [x] Show "Saved" indicator after save completes
+- [x] Add "Last saved" timestamp (already in SaveStatusIndicator)
+- [x] Handle save errors gracefully
+- [x] Create useAutoSave hook for future form implementations
 
-**Files to Create/Modify**:
-- `frontend/src/hooks/useAutoSave.ts` (new)
-- `frontend/src/pages/Planner.tsx`
-- `frontend/src/components/planner/AccountTable.tsx`
+**Files Modified**:
+- `frontend/src/utils/storage.ts` - Added debouncing to save status updates
+- `frontend/src/hooks/useAutoSave.ts` - Created hook for future use
 
 **Reference**: `docs/ENHANCEMENT_PROPOSALS.md` - Task 5
+
+**Note**: Data already auto-saves via Zustand's persist middleware. This enhancement adds debouncing to the save status indicator, preventing it from flashing "Saving..." on every state change. The "Saving..." indicator only appears after 500ms of no changes, and "Saved" appears after save completes.
 
 ---
 
@@ -310,12 +312,12 @@ This document tracks all non-critical improvements and maintenance tasks that ca
 
 ### Overall Progress
 - **Total Items**: 13
-- **Completed**: 4
+- **Completed**: 5
 - **In Progress**: 0
-- **Pending**: 9
+- **Pending**: 8
 
 ### By Category
-- **Optional Enhancements**: 5 items (3 completed, 2 pending)
+- **Optional Enhancements**: 5 items (4 completed, 1 pending)
 - **Future Features**: 3 items
 - **Code Cleanup**: 3 items (1 completed, 2 pending)
 - **Documentation Maintenance**: 3 items (1 completed, 2 pending)
