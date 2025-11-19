@@ -6,7 +6,7 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import type { AggregatedMonth } from '../../types/plannedExpensesAggregated';
-import { CopyMonthDialog } from './CopyMonthDialog';
+import { DuplicateMonthDialog } from './DuplicateMonthDialog';
 import { MonthComparisonDialog } from './MonthComparisonDialog';
 
 interface MonthViewHeaderProps {
@@ -35,7 +35,7 @@ const formatMonthDate = (dateString: string): string => {
 
 export function MonthViewHeader({ month }: MonthViewHeaderProps) {
   const navigate = useNavigate();
-  const [copyDialogOpen, setCopyDialogOpen] = useState(false);
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [compareDialogOpen, setCompareDialogOpen] = useState(false);
 
   return (
@@ -62,7 +62,7 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
               <Button
                 variant="outlined"
                 startIcon={<ContentCopyIcon />}
-                onClick={() => setCopyDialogOpen(true)}
+                onClick={() => setDuplicateDialogOpen(true)}
                 size="small"
                 className="no-print"
               >
@@ -124,11 +124,10 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
         </Stack>
       </Stack>
     </Paper>
-    <CopyMonthDialog
-      open={copyDialogOpen}
-      onClose={() => setCopyDialogOpen(false)}
+    <DuplicateMonthDialog
+      open={duplicateDialogOpen}
+      onClose={() => setDuplicateDialogOpen(false)}
       sourceMonthId={month.id}
-      sourceMonthStart={month.monthStart}
     />
     <MonthComparisonDialog
       open={compareDialogOpen}

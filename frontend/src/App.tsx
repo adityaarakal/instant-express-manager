@@ -8,6 +8,7 @@ import { AppProviders } from './providers/AppProviders';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { useSettingsStore } from './store/useSettingsStore';
 import { useScheduledExports } from './hooks/useScheduledExports';
+import { useUndoRedo } from './hooks/useUndoRedo';
 
 function App() {
   const themeSetting = useSettingsStore((state) => state.settings.theme);
@@ -22,6 +23,9 @@ function App() {
   
   // Initialize scheduled exports
   useScheduledExports();
+  
+  // Initialize undo/redo keyboard shortcuts
+  useUndoRedo();
 
   return (
     <ThemeProvider theme={theme}>
