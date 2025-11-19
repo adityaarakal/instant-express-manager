@@ -194,7 +194,8 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
               </TableCell>
               {buckets.map((bucket) => {
                 const bucketAmount = account.bucketAmounts[bucket.id];
-                const dueDate = month.dueDates[bucket.id];
+                // Use account-level due date (if available), fallback to bucket-level due date
+                const dueDate = account.bucketDueDates?.[bucket.id] ?? month.dueDates[bucket.id];
                 const isPastDue = isDueDatePassed(dueDate);
                 const originalAmount = getOriginalBucketAmount(
                   account.id,

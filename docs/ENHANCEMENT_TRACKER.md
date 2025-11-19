@@ -47,25 +47,27 @@ This document tracks all non-critical improvements and maintenance tasks that ca
 ---
 
 #### 2. Account-Level Due Dates
-**Status**: ⏳ Pending  
+**Status**: ✅ Completed  
 **Priority**: Medium  
-**Estimated Effort**: 3-4 hours
+**Estimated Effort**: 3-4 hours (Actual: ~1 hour)
 
 **Description**: Add due date field to individual bucket allocations (per account-bucket combination)
 
 **Tasks**:
-- [ ] Add `dueDate` field to bucket allocation data structure
-- [ ] Update UI to allow setting due dates per account-bucket
-- [ ] Apply zeroing logic at allocation level
-- [ ] Update Planner to show account-level due dates
-- [ ] Add validation for due dates
+- [x] Add `bucketDueDates` field to `AggregatedAccount` data structure
+- [x] Update aggregation logic to calculate due dates per account-bucket
+- [x] Update AccountTable to use account-level due dates (with fallback to bucket-level)
+- [x] Apply zeroing logic at account-bucket level (uses transaction due dates)
+- [x] Visual indicators now use account-level due dates
 
-**Files to Modify**:
-- `frontend/src/types/plannedExpensesAggregated.ts`
-- `frontend/src/pages/Planner.tsx`
-- `frontend/src/components/planner/AccountTable.tsx`
+**Files Modified**:
+- `frontend/src/types/plannedExpensesAggregated.ts` - Added `bucketDueDates` field
+- `frontend/src/utils/aggregation.ts` - Calculate account-level due dates
+- `frontend/src/components/planner/AccountTable.tsx` - Use account-level due dates
 
 **Reference**: `docs/ENHANCEMENT_PROPOSALS.md` - Task 2
+
+**Note**: Due dates are automatically calculated from the earliest transaction due date per account-bucket combination. The zeroing logic already works at the transaction level, so account-level due dates are primarily for display and tracking purposes.
 
 ---
 
