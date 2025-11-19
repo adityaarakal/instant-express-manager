@@ -171,12 +171,12 @@ This document tracks all pending items that are NOT production/deployment relate
 **Description**: Import from Projections sheet, auto-populate inflow totals, link savings targets to projections.
 
 **Tasks**:
-- [ ] Define Projections sheet structure
-- [ ] Create import utility for Projections data
-- [ ] Auto-populate inflow totals from projections
-- [ ] Link savings targets to projections
-- [ ] Add sync mechanism for projections data
-- [ ] Create UI for managing projections integration
+- [x] Define Projections sheet structure (CSV/Excel: Month, Inflow Total, Savings Target)
+- [x] Create import utility for Projections data (CSV and Excel support)
+- [x] Auto-populate inflow totals from projections (creates income transactions)
+- [x] Link savings targets to projections (track progress vs targets)
+- [x] Add sync mechanism for projections data (store in IndexedDB)
+- [x] Create UI for managing projections integration (full CRUD in Settings)
 
 **Files Created/Modified**:
 - `frontend/src/store/useProjectionsStore.ts` (new - projections store with IndexedDB persistence)
