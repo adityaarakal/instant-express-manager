@@ -1,0 +1,348 @@
+# Enhancement & Maintenance Tracker
+
+**Date Created**: 2025-01-15  
+**Status**: Active  
+**Purpose**: Track optional enhancements, future features, code cleanup, and documentation maintenance
+
+---
+
+## 📋 Tracker Overview
+
+This document tracks all non-critical improvements and maintenance tasks that can be done post-deployment. These are organized by priority and category.
+
+### Categories
+1. **Optional Enhancements** - Feature improvements that enhance UX/functionality
+2. **Future Features** - New features for future releases
+3. **Code Cleanup** - Cosmetic improvements and code quality
+4. **Documentation Maintenance** - Keeping docs up-to-date
+
+---
+
+## 🎯 Optional Enhancements
+
+### High Priority
+
+#### 1. Due Date Zeroing Logic Enhancement
+**Status**: ⏳ Pending  
+**Priority**: High  
+**Estimated Effort**: 2-3 hours
+
+**Description**: Implement automatic zeroing of bucket allocations when due date has passed (Excel parity)
+
+**Tasks**:
+- [ ] Implement `applyDueDateZeroing` function in `utils/formulas.ts`
+- [ ] Add visual indicators (grayed out, strikethrough) for zeroed amounts
+- [ ] Show warning when editing past-due allocations
+- [ ] Add toggle to "re-enable" past-due items if needed
+- [ ] Update Planner UI to show zeroed amounts
+- [ ] Add tests for due date zeroing logic
+
+**Files to Modify**:
+- `frontend/src/utils/formulas.ts`
+- `frontend/src/pages/Planner.tsx`
+- `frontend/src/components/planner/AccountTable.tsx`
+
+**Reference**: `docs/ENHANCEMENT_PROPOSALS.md` - Task 1
+
+---
+
+#### 2. Account-Level Due Dates
+**Status**: ⏳ Pending  
+**Priority**: Medium  
+**Estimated Effort**: 3-4 hours
+
+**Description**: Add due date field to individual bucket allocations (per account-bucket combination)
+
+**Tasks**:
+- [ ] Add `dueDate` field to bucket allocation data structure
+- [ ] Update UI to allow setting due dates per account-bucket
+- [ ] Apply zeroing logic at allocation level
+- [ ] Update Planner to show account-level due dates
+- [ ] Add validation for due dates
+
+**Files to Modify**:
+- `frontend/src/types/plannedExpensesAggregated.ts`
+- `frontend/src/pages/Planner.tsx`
+- `frontend/src/components/planner/AccountTable.tsx`
+
+**Reference**: `docs/ENHANCEMENT_PROPOSALS.md` - Task 2
+
+---
+
+#### 3. Fixed Balance Carry-Forward
+**Status**: ⏳ Pending  
+**Priority**: Medium  
+**Estimated Effort**: 2-3 hours
+
+**Description**: Auto-carry fixed balance from previous month (Excel parity)
+
+**Tasks**:
+- [ ] Add "Copy from Previous Month" button for fixed balances
+- [ ] Auto-suggest previous month's values when creating new month
+- [ ] Add option to "inherit" fixed balances from previous month
+- [ ] Update Planner UI with carry-forward options
+
+**Files to Modify**:
+- `frontend/src/pages/Planner.tsx`
+- `frontend/src/components/planner/MonthViewHeader.tsx`
+- `frontend/src/store/usePlannedMonthsStore.ts`
+
+**Reference**: `docs/ENHANCEMENT_PROPOSALS.md` - Task 3
+
+---
+
+### Medium Priority
+
+#### 4. Auto-Save with Debouncing
+**Status**: ⏳ Pending  
+**Priority**: Medium  
+**Estimated Effort**: 2-3 hours
+
+**Description**: Implement auto-save with 500ms debounce for better UX
+
+**Tasks**:
+- [ ] Implement auto-save hook with debouncing
+- [ ] Show "Saving..." / "Saved" indicator
+- [ ] Save to IndexedDB automatically
+- [ ] Add "Last saved" timestamp
+- [ ] Handle save errors gracefully
+
+**Files to Create/Modify**:
+- `frontend/src/hooks/useAutoSave.ts` (new)
+- `frontend/src/pages/Planner.tsx`
+- `frontend/src/components/planner/AccountTable.tsx`
+
+**Reference**: `docs/ENHANCEMENT_PROPOSALS.md` - Task 5
+
+---
+
+#### 5. Enhanced Data Validation & Warnings
+**Status**: ⏳ Pending  
+**Priority**: Medium  
+**Estimated Effort**: 3-4 hours
+
+**Description**: Add real-time validation with inline error display
+
+**Tasks**:
+- [ ] Add real-time validation for remaining cash
+- [ ] Warn when remaining cash goes negative
+- [ ] Prevent saving if allocations exceed available funds
+- [ ] Show validation errors inline
+- [ ] Add "Fix Issues" button that suggests corrections
+- [ ] Add validation tests
+
+**Files to Modify**:
+- `frontend/src/utils/validation.ts` (new or existing)
+- `frontend/src/pages/Planner.tsx`
+- `frontend/src/components/planner/AccountTable.tsx`
+
+**Reference**: `docs/ENHANCEMENT_PROPOSALS.md` - Task 4
+
+---
+
+## 🚀 Future Features
+
+### Feature 1: Advanced Analytics
+**Status**: ⏳ Planned  
+**Priority**: Low  
+**Estimated Effort**: 6-8 hours
+
+**Description**: Additional analytics features and visualizations
+
+**Tasks**:
+- [ ] Spending trends by category over time
+- [ ] Income vs Expense comparison charts
+- [ ] Savings rate tracking
+- [ ] Budget variance analysis
+- [ ] Custom date range comparisons
+- [ ] Export analytics reports
+
+**Reference**: `docs/ENHANCEMENT_PROPOSALS.md`
+
+---
+
+### Feature 2: Bulk Operations
+**Status**: ⏳ Planned  
+**Priority**: Low  
+**Estimated Effort**: 4-5 hours
+
+**Description**: Enhanced bulk operations for transactions
+
+**Tasks**:
+- [ ] Bulk edit transactions
+- [ ] Bulk status updates
+- [ ] Bulk category changes
+- [ ] Bulk delete with confirmation
+- [ ] Bulk export selected transactions
+
+---
+
+### Feature 3: Export Enhancements
+**Status**: ⏳ Planned  
+**Priority**: Low  
+**Estimated Effort**: 3-4 hours
+
+**Description**: Additional export formats and options
+
+**Tasks**:
+- [ ] Excel export (XLSX format)
+- [ ] PDF export with formatting
+- [ ] Custom export templates
+- [ ] Scheduled exports
+- [ ] Export history tracking
+
+---
+
+## 🧹 Code Cleanup
+
+### Cleanup 1: Remove TODO/FIXME Comments
+**Status**: ⏳ Pending  
+**Priority**: Low  
+**Estimated Effort**: 1-2 hours
+
+**Description**: Review and clean up TODO/FIXME comments in codebase
+
+**Tasks**:
+- [ ] Review all TODO comments (10 found)
+- [ ] Remove or resolve outdated TODOs
+- [ ] Convert actionable TODOs to GitHub issues
+- [ ] Update documentation comments
+- [ ] Verify no critical TODOs remain
+
+**Files to Review**:
+- `frontend/src/utils/dataMigration.ts`
+- `frontend/src/pages/Settings.tsx`
+- `frontend/src/utils/analytics.ts`
+- `frontend/src/utils/errorTracking.ts`
+- `frontend/src/utils/performanceMonitoring.ts`
+- `frontend/src/utils/__tests__/formulas.test.ts`
+
+---
+
+### Cleanup 2: React Hook Warnings
+**Status**: ⏳ Pending  
+**Priority**: Low  
+**Estimated Effort**: 30 minutes
+
+**Description**: Fix React Hook dependency warnings
+
+**Tasks**:
+- [ ] Fix `useMemo` dependency warnings in `TransactionFilters.tsx`
+- [ ] Review and fix any other hook warnings
+- [ ] Verify no new warnings introduced
+
+**Files to Modify**:
+- `frontend/src/components/transactions/TransactionFilters.tsx`
+
+---
+
+### Cleanup 3: Type Safety Improvements
+**Status**: ⏳ Pending  
+**Priority**: Low  
+**Estimated Effort**: 2-3 hours
+
+**Description**: Improve type safety across codebase
+
+**Tasks**:
+- [ ] Review `any` types and replace with proper types
+- [ ] Add stricter type checking where possible
+- [ ] Improve type definitions for complex objects
+- [ ] Add JSDoc comments for better type inference
+
+---
+
+## 📚 Documentation Maintenance
+
+### Doc 1: Update TASK_STATUS.md
+**Status**: ⏳ Pending  
+**Priority**: Medium  
+**Estimated Effort**: 30 minutes
+
+**Description**: Update outdated task status documentation
+
+**Tasks**:
+- [ ] Review `docs/TASK_STATUS.md`
+- [ ] Update all task statuses to reflect current state
+- [ ] Mark Analytics as complete (currently shows 0%)
+- [ ] Update completion percentages
+- [ ] Remove outdated pending tasks
+
+**Files to Modify**:
+- `docs/TASK_STATUS.md`
+
+---
+
+### Doc 2: Update Enhancement Proposals
+**Status**: ⏳ Pending  
+**Priority**: Low  
+**Estimated Effort**: 1 hour
+
+**Description**: Update enhancement proposals with current status
+
+**Tasks**:
+- [ ] Review `docs/ENHANCEMENT_PROPOSALS.md`
+- [ ] Mark completed enhancements
+- [ ] Update priorities based on user feedback
+- [ ] Add new enhancement ideas
+- [ ] Link to this tracker
+
+---
+
+### Doc 3: Create User Feedback Guide
+**Status**: ⏳ Pending  
+**Priority**: Low  
+**Estimated Effort**: 1-2 hours
+
+**Description**: Create guide for collecting and processing user feedback
+
+**Tasks**:
+- [ ] Create `docs/USER_FEEDBACK_GUIDE.md`
+- [ ] Document feedback collection process
+- [ ] Create feedback template
+- [ ] Link feedback to enhancement tracker
+- [ ] Add to main documentation index
+
+---
+
+## 📊 Progress Tracking
+
+### Overall Progress
+- **Total Items**: 13
+- **Completed**: 0
+- **In Progress**: 0
+- **Pending**: 13
+
+### By Category
+- **Optional Enhancements**: 5 items
+- **Future Features**: 3 items
+- **Code Cleanup**: 3 items
+- **Documentation Maintenance**: 3 items
+
+### By Priority
+- **High Priority**: 1 item
+- **Medium Priority**: 4 items
+- **Low Priority**: 8 items
+
+---
+
+## 🎯 Next Steps
+
+1. **Start with High Priority**: Due Date Zeroing Logic Enhancement
+2. **Then Medium Priority**: Account-Level Due Dates, Fixed Balance Carry-Forward
+3. **Code Cleanup**: Quick wins (React Hook warnings, TODO cleanup)
+4. **Documentation**: Update outdated docs
+
+---
+
+## 📝 Notes
+
+- All items are optional and non-blocking
+- Can be done incrementally post-deployment
+- Priority can be adjusted based on user feedback
+- New items can be added as they're discovered
+
+---
+
+**Last Updated**: 2025-01-15  
+**Next Review**: After deployment and user feedback collection
+
