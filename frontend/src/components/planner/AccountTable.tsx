@@ -21,6 +21,7 @@ import type { AggregatedMonth } from '../../types/plannedExpensesAggregated';
 import { DEFAULT_BUCKETS } from '../../config/plannedExpenses';
 import { EmptyState } from '../common/EmptyState';
 import { useExpenseTransactionsStore } from '../../store/useExpenseTransactionsStore';
+import { useAggregatedPlannedMonthsStore } from '../../store/useAggregatedPlannedMonthsStore';
 
 interface AccountTableProps {
   month: AggregatedMonth;
@@ -187,7 +188,42 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
                 </Typography>
               </TableCell>
               <TableCell align="right">
-                <Typography variant="body2">{formatCurrency(account.fixedBalance)}</Typography>
+                <Stack spacing={0.5} alignItems="flex-end">
+                  <Typography variant="body2">{formatCurrency(account.fixedBalance)}</Typography>
+                  {(() => {
+                    // Get previous month for comparison
+                    const [year, monthNum] = month.id.split('-');
+                    const prevMonth = parseInt(monthNum) === 1 
+                      ? `${parseInt(year) - 1}-12`
+                      : `${year}-${String(parseInt(monthNum) - 1).padStart(2, '0')}`;
+                    const prevMonthData = useAggregatedPlannedMonthsStore.getState().getMonth(prevMonth);
+                    const prevAccount = prevMonthData?.accounts.find((a) => a.id === account.id);
+                    const prevFixedBalance = prevAccount?.fixedBalance;
+                    
+                    if (prevFixedBalance !== null && prevFixedBalance !== undefined && account.fixedBalance !== null) {
+                      const difference = account.fixedBalance - prevFixedBalance;
+                      const hasChanged = Math.abs(difference) > 0.01; // Account for floating point
+                      
+                      if (hasChanged) {
+                        return (
+                          <Tooltip
+                            title={`Previous month (${prevMonth}): ${formatCurrency(prevFixedBalance)}`}
+                            arrow
+                          >
+                            <Typography
+                              variant="caption"
+                              color={difference > 0 ? 'success.main' : 'error.main'}
+                              sx={{ fontStyle: 'italic', cursor: 'help' }}
+                            >
+                              {difference > 0 ? '+' : ''}{formatCurrency(difference)} from previous
+                            </Typography>
+                          </Tooltip>
+                        );
+                      }
+                    }
+                    return null;
+                  })()}
+                </Stack>
               </TableCell>
               <TableCell align="right">
                 <Typography variant="body2">{formatCurrency(account.savingsTransfer)}</Typography>

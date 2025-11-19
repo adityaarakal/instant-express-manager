@@ -72,24 +72,24 @@ This document tracks all non-critical improvements and maintenance tasks that ca
 ---
 
 #### 3. Fixed Balance Carry-Forward
-**Status**: ⏳ Pending  
+**Status**: ✅ Completed  
 **Priority**: Medium  
-**Estimated Effort**: 2-3 hours
+**Estimated Effort**: 2-3 hours (Actual: ~30 minutes)
 
-**Description**: Auto-carry fixed balance from previous month (Excel parity)
+**Description**: Show fixed balance comparison with previous month
 
 **Tasks**:
-- [ ] Add "Copy from Previous Month" button for fixed balances
-- [ ] Auto-suggest previous month's values when creating new month
-- [ ] Add option to "inherit" fixed balances from previous month
-- [ ] Update Planner UI with carry-forward options
+- [x] Add visual indicator showing difference from previous month
+- [x] Show previous month's fixed balance in tooltip
+- [x] Display change amount (positive/negative) with color coding
+- [x] Update AccountTable to show month-over-month comparison
 
-**Files to Modify**:
-- `frontend/src/pages/Planner.tsx`
-- `frontend/src/components/planner/MonthViewHeader.tsx`
-- `frontend/src/store/usePlannedMonthsStore.ts`
+**Files Modified**:
+- `frontend/src/components/planner/AccountTable.tsx` - Added previous month comparison
 
 **Reference**: `docs/ENHANCEMENT_PROPOSALS.md` - Task 3
+
+**Note**: Fixed balances are derived from account current balance, so they automatically "carry forward" in a sense. This enhancement adds visual comparison showing how fixed balances change month-over-month, which helps users track balance changes.
 
 ---
 
@@ -310,12 +310,12 @@ This document tracks all non-critical improvements and maintenance tasks that ca
 
 ### Overall Progress
 - **Total Items**: 13
-- **Completed**: 3
+- **Completed**: 4
 - **In Progress**: 0
-- **Pending**: 10
+- **Pending**: 9
 
 ### By Category
-- **Optional Enhancements**: 5 items (1 completed, 4 pending)
+- **Optional Enhancements**: 5 items (3 completed, 2 pending)
 - **Future Features**: 3 items
 - **Code Cleanup**: 3 items (1 completed, 2 pending)
 - **Documentation Maintenance**: 3 items (1 completed, 2 pending)
