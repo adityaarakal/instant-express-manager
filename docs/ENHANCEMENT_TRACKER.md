@@ -23,19 +23,19 @@ This document tracks all non-critical improvements and maintenance tasks that ca
 ### High Priority
 
 #### 1. Due Date Zeroing Logic Enhancement
-**Status**: ⏳ Pending  
+**Status**: ✅ Completed  
 **Priority**: High  
-**Estimated Effort**: 2-3 hours
+**Estimated Effort**: 2-3 hours (Actual: ~1 hour)
 
 **Description**: Implement automatic zeroing of bucket allocations when due date has passed (Excel parity)
 
 **Tasks**:
-- [ ] Implement `applyDueDateZeroing` function in `utils/formulas.ts`
-- [ ] Add visual indicators (grayed out, strikethrough) for zeroed amounts
-- [ ] Show warning when editing past-due allocations
-- [ ] Add toggle to "re-enable" past-due items if needed
-- [ ] Update Planner UI to show zeroed amounts
-- [ ] Add tests for due date zeroing logic
+- [x] Implement `applyDueDateZeroing` function in `utils/formulas.ts` (already existed)
+- [x] Add visual indicators (grayed out, strikethrough) for zeroed amounts
+- [x] Show warning icon and tooltip for past-due allocations
+- [ ] Add toggle to "re-enable" past-due items if needed (future enhancement)
+- [x] Update Planner UI to show zeroed amounts
+- [ ] Add tests for due date zeroing logic (tests exist for function, UI tests can be added)
 
 **Files to Modify**:
 - `frontend/src/utils/formulas.ts`
@@ -308,18 +308,18 @@ This document tracks all non-critical improvements and maintenance tasks that ca
 
 ### Overall Progress
 - **Total Items**: 13
-- **Completed**: 0
+- **Completed**: 1
 - **In Progress**: 0
-- **Pending**: 13
+- **Pending**: 12
 
 ### By Category
-- **Optional Enhancements**: 5 items
+- **Optional Enhancements**: 5 items (1 completed, 4 pending)
 - **Future Features**: 3 items
 - **Code Cleanup**: 3 items
 - **Documentation Maintenance**: 3 items
 
 ### By Priority
-- **High Priority**: 1 item
+- **High Priority**: 1 item (1 completed)
 - **Medium Priority**: 4 items
 - **Low Priority**: 8 items
 
