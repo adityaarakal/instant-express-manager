@@ -220,16 +220,16 @@ This document tracks all non-critical improvements and maintenance tasks that ca
 ---
 
 ### Cleanup 2: React Hook Warnings
-**Status**: ⏳ Pending  
+**Status**: ✅ Completed  
 **Priority**: Low  
-**Estimated Effort**: 30 minutes
+**Estimated Effort**: 30 minutes (Actual: ~10 minutes)
 
 **Description**: Fix React Hook dependency warnings
 
 **Tasks**:
-- [ ] Fix `useMemo` dependency warnings in `TransactionFilters.tsx`
-- [ ] Review and fix any other hook warnings
-- [ ] Verify no new warnings introduced
+- [x] Fix `useMemo` dependency warnings in `TransactionFilters.tsx`
+- [x] Remove unnecessary dependencies (`savedFilters`, `history`)
+- [x] Verify no new warnings introduced
 
 **Files to Modify**:
 - `frontend/src/components/transactions/TransactionFilters.tsx`
@@ -308,14 +308,14 @@ This document tracks all non-critical improvements and maintenance tasks that ca
 
 ### Overall Progress
 - **Total Items**: 13
-- **Completed**: 1
+- **Completed**: 2
 - **In Progress**: 0
-- **Pending**: 12
+- **Pending**: 11
 
 ### By Category
 - **Optional Enhancements**: 5 items (1 completed, 4 pending)
 - **Future Features**: 3 items
-- **Code Cleanup**: 3 items
+- **Code Cleanup**: 3 items (1 completed, 2 pending)
 - **Documentation Maintenance**: 3 items
 
 ### By Priority
