@@ -163,29 +163,46 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
                 )}
               </TableCell>
               <TableCell align="right">
-                <Tooltip
-                  title={
-                    account.remainingCash !== null && account.remainingCash < 0
-                      ? `Warning: This account has negative remaining cash. Consider adjusting transactions or adding income to balance it.`
-                      : 'Remaining cash after fixed balances, savings transfers, and bucket allocations'
-                  }
-                  arrow
-                >
-                <Typography
-                  variant="body2"
-                  color={
-                    account.remainingCash !== null && account.remainingCash < 0
-                      ? 'error'
-                      : 'text.primary'
-                  }
-                    sx={{ fontStyle: 'italic', cursor: 'help' }}
-                >
-                  {formatCurrency(account.remainingCash)}
-                </Typography>
-                </Tooltip>
-                <Typography variant="caption" color="text.secondary">
-                  (calculated)
-                </Typography>
+                <Stack spacing={0.5} alignItems="flex-end">
+                  <Tooltip
+                    title={
+                      account.remainingCash !== null && account.remainingCash < 0
+                        ? `Warning: This account has negative remaining cash (₹${formatCurrency(account.remainingCash)}). Consider adjusting transactions or adding income to balance it.`
+                        : 'Remaining cash after fixed balances, savings transfers, and bucket allocations'
+                    }
+                    arrow
+                  >
+                    <Typography
+                      variant="body2"
+                      color={
+                        account.remainingCash !== null && account.remainingCash < 0
+                          ? 'error'
+                          : 'text.primary'
+                      }
+                      sx={{ fontStyle: 'italic', cursor: 'help', fontWeight: account.remainingCash !== null && account.remainingCash < 0 ? 'bold' : 'normal' }}
+                    >
+                      {formatCurrency(account.remainingCash)}
+                    </Typography>
+                  </Tooltip>
+                  {account.remainingCash !== null && account.remainingCash < 0 && (
+                    <Tooltip
+                      title="Suggestions: 1) Add income transactions 2) Reduce expense allocations 3) Adjust fixed balance"
+                      arrow
+                    >
+                      <Typography
+                        variant="caption"
+                        color="error"
+                        sx={{ fontStyle: 'italic', cursor: 'help', display: 'flex', alignItems: 'center', gap: 0.5 }}
+                      >
+                        <WarningIcon fontSize="small" sx={{ fontSize: 14 }} />
+                        Negative balance
+                      </Typography>
+                    </Tooltip>
+                  )}
+                  <Typography variant="caption" color="text.secondary">
+                    (calculated)
+                  </Typography>
+                </Stack>
               </TableCell>
               <TableCell align="right">
                 <Stack spacing={0.5} alignItems="flex-end">
