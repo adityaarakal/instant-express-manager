@@ -57,6 +57,12 @@ const SpendingTrendsChart = lazy(() =>
 const SavingsRateChart = lazy(() =>
   import('../components/analytics/SavingsRateChart').then((module) => ({ default: module.SavingsRateChart }))
 );
+const PieChart = lazy(() =>
+  import('../components/analytics/PieChart').then((module) => ({ default: module.PieChart }))
+);
+const AreaChart = lazy(() =>
+  import('../components/analytics/AreaChart').then((module) => ({ default: module.AreaChart }))
+);
 
 // Chart loading fallback
 function ChartLoader() {
@@ -269,6 +275,7 @@ export const Analytics = memo(function Analytics() {
           <Tab label="Savings" />
           <Tab label="Credit Cards" />
           <Tab label="Budget vs Actual" />
+          <Tab label="Advanced Charts" />
         </Tabs>
       </Paper>
 
@@ -286,6 +293,55 @@ export const Analytics = memo(function Analytics() {
           <Stack spacing={3}>
             <ExpenseBreakdownChart transactions={filteredExpenses} />
             <SpendingTrendsChart transactions={filteredExpenses} />
+            {(() => {
+              // Prepare data for area chart (monthly expense trends)
+              const monthlyData: Array<Record<string, string | number>> = [];
+              const categoryTotals: Record<string, Record<string, number>> = {};
+              
+              filteredExpenses.forEach((t) => {
+                if (t.status === 'Paid') {
+                  const month = t.date.substring(0, 7);
+                  if (!categoryTotals[month]) {
+                    categoryTotals[month] = {};
+                  }
+                  categoryTotals[month][t.category] = (categoryTotals[month][t.category] || 0) + t.amount;
+                }
+              });
+
+              const allCategories = Array.from(
+                new Set(filteredExpenses.map((t) => t.category))
+              );
+
+              Object.keys(categoryTotals)
+                .sort()
+                .forEach((month) => {
+                  const monthName = new Date(month + '-01').toLocaleDateString('en-IN', {
+                    month: 'short',
+                    year: 'numeric',
+                  });
+                  const monthData: Record<string, string | number> = { month: monthName };
+                  allCategories.forEach((category) => {
+                    monthData[category] = categoryTotals[month][category] || 0;
+                  });
+                  monthlyData.push(monthData);
+                });
+
+              const areas = allCategories.slice(0, 5).map((category, index) => ({
+                dataKey: category,
+                name: category,
+                color: ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE'][index % 5],
+              }));
+
+              return monthlyData.length > 0 ? (
+                <AreaChart
+                  data={monthlyData}
+                  title="Expense Trends by Category (Area Chart)"
+                  chartId="expense-area-chart"
+                  xAxisKey="month"
+                  areas={areas}
+                />
+              ) : null;
+            })()}
           </Stack>
         </Suspense>
       )}
@@ -316,6 +372,129 @@ export const Analytics = memo(function Analytics() {
               expenseTransactions={filteredExpenses}
               savingsTransactions={filteredSavings}
             />
+          </Stack>
+        </Suspense>
+      )}
+
+      {activeTab === 5 && (
+        <Suspense fallback={<ChartLoader />}>
+          <Stack spacing={3}>
+            {(() => {
+              // Income by Category Pie Chart
+              const incomeByCategory: Record<string, number> = {};
+              filteredIncome.forEach((t) => {
+                if (t.status === 'Received') {
+                  incomeByCategory[t.category] = (incomeByCategory[t.category] || 0) + t.amount;
+                }
+              });
+              const incomePieData = Object.entries(incomeByCategory)
+                .map(([name, value]) => ({ name, value: Math.round(value) }))
+                .sort((a, b) => b.value - a.value);
+
+              // Expense by Category Pie Chart
+              const expenseByCategory: Record<string, number> = {};
+              filteredExpenses.forEach((t) => {
+                if (t.status === 'Paid') {
+                  expenseByCategory[t.category] = (expenseByCategory[t.category] || 0) + t.amount;
+                }
+              });
+              const expensePieData = Object.entries(expenseByCategory)
+                .map(([name, value]) => ({ name, value: Math.round(value) }))
+                .sort((a, b) => b.value - a.value);
+
+              // Savings by Type Pie Chart
+              const savingsByType: Record<string, number> = {};
+              filteredSavings.forEach((t) => {
+                if (t.status === 'Completed') {
+                  savingsByType[t.type] = (savingsByType[t.type] || 0) + t.amount;
+                }
+              });
+              const savingsPieData = Object.entries(savingsByType)
+                .map(([name, value]) => ({ name, value: Math.round(value) }))
+                .sort((a, b) => b.value - a.value);
+
+              return (
+                <>
+                  {incomePieData.length > 0 && (
+                    <PieChart
+                      data={incomePieData}
+                      title="Income by Category"
+                      chartId="income-pie-chart"
+                      showExport={true}
+                    />
+                  )}
+                  {expensePieData.length > 0 && (
+                    <PieChart
+                      data={expensePieData}
+                      title="Expenses by Category"
+                      chartId="expense-pie-chart"
+                      showExport={true}
+                    />
+                  )}
+                  {savingsPieData.length > 0 && (
+                    <PieChart
+                      data={savingsPieData}
+                      title="Savings by Type"
+                      chartId="savings-pie-chart"
+                      showExport={true}
+                    />
+                  )}
+                  {(() => {
+                    // Income vs Expense Area Chart
+                    const monthlyData: Array<{ month: string; income: number; expenses: number }> = [];
+                    const dataMap: Record<string, { income: number; expenses: number }> = {};
+
+                    filteredIncome.forEach((t) => {
+                      if (t.status === 'Received') {
+                        const month = t.date.substring(0, 7);
+                        if (!dataMap[month]) {
+                          dataMap[month] = { income: 0, expenses: 0 };
+                        }
+                        dataMap[month].income += t.amount;
+                      }
+                    });
+
+                    filteredExpenses.forEach((t) => {
+                      if (t.status === 'Paid') {
+                        const month = t.date.substring(0, 7);
+                        if (!dataMap[month]) {
+                          dataMap[month] = { income: 0, expenses: 0 };
+                        }
+                        dataMap[month].expenses += t.amount;
+                      }
+                    });
+
+                    Object.keys(dataMap)
+                      .sort()
+                      .forEach((month) => {
+                        const monthName = new Date(month + '-01').toLocaleDateString('en-IN', {
+                          month: 'short',
+                          year: 'numeric',
+                        });
+                        monthlyData.push({
+                          month: monthName,
+                          income: dataMap[month].income,
+                          expenses: dataMap[month].expenses,
+                        });
+                      });
+
+                    return monthlyData.length > 0 ? (
+                      <AreaChart
+                        data={monthlyData}
+                        title="Income vs Expenses Trend (Area Chart)"
+                        chartId="income-expense-area-chart"
+                        xAxisKey="month"
+                        areas={[
+                          { dataKey: 'income', name: 'Income', color: '#82ca9d' },
+                          { dataKey: 'expenses', name: 'Expenses', color: '#ff8042' },
+                        ]}
+                        showExport={true}
+                      />
+                    ) : null;
+                  })()}
+                </>
+              );
+            })()}
           </Stack>
         </Suspense>
       )}
