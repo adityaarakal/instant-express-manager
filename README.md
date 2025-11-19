@@ -10,7 +10,8 @@ A comprehensive standalone financial management Progressive Web App (PWA) built 
 - 📅 **EMIs**: Manage expense and savings/investment EMIs with installment tracking
 - 🔄 **Recurring Transactions**: Set up recurring income, expenses, and savings/investments
 - 📊 **Planner**: Monthly financial planning with bucket-based allocations (defaults to current/latest month)
-- 📈 **Analytics**: Comprehensive financial analytics and insights
+- 📈 **Analytics**: Comprehensive financial analytics and insights with advanced charts (Pie, Area, Bar, Line)
+- 💳 **Credit Card Dashboard**: Dedicated view for credit card management with outstanding balance, payment history, and due date calendar
 - 📱 **Dashboard**: Overview of your financial health with monthly and overall metrics (defaults to current month)
 
 ### User Experience
@@ -28,6 +29,8 @@ A comprehensive standalone financial management Progressive Web App (PWA) built 
 - ✅ **Data Validation**: Comprehensive validation and business rules
 - 🔍 **Data Health Checks**: Identify and fix data inconsistencies
 - 📤 **CSV Export**: Export transactions to CSV
+- ⏰ **Scheduled Exports**: Automatically export transactions on a schedule (daily, weekly, monthly)
+- 📊 **Projections Integration**: Import projections from CSV/Excel, auto-populate inflow totals, track savings targets
 - 💰 **Automatic Balance Updates**: Account balances automatically update when transactions are received/paid/completed
 - 🔄 **Balance Sync**: Sync existing account balances with transactions (useful for old data)
 - 🗑️ **Clear All Data**: Reset the app to a clean state by clearing all storage (irreversible)
