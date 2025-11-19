@@ -33,6 +33,7 @@ import { ThemeModeToggle } from '../components/layout/ThemeModeToggle';
 import { DataHealthCheck } from '../components/common/DataHealthCheck';
 import { ExportHistory } from '../components/common/ExportHistory';
 import { ScheduledExports } from '../components/common/ScheduledExports';
+import { ProjectionsIntegration } from '../components/common/ProjectionsIntegration';
 import { AccessibilityCheck } from '../components/common/AccessibilityCheck';
 import { SecurityCheck } from '../components/common/SecurityCheck';
 import { PerformanceMetricsDialog } from '../components/common/PerformanceMetricsDialog';
@@ -494,6 +495,16 @@ export function Settings() {
               Automatically export transactions on a schedule. Exports run when the app is open.
             </Typography>
             <ScheduledExports />
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Projections Integration</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Import projections from CSV or Excel files to auto-populate inflow totals and track savings targets.
+            </Typography>
+            <ProjectionsIntegration />
           </Stack>
 
           <Divider />
