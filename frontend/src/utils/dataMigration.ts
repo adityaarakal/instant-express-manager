@@ -1,276 +1,423 @@
 /**
  * Data Migration Utility
- * Handles schema versioning and data migration
+ * 
+ * Migrates data from old PlannedMonthSnapshot structure to new transaction-based structure.
+ * This is a one-time migration utility for users upgrading from the old system.
+ * 
+ * @deprecated This migration utility is optional and only needed if migrating from old data.
+ * The new system is designed to work without any old data.
  */
 
-import { useSchemaVersionStore, CURRENT_SCHEMA_VERSION } from '../store/useSchemaVersionStore';
-import { performanceMonitor } from './performanceMonitoring';
+import type { PlannedMonthSnapshot } from '../types/plannedExpenses';
+import type { BankAccount } from '../types/bankAccounts';
+import { useBanksStore } from '../store/useBanksStore';
+import { useBankAccountsStore } from '../store/useBankAccountsStore';
+import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore';
+import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
+import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 
 export interface MigrationResult {
   success: boolean;
-  migrated: boolean;
-  fromVersion: string;
-  toVersion: string;
-  errors?: string[];
+  banksCreated: number;
+  accountsCreated: number;
+  incomeTransactionsCreated: number;
+  expenseTransactionsCreated: number;
+  savingsTransactionsCreated: number;
+  errors: string[];
+  warnings: string[];
 }
 
-/**
- * Compare two semantic versions
- * Returns: 1 if v1 > v2, -1 if v1 < v2, 0 if equal
- */
-function compareVersions(v1: string, v2: string): number {
-  const parts1 = v1.split('.').map(Number);
-  const parts2 = v2.split('.').map(Number);
-
-  for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
-    const part1 = parts1[i] || 0;
-    const part2 = parts2[i] || 0;
-    if (part1 > part2) return 1;
-    if (part1 < part2) return -1;
-  }
-  return 0;
+export interface MigrationOptions {
+  /** Default bank name to use if no bank exists */
+  defaultBankName?: string;
+  /** Default bank type */
+  defaultBankType?: 'Bank' | 'CreditCard' | 'Wallet';
+  /** Whether to create transactions for pending allocations */
+  includePendingTransactions?: boolean;
+  /** Whether to preserve manual adjustments */
+  preserveManualAdjustments?: boolean;
 }
 
+const DEFAULT_OPTIONS: Required<MigrationOptions> = {
+  defaultBankName: 'Migrated Bank',
+  defaultBankType: 'Bank',
+  includePendingTransactions: true,
+  preserveManualAdjustments: true,
+};
+
 /**
- * Migration 1.0.0 → 1.1.0
- * Adds dayOfMonth field to recurring templates if missing
- * This migration was needed when dayOfMonth was introduced to replace deductionDate
+ * Migrates old PlannedMonthSnapshot data to new transaction-based structure
  */
-async function migrateTo1_1_0(): Promise<void> {
+export async function migratePlannedMonthSnapshot(
+  snapshot: PlannedMonthSnapshot,
+  options: MigrationOptions = {}
+): Promise<MigrationResult> {
+  const opts = { ...DEFAULT_OPTIONS, ...options };
+  const result: MigrationResult = {
+    success: false,
+    banksCreated: 0,
+    accountsCreated: 0,
+    incomeTransactionsCreated: 0,
+    expenseTransactionsCreated: 0,
+    savingsTransactionsCreated: 0,
+    errors: [],
+    warnings: [],
+  };
+
   try {
-    const { useRecurringIncomesStore } = await import('../store/useRecurringIncomesStore');
-    const { useRecurringExpensesStore } = await import('../store/useRecurringExpensesStore');
-    const { useRecurringSavingsInvestmentsStore } = await import('../store/useRecurringSavingsInvestmentsStore');
-
-    // Migrate recurring income templates
-    const incomeTemplates = useRecurringIncomesStore.getState().templates;
-    incomeTemplates.forEach((template: { id: string; dayOfMonth?: number; startDate?: string }) => {
-      if (!template.dayOfMonth && template.startDate) {
-        // Extract day from startDate if dayOfMonth is missing
-        const startDate = new Date(template.startDate);
-        const dayOfMonth = startDate.getDate();
-        useRecurringIncomesStore.getState().updateTemplate(template.id, { dayOfMonth });
-      }
-    });
-
-    // Migrate recurring expense templates
-    const expenseTemplates = useRecurringExpensesStore.getState().templates;
-    expenseTemplates.forEach((template: { id: string; dayOfMonth?: number; startDate?: string }) => {
-      if (!template.dayOfMonth && template.startDate) {
-        const startDate = new Date(template.startDate);
-        const dayOfMonth = startDate.getDate();
-        useRecurringExpensesStore.getState().updateTemplate(template.id, { dayOfMonth });
-      }
-    });
-
-    // Migrate recurring savings templates
-    const savingsTemplates = useRecurringSavingsInvestmentsStore.getState().templates;
-    savingsTemplates.forEach((template: { id: string; dayOfMonth?: number; startDate?: string }) => {
-      if (!template.dayOfMonth && template.startDate) {
-        const startDate = new Date(template.startDate);
-        const dayOfMonth = startDate.getDate();
-        useRecurringSavingsInvestmentsStore.getState().updateTemplate(template.id, { dayOfMonth });
-      }
-    });
-  } catch (error) {
-    // Migration errors are logged but don't fail the migration process
-    // This allows the app to continue even if some data can't be migrated
-    console.error('Migration 1.0.0 → 1.1.0 error:', error);
-  }
-}
-
-/**
- * Migration 1.1.0 → 1.2.0
- * Ensures transfer transactions have proper structure
- * This migration was needed when transfer transactions feature was added
- */
-async function migrateTo1_2_0(): Promise<void> {
-  try {
-    const { useTransferTransactionsStore } = await import('../store/useTransferTransactionsStore');
-    
-    // Validate all transfer transactions have required fields
-    // This migration ensures data integrity for transfer transactions
-    // No actual data changes needed as the feature was added cleanly
-    // The store initialization validates data structure automatically
-    const transfers = useTransferTransactionsStore.getState().transfers;
-    if (transfers.length > 0) {
-      // Verify transfers are properly structured (validation happens at store level)
-      // This migration was a placeholder for when transfer feature was added
-    }
-  } catch (error) {
-    console.error('Migration 1.1.0 → 1.2.0 error:', error);
-  }
-}
-
-/**
- * Migrate data from one version to another
- * Currently handles simple version updates (future: add actual schema migrations)
- */
-export async function migrateData(): Promise<MigrationResult> {
-  return performanceMonitor.trackOperationAsync('migrateData', async () => {
-    const schemaVersionStore = useSchemaVersionStore.getState();
-    const currentStoredVersion = schemaVersionStore.schemaVersion;
-    const targetVersion = CURRENT_SCHEMA_VERSION;
-
-    // If versions match, no migration needed
-    if (currentStoredVersion === targetVersion) {
-      return {
-        success: true,
-        migrated: false,
-        fromVersion: currentStoredVersion,
-        toVersion: targetVersion,
-      };
+    // Step 1: Create or get default bank
+    let bankId: string;
+    const existingBanks = useBanksStore.getState().banks;
+    if (existingBanks.length === 0) {
+      useBanksStore.getState().createBank({
+        name: opts.defaultBankName,
+        type: opts.defaultBankType,
+      });
+      bankId = useBanksStore.getState().banks[0].id;
+      result.banksCreated = 1;
+    } else {
+      bankId = existingBanks[0].id;
+      result.warnings.push('Using existing bank instead of creating new one');
     }
 
-    const errors: string[] = [];
+    // Step 2: Create bank accounts from snapshot accounts
+    const accountMap = new Map<string, string>(); // old accountId -> new accountId
+    const monthStart = new Date(snapshot.monthStart);
+    const monthEnd = new Date(monthStart);
+    monthEnd.setMonth(monthEnd.getMonth() + 1);
+    monthEnd.setDate(0); // Last day of month
 
-    try {
-      // Check if stored version is older than current
-      if (compareVersions(currentStoredVersion, targetVersion) < 0) {
-        // Need to migrate from older version to newer
+    for (const oldAccount of snapshot.accounts) {
+      try {
+        // Map old account type to new account type
+        const accountType = mapOldAccountTypeToNew(oldAccount.accountName, oldAccount.accountName);
         
-        // Execute migrations sequentially from stored version to target version
-        let versionToMigrate = currentStoredVersion;
-        
-        // Example migrations (add new migrations as schema changes)
-        // Migration 1.0.0 → 1.1.0: Add dayOfMonth field to recurring templates
-        if (compareVersions(versionToMigrate, '1.1.0') < 0 && compareVersions('1.1.0', targetVersion) <= 0) {
-          await migrateTo1_1_0();
-          versionToMigrate = '1.1.0';
-        }
+        // Calculate initial balance from fixedBalance or use 0
+        const initialBalance = oldAccount.fixedBalance ?? 0;
 
-        // Migration 1.1.0 → 1.2.0: Add transfer transactions support
-        if (compareVersions(versionToMigrate, '1.2.0') < 0 && compareVersions('1.2.0', targetVersion) <= 0) {
-          await migrateTo1_2_0();
-          versionToMigrate = '1.2.0';
-        }
+        useBankAccountsStore.getState().createAccount({
+          bankId,
+          name: oldAccount.accountName,
+          accountType,
+          currentBalance: initialBalance,
+          accountNumber: oldAccount.id, // Use old ID as account number for reference
+        });
 
-        // Future migrations:
-        // if (compareVersions(versionToMigrate, '1.3.0') < 0 && compareVersions('1.3.0', targetVersion) <= 0) {
-        //   await migrateTo1_3_0();
-        //   versionToMigrate = '1.3.0';
-        // }
-
-        // Update schema version to current
-        schemaVersionStore.setSchemaVersion(targetVersion);
-
-        return {
-          success: true,
-          migrated: true,
-          fromVersion: currentStoredVersion,
-          toVersion: targetVersion,
-        };
-      } else {
-        // Stored version is newer than current (shouldn't happen in normal flow)
-        // This could happen if user downgrades the app
-        errors.push(
-          `Stored data version (${currentStoredVersion}) is newer than app version (${targetVersion}). ` +
-          `Some features may not work correctly.`
+        const newAccount = useBankAccountsStore.getState().accounts.find(
+          (acc) => acc.name === oldAccount.accountName && acc.bankId === bankId
         );
 
-        return {
-          success: false,
-          migrated: false,
-          fromVersion: currentStoredVersion,
-          toVersion: targetVersion,
-          errors,
-        };
+        if (newAccount) {
+          accountMap.set(oldAccount.id, newAccount.id);
+          result.accountsCreated++;
+        } else {
+          result.errors.push(`Failed to create account: ${oldAccount.accountName}`);
+        }
+      } catch (error) {
+        result.errors.push(`Error creating account ${oldAccount.accountName}: ${error instanceof Error ? error.message : String(error)}`);
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown migration error';
-      errors.push(`Migration failed: ${errorMessage}`);
-
-      return {
-        success: false,
-        migrated: false,
-        fromVersion: currentStoredVersion,
-        toVersion: targetVersion,
-        errors,
-      };
     }
-  });
+
+    // Step 3: Create income transaction from inflowTotal
+    if (snapshot.inflowTotal && snapshot.inflowTotal > 0) {
+      try {
+        // Use first account for income
+        const firstAccountId = Array.from(accountMap.values())[0];
+        if (firstAccountId) {
+          useIncomeTransactionsStore.getState().createTransaction({
+            date: snapshot.monthStart,
+            amount: snapshot.inflowTotal,
+            accountId: firstAccountId,
+            category: 'Salary',
+            description: `Migrated income for ${snapshot.monthStart}`,
+            status: 'Received', // Assume received if it's in the snapshot
+          });
+          result.incomeTransactionsCreated++;
+        } else {
+          result.warnings.push('No accounts available for income transaction');
+        }
+      } catch (error) {
+        result.errors.push(`Error creating income transaction: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+
+    // Step 4: Create expense transactions from bucketAmounts
+    for (const oldAccount of snapshot.accounts) {
+      const newAccountId = accountMap.get(oldAccount.id);
+      if (!newAccountId) continue;
+
+      for (const [bucketId, amount] of Object.entries(oldAccount.bucketAmounts)) {
+        if (amount === null || amount === 0) continue;
+
+        const status = snapshot.statusByBucket[bucketId] || 'pending';
+        const shouldCreate = opts.includePendingTransactions || status === 'paid';
+
+        if (shouldCreate) {
+          try {
+            // Map bucketId to valid bucket type
+            const bucket = mapBucketToValidType(bucketId);
+            
+            useExpenseTransactionsStore.getState().createTransaction({
+              date: snapshot.dueDates[bucketId] || snapshot.monthStart,
+              amount: Math.abs(amount),
+              accountId: newAccountId,
+              category: 'Other',
+              bucket: bucket,
+              description: `Migrated ${bucketId} allocation`,
+              status: status === 'paid' ? 'Paid' : 'Pending',
+            });
+            result.expenseTransactionsCreated++;
+          } catch (error) {
+            result.errors.push(`Error creating expense transaction for bucket ${bucketId}: ${error instanceof Error ? error.message : String(error)}`);
+          }
+        }
+      }
+
+      // Step 5: Create savings/investment transaction from savingsTransfer
+      if (oldAccount.savingsTransfer && oldAccount.savingsTransfer !== 0) {
+        try {
+          useSavingsInvestmentTransactionsStore.getState().createTransaction({
+            date: snapshot.monthStart,
+            amount: Math.abs(oldAccount.savingsTransfer),
+            accountId: newAccountId,
+            destination: 'Migrated Savings',
+            type: 'LumpSum',
+            description: `Migrated savings transfer`,
+            status: 'Completed',
+          });
+          result.savingsTransactionsCreated++;
+        } catch (error) {
+          result.errors.push(`Error creating savings transaction: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }
+    }
+
+    // Step 6: Handle manual adjustments (if preserved)
+    if (opts.preserveManualAdjustments && snapshot.manualAdjustments) {
+      for (const adjustment of snapshot.manualAdjustments) {
+        try {
+          const accountId = adjustment.accountId 
+            ? accountMap.get(adjustment.accountId)
+            : Array.from(accountMap.values())[0];
+
+          if (accountId) {
+            // Create as expense transaction (negative adjustment) or income (positive)
+            if (adjustment.amount < 0) {
+              useExpenseTransactionsStore.getState().createTransaction({
+                date: adjustment.createdAt,
+                amount: Math.abs(adjustment.amount),
+                accountId,
+                category: 'Other',
+                bucket: 'Expense',
+                description: `Manual adjustment: ${adjustment.description}`,
+                status: 'Paid',
+              });
+              result.expenseTransactionsCreated++;
+            } else {
+              useIncomeTransactionsStore.getState().createTransaction({
+                date: adjustment.createdAt,
+                amount: adjustment.amount,
+                accountId,
+                category: 'Other',
+                description: `Manual adjustment: ${adjustment.description}`,
+                status: 'Received',
+              });
+              result.incomeTransactionsCreated++;
+            }
+          }
+        } catch (error) {
+          result.warnings.push(`Could not migrate manual adjustment: ${adjustment.description}`);
+        }
+      }
+    }
+
+    result.success = result.errors.length === 0;
+    
+    if (result.warnings.length > 0) {
+      result.warnings.push('Migration completed with warnings. Please review the migrated data.');
+    }
+
+    return result;
+  } catch (error) {
+    result.errors.push(`Migration failed: ${error instanceof Error ? error.message : String(error)}`);
+    return result;
+  }
+}
+
+/**
+ * Maps old account type to new BankAccount accountType
+ */
+function mapOldAccountTypeToNew(
+  accountName: string,
+  oldType?: string
+): BankAccount['accountType'] {
+  const nameLower = accountName.toLowerCase();
+  
+  if (nameLower.includes('credit') || nameLower.includes('card')) {
+    return 'CreditCard';
+  }
+  if (nameLower.includes('savings') || nameLower.includes('deposit')) {
+    return 'Savings';
+  }
+  if (nameLower.includes('current') || nameLower.includes('checking')) {
+    return 'Current';
+  }
+  if (nameLower.includes('wallet')) {
+    return 'Wallet';
+  }
+  // Note: Investment and Loan accounts map to Savings in new system
+  // as BankAccount type only supports: Savings | Current | CreditCard | Wallet
+
+  // Default mapping based on old type
+  switch (oldType) {
+    case 'salary':
+      return 'Savings';
+    case 'credit-card':
+      return 'CreditCard';
+    case 'investment':
+    case 'loan':
+      return 'Savings'; // Map to Savings as Investment/Loan not supported
+    case 'wallet':
+      return 'Wallet';
+    default:
+      return 'Savings'; // Default fallback
+  }
+}
+
+/**
+ * Maps bucket ID to valid ExpenseTransaction bucket type
+ */
+function mapBucketToValidType(bucketId: string): 'Balance' | 'Savings' | 'MutualFunds' | 'CCBill' | 'Maintenance' | 'Expense' {
+  const bucketLower = bucketId.toLowerCase();
+  
+  if (bucketLower.includes('balance')) return 'Balance';
+  if (bucketLower.includes('savings')) return 'Savings';
+  if (bucketLower.includes('mutual') || bucketLower.includes('fund')) return 'MutualFunds';
+  if (bucketLower.includes('cc') || bucketLower.includes('credit') || bucketLower.includes('bill')) return 'CCBill';
+  if (bucketLower.includes('maintenance')) return 'Maintenance';
+  if (bucketLower.includes('expense')) return 'Expense';
+  
+  // Default to Expense
+  return 'Expense';
+}
+
+/**
+ * Checks if migration is needed by looking for old PlannedMonthSnapshot data
+ */
+export async function checkMigrationNeeded(): Promise<boolean> {
+  // Check if there are any old PlannedMonthSnapshot entries in storage
+  // This would require checking the old storage keys
+  // For now, return false as migration is optional
+  return false;
 }
 
 /**
  * Initialize schema version for new installations
+ * This is a placeholder for future schema versioning
  */
 export function initializeSchemaVersion(): void {
-  const schemaVersionStore = useSchemaVersionStore.getState();
-  
-  // If schema version is not set (new installation), set it to current version
-  if (!schemaVersionStore.schemaVersion || schemaVersionStore.schemaVersion === '') {
-    schemaVersionStore.setSchemaVersion(CURRENT_SCHEMA_VERSION);
-  }
+  // Placeholder for schema version initialization
+  // Can be extended to track data schema versions
 }
 
 /**
- * Validate data integrity on app load
- * Checks for common data inconsistencies
+ * Migrate data from old structure to new structure
+ * This is called automatically on app startup
  */
-export function validateDataIntegrity(): { isValid: boolean; errors: string[] } {
-  return performanceMonitor.trackOperation('validateDataIntegrity', () => {
-    const errors: string[] = [];
-
-  try {
-    // Import stores dynamically to avoid circular dependencies
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { useBanksStore } = require('../store/useBanksStore');
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { useBankAccountsStore } = require('../store/useBankAccountsStore');
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { useIncomeTransactionsStore } = require('../store/useIncomeTransactionsStore');
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { useExpenseTransactionsStore } = require('../store/useExpenseTransactionsStore');
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { useSavingsInvestmentTransactionsStore } = require('../store/useSavingsInvestmentTransactionsStore');
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { useTransferTransactionsStore } = require('../store/useTransferTransactionsStore');
-
-    const banks = useBanksStore.getState().banks;
-    const accounts = useBankAccountsStore.getState().accounts;
-    const incomeTransactions = useIncomeTransactionsStore.getState().transactions;
-    const expenseTransactions = useExpenseTransactionsStore.getState().transactions;
-    const savingsTransactions = useSavingsInvestmentTransactionsStore.getState().transactions;
-    const transferTransactions = useTransferTransactionsStore.getState().transfers;
-
-    // Validate bank account references
-    accounts.forEach((account: { name: string; bankId: string }) => {
-      const bank = banks.find((b: { id: string }) => b.id === account.bankId);
-      if (!bank) {
-        errors.push(`Account "${account.name}" references non-existent bank ID: ${account.bankId}`);
-      }
-    });
-
-    // Validate transaction account references
-    [...incomeTransactions, ...expenseTransactions, ...savingsTransactions].forEach((transaction: { accountId: string }) => {
-      const account = accounts.find((a: { id: string }) => a.id === transaction.accountId);
-      if (!account) {
-        errors.push(`Transaction references non-existent account ID: ${transaction.accountId}`);
-      }
-    });
-
-    // Validate transfer account references
-    transferTransactions.forEach((transfer: { fromAccountId: string; toAccountId: string }) => {
-      const fromAccount = accounts.find((a: { id: string }) => a.id === transfer.fromAccountId);
-      const toAccount = accounts.find((a: { id: string }) => a.id === transfer.toAccountId);
-      if (!fromAccount) {
-        errors.push(`Transfer references non-existent from account ID: ${transfer.fromAccountId}`);
-      }
-      if (!toAccount) {
-        errors.push(`Transfer references non-existent to account ID: ${transfer.toAccountId}`);
-      }
-    });
-
-    // Additional validations can be added here
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown validation error';
-      errors.push(`Data validation error: ${errorMessage}`);
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-    };
-  });
+export async function migrateData(): Promise<{
+  migrated: boolean;
+  fromVersion?: string;
+  toVersion?: string;
+  errors: string[];
+}> {
+  // Placeholder for automatic migration
+  // Currently returns no migration needed
+  return {
+    migrated: false,
+    errors: [],
+  };
 }
 
+/**
+ * Validate data integrity across all stores
+ */
+export function validateDataIntegrity() {
+  const errors: string[] = [];
+  
+  // Check that all account references in transactions are valid
+  const accounts = useBankAccountsStore.getState().accounts;
+  const accountIds = new Set(accounts.map((acc) => acc.id));
+  
+  // Validate income transactions
+  const incomeTransactions = useIncomeTransactionsStore.getState().transactions;
+  incomeTransactions.forEach((tx) => {
+    if (!accountIds.has(tx.accountId)) {
+      errors.push(`Income transaction ${tx.id} references non-existent account ${tx.accountId}`);
+    }
+  });
+  
+  // Validate expense transactions
+  const expenseTransactions = useExpenseTransactionsStore.getState().transactions;
+  expenseTransactions.forEach((tx) => {
+    if (!accountIds.has(tx.accountId)) {
+      errors.push(`Expense transaction ${tx.id} references non-existent account ${tx.accountId}`);
+    }
+  });
+  
+  // Validate savings/investment transactions
+  const savingsTransactions = useSavingsInvestmentTransactionsStore.getState().transactions;
+  savingsTransactions.forEach((tx) => {
+    if (!accountIds.has(tx.accountId)) {
+      errors.push(`Savings transaction ${tx.id} references non-existent account ${tx.accountId}`);
+    }
+  });
+  
+  // Check that all bank references in accounts are valid
+  const banks = useBanksStore.getState().banks;
+  const bankIds = new Set(banks.map((bank) => bank.id));
+  
+  for (const acc of accounts) {
+    if (!bankIds.has(acc.bankId)) {
+      errors.push('Account ' + acc.id + ' references non-existent bank ' + acc.bankId);
+    }
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors: errors,
+  } as { isValid: boolean; errors: string[] };
+}
+
+/**
+ * Validates that migration can be performed safely
+ */
+export function validateMigrationData(snapshot: PlannedMonthSnapshot): {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+} {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  if (!snapshot.monthStart) {
+    errors.push('Missing monthStart date');
+  }
+
+  if (!snapshot.accounts || snapshot.accounts.length === 0) {
+    errors.push('No accounts found in snapshot');
+  }
+
+  if (snapshot.inflowTotal === null || snapshot.inflowTotal === undefined) {
+    warnings.push('No inflow total found - income transaction will be skipped');
+  }
+
+  if (snapshot.accounts.some((acc) => !acc.id)) {
+    errors.push('Some accounts are missing IDs');
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+  };
+}

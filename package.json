@@ -23,7 +23,8 @@
     "test:e2e": "cd frontend && npm run test:e2e",
     "test:e2e:browsers": "cd frontend && npm run test:e2e -- --project=chromium --project=firefox --project=webkit",
     "lighthouse": "cd frontend && npm run lighthouse",
-    "test:deployment": "bash scripts/test-deployment.sh"
+    "test:deployment": "bash scripts/test-deployment.sh",
+    "pre-deploy": "bash scripts/pre-deployment-check.sh"
   },
   "keywords": [
     "react",
