@@ -252,10 +252,6 @@ export const Dashboard = memo(function Dashboard() {
       </Suspense>
 
       <Suspense fallback={<ChartLoader />}>
-        <SavingsTrendChart trend={metrics.savingsTrend} />
-      </Suspense>
-
-      <Suspense fallback={<ChartLoader />}>
         <BudgetVsActual monthId={selectedMonthId} />
       </Suspense>
 
