@@ -17,6 +17,7 @@ import type {
 import { calculateRemainingCash } from './formulas';
 import { applyDueDateZeroing } from './validation';
 import { DEFAULT_BUCKETS } from '../config/plannedExpenses';
+import { useDueDateOverridesStore } from '../store/useDueDateOverridesStore';
 
 /**
  * Aggregate transactions into a monthly view
@@ -74,14 +75,20 @@ export function aggregateMonth(
 
     // Calculate bucket amounts from expense transactions
     // Apply due date zeroing logic: if due date has passed, amount becomes 0
+    // Unless there's an override for this month/account/bucket
     const bucketAmounts: Record<string, number | null> = {};
     const bucketDueDates: Record<string, string | null> = {};
     const today = new Date();
+    const hasOverride = useDueDateOverridesStore.getState().hasOverride;
     bucketOrder.forEach((bucketId) => {
       const bucketExpenses = accountExpenses.filter((t) => t.bucket === bucketId);
+      const isOverridden = hasOverride(monthId, account.id, bucketId);
       const total = bucketExpenses.reduce((sum, t) => {
         // Apply due date zeroing: if due date has passed, don't count the amount
-        const effectiveAmount = applyDueDateZeroing(t.amount, t.dueDate, today);
+        // Unless override is set for this month/account/bucket
+        const effectiveAmount = isOverridden
+          ? t.amount // If overridden, use original amount
+          : applyDueDateZeroing(t.amount, t.dueDate, today);
         return sum + effectiveAmount;
       }, 0);
       bucketAmounts[bucketId] = total > 0 ? total : null;
