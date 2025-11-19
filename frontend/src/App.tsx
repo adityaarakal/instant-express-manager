@@ -7,6 +7,7 @@ import { AppRoutes } from './routes/AppRoutes';
 import { AppProviders } from './providers/AppProviders';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { useSettingsStore } from './store/useSettingsStore';
+import { useScheduledExports } from './hooks/useScheduledExports';
 
 function App() {
   const themeSetting = useSettingsStore((state) => state.settings.theme);
@@ -18,6 +19,9 @@ function App() {
         : 'light'
       : themeSetting;
   const theme = useMemo(() => createAppTheme(paletteMode), [paletteMode]);
+  
+  // Initialize scheduled exports
+  useScheduledExports();
 
   return (
     <ThemeProvider theme={theme}>

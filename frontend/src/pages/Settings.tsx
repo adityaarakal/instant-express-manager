@@ -32,6 +32,7 @@ import { getUserFriendlyError } from '../utils/errorHandling';
 import { ThemeModeToggle } from '../components/layout/ThemeModeToggle';
 import { DataHealthCheck } from '../components/common/DataHealthCheck';
 import { ExportHistory } from '../components/common/ExportHistory';
+import { ScheduledExports } from '../components/common/ScheduledExports';
 import { AccessibilityCheck } from '../components/common/AccessibilityCheck';
 import { SecurityCheck } from '../components/common/SecurityCheck';
 import { PerformanceMetricsDialog } from '../components/common/PerformanceMetricsDialog';
@@ -483,6 +484,16 @@ export function Settings() {
               Track when you export transactions or backups.
             </Typography>
             <ExportHistory />
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Scheduled Exports</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Automatically export transactions on a schedule. Exports run when the app is open.
+            </Typography>
+            <ScheduledExports />
           </Stack>
 
           <Divider />
