@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback, memo } from 'react';
+import { useEffect, useState, useMemo, useCallback, memo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Alert,
@@ -29,6 +29,7 @@ import { AccountFilters } from '../components/planner/AccountFilters';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { EmptyState } from '../components/common/EmptyState';
 import type { AggregatedMonth } from '../types/plannedExpensesAggregated';
+import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
 
 const formatMonthDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -50,12 +51,30 @@ export const Planner = memo(function Planner() {
   const [minAmount, setMinAmount] = useState<number | null>(null);
   const [maxAmount, setMaxAmount] = useState<number | null>(null);
   const [showNegativeOnly, setShowNegativeOnly] = useState<boolean>(false);
+  const tableRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
     window.print();
   };
 
-  // Keyboard shortcuts removed - no longer needed for Planner page
+  // Enhanced keyboard navigation
+  useKeyboardNavigation({
+    enableArrowKeys: true,
+    enableEnterToSave: false,
+    enableEscapeToCancel: true,
+    enabled: true,
+    focusTargetRef: tableRef,
+    onEscape: () => {
+      // Clear filters on Escape
+      setSelectedAccount(null);
+      setSelectedBucket(null);
+      setSelectedAccountType(null);
+      setSelectedStatus(null);
+      setMinAmount(null);
+      setMaxAmount(null);
+      setShowNegativeOnly(false);
+    },
+  });
 
   const availableMonths = getAvailableMonths();
 
@@ -339,8 +358,10 @@ export const Planner = memo(function Planner() {
             <>
               {filteredMonth.accounts.length > 0 ? (
                 <>
-                  <AccountTable month={filteredMonth} />
-          <TotalsFooter month={activeMonth} totals={totals} />
+                  <div ref={tableRef} tabIndex={0} style={{ outline: 'none' }}>
+                    <AccountTable month={filteredMonth} />
+                  </div>
+                  <TotalsFooter month={activeMonth} totals={totals} />
                 </>
               ) : (
                 <EmptyState
