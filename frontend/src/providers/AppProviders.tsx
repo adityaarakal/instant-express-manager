@@ -9,6 +9,7 @@ import { PWAUpdateNotification } from '../components/pwa/PWAUpdateNotification';
 import { PWAInstallPrompt } from '../components/pwa/PWAInstallPrompt';
 import { initializeSchemaVersion, migrateData, validateDataIntegrity } from '../utils/dataMigration';
 import { useToastStore } from '../store/useToastStore';
+import { initErrorTracking, captureException, captureMessage, ErrorSeverity } from '../utils/errorTracking';
 
 type AppProvidersProps = {
   children: ReactNode;
@@ -45,6 +46,16 @@ export function AppProviders({ children }: AppProvidersProps) {
     });
   }, []);
 
+  // Initialize error tracking on app startup
+  useEffect(() => {
+    initErrorTracking({
+      enabled: true,
+      storeLocally: true,
+      maxStoredErrors: 100,
+      includeStackInProduction: false,
+    });
+  }, []);
+
   // Initialize schema version and run migrations on app startup
   useEffect(() => {
     const runStartupChecks = async () => {
@@ -74,11 +85,17 @@ export function AppProviders({ children }: AppProvidersProps) {
         if (!validationResult.isValid && validationResult.errors.length > 0) {
           // Log integrity errors but don't block the app
           // In production, these could be sent to error tracking
-          // Log data integrity issues (safe - these are user-facing validation errors)
-          // Error logging is intentional for user visibility in development
-          if (import.meta.env.DEV) {
-            console.warn('Data integrity issues found:', validationResult.errors);
-          }
+          // Track data integrity issues
+          validationResult.errors.forEach((error) => {
+            captureMessage(
+              `Data integrity issue: ${error}`,
+              ErrorSeverity.MEDIUM,
+              {
+                component: 'AppProviders',
+                action: 'data-integrity-check',
+              }
+            );
+          });
           
           // Optionally show critical errors to user
           const criticalErrors = validationResult.errors.filter(
@@ -96,14 +113,15 @@ export function AppProviders({ children }: AppProvidersProps) {
         setMigrationComplete(true);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        // Log startup errors (safe - startup errors need visibility for debugging)
-        // Error logging is intentional for debugging
-        if (import.meta.env.DEV) {
-          console.error('Startup checks failed:', error);
-        } else {
-          // In production, log only error type and message
-          console.error('Startup checks failed:', error instanceof Error ? error.message : 'Unknown error');
-        }
+        // Track startup errors
+        captureException(
+          error instanceof Error ? error : new Error(String(error)),
+          {
+            component: 'AppProviders',
+            action: 'startup-checks',
+          },
+          ErrorSeverity.HIGH
+        );
         showError(`Startup initialization error: ${errorMessage}`);
         // Still allow app to continue even if migration fails
         setMigrationComplete(true);

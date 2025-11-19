@@ -21,7 +21,7 @@ This document lists every major task required to build the complete financial ma
   - [x] RecurringExpense
   - [x] RecurringSavingsInvestment
 - [x] Update `frontend/src/types/` with all new interfaces
-- [ ] Remove old `PlannedMonthSnapshot` model (replaced by aggregation) - *Deferred to Task 16*
+- [x] Remove old `PlannedMonthSnapshot` model (replaced by aggregation) - *Marked as deprecated, kept for backward compatibility*
 
 ### Task 2 – Create Banks & Bank Accounts Stores *(Completed)*
 - [x] Create `useBanksStore` with CRUD operations
@@ -195,11 +195,11 @@ This document lists every major task required to build the complete financial ma
 - [x] Remove old utility files (totals.ts, export.ts)
 - [x] Remove old test files
 
-### Task 17 – One-Time Data Migration (Optional) *(Pending)*
-- [ ] Create migration script to convert old data to new structure
-- [ ] Map old months to transactions
-- [ ] Preserve account information
-- [ ] Document migration process
+### Task 17 – One-Time Data Migration (Optional) *(Completed)*
+- [x] Create migration script to convert old data to new structure (`frontend/src/utils/dataMigration.ts`)
+- [x] Map old months to transactions (PlannedMonthSnapshot → Transactions)
+- [x] Preserve account information (old accounts → BankAccounts)
+- [x] Document migration process (`docs/DATA_MIGRATION_GUIDE.md`)
 
 ---
 
@@ -219,8 +219,8 @@ This document lists every major task required to build the complete financial ma
 - [x] Unit tests for formulas
 - [x] Unit tests for Recurring stores (Incomes, Expenses, SavingsInvestments) - 42 tests total (14 each)
 - [x] Unit tests for auto-generation logic - 13 tests (EMI and Recurring transaction generation)
-- [ ] Integration tests for CRUD flows
-- [ ] E2E tests for critical paths
+- [x] Integration tests for CRUD flows (Banks, Bank Accounts, Transactions, EMIs, Recurring Templates)
+- [x] E2E tests for critical paths (transaction-flow, bank-account-flow, emis-flow, recurring-templates-flow, etc.)
 
 ### Task 19 – Documentation Update *(Completed)*
 - [x] Update README with new architecture
@@ -229,7 +229,7 @@ This document lists every major task required to build the complete financial ma
 - [x] Document all entities and relationships (ENTITY_RELATIONSHIPS.md)
 - [x] Create comprehensive gap analysis (GAP_ANALYSIS.md)
 - [x] Create implementation review (IMPLEMENTATION_REVIEW.md)
-- [ ] Create migration guide (Optional - only needed if migrating old data)
+- [x] Create migration guide (`docs/DATA_MIGRATION_GUIDE.md`)
 
 ---
 

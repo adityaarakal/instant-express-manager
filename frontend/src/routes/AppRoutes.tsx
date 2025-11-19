@@ -1,6 +1,7 @@
-import { lazy, Suspense } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { CircularProgress, Box } from '@mui/material';
+import { trackPageView, isAnalyticsEnabled } from '../utils/analytics';
 
 // Lazy load all pages for code splitting
 const Dashboard = lazy(() => import('../pages/Dashboard').then((module) => ({ default: module.Dashboard })));
@@ -29,9 +30,27 @@ function RouteLoader() {
   );
 }
 
+/**
+ * Component to track page views on route changes
+ */
+function PageViewTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    isAnalyticsEnabled().then((enabled) => {
+      if (enabled) {
+        trackPageView(location.pathname + location.search);
+      }
+    });
+  }, [location]);
+
+  return null;
+}
+
 export function AppRoutes() {
   return (
     <Suspense fallback={<RouteLoader />}>
+      <PageViewTracker />
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/banks" element={<Banks />} />

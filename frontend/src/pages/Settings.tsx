@@ -35,12 +35,26 @@ import { ExportHistory } from '../components/common/ExportHistory';
 import { AccessibilityCheck } from '../components/common/AccessibilityCheck';
 import { SecurityCheck } from '../components/common/SecurityCheck';
 import { PerformanceMetricsDialog } from '../components/common/PerformanceMetricsDialog';
+import { StorageMonitoring } from '../components/common/StorageMonitoring';
+import { ErrorTrackingDialog } from '../components/common/ErrorTrackingDialog';
+import { StorageCleanupDialog } from '../components/common/StorageCleanupDialog';
+import {
+  enableAnalytics,
+  disableAnalytics,
+  updateAnalyticsConfig,
+  getAnalyticsConfig,
+} from '../utils/analytics';
+import {
+  getStorageStatistics,
+} from '../utils/storageCleanup';
 import { downloadBackup, readBackupFile, importBackup, exportBackup } from '../utils/backupService';
 import { syncAccountBalancesFromTransactions, type SyncResult } from '../utils/balanceSync';
 import { clearAllData } from '../utils/clearAllData';
 import { performanceMonitor } from '../utils/performanceMonitoring';
 import SyncIcon from '@mui/icons-material/Sync';
 import SpeedIcon from '@mui/icons-material/Speed';
+import BugReportIcon from '@mui/icons-material/BugReport';
+import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import TableContainer from '@mui/material/TableContainer';
 import Table from '@mui/material/Table';
 import TableHead from '@mui/material/TableHead';
@@ -70,6 +84,40 @@ export function Settings() {
   const [clearDataDialogOpen, setClearDataDialogOpen] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [performanceMetricsDialogOpen, setPerformanceMetricsDialogOpen] = useState(false);
+  const [errorTrackingDialogOpen, setErrorTrackingDialogOpen] = useState(false);
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
+  const [analyticsProvider, setAnalyticsProvider] = useState<'plausible' | 'google-analytics' | null>(null);
+  const [plausibleDomain, setPlausibleDomain] = useState('');
+  const [gaMeasurementId, setGaMeasurementId] = useState('');
+  const [cleanupDialogOpen, setCleanupDialogOpen] = useState(false);
+  const [storageStats, setStorageStats] = useState<{
+    transactions: number;
+    emis: number;
+    recurringTemplates: number;
+    undoItems: number;
+    exportHistoryItems: number;
+  } | null>(null);
+
+  // Load analytics config on mount
+  useEffect(() => {
+    getAnalyticsConfig().then((config) => {
+      setAnalyticsEnabled(config.enabled && config.userConsent);
+      setAnalyticsProvider(
+        config.provider === 'plausible' || config.provider === 'google-analytics' ? config.provider : null
+      );
+      setPlausibleDomain(config.providerConfig?.domain || '');
+      setGaMeasurementId(config.providerConfig?.measurementId || '');
+    });
+  }, []);
+
+  // Load storage statistics
+  useEffect(() => {
+    getStorageStatistics()
+      .then(setStorageStats)
+      .catch((error) => {
+        console.error('Failed to load storage statistics:', error);
+      });
+  }, [cleanupDialogOpen]);
   const [appVersion, setAppVersion] = useState<string>(
     (() => {
       // Try to read from meta tag first (for automatic updates)
@@ -514,6 +562,203 @@ export function Settings() {
           <Divider />
 
           <Stack spacing={2}>
+            <Typography variant="h6">Storage Usage</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Monitor IndexedDB storage quota and usage. Warnings will appear when storage is getting full.
+            </Typography>
+            <StorageMonitoring />
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Storage Cleanup</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Clean up old data to free up storage space and improve app performance. Configure cleanup options to automatically manage your data.
+            </Typography>
+            {storageStats && (
+              <Alert severity="info" sx={{ mb: 2 }}>
+                <AlertTitle>Current Storage Statistics</AlertTitle>
+                <Typography variant="body2">
+                  Transactions: {storageStats.transactions} | EMIs: {storageStats.emis} | Recurring Templates: {storageStats.recurringTemplates} | Undo Items: {storageStats.undoItems} | Export History: {storageStats.exportHistoryItems}
+                </Typography>
+              </Alert>
+            )}
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              <AlertTitle>Warning</AlertTitle>
+              <Typography variant="body2">
+                Storage cleanup is irreversible. Make sure to export a backup before cleaning up data. Deleted data cannot be recovered.
+              </Typography>
+            </Alert>
+            <Button
+              variant="outlined"
+              startIcon={<DeleteSweepIcon />}
+              onClick={() => setCleanupDialogOpen(true)}
+              fullWidth
+            >
+              Configure Storage Cleanup
+            </Button>
+            <Typography variant="caption" color="text.secondary">
+              Configure and run storage cleanup to remove old data and optimize storage usage.
+            </Typography>
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Error Tracking</Typography>
+            <Typography variant="body2" color="text.secondary">
+              View error logs and track application errors. Errors are stored locally and never sent to external servers unless configured.
+            </Typography>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <AlertTitle>Privacy First</AlertTitle>
+              <Typography variant="body2">
+                All errors are stored locally in your browser. No error data is sent to external services
+                unless you explicitly configure an external service (e.g., Sentry). Personal data is automatically
+                redacted from error logs.
+              </Typography>
+            </Alert>
+            <Button
+              variant="outlined"
+              startIcon={<BugReportIcon />}
+              onClick={() => setErrorTrackingDialogOpen(true)}
+              fullWidth
+            >
+              View Error Logs
+            </Button>
+            <Typography variant="caption" color="text.secondary">
+              View stored error logs and clear them if needed. Errors help identify and fix issues.
+            </Typography>
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Analytics</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Optional privacy-friendly analytics to understand how the app is used. Analytics are disabled by default and only enabled when you explicitly configure them.
+            </Typography>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <AlertTitle>Privacy First</AlertTitle>
+              <Typography variant="body2">
+                Analytics are <strong>disabled by default</strong>. No data is tracked or sent to external services
+                unless you explicitly enable and configure analytics. We recommend Plausible for privacy-friendly analytics
+                (GDPR compliant, no cookies, open-source).
+              </Typography>
+            </Alert>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={analyticsEnabled}
+                  onChange={(e) => {
+                    const enabled = e.target.checked;
+                    setAnalyticsEnabled(enabled);
+                    
+                    if (enabled) {
+                      // Validate provider configuration
+                      if (!analyticsProvider) {
+                        showWarning('Please select an analytics provider first.');
+                        setAnalyticsEnabled(false);
+                        return;
+                      }
+                      
+                      if (analyticsProvider === 'plausible' && !plausibleDomain) {
+                        showWarning('Please enter a Plausible domain.');
+                        setAnalyticsEnabled(false);
+                        return;
+                      }
+                      
+                      if (analyticsProvider === 'google-analytics' && !gaMeasurementId) {
+                        showWarning('Please enter a Google Analytics Measurement ID.');
+                        setAnalyticsEnabled(false);
+                        return;
+                      }
+                      
+                      // Enable analytics
+                      updateAnalyticsConfig({
+                        enabled: true,
+                        provider: analyticsProvider,
+                        providerConfig: analyticsProvider === 'plausible'
+                          ? { domain: plausibleDomain }
+                          : { measurementId: gaMeasurementId },
+                        trackPageViews: true,
+                        userConsent: true,
+                      }).then(() => {
+                        enableAnalytics(true).then(() => {
+                          showSuccess('Analytics enabled. Page views and events will be tracked.');
+                        });
+                      });
+                    } else {
+                      disableAnalytics().then(() => {
+                        showSuccess('Analytics disabled. No data will be tracked.');
+                      });
+                    }
+                  }}
+                />
+              }
+              label="Enable Analytics"
+            />
+            <FormControl fullWidth disabled={analyticsEnabled}>
+              <InputLabel>Analytics Provider</InputLabel>
+              <Select
+                value={analyticsProvider || ''}
+                label="Analytics Provider"
+                onChange={(e) => {
+                  const provider = e.target.value as 'plausible' | 'google-analytics' | '';
+                  setAnalyticsProvider(provider === '' ? null : provider);
+                  
+                  // Clear configuration when changing provider
+                  setPlausibleDomain('');
+                  setGaMeasurementId('');
+                }}
+              >
+                <MenuItem value="">None (Disabled)</MenuItem>
+                <MenuItem value="plausible">Plausible (Privacy-friendly, recommended)</MenuItem>
+                <MenuItem value="google-analytics">Google Analytics 4</MenuItem>
+              </Select>
+            </FormControl>
+            {analyticsProvider === 'plausible' && (
+              <TextField
+                label="Plausible Domain"
+                value={plausibleDomain}
+                onChange={(e) => setPlausibleDomain(e.target.value)}
+                placeholder="yourdomain.com"
+                disabled={analyticsEnabled}
+                helperText="Enter your Plausible Analytics domain"
+                fullWidth
+              />
+            )}
+            {analyticsProvider === 'google-analytics' && (
+              <TextField
+                label="Google Analytics Measurement ID"
+                value={gaMeasurementId}
+                onChange={(e) => setGaMeasurementId(e.target.value)}
+                placeholder="G-XXXXXXXXXX"
+                disabled={analyticsEnabled}
+                helperText="Enter your Google Analytics 4 Measurement ID"
+                fullWidth
+              />
+            )}
+            {analyticsEnabled && (
+              <Alert severity="success">
+                <AlertTitle>Analytics Active</AlertTitle>
+                <Typography variant="body2">
+                  Analytics is enabled and tracking page views and events. You can disable it at any time.
+                </Typography>
+              </Alert>
+            )}
+            <Typography variant="caption" color="text.secondary">
+              {analyticsProvider === 'plausible'
+                ? 'Plausible is a privacy-friendly analytics tool that is GDPR compliant, does not use cookies, and is open-source.'
+                : analyticsProvider === 'google-analytics'
+                ? 'Google Analytics 4 tracks page views and events. IP addresses are anonymized for privacy.'
+                : 'Analytics are disabled. No data is tracked or sent to external services.'}
+            </Typography>
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
             <Typography variant="h6">Balance Sync</Typography>
             <Typography variant="body2" color="text.secondary">
               Sync account balances with existing transactions. This is useful if you have old data created before automatic balance updates were implemented.
@@ -811,6 +1056,18 @@ export function Settings() {
       <PerformanceMetricsDialog
         open={performanceMetricsDialogOpen}
         onClose={() => setPerformanceMetricsDialogOpen(false)}
+      />
+
+      {/* Error Tracking Dialog */}
+      <ErrorTrackingDialog
+        open={errorTrackingDialogOpen}
+        onClose={() => setErrorTrackingDialogOpen(false)}
+      />
+
+      {/* Storage Cleanup Dialog */}
+      <StorageCleanupDialog
+        open={cleanupDialogOpen}
+        onClose={() => setCleanupDialogOpen(false)}
       />
     </Stack>
   );
