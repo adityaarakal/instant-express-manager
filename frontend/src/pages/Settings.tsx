@@ -38,6 +38,7 @@ import { PerformanceMetricsDialog } from '../components/common/PerformanceMetric
 import { StorageMonitoring } from '../components/common/StorageMonitoring';
 import { ErrorTrackingDialog } from '../components/common/ErrorTrackingDialog';
 import { StorageCleanupDialog } from '../components/common/StorageCleanupDialog';
+import { RefErrorRemediationDialog } from '../components/common/RefErrorRemediationDialog';
 import {
   enableAnalytics,
   disableAnalytics,
@@ -90,6 +91,7 @@ export function Settings() {
   const [plausibleDomain, setPlausibleDomain] = useState('');
   const [gaMeasurementId, setGaMeasurementId] = useState('');
   const [cleanupDialogOpen, setCleanupDialogOpen] = useState(false);
+  const [refErrorDialogOpen, setRefErrorDialogOpen] = useState(false);
   const [storageStats, setStorageStats] = useState<{
     transactions: number;
     emis: number;
@@ -481,6 +483,34 @@ export function Settings() {
               Track when you export transactions or backups.
             </Typography>
             <ExportHistory />
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">#REF! Error Remediation</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Fix incomplete remaining cash calculations for months affected by #REF! errors.
+              This tool recalculates remaining cash from available transaction data.
+            </Typography>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <AlertTitle>About #REF! Errors</AlertTitle>
+              <Typography variant="body2">
+                Some months may have null or incorrect remaining cash values due to data migration issues.
+                This tool can automatically recalculate and fix these values.
+              </Typography>
+            </Alert>
+            <Button
+              variant="outlined"
+              startIcon={<SyncIcon />}
+              onClick={() => setRefErrorDialogOpen(true)}
+              fullWidth
+            >
+              Fix #REF! Errors
+            </Button>
+            <Typography variant="caption" color="text.secondary">
+              Scan for and fix remaining cash calculation errors in your data.
+            </Typography>
           </Stack>
 
           <Divider />
@@ -1069,6 +1099,13 @@ export function Settings() {
         open={cleanupDialogOpen}
         onClose={() => setCleanupDialogOpen(false)}
       />
+
+      {refErrorDialogOpen && (
+        <RefErrorRemediationDialog
+          open={refErrorDialogOpen}
+          onClose={() => setRefErrorDialogOpen(false)}
+        />
+      )}
     </Stack>
   );
 }
