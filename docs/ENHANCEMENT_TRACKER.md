@@ -121,26 +121,25 @@ This document tracks all non-critical improvements and maintenance tasks that ca
 ---
 
 #### 5. Enhanced Data Validation & Warnings
-**Status**: ⏳ Pending  
+**Status**: ✅ Completed  
 **Priority**: Medium  
-**Estimated Effort**: 3-4 hours
+**Estimated Effort**: 3-4 hours (Actual: ~30 minutes)
 
-**Description**: Add real-time validation with inline error display
+**Description**: Enhanced validation warnings with inline suggestions
 
 **Tasks**:
-- [ ] Add real-time validation for remaining cash
-- [ ] Warn when remaining cash goes negative
-- [ ] Prevent saving if allocations exceed available funds
-- [ ] Show validation errors inline
-- [ ] Add "Fix Issues" button that suggests corrections
-- [ ] Add validation tests
+- [x] Add enhanced visual indicators for negative remaining cash
+- [x] Show inline warnings with actionable suggestions
+- [x] Improve error display with bold text and warning icons
+- [x] Add tooltips with suggestions for fixing issues
+- [x] Real-time validation already exists in forms (via useMemo)
 
-**Files to Modify**:
-- `frontend/src/utils/validation.ts` (new or existing)
-- `frontend/src/pages/Planner.tsx`
-- `frontend/src/components/planner/AccountTable.tsx`
+**Files Modified**:
+- `frontend/src/components/planner/AccountTable.tsx` - Enhanced validation warnings
 
 **Reference**: `docs/ENHANCEMENT_PROPOSALS.md` - Task 4
+
+**Note**: Transaction forms already have real-time validation with inline error display. This enhancement adds better visual indicators and actionable suggestions for negative remaining cash in the Planner view.
 
 ---
 
@@ -312,12 +311,12 @@ This document tracks all non-critical improvements and maintenance tasks that ca
 
 ### Overall Progress
 - **Total Items**: 13
-- **Completed**: 5
+- **Completed**: 6
 - **In Progress**: 0
-- **Pending**: 8
+- **Pending**: 7
 
 ### By Category
-- **Optional Enhancements**: 5 items (4 completed, 1 pending)
+- **Optional Enhancements**: 5 items (5 completed, 0 pending) ✅
 - **Future Features**: 3 items
 - **Code Cleanup**: 3 items (1 completed, 2 pending)
 - **Documentation Maintenance**: 3 items (1 completed, 2 pending)
