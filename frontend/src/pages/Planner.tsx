@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback, memo } from 'react';
+import { useEffect, useState, useMemo, useCallback, memo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Alert,
@@ -26,8 +26,10 @@ import { AccountTable } from '../components/planner/AccountTable';
 import { TotalsFooter } from '../components/planner/TotalsFooter';
 import { MonthSearchFilter } from '../components/planner/MonthSearchFilter';
 import { AccountFilters } from '../components/planner/AccountFilters';
+import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { EmptyState } from '../components/common/EmptyState';
 import type { AggregatedMonth } from '../types/plannedExpensesAggregated';
+import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
 
 const formatMonthDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -44,13 +46,35 @@ export const Planner = memo(function Planner() {
   const [filteredMonths, setFilteredMonths] = useState<string[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
   const [selectedBucket, setSelectedBucket] = useState<string | null>(null);
+  const [selectedAccountType, setSelectedAccountType] = useState<string | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [minAmount, setMinAmount] = useState<number | null>(null);
+  const [maxAmount, setMaxAmount] = useState<number | null>(null);
   const [showNegativeOnly, setShowNegativeOnly] = useState<boolean>(false);
+  const tableRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
     window.print();
   };
 
-  // Keyboard shortcuts removed - no longer needed for Planner page
+  // Enhanced keyboard navigation
+  useKeyboardNavigation({
+    enableArrowKeys: true,
+    enableEnterToSave: false,
+    enableEscapeToCancel: true,
+    enabled: true,
+    focusTargetRef: tableRef,
+    onEscape: () => {
+      // Clear filters on Escape
+      setSelectedAccount(null);
+      setSelectedBucket(null);
+      setSelectedAccountType(null);
+      setSelectedStatus(null);
+      setMinAmount(null);
+      setMaxAmount(null);
+      setShowNegativeOnly(false);
+    },
+  });
 
   const availableMonths = getAvailableMonths();
 
@@ -75,6 +99,10 @@ export const Planner = memo(function Planner() {
   useEffect(() => {
     setSelectedAccount(null);
     setSelectedBucket(null);
+    setSelectedAccountType(null);
+    setSelectedStatus(null);
+    setMinAmount(null);
+    setMaxAmount(null);
     setShowNegativeOnly(false);
   }, [activeMonthId]);
 
@@ -93,10 +121,20 @@ export const Planner = memo(function Planner() {
   const filteredAccounts = useMemo(() => {
     if (!activeMonth) return [];
     let accounts = [...activeMonth.accounts];
+    const { accounts: bankAccounts } = useBankAccountsStore.getState();
+    const accountsMap = new Map(bankAccounts.map((acc) => [acc.id, acc]));
 
     // Filter by account
     if (selectedAccount) {
       accounts = accounts.filter((account) => account.id === selectedAccount);
+    }
+
+    // Filter by account type
+    if (selectedAccountType) {
+      accounts = accounts.filter((account) => {
+        const bankAccount = accountsMap.get(account.id);
+        return bankAccount?.accountType === selectedAccountType;
+      });
     }
 
     // Filter by bucket (show accounts that have allocations in this bucket)
@@ -109,6 +147,29 @@ export const Planner = memo(function Planner() {
       );
     }
 
+    // Filter by status (pending/paid) - check if bucket has pending or paid status
+    if (selectedStatus) {
+      accounts = accounts.filter((account) => {
+        // Check if any bucket for this account matches the status
+        return Object.keys(account.bucketAmounts).some((bucketId) => {
+          const bucketStatus = activeMonth.statusByBucket[bucketId];
+          return bucketStatus === selectedStatus;
+        });
+      });
+    }
+
+    // Filter by amount range (remaining cash)
+    if (minAmount !== null) {
+      accounts = accounts.filter(
+        (account) => account.remainingCash !== null && account.remainingCash >= minAmount!
+      );
+    }
+    if (maxAmount !== null) {
+      accounts = accounts.filter(
+        (account) => account.remainingCash !== null && account.remainingCash <= maxAmount!
+      );
+    }
+
     // Filter by negative cash only
     if (showNegativeOnly) {
       accounts = accounts.filter(
@@ -117,7 +178,16 @@ export const Planner = memo(function Planner() {
     }
 
     return accounts;
-  }, [activeMonth, selectedAccount, selectedBucket, showNegativeOnly]);
+  }, [
+    activeMonth,
+    selectedAccount,
+    selectedBucket,
+    selectedAccountType,
+    selectedStatus,
+    minAmount,
+    maxAmount,
+    showNegativeOnly,
+  ]);
 
   // Create filtered month with filtered accounts
   const filteredMonth = useMemo(() => {
@@ -262,13 +332,25 @@ export const Planner = memo(function Planner() {
             month={activeMonth}
             selectedAccount={selectedAccount}
             selectedBucket={selectedBucket}
+            selectedAccountType={selectedAccountType}
+            selectedStatus={selectedStatus}
+            minAmount={minAmount}
+            maxAmount={maxAmount}
             showNegativeOnly={showNegativeOnly}
             onAccountChange={setSelectedAccount}
             onBucketChange={setSelectedBucket}
+            onAccountTypeChange={setSelectedAccountType}
+            onStatusChange={setSelectedStatus}
+            onMinAmountChange={setMinAmount}
+            onMaxAmountChange={setMaxAmount}
             onNegativeOnlyChange={setShowNegativeOnly}
             onClear={() => {
               setSelectedAccount(null);
               setSelectedBucket(null);
+              setSelectedAccountType(null);
+              setSelectedStatus(null);
+              setMinAmount(null);
+              setMaxAmount(null);
               setShowNegativeOnly(false);
             }}
           />
@@ -276,8 +358,10 @@ export const Planner = memo(function Planner() {
             <>
               {filteredMonth.accounts.length > 0 ? (
                 <>
-                  <AccountTable month={filteredMonth} />
-          <TotalsFooter month={activeMonth} totals={totals} />
+                  <div ref={tableRef} tabIndex={0} style={{ outline: 'none' }}>
+                    <AccountTable month={filteredMonth} />
+                  </div>
+                  <TotalsFooter month={activeMonth} totals={totals} />
                 </>
               ) : (
                 <EmptyState

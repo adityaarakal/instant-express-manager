@@ -17,11 +17,15 @@ import {
 import InfoIcon from '@mui/icons-material/Info';
 import AddIcon from '@mui/icons-material/Add';
 import WarningIcon from '@mui/icons-material/Warning';
+import RestoreIcon from '@mui/icons-material/Restore';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import IconButton from '@mui/material/IconButton';
 import type { AggregatedMonth } from '../../types/plannedExpensesAggregated';
 import { DEFAULT_BUCKETS } from '../../config/plannedExpenses';
 import { EmptyState } from '../common/EmptyState';
 import { useExpenseTransactionsStore } from '../../store/useExpenseTransactionsStore';
 import { useAggregatedPlannedMonthsStore } from '../../store/useAggregatedPlannedMonthsStore';
+import { useDueDateOverridesStore } from '../../store/useDueDateOverridesStore';
 
 interface AccountTableProps {
   month: AggregatedMonth;
@@ -79,6 +83,7 @@ const getOriginalBucketAmount = (
 export const AccountTable = memo(function AccountTable({ month }: AccountTableProps) {
   const navigate = useNavigate();
   const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
+  const { hasOverride, addOverride, removeOverride } = useDueDateOverridesStore();
   const buckets = useMemo(
     () => DEFAULT_BUCKETS.filter((bucket) => month.bucketOrder.includes(bucket.id)),
     [month.bucketOrder],
@@ -257,35 +262,74 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
                   expenseTransactions,
                 );
                 const isZeroed = isPastDue && (bucketAmount === null || bucketAmount === 0) && originalAmount > 0;
+                const isOverridden = hasOverride(month.id, account.id, bucket.id);
+                const showToggle = isZeroed || isOverridden;
 
                 return (
                   <TableCell key={bucket.id} align="right">
-                    {isZeroed ? (
-                      <Tooltip
-                        title={`Due date (${dueDate ? new Date(dueDate).toLocaleDateString() : 'N/A'}) has passed. Original amount: ${formatCurrency(originalAmount)}`}
-                        arrow
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              textDecoration: 'line-through',
-                              color: 'text.disabled',
-                              fontStyle: 'italic',
-                            }}
-                          >
-                            {formatCurrency(originalAmount)}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ fontWeight: 'medium' }}
-                          >
-                            {formatCurrency(0)}
-                          </Typography>
-                          <WarningIcon fontSize="small" sx={{ color: 'warning.main', fontSize: 16 }} />
-                        </Box>
-                      </Tooltip>
+                    {showToggle ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
+                        {isOverridden ? (
+                          <>
+                            <Typography variant="body2" color="success.main" sx={{ fontWeight: 'medium' }}>
+                              {formatCurrency(originalAmount)}
+                            </Typography>
+                            <Tooltip
+                              title={`Override active: Amount re-enabled despite past due date. Click to remove override.`}
+                              arrow
+                            >
+                              <IconButton
+                                size="small"
+                                color="success"
+                                onClick={() => removeOverride(month.id, account.id, bucket.id)}
+                                sx={{ p: 0.5 }}
+                                aria-label="Remove override"
+                              >
+                                <CheckCircleIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </>
+                        ) : (
+                          <>
+                            <Tooltip
+                              title={`Due date (${dueDate ? new Date(dueDate).toLocaleDateString() : 'N/A'}) has passed. Original amount: ${formatCurrency(originalAmount)}. Click to re-enable.`}
+                              arrow
+                            >
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    textDecoration: 'line-through',
+                                    color: 'text.disabled',
+                                    fontStyle: 'italic',
+                                  }}
+                                >
+                                  {formatCurrency(originalAmount)}
+                                </Typography>
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  sx={{ fontWeight: 'medium' }}
+                                >
+                                  {formatCurrency(0)}
+                                </Typography>
+                                <WarningIcon fontSize="small" sx={{ color: 'warning.main', fontSize: 16 }} />
+                              </Box>
+                            </Tooltip>
+                            <Tooltip title="Re-enable this amount (override due date zeroing)" arrow>
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() => addOverride(month.id, account.id, bucket.id)}
+                                sx={{ p: 0.5 }}
+                                aria-label="Re-enable amount"
+                              >
+                                <RestoreIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </>
+                        )}
+                      </Box>
                     ) : (
                       <Typography variant="body2">{formatCurrency(bucketAmount)}</Typography>
                     )}

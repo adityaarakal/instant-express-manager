@@ -32,12 +32,15 @@ import { getUserFriendlyError } from '../utils/errorHandling';
 import { ThemeModeToggle } from '../components/layout/ThemeModeToggle';
 import { DataHealthCheck } from '../components/common/DataHealthCheck';
 import { ExportHistory } from '../components/common/ExportHistory';
+import { ScheduledExports } from '../components/common/ScheduledExports';
+import { ProjectionsIntegration } from '../components/common/ProjectionsIntegration';
 import { AccessibilityCheck } from '../components/common/AccessibilityCheck';
 import { SecurityCheck } from '../components/common/SecurityCheck';
 import { PerformanceMetricsDialog } from '../components/common/PerformanceMetricsDialog';
 import { StorageMonitoring } from '../components/common/StorageMonitoring';
 import { ErrorTrackingDialog } from '../components/common/ErrorTrackingDialog';
 import { StorageCleanupDialog } from '../components/common/StorageCleanupDialog';
+import { RefErrorRemediationDialog } from '../components/common/RefErrorRemediationDialog';
 import {
   enableAnalytics,
   disableAnalytics,
@@ -90,6 +93,7 @@ export function Settings() {
   const [plausibleDomain, setPlausibleDomain] = useState('');
   const [gaMeasurementId, setGaMeasurementId] = useState('');
   const [cleanupDialogOpen, setCleanupDialogOpen] = useState(false);
+  const [refErrorDialogOpen, setRefErrorDialogOpen] = useState(false);
   const [storageStats, setStorageStats] = useState<{
     transactions: number;
     emis: number;
@@ -481,6 +485,54 @@ export function Settings() {
               Track when you export transactions or backups.
             </Typography>
             <ExportHistory />
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Scheduled Exports</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Automatically export transactions on a schedule. Exports run when the app is open.
+            </Typography>
+            <ScheduledExports />
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Projections Integration</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Import projections from CSV or Excel files to auto-populate inflow totals and track savings targets.
+            </Typography>
+            <ProjectionsIntegration />
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">#REF! Error Remediation</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Fix incomplete remaining cash calculations for months affected by #REF! errors.
+              This tool recalculates remaining cash from available transaction data.
+            </Typography>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <AlertTitle>About #REF! Errors</AlertTitle>
+              <Typography variant="body2">
+                Some months may have null or incorrect remaining cash values due to data migration issues.
+                This tool can automatically recalculate and fix these values.
+              </Typography>
+            </Alert>
+            <Button
+              variant="outlined"
+              startIcon={<SyncIcon />}
+              onClick={() => setRefErrorDialogOpen(true)}
+              fullWidth
+            >
+              Fix #REF! Errors
+            </Button>
+            <Typography variant="caption" color="text.secondary">
+              Scan for and fix remaining cash calculation errors in your data.
+            </Typography>
           </Stack>
 
           <Divider />
@@ -1069,6 +1121,13 @@ export function Settings() {
         open={cleanupDialogOpen}
         onClose={() => setCleanupDialogOpen(false)}
       />
+
+      {refErrorDialogOpen && (
+        <RefErrorRemediationDialog
+          open={refErrorDialogOpen}
+          onClose={() => setRefErrorDialogOpen(false)}
+        />
+      )}
     </Stack>
   );
 }

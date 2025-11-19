@@ -49,6 +49,7 @@ const navItems = [
   { label: 'Recurring', to: '/recurring', icon: <RepeatIcon fontSize="small" />, end: false as const },
   { label: 'Planner', to: '/planner', icon: <EventNoteOutlinedIcon fontSize="small" />, end: false as const },
   { label: 'Analytics', to: '/analytics', icon: <AnalyticsIcon fontSize="small" />, end: false as const },
+  { label: 'Credit Cards', to: '/credit-cards', icon: <CreditCardIcon fontSize="small" />, end: false as const },
   { label: 'Settings', to: '/settings', icon: <SettingsOutlinedIcon fontSize="small" />, end: false as const },
 ] as const;
 

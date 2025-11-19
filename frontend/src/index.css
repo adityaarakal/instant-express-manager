@@ -151,5 +151,61 @@ body {
     background: white !important;
     color: black !important;
   }
+
+  /* Print-optimized charts */
+  .recharts-wrapper,
+  .recharts-surface {
+    page-break-inside: avoid !important;
+  }
+
+  /* Print summary reports */
+  .print-summary {
+    page-break-after: always;
+  }
+
+  .print-summary:last-child {
+    page-break-after: auto;
+  }
+
+  /* Dashboard print optimization */
+  .MuiGrid-root {
+    page-break-inside: avoid;
+  }
+
+  /* Better spacing for print */
+  .MuiCard-root,
+  .MuiPaper-root {
+    page-break-inside: avoid;
+    margin-bottom: 16px !important;
+  }
+
+  /* Print headers */
+  .print-header {
+    display: block !important;
+    margin-bottom: 16px !important;
+    padding-bottom: 8px !important;
+    border-bottom: 2px solid #000 !important;
+  }
+
+  /* Print footer */
+  .print-footer {
+    display: block !important;
+    margin-top: 16px !important;
+    padding-top: 8px !important;
+    border-top: 1px solid #ccc !important;
+    font-size: 10px !important;
+    color: #666 !important;
+  }
+
+  /* Hide charts in print by default (can be enabled per chart) */
+  .no-print-chart {
+    display: none !important;
+  }
+
+  /* Print-friendly chart containers */
+  .print-chart {
+    page-break-inside: avoid;
+    margin: 16px 0 !important;
+  }
 }
 
