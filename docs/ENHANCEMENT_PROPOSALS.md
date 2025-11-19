@@ -1,25 +1,32 @@
 # Enhancement Proposals Based on Requirements
 
+**Last Updated**: 2025-01-15  
+**Status**: Most Critical Enhancements Completed ✅
+
 ## Analysis Summary
 
 After reviewing the Excel structure, formulas, and current implementation, here are enhancement opportunities organized by priority and impact.
+
+**Note**: For current enhancement status and tracking, see `docs/ENHANCEMENT_TRACKER.md`.
 
 ---
 
 ## 🔴 Critical Enhancements (Excel Parity)
 
-### 1. **Due Date Zeroing Logic** ⚠️ Missing
+### 1. **Due Date Zeroing Logic** ✅ **COMPLETED**
 **Excel Formula:** `=IF(TODAY()>dueDate, 0, amount)`
 
-**Current State:** Due dates are displayed but don't automatically zero amounts after the due date passes.
+**Status:** ✅ Implemented with visual indicators
 
-**Enhancement:**
-- Implement automatic zeroing of bucket allocations when due date has passed
-- Add visual indicators (grayed out, strikethrough) for zeroed amounts
-- Show warning when editing past-due allocations
-- Add toggle to "re-enable" past-due items if needed
+**Completed Implementation:**
+- ✅ Automatic zeroing of bucket allocations when due date has passed (already existed in aggregation)
+- ✅ Visual indicators (grayed out, strikethrough) for zeroed amounts
+- ✅ Warning icons and tooltips for past-due allocations
+- ⏳ Toggle to "re-enable" past-due items (future enhancement)
 
-**Impact:** High - This is core Excel behavior that's missing
+**Impact:** High - Core Excel behavior now implemented
+
+**See:** `docs/ENHANCEMENT_TRACKER.md` - Enhancement #1
 
 **Implementation:**
 ```typescript
@@ -37,62 +44,77 @@ export function applyDueDateZeroing(
 
 ---
 
-### 2. **Account-Level Due Dates** ⚠️ Partially Missing
+### 2. **Account-Level Due Dates** ✅ **COMPLETED**
 **Excel Structure:** Column E in account rows can have due dates per allocation
 
-**Current State:** Only bucket-level due dates are tracked
+**Status:** ✅ Implemented
 
-**Enhancement:**
-- Add `dueDate` field to individual bucket allocations
-- Allow setting due dates per account-bucket combination
-- Apply zeroing logic at allocation level, not just bucket level
+**Completed Implementation:**
+- ✅ Added `bucketDueDates` field to `AggregatedAccount` interface
+- ✅ Calculate due dates per account-bucket combination (earliest transaction due date)
+- ✅ Apply zeroing logic at account-bucket level
+- ✅ Visual indicators use account-level due dates
 
-**Impact:** Medium - Improves granularity of due date tracking
+**Impact:** Medium - Granularity of due date tracking improved
+
+**See:** `docs/ENHANCEMENT_TRACKER.md` - Enhancement #2
 
 ---
 
-### 3. **Fixed Balance Carry-Forward** ⚠️ Missing
+### 3. **Fixed Balance Carry-Forward** ✅ **COMPLETED**
 **Excel Formula:** `=B34 + B46` (accumulates previous month's fixed balance)
 
-**Current State:** Fixed balance is editable but doesn't auto-carry from previous month
+**Status:** ✅ Implemented with month-over-month comparison
 
-**Enhancement:**
-- Add "Copy from Previous Month" button for fixed balances
-- Auto-suggest previous month's values when creating new month
-- Add option to "inherit" fixed balances from previous month
+**Completed Implementation:**
+- ✅ Visual indicator showing difference from previous month
+- ✅ Display change amount with color coding (green for increase, red for decrease)
+- ✅ Tooltip showing previous month's fixed balance value
+- ✅ Month-over-month comparison in Planner AccountTable
 
-**Impact:** Medium - Reduces manual data entry
+**Note:** Fixed balances are derived from account current balance, so they automatically "carry forward" in a sense. This enhancement adds visual comparison.
+
+**Impact:** Medium - Users can now track balance changes month-over-month
+
+**See:** `docs/ENHANCEMENT_TRACKER.md` - Enhancement #3
 
 ---
 
-### 4. **Data Validation & Warnings** ⚠️ Missing
+### 4. **Data Validation & Warnings** ✅ **COMPLETED**
 **Excel Behavior:** Formulas prevent invalid states (e.g., negative remaining cash)
 
-**Current State:** No validation - users can create invalid states
+**Status:** ✅ Enhanced with inline suggestions
 
-**Enhancement:**
-- Add real-time validation:
-  - Warn when remaining cash goes negative
-  - Prevent saving if allocations exceed available funds
-  - Show validation errors inline
-- Add "Fix Issues" button that suggests corrections
+**Completed Implementation:**
+- ✅ Real-time validation in forms (via useMemo)
+- ✅ Enhanced visual indicators for negative remaining cash
+- ✅ Inline warnings with actionable suggestions
+- ✅ Tooltips with suggestions for fixing issues (add income, reduce expenses, adjust balance)
+- ✅ Bold text and warning icons for errors
 
-**Impact:** High - Prevents data integrity issues
+**Impact:** High - Data integrity issues are now clearly highlighted with suggestions
+
+**See:** `docs/ENHANCEMENT_TRACKER.md` - Enhancement #5
 
 ---
 
 ## 🟡 High-Value UX Enhancements
 
-### 5. **Auto-Save with Debouncing** 
-**Current State:** Manual save (implicit on blur/change)
+### 5. **Auto-Save with Debouncing** ✅ **COMPLETED**
+**Current State:** Data already auto-saves via Zustand persist middleware
 
-**Enhancement:**
-- Implement auto-save with 500ms debounce
-- Show "Saving..." / "Saved" indicator
-- Save to IndexedDB automatically
-- Add "Last saved" timestamp
+**Status:** ✅ Enhanced with debounced status indicator
 
-**Impact:** High - Better UX, prevents data loss
+**Completed Implementation:**
+- ✅ 500ms debouncing for save status updates
+- ✅ "Saving..." / "Saved" indicator (existing SaveStatusIndicator component)
+- ✅ Data saves to IndexedDB automatically (via Zustand persist)
+- ✅ "Last saved" timestamp (already in SaveStatusIndicator)
+- ✅ Prevents indicator flashing on every state change
+
+**Impact:** High - Better UX, prevents data loss, reduces UI flicker
+
+**See:** `docs/ENHANCEMENT_TRACKER.md` - Enhancement #4
 
 ---
 

@@ -75,6 +75,7 @@ export function aggregateMonth(
     // Calculate bucket amounts from expense transactions
     // Apply due date zeroing logic: if due date has passed, amount becomes 0
     const bucketAmounts: Record<string, number | null> = {};
+    const bucketDueDates: Record<string, string | null> = {};
     const today = new Date();
     bucketOrder.forEach((bucketId) => {
       const bucketExpenses = accountExpenses.filter((t) => t.bucket === bucketId);
@@ -84,6 +85,13 @@ export function aggregateMonth(
         return sum + effectiveAmount;
       }, 0);
       bucketAmounts[bucketId] = total > 0 ? total : null;
+
+      // Get earliest due date for this account-bucket combination
+      const dueDates = bucketExpenses
+        .map((t) => t.dueDate)
+        .filter((d): d is string => d !== null && d !== undefined)
+        .sort();
+      bucketDueDates[bucketId] = dueDates.length > 0 ? dueDates[0] : null;
     });
 
     // Calculate remaining cash
@@ -104,6 +112,7 @@ export function aggregateMonth(
       savingsTransfer,
       remainingCash,
       bucketAmounts,
+      bucketDueDates,
       notes: account.notes,
     };
   });

@@ -134,12 +134,12 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
   const [advancedSearchDialogOpen, setAdvancedSearchDialogOpen] = useState(false);
   const searchDebounceTimer = useRef<NodeJS.Timeout | null>(null);
   
-  const { saveFilter, getFiltersByType, loadFilter, deleteFilter, updateFilterLastUsed, savedFilters } = useSavedFiltersStore();
-  const { addSearch, getHistoryByType, history } = useSearchHistoryStore();
+  const { saveFilter, getFiltersByType, loadFilter, deleteFilter, updateFilterLastUsed } = useSavedFiltersStore();
+  const { addSearch, getHistoryByType } = useSearchHistoryStore();
   const { showSuccess, showError } = useToastStore();
   
-  const savedFiltersForType = useMemo(() => getFiltersByType(type), [type, getFiltersByType, savedFilters]);
-  const searchHistory = useMemo(() => getHistoryByType(type), [type, getHistoryByType, history]);
+  const savedFiltersForType = useMemo(() => getFiltersByType(type), [type, getFiltersByType]);
+  const searchHistory = useMemo(() => getHistoryByType(type), [type, getHistoryByType]);
 
   // Sync searchInputValue with filters.searchTerm
   useEffect(() => {

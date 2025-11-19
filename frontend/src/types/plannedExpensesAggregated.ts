@@ -28,6 +28,7 @@ export interface AggregatedAccount {
   savingsTransfer: number | null; // Sum of Savings/Investment Transactions
   remainingCash: number | null; // Calculated
   bucketAmounts: Record<string, number | null>; // Amounts per bucket from Expense Transactions
+  bucketDueDates: Record<string, string | null>; // Due dates per bucket (earliest due date from transactions)
   notes?: string;
 }
 
