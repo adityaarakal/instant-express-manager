@@ -1,7 +1,10 @@
 /**
  * Balance Recalculation Utility
- * Recalculates account balances from transactions instead of incremental updates
- * This prevents race conditions and ensures data consistency
+ * 
+ * Recalculates account balances from transactions instead of incremental updates.
+ * This prevents race conditions and ensures data consistency.
+ * 
+ * @module balanceRecalculation
  */
 
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
@@ -11,8 +14,22 @@ import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvest
 import { useTransferTransactionsStore } from '../store/useTransferTransactionsStore';
 
 /**
- * Recalculate balance for a single account from all transactions
- * This is the source of truth for account balances
+ * Recalculates balance for a single account from all transactions.
+ * This is the source of truth for account balances.
+ * 
+ * Calculates balance by:
+ * - Adding all income transactions with status 'Received'
+ * - Subtracting all expense transactions with status 'Paid'
+ * - Subtracting all savings/investment transactions with status 'Completed'
+ * - Subtracting transfers sent (fromAccountId)
+ * - Adding transfers received (toAccountId)
+ * 
+ * @param {string} accountId - The account ID to recalculate balance for
+ * @returns {number} The recalculated balance (rounded to 2 decimal places)
+ * 
+ * @example
+ * const balance = recalculateAccountBalance('account-123');
+ * // Returns the calculated balance based on all transactions
  */
 export function recalculateAccountBalance(accountId: string): number {
   const incomeTransactions = useIncomeTransactionsStore.getState().transactions;
@@ -64,7 +81,14 @@ export function recalculateAccountBalance(accountId: string): number {
 }
 
 /**
- * Recalculate and update balance for a single account
+ * Recalculates and updates balance for a single account.
+ * 
+ * @param {string} accountId - The account ID to recalculate and update
+ * @returns {void}
+ * 
+ * @example
+ * recalculateAndUpdateAccountBalance('account-123');
+ * // Balance is recalculated and updated in the store
  */
 export function recalculateAndUpdateAccountBalance(accountId: string): void {
   const calculatedBalance = recalculateAccountBalance(accountId);
@@ -72,8 +96,14 @@ export function recalculateAndUpdateAccountBalance(accountId: string): void {
 }
 
 /**
- * Recalculate and update balances for all accounts
- * Useful for ensuring data consistency after bulk operations or data migration
+ * Recalculates and updates balances for all accounts.
+ * Useful for ensuring data consistency after bulk operations or data migration.
+ * 
+ * @returns {void}
+ * 
+ * @example
+ * // After bulk operations, ensure all balances are correct
+ * recalculateAllAccountBalances();
  */
 export function recalculateAllAccountBalances(): void {
   const accounts = useBankAccountsStore.getState().accounts;
@@ -83,8 +113,20 @@ export function recalculateAllAccountBalances(): void {
 }
 
 /**
- * Validate that account balance matches calculated balance
- * Returns true if balance is correct, false if there's a discrepancy
+ * Validates that account balance matches calculated balance.
+ * 
+ * @param {string} accountId - The account ID to validate
+ * @returns {Object} Validation result object
+ * @returns {boolean} returns.isValid - True if balance matches (within 0.01 tolerance)
+ * @returns {number} returns.currentBalance - Current stored balance
+ * @returns {number} returns.calculatedBalance - Calculated balance from transactions
+ * @returns {number} returns.difference - Absolute difference between balances
+ * 
+ * @example
+ * const result = validateAccountBalance('account-123');
+ * if (!result.isValid) {
+ *   console.log(`Balance discrepancy: ${result.difference}`);
+ * }
  */
 export function validateAccountBalance(accountId: string): {
   isValid: boolean;
@@ -116,8 +158,21 @@ export function validateAccountBalance(accountId: string): {
 }
 
 /**
- * Validate all account balances
- * Returns list of accounts with balance discrepancies
+ * Validates all account balances.
+ * Returns list of accounts with balance discrepancies.
+ * 
+ * @returns {Array<Object>} Array of accounts with discrepancies
+ * @returns {string} returns[].accountId - Account ID
+ * @returns {string} returns[].accountName - Account name
+ * @returns {number} returns[].currentBalance - Current stored balance
+ * @returns {number} returns[].calculatedBalance - Calculated balance from transactions
+ * @returns {number} returns[].difference - Absolute difference between balances
+ * 
+ * @example
+ * const discrepancies = validateAllAccountBalances();
+ * if (discrepancies.length > 0) {
+ *   console.log(`Found ${discrepancies.length} accounts with balance discrepancies`);
+ * }
  */
 export function validateAllAccountBalances(): Array<{
   accountId: string;

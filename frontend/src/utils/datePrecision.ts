@@ -1,11 +1,20 @@
 /**
  * Date Precision Utilities
- * Handles timezone and date precision issues in financial calculations
+ * 
+ * Handles timezone and date precision issues in financial calculations.
+ * All date operations use these utilities to ensure consistent date handling.
+ * 
+ * @module datePrecision
  */
 
 /**
- * Get today's date in a consistent format (YYYY-MM-DD) without time component
- * This ensures consistent date comparisons regardless of timezone
+ * Gets today's date in a consistent format (YYYY-MM-DD) without time component.
+ * This ensures consistent date comparisons regardless of timezone.
+ * 
+ * @returns {string} Today's date in YYYY-MM-DD format
+ * 
+ * @example
+ * const today = getTodayDateString(); // Returns "2025-01-20"
  */
 export function getTodayDateString(): string {
   const now = new Date();
@@ -17,21 +26,31 @@ export function getTodayDateString(): string {
 }
 
 /**
- * Compare two date strings (YYYY-MM-DD format)
- * Returns:
- * - negative if date1 < date2
- * - 0 if date1 === date2
- * - positive if date1 > date2
+ * Compares two date strings (YYYY-MM-DD format).
+ * 
+ * @param {string} date1 - First date string
+ * @param {string} date2 - Second date string
+ * @returns {number} Negative if date1 < date2, 0 if equal, positive if date1 > date2
+ * 
+ * @example
+ * compareDateStrings('2025-01-15', '2025-01-20'); // Returns negative
+ * compareDateStrings('2025-01-20', '2025-01-20'); // Returns 0
+ * compareDateStrings('2025-01-25', '2025-01-20'); // Returns positive
  */
 export function compareDateStrings(date1: string, date2: string): number {
   return date1.localeCompare(date2);
 }
 
 /**
- * Check if a due date has passed (using date-only comparison, ignoring time)
- * @param dueDate - ISO date string (YYYY-MM-DD)
- * @param today - Optional today's date (defaults to current date)
- * @returns true if due date has passed
+ * Checks if a due date has passed (using date-only comparison, ignoring time).
+ * 
+ * @param {string | null | undefined} dueDate - ISO date string (YYYY-MM-DD)
+ * @param {string} [today] - Optional today's date (defaults to current date)
+ * @returns {boolean} True if due date has passed, false otherwise
+ * 
+ * @example
+ * isDueDatePassed('2025-01-15'); // Returns true if today is after 2025-01-15
+ * isDueDatePassed('2025-12-31'); // Returns false if today is before 2025-12-31
  */
 export function isDueDatePassed(dueDate: string | null | undefined, today?: string): boolean {
   if (!dueDate) {
@@ -43,8 +62,16 @@ export function isDueDatePassed(dueDate: string | null | undefined, today?: stri
 }
 
 /**
- * Normalize a date string to YYYY-MM-DD format
- * Handles various date formats and timezone issues
+ * Normalizes a date string to YYYY-MM-DD format.
+ * Handles various date formats and timezone issues.
+ * 
+ * @param {string | null | undefined} dateString - Date string in various formats
+ * @returns {string | null} Normalized date string in YYYY-MM-DD format, or null if invalid
+ * 
+ * @example
+ * normalizeDateString('2025-01-20'); // Returns "2025-01-20"
+ * normalizeDateString('01/20/2025'); // Returns "2025-01-20"
+ * normalizeDateString('invalid'); // Returns null
  */
 export function normalizeDateString(dateString: string | null | undefined): string | null {
   if (!dateString) {
@@ -74,7 +101,13 @@ export function normalizeDateString(dateString: string | null | undefined): stri
 }
 
 /**
- * Get start of month date string (YYYY-MM-01)
+ * Gets start of month date string (YYYY-MM-01).
+ * 
+ * @param {string} monthId - Month ID in format "YYYY-MM"
+ * @returns {string} First day of month in YYYY-MM-DD format
+ * 
+ * @example
+ * getMonthStartDateString('2025-01'); // Returns "2025-01-01"
  */
 export function getMonthStartDateString(monthId: string): string {
   const [year, month] = monthId.split('-').map(Number);
@@ -82,7 +115,14 @@ export function getMonthStartDateString(monthId: string): string {
 }
 
 /**
- * Get end of month date string (YYYY-MM-DD where DD is last day of month)
+ * Gets end of month date string (YYYY-MM-DD where DD is last day of month).
+ * 
+ * @param {string} monthId - Month ID in format "YYYY-MM"
+ * @returns {string} Last day of month in YYYY-MM-DD format
+ * 
+ * @example
+ * getMonthEndDateString('2025-01'); // Returns "2025-01-31"
+ * getMonthEndDateString('2025-02'); // Returns "2025-02-28"
  */
 export function getMonthEndDateString(monthId: string): string {
   const [year, month] = monthId.split('-').map(Number);
