@@ -100,6 +100,18 @@ export interface Reminder {
   message?: string;
 }
 
+export interface NotificationSettings {
+  enabled: boolean;
+  daysBeforeDue: number;
+  dailySummary: boolean;
+  weeklySummary: boolean;
+  quietHours: {
+    enabled: boolean;
+    start: string; // HH:mm format
+    end: string; // HH:mm format
+  };
+}
+
 export interface Settings {
   theme: 'light' | 'dark' | 'system';
   currency: string;
@@ -107,5 +119,6 @@ export interface Settings {
   fixedFactor: number;
   defaultStatusByBucket: Record<string, AllocationStatus>;
   enableReminders: boolean;
+  notifications?: NotificationSettings;
 }
 

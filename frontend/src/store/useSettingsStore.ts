@@ -22,6 +22,17 @@ const createDefaultSettings = (): Settings => ({
   fixedFactor: 1000,
   defaultStatusByBucket: { ...DEFAULT_STATUS_BY_BUCKET },
   enableReminders: true,
+  notifications: {
+    enabled: false,
+    daysBeforeDue: 7,
+    dailySummary: false,
+    weeklySummary: false,
+    quietHours: {
+      enabled: false,
+      start: '22:00',
+      end: '08:00',
+    },
+  },
 });
 
 const storage = getLocalforageStorage('planner-settings');

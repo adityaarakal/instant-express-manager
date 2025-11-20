@@ -18,6 +18,8 @@ import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ClearIcon from '@mui/icons-material/Clear';
 import PrintIcon from '@mui/icons-material/Print';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { useAggregatedPlannedMonthsStore } from '../store/useAggregatedPlannedMonthsStore';
 import { usePlannerStore } from '../store/usePlannerStore';
 import { MonthViewHeader } from '../components/planner/MonthViewHeader';
@@ -26,7 +28,9 @@ import { AccountTable } from '../components/planner/AccountTable';
 import { TotalsFooter } from '../components/planner/TotalsFooter';
 import { MonthSearchFilter } from '../components/planner/MonthSearchFilter';
 import { AccountFilters } from '../components/planner/AccountFilters';
+import { BulkOperationsToolbar } from '../components/planner/BulkOperationsToolbar';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
+import { useBulkOperationsStore } from '../store/useBulkOperationsStore';
 import { EmptyState } from '../components/common/EmptyState';
 import type { AggregatedMonth } from '../types/plannedExpensesAggregated';
 import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
@@ -43,6 +47,7 @@ export const Planner = memo(function Planner() {
   const navigate = useNavigate();
   const { getMonth, getAvailableMonths, getBucketTotals, updateBucketStatus } = useAggregatedPlannedMonthsStore();
   const { activeMonthId, setActiveMonth } = usePlannerStore();
+  const { isBulkMode, isMonthSelected, toggleMonthSelection } = useBulkOperationsStore();
   const [filteredMonths, setFilteredMonths] = useState<string[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
   const [selectedBucket, setSelectedBucket] = useState<string | null>(null);
@@ -273,13 +278,36 @@ export const Planner = memo(function Planner() {
                 .map((monthId) => {
                   const month = getMonth(monthId);
                   return month ? (
-                    <MenuItem key={monthId} value={monthId}>
-                      {formatMonthDate(month.monthStart)}
+                    <MenuItem
+                      key={monthId}
+                      value={monthId}
+                      onClick={(e) => {
+                        if (isBulkMode) {
+                          e.stopPropagation();
+                          toggleMonthSelection(monthId);
+                          // Don't change active month in bulk mode
+                          e.preventDefault();
+                        }
+                      }}
+                    >
+                      {isBulkMode ? (
+                        <>
+                          {isMonthSelected(monthId) ? (
+                            <CheckBoxIcon fontSize="small" sx={{ mr: 1 }} color="primary" />
+                          ) : (
+                            <CheckBoxOutlineBlankIcon fontSize="small" sx={{ mr: 1 }} />
+                          )}
+                          {formatMonthDate(month.monthStart)}
+                        </>
+                      ) : (
+                        formatMonthDate(month.monthStart)
+                      )}
                     </MenuItem>
                   ) : null;
                 })}
             </Select>
           </FormControl>
+          <BulkOperationsToolbar availableMonthIds={filteredMonths} />
           {activeMonth && (
             <Button
               variant="outlined"
