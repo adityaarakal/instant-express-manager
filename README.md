@@ -21,7 +21,8 @@ A comprehensive standalone financial management Progressive Web App (PWA) built 
 - ⏳ **Loading States**: Skeleton loaders and spinners for better UX
 - ↩️ **Undo Functionality**: Restore deleted items within 10 minutes
 - 💾 **Data Backup/Restore**: Full backup and restore functionality
-- ⌨️ **Keyboard Shortcuts**: Power user shortcuts for faster navigation
+- ⌨️ **Keyboard Shortcuts**: Power user shortcuts for faster navigation with comprehensive help dialog (press `?` anywhere)
+- 📖 **Enhanced Empty States**: Contextual actions, tips, and quick-start guides for better onboarding
 - 🎨 **Dark/Light Theme**: System-aware theme switching
 - 📱 **Responsive Design**: Works on desktop, tablet, and mobile
 
@@ -30,11 +31,16 @@ A comprehensive standalone financial management Progressive Web App (PWA) built 
 - 🔄 **Auto-Generation**: Automatic EMI and recurring transaction generation (all recurring transactions generated upfront)
 - ✅ **Data Validation**: Comprehensive validation and business rules
 - 🔍 **Data Health Checks**: Identify and fix data inconsistencies
-- 📤 **CSV Export**: Export transactions to CSV
+- 📤 **Data Export**: Export data in multiple formats (CSV, Excel, JSON, PDF)
+    - 📊 **Excel Export**: Export transactions, analytics, and planner data to Excel (.xlsx) with multiple sheets
+    - 📄 **PDF Export**: Export reports and transactions to PDF format
+    - 📋 **CSV Export**: Export transactions to CSV
+    - 💾 **JSON Export**: Export data in JSON format with formatting options
     - ⏰ **Scheduled Exports**: Automatically export transactions on a schedule (daily, weekly, monthly)
     - 📊 **Projections Integration**: Import projections from CSV/Excel, auto-populate inflow totals, track savings targets
     - 🔔 **Browser Notifications**: Get notified about upcoming payment due dates with configurable settings and quiet hours
     - 💰 **Automatic Balance Updates**: Account balances automatically update when transactions are received/paid/completed
+- 📥 **Data Import**: Import data from CSV, Excel, and JSON with schema validation
 - 🔄 **Balance Sync**: Sync existing account balances with transactions (useful for old data)
 - 🗑️ **Clear All Data**: Reset the app to a clean state by clearing all storage (irreversible)
 
