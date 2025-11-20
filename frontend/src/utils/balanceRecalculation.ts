@@ -25,9 +25,12 @@ export function recalculateAccountBalance(accountId: string): number {
     return 0;
   }
 
-  // Start with 0 - balances are calculated purely from transactions
-  // If an account has an initial balance, it should be set as the account's currentBalance
-  // and this recalculation will maintain it by calculating the difference
+  // Start with 0 - balances are calculated purely from transactions.
+  // Note: If an account had an initial/opening balance that predates all transactions,
+  // that balance should be manually set as the account's currentBalance, or tracked separately.
+  // The current implementation assumes all balance changes come from transactions.
+  // For accounts with initial balances, users should ensure currentBalance is set correctly
+  // or add a dummy transaction representing the initial balance.
   let balance = 0;
 
   // Add income received

@@ -159,12 +159,13 @@ export function validateBackup(data: unknown): data is BackupData {
 export function importBackup(
   backupData: BackupData,
   replaceExisting: boolean = false
-): { success: boolean; migrated: boolean; backupVersion: string; warnings?: string[] } {
+): { success: boolean; migrated: boolean; backupVersion: string; warnings?: string[]; errors?: string[] } {
   if (!validateBackup(backupData)) {
     throw new Error('Invalid backup file format');
   }
 
   const warnings: string[] = [];
+  const errors: string[] = [];
   
   // Check if backup version is older than current app version
   const currentVersion = getAppVersion();
@@ -199,19 +200,57 @@ export function importBackup(
     );
   }
 
+  // Validate backup data structure
+  try {
+    if (!Array.isArray(backupData.data.banks)) errors.push('Invalid banks data structure');
+    if (!Array.isArray(backupData.data.bankAccounts)) errors.push('Invalid bankAccounts data structure');
+    if (!Array.isArray(backupData.data.incomeTransactions)) errors.push('Invalid incomeTransactions data structure');
+    if (!Array.isArray(backupData.data.expenseTransactions)) errors.push('Invalid expenseTransactions data structure');
+    if (!Array.isArray(backupData.data.savingsInvestmentTransactions)) errors.push('Invalid savingsInvestmentTransactions data structure');
+    if (!Array.isArray(backupData.data.expenseEMIs)) errors.push('Invalid expenseEMIs data structure');
+    if (!Array.isArray(backupData.data.savingsInvestmentEMIs)) errors.push('Invalid savingsInvestmentEMIs data structure');
+    if (!Array.isArray(backupData.data.recurringIncomes)) errors.push('Invalid recurringIncomes data structure');
+    if (!Array.isArray(backupData.data.recurringExpenses)) errors.push('Invalid recurringExpenses data structure');
+    if (!Array.isArray(backupData.data.recurringSavingsInvestments)) errors.push('Invalid recurringSavingsInvestments data structure');
+  } catch (error) {
+    errors.push(`Backup data structure validation failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Backup validation failed: ${errors.join('; ')}`);
+  }
+
+  // Store current state for rollback if replaceExisting
+  let rollbackState: Partial<BackupData['data']> | null = null;
   if (replaceExisting) {
-    // Replace all data
-    useBanksStore.setState({ banks: backupData.data.banks });
-    useBankAccountsStore.setState({ accounts: backupData.data.bankAccounts });
-    useIncomeTransactionsStore.setState({ transactions: backupData.data.incomeTransactions });
-    useExpenseTransactionsStore.setState({ transactions: backupData.data.expenseTransactions });
-    useSavingsInvestmentTransactionsStore.setState({ transactions: backupData.data.savingsInvestmentTransactions });
-    useExpenseEMIsStore.setState({ emis: backupData.data.expenseEMIs });
-    useSavingsInvestmentEMIsStore.setState({ emis: backupData.data.savingsInvestmentEMIs });
-    useRecurringIncomesStore.setState({ templates: backupData.data.recurringIncomes });
-    useRecurringExpensesStore.setState({ templates: backupData.data.recurringExpenses });
-    useRecurringSavingsInvestmentsStore.setState({ templates: backupData.data.recurringSavingsInvestments });
-  } else {
+    rollbackState = {
+      banks: [...useBanksStore.getState().banks],
+      bankAccounts: [...useBankAccountsStore.getState().accounts],
+      incomeTransactions: [...useIncomeTransactionsStore.getState().transactions],
+      expenseTransactions: [...useExpenseTransactionsStore.getState().transactions],
+      savingsInvestmentTransactions: [...useSavingsInvestmentTransactionsStore.getState().transactions],
+      expenseEMIs: [...useExpenseEMIsStore.getState().emis],
+      savingsInvestmentEMIs: [...useSavingsInvestmentEMIsStore.getState().emis],
+      recurringIncomes: [...useRecurringIncomesStore.getState().templates],
+      recurringExpenses: [...useRecurringExpensesStore.getState().templates],
+      recurringSavingsInvestments: [...useRecurringSavingsInvestmentsStore.getState().templates],
+    };
+  }
+
+  try {
+    if (replaceExisting) {
+      // Replace all data
+      useBanksStore.setState({ banks: backupData.data.banks });
+      useBankAccountsStore.setState({ accounts: backupData.data.bankAccounts });
+      useIncomeTransactionsStore.setState({ transactions: backupData.data.incomeTransactions });
+      useExpenseTransactionsStore.setState({ transactions: backupData.data.expenseTransactions });
+      useSavingsInvestmentTransactionsStore.setState({ transactions: backupData.data.savingsInvestmentTransactions });
+      useExpenseEMIsStore.setState({ emis: backupData.data.expenseEMIs });
+      useSavingsInvestmentEMIsStore.setState({ emis: backupData.data.savingsInvestmentEMIs });
+      useRecurringIncomesStore.setState({ templates: backupData.data.recurringIncomes });
+      useRecurringExpensesStore.setState({ templates: backupData.data.recurringExpenses });
+      useRecurringSavingsInvestmentsStore.setState({ templates: backupData.data.recurringSavingsInvestments });
+    } else {
     // Merge with existing data (avoid duplicates by ID)
     const existingBanks = useBanksStore.getState().banks;
     const existingAccounts = useBankAccountsStore.getState().accounts;
@@ -289,20 +328,42 @@ export function importBackup(
     useSavingsInvestmentEMIsStore.setState({ emis: mergedSavingsEMIs });
     useRecurringIncomesStore.setState({ templates: mergedRecurringIncomes });
     useRecurringExpensesStore.setState({ templates: mergedRecurringExpenses });
-    useRecurringSavingsInvestmentsStore.setState({ templates: mergedRecurringSavings });
+      useRecurringSavingsInvestmentsStore.setState({ templates: mergedRecurringSavings });
+    }
+
+    // After import, update schema version to current
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { useSchemaVersionStore } = require('../store/useSchemaVersionStore');
+    useSchemaVersionStore.getState().setSchemaVersion(currentVersion);
+
+    return {
+      success: true,
+      migrated: versionComparison < 0,
+      backupVersion,
+      warnings: warnings.length > 0 ? warnings : undefined,
+      errors: errors.length > 0 ? errors : undefined,
+    };
+  } catch (error) {
+    // Rollback if replaceExisting and error occurred
+    if (replaceExisting && rollbackState) {
+      try {
+        useBanksStore.setState({ banks: rollbackState.banks || [] });
+        useBankAccountsStore.setState({ accounts: rollbackState.bankAccounts || [] });
+        useIncomeTransactionsStore.setState({ transactions: rollbackState.incomeTransactions || [] });
+        useExpenseTransactionsStore.setState({ transactions: rollbackState.expenseTransactions || [] });
+        useSavingsInvestmentTransactionsStore.setState({ transactions: rollbackState.savingsInvestmentTransactions || [] });
+        useExpenseEMIsStore.setState({ emis: rollbackState.expenseEMIs || [] });
+        useSavingsInvestmentEMIsStore.setState({ emis: rollbackState.savingsInvestmentEMIs || [] });
+        useRecurringIncomesStore.setState({ templates: rollbackState.recurringIncomes || [] });
+        useRecurringExpensesStore.setState({ templates: rollbackState.recurringExpenses || [] });
+        useRecurringSavingsInvestmentsStore.setState({ templates: rollbackState.recurringSavingsInvestments || [] });
+      } catch (rollbackError) {
+        console.error('Rollback failed:', rollbackError);
+        errors.push(`Restore failed and rollback also failed: ${rollbackError instanceof Error ? rollbackError.message : String(rollbackError)}`);
+      }
+    }
+    throw new Error(`Backup restore failed: ${error instanceof Error ? error.message : String(error)}`);
   }
-
-  // After import, update schema version to current
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { useSchemaVersionStore } = require('../store/useSchemaVersionStore');
-  useSchemaVersionStore.getState().setSchemaVersion(currentVersion);
-
-  return {
-    success: true,
-    migrated: versionComparison < 0,
-    backupVersion,
-    warnings: warnings.length > 0 ? warnings : undefined,
-  };
 }
 
 /**

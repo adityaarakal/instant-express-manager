@@ -9,6 +9,11 @@ import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore'
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useToastStore } from '../store/useToastStore';
+import {
+  validateProjectionsImport,
+  cleanProjectionsImport,
+  type ProjectionsImportValidationResult,
+} from './projectionsImportValidation';
 
 /**
  * Expected CSV/Excel structure:
@@ -78,8 +83,11 @@ function parseNumber(value: unknown): number | null {
 
 /**
  * Import projections from CSV file
+ * Returns both the parsed data and validation results
  */
-export async function importProjectionsFromCSV(file: File): Promise<ProjectionsImportRow[]> {
+export async function importProjectionsFromCSV(
+  file: File,
+): Promise<{ projections: ProjectionsImportRow[]; validation: ProjectionsImportValidationResult }> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -120,7 +128,14 @@ export async function importProjectionsFromCSV(file: File): Promise<ProjectionsI
           });
         }
 
-        resolve(projections);
+        // Validate and clean projections
+        const validation = validateProjectionsImport(projections);
+        const cleaned = cleanProjectionsImport(projections);
+
+        resolve({
+          projections: cleaned.cleaned,
+          validation,
+        });
       } catch (error) {
         reject(error);
       }
@@ -136,8 +151,11 @@ export async function importProjectionsFromCSV(file: File): Promise<ProjectionsI
 
 /**
  * Import projections from Excel file
+ * Returns both the parsed data and validation results
  */
-export async function importProjectionsFromExcel(file: File): Promise<ProjectionsImportRow[]> {
+export async function importProjectionsFromExcel(
+  file: File,
+): Promise<{ projections: ProjectionsImportRow[]; validation: ProjectionsImportValidationResult }> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -180,7 +198,14 @@ export async function importProjectionsFromExcel(file: File): Promise<Projection
           });
         }
 
-        resolve(projections);
+        // Validate and clean projections
+        const validation = validateProjectionsImport(projections);
+        const cleaned = cleanProjectionsImport(projections);
+
+        resolve({
+          projections: cleaned.cleaned,
+          validation,
+        });
       } catch (error) {
         reject(error);
       }
@@ -196,11 +221,12 @@ export async function importProjectionsFromExcel(file: File): Promise<Projection
 
 /**
  * Auto-populate inflow totals from projections
- * Creates income transactions based on projected inflow totals
+ * Creates or updates income transactions based on projected inflow totals
+ * Prevents duplicate auto-populated transactions
  */
 export function autoPopulateInflowFromProjections(monthId: string): void {
   const { getInflowTotal } = useProjectionsStore.getState();
-  const { transactions, createTransaction } = useIncomeTransactionsStore.getState();
+  const { transactions, createTransaction, updateTransaction } = useIncomeTransactionsStore.getState();
   const { accounts } = useBankAccountsStore.getState();
   const { showSuccess, showWarning } = useToastStore.getState();
 
@@ -220,6 +246,12 @@ export function autoPopulateInflowFromProjections(monthId: string): void {
     (t) => t.date >= startDate && t.date <= endDate
   );
 
+  // Check for existing auto-populated transaction
+  const autoPopulatedPattern = `Auto-populated from projection for ${monthId}`;
+  const existingAutoPopulated = existingIncomes.find(
+    (t) => t.description === autoPopulatedPattern
+  );
+
   const currentTotal = existingIncomes.reduce((sum, t) => sum + t.amount, 0);
   const difference = projectedInflow - currentTotal;
 
@@ -228,7 +260,7 @@ export function autoPopulateInflowFromProjections(monthId: string): void {
     return;
   }
 
-  // If difference is positive, create an income transaction
+  // If difference is positive, create or update an income transaction
   // If negative, we could create a negative adjustment, but for now just warn
   if (difference > 0) {
     // Get available accounts
@@ -242,16 +274,24 @@ export function autoPopulateInflowFromProjections(monthId: string): void {
     // Use the first available account
     const accountId = incomeAccounts[0].id;
 
-    createTransaction({
-      accountId,
-      amount: difference,
-      date: startDate,
-      category: 'Other',
-      description: `Auto-populated from projection for ${monthId}`,
-      status: 'Pending',
-    });
-
-    showSuccess(`Created income transaction of ${difference.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })} for ${monthId}`);
+    if (existingAutoPopulated) {
+      // Update existing auto-populated transaction
+      updateTransaction(existingAutoPopulated.id, {
+        amount: existingAutoPopulated.amount + difference,
+      });
+      showSuccess(`Updated auto-populated transaction for ${monthId}`);
+    } else {
+      // Create new auto-populated transaction
+      createTransaction({
+        accountId,
+        amount: difference,
+        date: startDate,
+        category: 'Other',
+        description: autoPopulatedPattern,
+        status: 'Pending',
+      });
+      showSuccess(`Created income transaction of ${difference.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })} for ${monthId}`);
+    }
   } else {
     showWarning(`Current inflow (${currentTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}) exceeds projection (${projectedInflow.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}). No adjustment made.`);
   }
