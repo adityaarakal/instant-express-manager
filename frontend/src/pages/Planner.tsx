@@ -18,9 +18,11 @@ import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ClearIcon from '@mui/icons-material/Clear';
 import PrintIcon from '@mui/icons-material/Print';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { useAggregatedPlannedMonthsStore } from '../store/useAggregatedPlannedMonthsStore';
+import { exportPlannerMonthToExcel } from '../utils/excelExport';
 import { usePlannerStore } from '../store/usePlannerStore';
 import { MonthViewHeader } from '../components/planner/MonthViewHeader';
 import { StatusRibbon } from '../components/planner/StatusRibbon';
@@ -309,15 +311,30 @@ export const Planner = memo(function Planner() {
           </FormControl>
           <BulkOperationsToolbar availableMonthIds={filteredMonths} />
           {activeMonth && (
-            <Button
-              variant="outlined"
-              startIcon={<PrintIcon />}
-              onClick={handlePrint}
-              size="small"
-              aria-label="Print month view"
-            >
-              Print
-            </Button>
+            <>
+              <Button
+                variant="outlined"
+                startIcon={<PrintIcon />}
+                onClick={handlePrint}
+                size="small"
+                aria-label="Print month view"
+              >
+                Print
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<FileDownloadIcon />}
+                onClick={() => {
+                  if (activeMonth) {
+                    exportPlannerMonthToExcel(activeMonth);
+                  }
+                }}
+                size="small"
+                aria-label="Export month to Excel"
+              >
+                Export Excel
+              </Button>
+            </>
           )}
         </Stack>
       </Paper>
