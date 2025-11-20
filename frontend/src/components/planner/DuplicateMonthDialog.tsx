@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { getAvailableMonthsForDuplication, duplicateMonth } from '../../utils/monthDuplication';
+import { validateMonthDuplicationTarget } from '../../utils/monthDuplicationValidation';
 import { useToastStore } from '../../store/useToastStore';
 import { usePlannerStore } from '../../store/usePlannerStore';
 
@@ -39,7 +40,7 @@ export function DuplicateMonthDialog({
   const [availableMonths, setAvailableMonths] = useState<Array<{ monthId: string; label: string }>>([]);
   const [customMonthId, setCustomMonthId] = useState<string>('');
   const [useCustomMonth, setUseCustomMonth] = useState<boolean>(false);
-  const { showSuccess, showError } = useToastStore();
+  const { showSuccess, showError, showWarning } = useToastStore();
   const { setActiveMonth } = usePlannerStore();
 
   useEffect(() => {
@@ -69,10 +70,30 @@ export function DuplicateMonthDialog({
         }
       }
 
-      duplicateMonth(sourceMonthId, monthToUse);
-      showSuccess(`Month duplicated successfully to ${formatMonthLabel(monthToUse)}`);
-      setActiveMonth(monthToUse);
-      onClose();
+      // Validate target month before duplication
+      const targetValidation = validateMonthDuplicationTarget(monthToUse);
+      
+      if (targetValidation.warnings.length > 0) {
+        const warningMessage = targetValidation.warnings.join('\n');
+        if (!window.confirm(`${warningMessage}\n\nDo you want to proceed?`)) {
+          return;
+        }
+      }
+
+      // Perform duplication with validation
+      const result = duplicateMonth(sourceMonthId, monthToUse);
+      
+      if (result.success) {
+        if (result.warnings.length > 0) {
+          showWarning(result.warnings.join(' '));
+        }
+        showSuccess(`Month duplicated successfully to ${formatMonthLabel(monthToUse)}`);
+        setActiveMonth(monthToUse);
+        onClose();
+      } else {
+        const errorMessages = result.validation.errors.join('\n');
+        showError(`Duplication completed but validation failed:\n${errorMessages}`);
+      }
     } catch (error) {
       showError(error instanceof Error ? error.message : 'Failed to duplicate month');
     }

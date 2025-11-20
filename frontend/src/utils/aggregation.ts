@@ -15,9 +15,10 @@ import type {
   SavingsInvestmentTransaction,
 } from '../types/transactions';
 import { calculateRemainingCash } from './formulas';
-import { applyDueDateZeroing } from './validation';
 import { DEFAULT_BUCKETS } from '../config/plannedExpenses';
 import { useDueDateOverridesStore } from '../store/useDueDateOverridesStore';
+import { getTodayDateString, isDueDatePassed } from './datePrecision';
+import { sumCurrency } from './financialPrecision';
 
 /**
  * Aggregate transactions into a monthly view
@@ -56,8 +57,8 @@ export function aggregateMonth(
     (t) => t.date >= startDate && t.date <= endDate
   );
 
-  // Calculate total inflow
-  const inflowTotal = monthIncomes.reduce((sum, t) => sum + t.amount, 0);
+  // Calculate total inflow with currency precision
+  const inflowTotal = sumCurrency(monthIncomes.map((t) => t.amount));
 
   // Get all unique buckets from expenses
   const bucketIds = new Set<string>();
@@ -78,19 +79,27 @@ export function aggregateMonth(
     // Unless there's an override for this month/account/bucket
     const bucketAmounts: Record<string, number | null> = {};
     const bucketDueDates: Record<string, string | null> = {};
-    const today = new Date();
+    const today = getTodayDateString(); // Use consistent date string to avoid timezone issues
     const hasOverride = useDueDateOverridesStore.getState().hasOverride;
     bucketOrder.forEach((bucketId) => {
       const bucketExpenses = accountExpenses.filter((t) => t.bucket === bucketId);
       const isOverridden = hasOverride(monthId, account.id, bucketId);
-      const total = bucketExpenses.reduce((sum, t) => {
+      
+      // Use currency precision for summing
+      const amounts = bucketExpenses.map((t) => {
         // Apply due date zeroing: if due date has passed, don't count the amount
         // Unless override is set for this month/account/bucket
-        const effectiveAmount = isOverridden
-          ? t.amount // If overridden, use original amount
-          : applyDueDateZeroing(t.amount, t.dueDate, today);
-        return sum + effectiveAmount;
-      }, 0);
+        if (isOverridden) {
+          return t.amount; // If overridden, use original amount
+        }
+        // Use date string comparison to avoid timezone issues
+        if (t.dueDate && isDueDatePassed(t.dueDate, today)) {
+          return 0;
+        }
+        return t.amount;
+      });
+      
+      const total = sumCurrency(amounts);
       bucketAmounts[bucketId] = total > 0 ? total : null;
 
       // Get earliest due date for this account-bucket combination
@@ -101,8 +110,8 @@ export function aggregateMonth(
       bucketDueDates[bucketId] = dueDates.length > 0 ? dueDates[0] : null;
     });
 
-    // Calculate remaining cash
-    const accountInflow = accountIncomes.reduce((sum, t) => sum + t.amount, 0);
+    // Calculate remaining cash with currency precision
+    const accountInflow = sumCurrency(accountIncomes.map((t) => t.amount));
     const fixedBalance = account.currentBalance; // Use current balance as fixed balance
     const remainingCash = calculateRemainingCash({
       baseValue: accountInflow,
