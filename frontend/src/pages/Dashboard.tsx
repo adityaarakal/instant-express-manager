@@ -14,6 +14,9 @@ import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { calculateDashboardMetrics } from '../utils/dashboard';
 import { SummaryCard } from '../components/dashboard/SummaryCard';
 import { DueSoonReminders } from '../components/dashboard/DueSoonReminders';
+import { EmptyState } from '../components/common/EmptyState';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import AddIcon from '@mui/icons-material/Add';
 
 // Lazy load chart components for better performance
 const SavingsTrendChart = lazy(() =>
@@ -106,6 +109,67 @@ export const Dashboard = memo(function Dashboard() {
       selectedMonthId,
     );
   }, [incomeTransactions, expenseTransactions, savingsTransactions, accounts, selectedMonthId]);
+
+  const hasNoData = 
+    incomeTransactions.length === 0 && 
+    expenseTransactions.length === 0 && 
+    savingsTransactions.length === 0;
+
+  if (hasNoData) {
+    return (
+      <Stack spacing={3}>
+        <Box className="no-print" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+          <Typography variant="h4">Dashboard</Typography>
+        </Box>
+        <EmptyState
+          icon={<DashboardIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
+          title="No Dashboard Data Available"
+          description="Add transactions to see your financial dashboard with metrics, charts, and insights. The dashboard provides an overview of your income, expenses, savings, and financial health."
+          actions={[
+            {
+              label: 'Add Transaction',
+              onClick: () => {
+                const transactionsUrl = new URL(window.location.href);
+                transactionsUrl.pathname = '/transactions';
+                window.location.href = transactionsUrl.toString();
+              },
+              icon: <AddIcon />,
+            },
+            ...(accounts.length === 0
+              ? [
+                  {
+                    label: 'Add Bank Account First',
+                    onClick: () => {
+                      const accountsUrl = new URL(window.location.href);
+                      accountsUrl.pathname = '/bank-accounts';
+                      window.location.href = accountsUrl.toString();
+                    },
+                    variant: 'outlined' as const,
+                  },
+                ]
+              : []),
+          ]}
+          tips={[
+            {
+              text: 'The dashboard shows monthly and overall financial metrics at a glance.',
+            },
+            {
+              text: 'Add income, expense, and savings transactions to see comprehensive insights.',
+            },
+            {
+              text: 'View trends, upcoming due dates, and budget vs actual comparisons.',
+            },
+          ]}
+          quickStart={[
+            'Add your first bank account if you haven\'t already',
+            'Add income and expense transactions',
+            'Return to Dashboard to see metrics and charts',
+            'Explore monthly and overall financial insights',
+          ]}
+        />
+      </Stack>
+    );
+  }
 
   return (
     <Stack spacing={3}>

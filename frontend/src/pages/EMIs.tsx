@@ -519,13 +519,71 @@ export function EMIs() {
                             : 'Start tracking your savings/investment EMIs by adding your first EMI. Track SIPs, loans, and other recurring investments with installments.'
                           : 'Navigate to a different page to see more EMIs.'
                       }
-                      action={
+                      actions={
+                        allEMIs.length === 0
+                          ? accounts.length > 0
+                            ? [
+                                {
+                                  label: `Add ${activeTab === 'expense' ? 'Expense' : 'Savings/Investment'} EMI`,
+                                  onClick: () => handleOpenDialog(),
+                                  icon: <AddIcon />,
+                                },
+                              ]
+                            : [
+                                {
+                                  label: 'Add Bank Account',
+                                  onClick: () => {
+                                    const accountsUrl = new URL(window.location.href);
+                                    accountsUrl.pathname = '/bank-accounts';
+                                    window.location.href = accountsUrl.toString();
+                                  },
+                                  icon: <AddIcon />,
+                                },
+                              ]
+                          : undefined
+                      }
+                      tips={
+                        allEMIs.length === 0
+                          ? activeTab === 'expense'
+                            ? [
+                                {
+                                  text: 'Track credit card bills, personal loans, home loans, and other installment-based expenses.',
+                                },
+                                {
+                                  text: 'EMIs automatically generate transactions for each installment based on the schedule.',
+                                },
+                                {
+                                  text: 'Monitor payment progress and remaining installments for each EMI.',
+                                },
+                              ]
+                            : [
+                                {
+                                  text: 'Track SIPs, investment loans, and other recurring investment installments.',
+                                },
+                                {
+                                  text: 'EMIs automatically generate investment transactions for each installment.',
+                                },
+                                {
+                                  text: 'Monitor investment progress and track returns over time.',
+                                },
+                              ]
+                          : undefined
+                      }
+                      quickStart={
                         allEMIs.length === 0 && accounts.length > 0
-                          ? {
-                              label: `Add ${activeTab === 'expense' ? 'Expense' : 'Savings/Investment'} EMI`,
-                              onClick: () => handleOpenDialog(),
-                              icon: <AddIcon />,
-                            }
+                          ? activeTab === 'expense'
+                            ? [
+                                'Click "Add Expense EMI" to create your first EMI',
+                                'Enter EMI details: name, amount, start date, and number of installments',
+                                'Select the account and set payment frequency',
+                                'EMI will automatically generate transactions for each installment',
+                              ]
+                            : [
+                                'Click "Add Savings/Investment EMI" to create your first investment EMI',
+                                'Enter SIP details: name, amount, start date, and number of installments',
+                                'Select the account and destination (e.g., mutual fund name)',
+                                'EMI will automatically generate investment transactions',
+                              ]
                           : undefined
                       }
                     />

@@ -22,11 +22,13 @@ import {
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore';
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { exportAnalyticsToExcel } from '../utils/excelExport';
+import { EmptyState } from '../components/common/EmptyState';
 
 // Lazy load chart components for better performance
 const IncomeTrendsChart = lazy(() =>
@@ -158,6 +160,50 @@ export const Analytics = memo(function Analytics() {
     () => accounts.filter((acc) => acc.accountType === 'CreditCard'),
     [accounts],
   );
+
+  const hasNoData = filteredIncome.length === 0 && filteredExpenses.length === 0 && filteredSavings.length === 0;
+
+  if (hasNoData) {
+    return (
+      <Stack spacing={3}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+          <Typography variant="h4">Analytics</Typography>
+        </Box>
+        <EmptyState
+          icon={<TrendingUpIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
+          title="No Analytics Data Available"
+          description="Add transactions to see comprehensive analytics, charts, and insights about your financial data."
+          actions={[
+            {
+              label: 'Add Transaction',
+              onClick: () => {
+                const transactionsUrl = new URL(window.location.href);
+                transactionsUrl.pathname = '/transactions';
+                window.location.href = transactionsUrl.toString();
+              },
+            },
+          ]}
+          tips={[
+            {
+              text: 'Analytics automatically generates charts and insights from your transaction data.',
+            },
+            {
+              text: 'Add income, expense, and savings transactions to see trends and patterns.',
+            },
+            {
+              text: 'Use different date ranges to analyze your financial data over time.',
+            },
+          ]}
+          quickStart={[
+            'Add income and expense transactions',
+            'Wait for transactions to be recorded',
+            'Return to Analytics to see charts and insights',
+            'Explore different date ranges and chart types',
+          ]}
+        />
+      </Stack>
+    );
+  }
 
   return (
     <Stack spacing={3}>
