@@ -67,16 +67,34 @@ export function ProjectionsIntegration() {
 
     setIsImporting(true);
     try {
-      let importedProjections;
+      let importResult;
 
       if (file.name.endsWith('.csv')) {
-        importedProjections = await importProjectionsFromCSV(file);
+        importResult = await importProjectionsFromCSV(file);
       } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-        importedProjections = await importProjectionsFromExcel(file);
+        importResult = await importProjectionsFromExcel(file);
       } else {
         showError('Unsupported file format. Please use CSV or Excel (.xlsx, .xls)');
         setIsImporting(false);
         return;
+      }
+
+      const { projections: importedProjections, validation } = importResult;
+
+      // Show validation warnings/errors
+      if (validation.errors.length > 0) {
+        showError(`Import failed: ${validation.errors.slice(0, 3).join('; ')}${validation.errors.length > 3 ? '...' : ''}`);
+        setIsImporting(false);
+        return;
+      }
+
+      if (validation.warnings.length > 0) {
+        const warningMessage = validation.warnings.slice(0, 5).join('; ');
+        showError(`Import warnings: ${warningMessage}${validation.warnings.length > 5 ? '...' : ''}`);
+      }
+
+      if (validation.duplicateMonths.length > 0) {
+        showError(`Duplicate months found: ${validation.duplicateMonths.join(', ')}. Last value will be used.`);
       }
 
       if (importedProjections.length === 0) {
@@ -93,7 +111,7 @@ export function ProjectionsIntegration() {
       }));
 
       importProjections(projectionsToImport);
-      showSuccess(`Imported ${importedProjections.length} projection(s)`);
+      showSuccess(`Imported ${importedProjections.length} projection(s)${validation.duplicateMonths.length > 0 ? ' (duplicates resolved)' : ''}`);
       setImportDialogOpen(false);
       
       // Reset file input

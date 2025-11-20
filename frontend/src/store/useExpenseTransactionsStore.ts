@@ -259,6 +259,21 @@ export const useExpenseTransactionsStore = create<ExpenseTransactionsState>()(
                 transaction.status,
               );
             }
+
+            // Update EMI completedInstallments if transaction was linked to an EMI
+            if (transaction.emiId) {
+              const emi = useExpenseEMIsStore.getState().getEMI(transaction.emiId);
+              if (emi && emi.completedInstallments > 0) {
+                // Recalculate from actual transactions (will be done after deletion)
+                const remainingTransactions = get().transactions.filter(
+                  (t) => t.emiId === transaction.emiId && t.id !== id,
+                );
+                const newCompletedCount = remainingTransactions.length;
+                useExpenseEMIsStore.getState().updateEMI(transaction.emiId, {
+                  completedInstallments: newCompletedCount,
+                });
+              }
+            }
           }
           set((state) => ({
             transactions: state.transactions.filter((transaction) => transaction.id !== id),

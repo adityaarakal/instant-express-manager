@@ -257,6 +257,21 @@ export const useSavingsInvestmentTransactionsStore = create<SavingsInvestmentTra
                 transaction.status,
               );
             }
+
+            // Update EMI completedInstallments if transaction was linked to an EMI
+            if (transaction.emiId) {
+              const emi = useSavingsInvestmentEMIsStore.getState().getEMI(transaction.emiId);
+              if (emi && emi.completedInstallments > 0) {
+                // Recalculate from actual transactions (will be done after deletion)
+                const remainingTransactions = get().transactions.filter(
+                  (t) => t.emiId === transaction.emiId && t.id !== id,
+                );
+                const newCompletedCount = remainingTransactions.length;
+                useSavingsInvestmentEMIsStore.getState().updateEMI(transaction.emiId, {
+                  completedInstallments: newCompletedCount,
+                });
+              }
+            }
           }
           set((state) => ({
             transactions: state.transactions.filter((transaction) => transaction.id !== id),

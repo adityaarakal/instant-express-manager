@@ -7,6 +7,7 @@ import type {
   AllocationStatus,
   PlannedMonthSnapshot,
 } from '../types/plannedExpenses';
+import { roundToCurrency } from './financialPrecision';
 
 type RemainingCashInput = {
   baseValue: number;
@@ -65,7 +66,9 @@ export const calculateRemainingCash = ({
   const totalSavings = sumValues(savingsTransfers);
   const totalAdjustments = sumValues(manualAdjustments);
 
-  return Number((baseValue - totalFixed - totalSavings + totalAdjustments).toFixed(2));
+  // Use currency precision for calculation
+  const result = baseValue - totalFixed - totalSavings + totalAdjustments;
+  return roundToCurrency(result);
 };
 
 /**
@@ -103,7 +106,8 @@ export const sumBucketByStatus = (
     }
   }
 
-  return Number(total.toFixed(2));
+  // Use currency precision for calculation
+  return roundToCurrency(total);
 };
 
 /**

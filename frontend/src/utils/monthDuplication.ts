@@ -5,16 +5,35 @@
 
 import { useAggregatedPlannedMonthsStore } from '../store/useAggregatedPlannedMonthsStore';
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
+import {
+  createMonthDuplicationSnapshot,
+  validateMonthDuplicationTarget,
+  validateDuplicatedMonth,
+} from './monthDuplicationValidation';
+import { getMonthStartDateString, getMonthEndDateString } from './datePrecision';
 
 /**
  * Duplicate a month's allocations and statuses to a new month
+ * Includes validation and snapshot support
  */
 export function duplicateMonth(
   sourceMonthId: string,
   targetMonthId: string,
-): void {
+): {
+  success: boolean;
+  snapshot: ReturnType<typeof createMonthDuplicationSnapshot>;
+  validation: ReturnType<typeof validateDuplicatedMonth>;
+  warnings: string[];
+} {
   const { getMonth, statusByBucket } = useAggregatedPlannedMonthsStore.getState();
   const { transactions, createTransaction } = useExpenseTransactionsStore.getState();
+
+  // Create snapshot before duplication
+  const snapshot = createMonthDuplicationSnapshot(sourceMonthId, targetMonthId);
+
+  // Validate target month
+  const targetValidation = validateMonthDuplicationTarget(targetMonthId);
+  const warnings = targetValidation.warnings;
 
   // Get source month data
   const sourceMonth = getMonth(sourceMonthId);
@@ -25,18 +44,16 @@ export function duplicateMonth(
   // Get source month statuses
   const sourceStatuses = statusByBucket[sourceMonthId] || {};
 
-  // Calculate target month date range
+  // Calculate target month date range using date precision utilities
   const [targetYear, targetMonth] = targetMonthId.split('-').map(Number);
 
-  // Get source month transactions to duplicate
-  const [sourceYear, sourceMonthNum] = sourceMonthId.split('-').map(Number);
-  const sourceStartDate = new Date(sourceYear, sourceMonthNum - 1, 1);
-  const sourceEndDate = new Date(sourceYear, sourceMonthNum, 0);
+  // Get source month transactions to duplicate using date strings
+  const sourceStartDate = getMonthStartDateString(sourceMonthId);
+  const sourceEndDate = getMonthEndDateString(sourceMonthId);
 
   // Find all expense transactions in source month
   const sourceTransactions = transactions.filter((t) => {
-    const tDate = new Date(t.date);
-    return tDate >= sourceStartDate && tDate <= sourceEndDate && t.bucket;
+    return t.date >= sourceStartDate && t.date <= sourceEndDate && t.bucket;
   });
 
   // Create transactions for target month
@@ -71,6 +88,16 @@ export function duplicateMonth(
   Object.entries(sourceStatuses).forEach(([bucketId, status]) => {
     updateBucketStatus(targetMonthId, bucketId, status);
   });
+
+  // Validate duplicated month
+  const validation = validateDuplicatedMonth(snapshot);
+
+  return {
+    success: validation.isValid,
+    snapshot,
+    validation,
+    warnings,
+  };
 }
 
 /**

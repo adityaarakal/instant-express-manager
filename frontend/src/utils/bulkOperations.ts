@@ -5,6 +5,10 @@
 
 import { useAggregatedPlannedMonthsStore } from '../store/useAggregatedPlannedMonthsStore';
 import { useToastStore } from '../store/useToastStore';
+import {
+  createBulkStatusUpdateTransaction,
+  executeBulkStatusUpdateWithTransaction,
+} from './bulkOperationsTransaction';
 
 /**
  * Bulk update bucket statuses for selected months
@@ -43,29 +47,27 @@ export function bulkUpdateBucketStatuses(
 
 /**
  * Bulk update all bucket statuses to "Paid" for selected months
+ * Uses transaction support to ensure all-or-nothing updates
  */
 export function bulkMarkAllAsPaid(monthIds: string[]): void {
-  const { getMonth, updateBucketStatus } = useAggregatedPlannedMonthsStore.getState();
   const { showSuccess, showError } = useToastStore.getState();
 
   try {
-    let totalUpdates = 0;
-    let monthCount = 0;
+    // Create transaction for all operations
+    const transaction = createBulkStatusUpdateTransaction(monthIds, 'paid');
 
-    monthIds.forEach((monthId) => {
-      const month = getMonth(monthId);
-      if (!month) return;
+    // Execute with transaction support
+    const result = executeBulkStatusUpdateWithTransaction(transaction);
 
-      monthCount++;
-      month.bucketOrder.forEach((bucketId) => {
-        updateBucketStatus(monthId, bucketId, 'Paid');
-        totalUpdates++;
-      });
-    });
-
-    showSuccess(
-      `Marked all buckets as paid for ${monthCount} month${monthCount !== 1 ? 's' : ''} (${totalUpdates} total updates)`,
-    );
+    if (result.errorCount === 0) {
+      showSuccess(
+        `Marked all buckets as paid for ${monthIds.length} month${monthIds.length !== 1 ? 's' : ''} (${result.successCount} total updates)`,
+      );
+    } else {
+      showError(
+        `Bulk mark as paid failed: ${result.errors.length} error(s). All changes were rolled back.`,
+      );
+    }
   } catch (error) {
     showError(`Bulk mark as paid failed: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -73,29 +75,27 @@ export function bulkMarkAllAsPaid(monthIds: string[]): void {
 
 /**
  * Bulk update all bucket statuses to "Pending" for selected months
+ * Uses transaction support to ensure all-or-nothing updates
  */
 export function bulkMarkAllAsPending(monthIds: string[]): void {
-  const { getMonth, updateBucketStatus } = useAggregatedPlannedMonthsStore.getState();
   const { showSuccess, showError } = useToastStore.getState();
 
   try {
-    let totalUpdates = 0;
-    let monthCount = 0;
+    // Create transaction for all operations
+    const transaction = createBulkStatusUpdateTransaction(monthIds, 'pending');
 
-    monthIds.forEach((monthId) => {
-      const month = getMonth(monthId);
-      if (!month) return;
+    // Execute with transaction support
+    const result = executeBulkStatusUpdateWithTransaction(transaction);
 
-      monthCount++;
-      month.bucketOrder.forEach((bucketId) => {
-        updateBucketStatus(monthId, bucketId, 'Pending');
-        totalUpdates++;
-      });
-    });
-
-    showSuccess(
-      `Marked all buckets as pending for ${monthCount} month${monthCount !== 1 ? 's' : ''} (${totalUpdates} total updates)`,
-    );
+    if (result.errorCount === 0) {
+      showSuccess(
+        `Marked all buckets as pending for ${monthIds.length} month${monthIds.length !== 1 ? 's' : ''} (${result.successCount} total updates)`,
+      );
+    } else {
+      showError(
+        `Bulk mark as pending failed: ${result.errors.length} error(s). All changes were rolled back.`,
+      );
+    }
   } catch (error) {
     showError(`Bulk mark as pending failed: ${error instanceof Error ? error.message : String(error)}`);
   }

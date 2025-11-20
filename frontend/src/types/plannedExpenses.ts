@@ -30,6 +30,15 @@ export interface BucketAmounts {
   [bucketId: string]: number | null;
 }
 
+/**
+ * Bucket Formulas Interface
+ * 
+ * NOTE: This interface is defined for future use. Formula evaluation is not currently implemented.
+ * Formulas are stored but not calculated. This is a placeholder for potential future enhancement
+ * where bucket amounts could be calculated from formulas (e.g., "=SUM(B2:B10)" style formulas).
+ * 
+ * If you need dynamic bucket calculations, consider using the aggregation utilities instead.
+ */
 export interface BucketFormulas {
   [bucketId: string]: string | null;
 }

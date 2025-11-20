@@ -10,6 +10,7 @@ import { useSettingsStore } from './store/useSettingsStore';
 import { useScheduledExports } from './hooks/useScheduledExports';
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useNotifications } from './hooks/useNotifications';
+import { useDataIntegrity } from './hooks/useDataIntegrity';
 
 function App() {
   const themeSetting = useSettingsStore((state) => state.settings.theme);
@@ -30,6 +31,9 @@ function App() {
   
   // Initialize browser notifications
   useNotifications();
+  
+  // Initialize data integrity checks (runs in development mode)
+  useDataIntegrity(false); // Set to true to auto-fix issues
 
   return (
     <ThemeProvider theme={theme}>
