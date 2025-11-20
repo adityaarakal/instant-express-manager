@@ -33,6 +33,7 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { ThemeModeToggle } from './ThemeModeToggle';
 import { KeyboardShortcutsHelp } from '../common/KeyboardShortcutsHelp';
 import { SaveStatusIndicator } from '../common/SaveStatusIndicator';
+import { UndoRedoToolbar } from '../common/UndoRedoToolbar';
 
 type AppLayoutProps = {
   children: ReactNode;
@@ -178,6 +179,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   )}
                 </NavLink>
               ))}
+            <UndoRedoToolbar />
             <SaveStatusIndicator />
             <IconButton
               size="small"
