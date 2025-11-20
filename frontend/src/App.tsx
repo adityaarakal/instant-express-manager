@@ -9,6 +9,7 @@ import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { useSettingsStore } from './store/useSettingsStore';
 import { useScheduledExports } from './hooks/useScheduledExports';
 import { useUndoRedo } from './hooks/useUndoRedo';
+import { useNotifications } from './hooks/useNotifications';
 
 function App() {
   const themeSetting = useSettingsStore((state) => state.settings.theme);
@@ -26,6 +27,9 @@ function App() {
   
   // Initialize undo/redo keyboard shortcuts
   useUndoRedo();
+  
+  // Initialize browser notifications
+  useNotifications();
 
   return (
     <ThemeProvider theme={theme}>
