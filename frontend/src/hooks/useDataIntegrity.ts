@@ -1,6 +1,10 @@
 /**
  * Data Integrity Hook
- * Automatically validates and fixes data integrity issues on app startup
+ * 
+ * Automatically validates and fixes data integrity issues on app startup.
+ * Checks for orphaned data, balance discrepancies, and other inconsistencies.
+ * 
+ * @module useDataIntegrity
  */
 
 import { useEffect, useState } from 'react';
@@ -10,8 +14,27 @@ import { validateAllAccountBalances, recalculateAllAccountBalances } from '../ut
 import { useToastStore } from '../store/useToastStore';
 
 /**
- * Hook to automatically check and fix data integrity issues
- * Runs on app startup in development mode, or can be enabled in production
+ * Hook to automatically check and fix data integrity issues.
+ * Runs on app startup in development mode, or can be enabled in production.
+ * 
+ * @param {boolean} [autoFix=false] - If true, automatically fixes issues found. If false, only reports them.
+ * @returns {Object} Hook return object
+ * @returns {boolean} returns.isChecking - True while integrity check is in progress
+ * @returns {Date | null} returns.lastCheckTime - Timestamp of last integrity check
+ * @returns {Function} returns.checkDataIntegrity - Manual function to trigger integrity check
+ * 
+ * @example
+ * function App() {
+ *   const { isChecking, lastCheckTime, checkDataIntegrity } = useDataIntegrity(true);
+ *   
+ *   return (
+ *     <div>
+ *       {isChecking && <p>Checking data integrity...</p>}
+ *       {lastCheckTime && <p>Last check: {lastCheckTime.toLocaleString()}</p>}
+ *       <button onClick={checkDataIntegrity}>Check Now</button>
+ *     </div>
+ *   );
+ * }
  */
 export function useDataIntegrity(autoFix: boolean = false) {
   const { showWarning, showError, showSuccess } = useToastStore();

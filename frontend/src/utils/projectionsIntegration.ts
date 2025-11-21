@@ -1,6 +1,10 @@
 /**
  * Projections Integration Utility
- * Handles importing and syncing projection data
+ * 
+ * Handles importing and syncing projection data from CSV/Excel files.
+ * Supports auto-populating inflow totals and calculating savings progress.
+ * 
+ * @module projectionsIntegration
  */
 
 import * as XLSX from 'xlsx';
@@ -28,7 +32,12 @@ export interface ProjectionsImportRow {
 }
 
 /**
- * Parse month string to "YYYY-MM" format
+ * Parses month string to "YYYY-MM" format.
+ * Supports various formats: "YYYY-MM", "MM/YYYY", "YYYY/MM", or date strings.
+ * 
+ * @private
+ * @param {string} monthStr - Month string in various formats
+ * @returns {string | null} Normalized month string in "YYYY-MM" format, or null if invalid
  */
 function parseMonthString(monthStr: string): string | null {
   if (!monthStr || typeof monthStr !== 'string') return null;
@@ -68,7 +77,12 @@ function parseMonthString(monthStr: string): string | null {
 }
 
 /**
- * Parse number from cell value
+ * Parses number from cell value.
+ * Handles strings, numbers, and null/undefined values.
+ * 
+ * @private
+ * @param {unknown} value - Cell value to parse
+ * @returns {number | null} Parsed number or null if invalid
  */
 function parseNumber(value: unknown): number | null {
   if (value === null || value === undefined || value === '') return null;
@@ -82,8 +96,27 @@ function parseNumber(value: unknown): number | null {
 }
 
 /**
- * Import projections from CSV file
- * Returns both the parsed data and validation results
+ * Imports projections from a CSV file.
+ * 
+ * Expected CSV format:
+ * - Column A: Month (format: "YYYY-MM", "MM/YYYY", or "Month Year")
+ * - Column B: Inflow Total (number)
+ * - Column C: Savings Target (number, optional)
+ * 
+ * @param {File} file - CSV file to import
+ * @returns {Promise<Object>} Object containing parsed projections and validation results
+ * @returns {ProjectionsImportRow[]} returns.projections - Array of parsed projection rows
+ * @returns {ProjectionsImportValidationResult} returns.validation - Validation results with errors/warnings
+ * 
+ * @throws {Error} If file cannot be read or is invalid
+ * 
+ * @example
+ * const fileInput = document.querySelector('input[type="file"]');
+ * const file = fileInput.files[0];
+ * const { projections, validation } = await importProjectionsFromCSV(file);
+ * if (validation.errors.length === 0) {
+ *   // Import successful
+ * }
  */
 export async function importProjectionsFromCSV(
   file: File,
@@ -150,8 +183,24 @@ export async function importProjectionsFromCSV(
 }
 
 /**
- * Import projections from Excel file
- * Returns both the parsed data and validation results
+ * Imports projections from an Excel file (.xlsx).
+ * 
+ * Expected Excel format (first sheet):
+ * - Column A: Month (format: "YYYY-MM", "MM/YYYY", or "Month Year")
+ * - Column B: Inflow Total (number)
+ * - Column C: Savings Target (number, optional)
+ * 
+ * @param {File} file - Excel file to import
+ * @returns {Promise<Object>} Object containing parsed projections and validation results
+ * @returns {ProjectionsImportRow[]} returns.projections - Array of parsed projection rows
+ * @returns {ProjectionsImportValidationResult} returns.validation - Validation results with errors/warnings
+ * 
+ * @throws {Error} If file cannot be read or is invalid
+ * 
+ * @example
+ * const fileInput = document.querySelector('input[type="file"]');
+ * const file = fileInput.files[0];
+ * const { projections, validation } = await importProjectionsFromExcel(file);
  */
 export async function importProjectionsFromExcel(
   file: File,
@@ -220,9 +269,16 @@ export async function importProjectionsFromExcel(
 }
 
 /**
- * Auto-populate inflow totals from projections
- * Creates or updates income transactions based on projected inflow totals
- * Prevents duplicate auto-populated transactions
+ * Auto-populates inflow totals from projections.
+ * Creates or updates income transactions based on projected inflow totals.
+ * Prevents duplicate auto-populated transactions.
+ * 
+ * @param {string} monthId - Month ID in format "YYYY-MM"
+ * @returns {void}
+ * 
+ * @example
+ * // Auto-populate inflow for January 2025
+ * autoPopulateInflowFromProjections('2025-01');
  */
 export function autoPopulateInflowFromProjections(monthId: string): void {
   const { getInflowTotal } = useProjectionsStore.getState();
@@ -298,7 +354,18 @@ export function autoPopulateInflowFromProjections(monthId: string): void {
 }
 
 /**
- * Get savings progress for a month based on projections
+ * Gets savings progress for a month based on projections.
+ * Calculates actual savings vs target and returns progress percentage.
+ * 
+ * @param {string} monthId - Month ID in format "YYYY-MM"
+ * @returns {Object} Savings progress object
+ * @returns {number | null} returns.target - Savings target from projections (null if not set)
+ * @returns {number} returns.actual - Actual savings amount (sum of completed savings transactions)
+ * @returns {number} returns.progress - Progress percentage (0-100)
+ * 
+ * @example
+ * const progress = getSavingsProgress('2025-01');
+ * // Returns { target: 50000, actual: 30000, progress: 60 }
  */
 export function getSavingsProgress(monthId: string): {
   target: number | null;

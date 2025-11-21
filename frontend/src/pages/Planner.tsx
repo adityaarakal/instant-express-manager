@@ -18,9 +18,11 @@ import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ClearIcon from '@mui/icons-material/Clear';
 import PrintIcon from '@mui/icons-material/Print';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { useAggregatedPlannedMonthsStore } from '../store/useAggregatedPlannedMonthsStore';
+import { exportPlannerMonthToExcel } from '../utils/excelExport';
 import { usePlannerStore } from '../store/usePlannerStore';
 import { MonthViewHeader } from '../components/planner/MonthViewHeader';
 import { StatusRibbon } from '../components/planner/StatusRibbon';
@@ -243,14 +245,33 @@ export const Planner = memo(function Planner() {
         <EmptyState
           icon={<EditCalendarIcon sx={{ fontSize: 48 }} />}
           title="No Planned Months"
-          description="No transaction data is available. Add transactions to see monthly planning views."
-          action={{
-            label: 'Add Transaction',
-            onClick: () => {
-              navigate('/transactions');
+          description="No transaction data is available. Add transactions to see monthly planning views with bucket-based allocations and financial planning."
+          actions={[
+            {
+              label: 'Add Transaction',
+              onClick: () => {
+                navigate('/transactions');
+              },
+              icon: <UploadFileIcon />,
             },
-            icon: <UploadFileIcon />,
-          }}
+          ]}
+          tips={[
+            {
+              text: 'The Planner automatically creates monthly views based on your transactions.',
+            },
+            {
+              text: 'Add income and expense transactions to see monthly planning with bucket allocations.',
+            },
+            {
+              text: 'Use buckets to organize expenses and track spending by category.',
+            },
+          ]}
+          quickStart={[
+            'Add your first income transaction to get started',
+            'Add expense transactions with bucket assignments',
+            'View monthly planning in the Planner page',
+            'Track allocations and remaining cash for each month',
+          ]}
         />
       </Stack>
     );
@@ -309,15 +330,30 @@ export const Planner = memo(function Planner() {
           </FormControl>
           <BulkOperationsToolbar availableMonthIds={filteredMonths} />
           {activeMonth && (
-            <Button
-              variant="outlined"
-              startIcon={<PrintIcon />}
-              onClick={handlePrint}
-              size="small"
-              aria-label="Print month view"
-            >
-              Print
-            </Button>
+            <>
+              <Button
+                variant="outlined"
+                startIcon={<PrintIcon />}
+                onClick={handlePrint}
+                size="small"
+                aria-label="Print month view"
+              >
+                Print
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<FileDownloadIcon />}
+                onClick={() => {
+                  if (activeMonth) {
+                    exportPlannerMonthToExcel(activeMonth);
+                  }
+                }}
+                size="small"
+                aria-label="Export month to Excel"
+              >
+                Export Excel
+              </Button>
+            </>
           )}
         </Stack>
       </Paper>
@@ -395,16 +431,31 @@ export const Planner = memo(function Planner() {
                 <EmptyState
                   icon={<FilterListIcon sx={{ fontSize: 48 }} />}
                   title="No Accounts Match Filters"
-                  description="No accounts found matching the current filters. Try adjusting your filter criteria."
-                  action={{
-                    label: 'Clear Filters',
-                    onClick: () => {
-                      setSelectedAccount(null);
-                      setSelectedBucket(null);
-                      setShowNegativeOnly(false);
+                  description="No accounts found matching the current filters. Try adjusting your filter criteria to see more results."
+                  actions={[
+                    {
+                      label: 'Clear Filters',
+                      onClick: () => {
+                        setSelectedAccount(null);
+                        setSelectedBucket(null);
+                        setSelectedAccountType(null);
+                        setSelectedStatus(null);
+                        setMinAmount(null);
+                        setMaxAmount(null);
+                        setShowNegativeOnly(false);
+                      },
+                      variant: 'outlined' as const,
+                      icon: <ClearIcon />,
                     },
-                    icon: <ClearIcon />,
-                  }}
+                  ]}
+                  tips={[
+                    {
+                      text: 'Try removing one or more filters to see more accounts.',
+                    },
+                    {
+                      text: 'Check if the selected month has transaction data.',
+                    },
+                  ]}
                 />
               )}
             </>

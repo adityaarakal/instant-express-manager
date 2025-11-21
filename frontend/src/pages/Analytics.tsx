@@ -17,13 +17,18 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Menu,
 } from '@mui/material';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore';
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
+import { exportAnalyticsToExcel } from '../utils/excelExport';
+import { EmptyState } from '../components/common/EmptyState';
 
 // Lazy load chart components for better performance
 const IncomeTrendsChart = lazy(() =>
@@ -120,6 +125,7 @@ export const Analytics = memo(function Analytics() {
   const [customDateDialogOpen, setCustomDateDialogOpen] = useState(false);
   const [customStartDate, setCustomStartDate] = useState<string>('');
   const [customEndDate, setCustomEndDate] = useState<string>('');
+  const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null);
 
   const incomeTransactions = useIncomeTransactionsStore((state) => state.transactions);
   const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
@@ -154,6 +160,50 @@ export const Analytics = memo(function Analytics() {
     () => accounts.filter((acc) => acc.accountType === 'CreditCard'),
     [accounts],
   );
+
+  const hasNoData = filteredIncome.length === 0 && filteredExpenses.length === 0 && filteredSavings.length === 0;
+
+  if (hasNoData) {
+    return (
+      <Stack spacing={3}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+          <Typography variant="h4">Analytics</Typography>
+        </Box>
+        <EmptyState
+          icon={<TrendingUpIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
+          title="No Analytics Data Available"
+          description="Add transactions to see comprehensive analytics, charts, and insights about your financial data."
+          actions={[
+            {
+              label: 'Add Transaction',
+              onClick: () => {
+                const transactionsUrl = new URL(window.location.href);
+                transactionsUrl.pathname = '/transactions';
+                window.location.href = transactionsUrl.toString();
+              },
+            },
+          ]}
+          tips={[
+            {
+              text: 'Analytics automatically generates charts and insights from your transaction data.',
+            },
+            {
+              text: 'Add income, expense, and savings transactions to see trends and patterns.',
+            },
+            {
+              text: 'Use different date ranges to analyze your financial data over time.',
+            },
+          ]}
+          quickStart={[
+            'Add income and expense transactions',
+            'Wait for transactions to be recorded',
+            'Return to Analytics to see charts and insights',
+            'Explore different date ranges and chart types',
+          ]}
+        />
+      </Stack>
+    );
+  }
 
   return (
     <Stack spacing={3}>
@@ -196,41 +246,82 @@ export const Analytics = memo(function Analytics() {
             size="small"
             variant="outlined"
             startIcon={<FileDownloadIcon />}
-            onClick={() => {
-              // Export analytics data
-              const data = {
-                dateRange: { start, end },
-                summary: {
-                  income: {
-                    count: filteredIncome.length,
-                    total: filteredIncome.reduce((sum, t) => sum + (t.status === 'Received' ? t.amount : 0), 0),
-                  },
-                  expenses: {
-                    count: filteredExpenses.length,
-                    total: filteredExpenses.reduce((sum, t) => sum + (t.status === 'Paid' ? t.amount : 0), 0),
-                  },
-                  savings: {
-                    count: filteredSavings.length,
-                    total: filteredSavings.reduce((sum, t) => sum + (t.status === 'Completed' ? t.amount : 0), 0),
-                  },
-                },
-                transactions: {
-                  income: filteredIncome,
-                  expenses: filteredExpenses,
-                  savings: filteredSavings,
-                },
-              };
-              const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `analytics-${start}-to-${end}.json`;
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
+            endIcon={<ArrowDropDownIcon />}
+            onClick={(e) => setExportMenuAnchor(e.currentTarget)}
           >
             Export
           </Button>
+          <Menu
+            anchorEl={exportMenuAnchor}
+            open={Boolean(exportMenuAnchor)}
+            onClose={() => setExportMenuAnchor(null)}
+          >
+            <MenuItem
+              onClick={() => {
+                setExportMenuAnchor(null);
+                // Export analytics data as JSON
+                const data = {
+                  dateRange: { start, end },
+                  summary: {
+                    income: {
+                      count: filteredIncome.length,
+                      total: filteredIncome.reduce((sum, t) => sum + (t.status === 'Received' ? t.amount : 0), 0),
+                    },
+                    expenses: {
+                      count: filteredExpenses.length,
+                      total: filteredExpenses.reduce((sum, t) => sum + (t.status === 'Paid' ? t.amount : 0), 0),
+                    },
+                    savings: {
+                      count: filteredSavings.length,
+                      total: filteredSavings.reduce((sum, t) => sum + (t.status === 'Completed' ? t.amount : 0), 0),
+                    },
+                  },
+                  transactions: {
+                    income: filteredIncome,
+                    expenses: filteredExpenses,
+                    savings: filteredSavings,
+                  },
+                };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `analytics-${start}-to-${end}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
+              Export as JSON
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                setExportMenuAnchor(null);
+                // Export analytics data as Excel
+                exportAnalyticsToExcel({
+                  summary: {
+                    income: {
+                      count: filteredIncome.length,
+                      total: filteredIncome.reduce((sum, t) => sum + (t.status === 'Received' ? t.amount : 0), 0),
+                    },
+                    expenses: {
+                      count: filteredExpenses.length,
+                      total: filteredExpenses.reduce((sum, t) => sum + (t.status === 'Paid' ? t.amount : 0), 0),
+                    },
+                    savings: {
+                      count: filteredSavings.length,
+                      total: filteredSavings.reduce((sum, t) => sum + (t.status === 'Completed' ? t.amount : 0), 0),
+                    },
+                  },
+                  income: filteredIncome,
+                  expenses: filteredExpenses,
+                  savings: filteredSavings,
+                  dateRange: `${start} to ${end}`,
+                });
+              }}
+            >
+              Export as Excel (.xlsx)
+            </MenuItem>
+          </Menu>
         </Stack>
       </Box>
 

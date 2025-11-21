@@ -663,13 +663,90 @@ export function Recurring() {
                           ? `Start automating your ${activeTab === 'income' ? 'income' : activeTab === 'expense' ? 'expense' : 'savings/investment'} tracking by creating your first recurring template. Set up automatic transaction generation for regular ${activeTab === 'income' ? 'income' : activeTab === 'expense' ? 'expenses' : 'savings/investments'}.`
                           : 'Navigate to a different page to see more templates.'
                       }
-                      action={
+                      actions={
+                        allTemplates.length === 0
+                          ? accounts.length > 0
+                            ? [
+                                {
+                                  label: `Add ${activeTab === 'income' ? 'Income' : activeTab === 'expense' ? 'Expense' : 'Savings/Investment'} Template`,
+                                  onClick: () => handleOpenDialog(),
+                                  icon: <AddIcon />,
+                                },
+                              ]
+                            : [
+                                {
+                                  label: 'Add Bank Account',
+                                  onClick: () => {
+                                    const accountsUrl = new URL(window.location.href);
+                                    accountsUrl.pathname = '/bank-accounts';
+                                    window.location.href = accountsUrl.toString();
+                                  },
+                                  icon: <AddIcon />,
+                                },
+                              ]
+                          : undefined
+                      }
+                      tips={
+                        allTemplates.length === 0
+                          ? activeTab === 'income'
+                            ? [
+                                {
+                                  text: 'Automate recurring income like salaries, rent, or subscription income.',
+                                },
+                                {
+                                  text: 'Templates automatically generate transactions based on the schedule you set.',
+                                },
+                                {
+                                  text: 'Set start and end dates to control when transactions are generated.',
+                                },
+                              ]
+                            : activeTab === 'expense'
+                            ? [
+                                {
+                                  text: 'Automate recurring expenses like subscriptions, rent, utilities, and bills.',
+                                },
+                                {
+                                  text: 'Templates generate transactions automatically, saving you time on data entry.',
+                                },
+                                {
+                                  text: 'Use buckets to categorize recurring expenses for better planning.',
+                                },
+                              ]
+                            : [
+                                {
+                                  text: 'Automate recurring savings and investments like monthly SIPs or savings deposits.',
+                                },
+                                {
+                                  text: 'Templates generate investment transactions automatically based on your schedule.',
+                                },
+                                {
+                                  text: 'Track regular savings and investments without manual entry each time.',
+                                },
+                              ]
+                          : undefined
+                      }
+                      quickStart={
                         allTemplates.length === 0 && accounts.length > 0
-                          ? {
-                              label: `Add ${activeTab === 'income' ? 'Income' : activeTab === 'expense' ? 'Expense' : 'Savings/Investment'} Template`,
-                              onClick: () => handleOpenDialog(),
-                              icon: <AddIcon />,
-                            }
+                          ? activeTab === 'income'
+                            ? [
+                                'Click "Add Income Template" to create your first recurring income',
+                                'Enter template name, amount, and select account',
+                                'Set frequency (daily, weekly, monthly) and start date',
+                                'Templates will automatically generate transactions',
+                              ]
+                            : activeTab === 'expense'
+                            ? [
+                                'Click "Add Expense Template" to create your first recurring expense',
+                                'Enter template name, amount, category, and bucket',
+                                'Set frequency and start date for automatic generation',
+                                'Templates will generate expense transactions automatically',
+                              ]
+                            : [
+                                'Click "Add Savings/Investment Template" to create your first recurring investment',
+                                'Enter template name, amount, type, and destination',
+                                'Set frequency and start date for automatic generation',
+                                'Templates will generate investment transactions automatically',
+                              ]
                           : undefined
                       }
                     />

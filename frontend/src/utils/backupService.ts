@@ -30,9 +30,12 @@ export interface BackupData {
 }
 
 /**
- * Get current app version
- * Uses __APP_VERSION__ from vite.config.ts (injected at build time)
- * Falls back to reading from package.json or default version
+ * Gets the current app version.
+ * Uses __APP_VERSION__ from vite.config.ts (injected at build time).
+ * Falls back to default version if not available.
+ * 
+ * @private
+ * @returns {string} Current app version string (e.g., "1.0.61")
  */
 function getAppVersion(): string {
   // Try to get version from Vite-injected constant
@@ -51,7 +54,15 @@ function getAppVersion(): string {
 }
 
 /**
- * Exports all application data to a JSON backup
+ * Exports all application data to a JSON backup object.
+ * Includes all banks, accounts, transactions, EMIs, and recurring templates.
+ * 
+ * @returns {BackupData} Complete backup data structure with version and timestamp
+ * 
+ * @example
+ * const backup = exportBackup();
+ * // backup contains all application data
+ * console.log(`Backup created for version ${backup.version}`);
  */
 export function exportBackup(): BackupData {
   return performanceMonitor.trackOperation('exportBackup', () => {
@@ -77,7 +88,15 @@ export function exportBackup(): BackupData {
 }
 
 /**
- * Downloads the backup as a JSON file
+ * Exports and downloads backup as a JSON file.
+ * Automatically tracks the export in export history.
+ * 
+ * @returns {void}
+ * 
+ * @example
+ * // User clicks "Download Backup" button
+ * downloadBackup();
+ * // File is downloaded: financial-manager-backup-2025-01-20.json
  */
 export function downloadBackup(): void {
   const backup = exportBackup();
@@ -106,7 +125,18 @@ export function downloadBackup(): void {
 }
 
 /**
- * Validates backup data structure
+ * Validates backup data structure.
+ * Type guard function that checks if data matches BackupData structure.
+ * 
+ * @param {unknown} data - Data to validate
+ * @returns {boolean} True if data is valid BackupData structure, false otherwise
+ * 
+ * @example
+ * const data = JSON.parse(fileContent);
+ * if (validateBackup(data)) {
+ *   // TypeScript now knows data is BackupData
+ *   importBackup(data);
+ * }
  */
 export function validateBackup(data: unknown): data is BackupData {
   if (!data || typeof data !== 'object') {
@@ -151,10 +181,30 @@ export function validateBackup(data: unknown): data is BackupData {
 }
 
 /**
- * Imports backup data into all stores
- * @param backupData The backup data to import
- * @param replaceExisting If true, replaces all existing data. If false, merges with existing data.
- * @returns Object with import status and migration info
+ * Imports backup data into all stores.
+ * Supports both replace and merge modes. In replace mode, all existing data is cleared first.
+ * In merge mode, new data is added without duplicates.
+ * 
+ * @param {BackupData} backupData - The backup data to import
+ * @param {boolean} [replaceExisting=false] - If true, replaces all existing data. If false, merges with existing data.
+ * @returns {Object} Import result object
+ * @returns {boolean} returns.success - True if import succeeded
+ * @returns {boolean} returns.migrated - True if backup version differs from current version
+ * @returns {string} returns.backupVersion - Version of the backup file
+ * @returns {string[]} [returns.warnings] - Array of warning messages (if any)
+ * @returns {string[]} [returns.errors] - Array of error messages (if any)
+ * 
+ * @throws {Error} If backup data structure is invalid
+ * 
+ * @example
+ * const backup = await readBackupFile(file);
+ * const result = importBackup(backup, true); // Replace existing data
+ * if (result.success) {
+ *   console.log('Backup imported successfully');
+ *   if (result.warnings) {
+ *     console.warn('Warnings:', result.warnings);
+ *   }
+ * }
  */
 export function importBackup(
   backupData: BackupData,
@@ -367,8 +417,22 @@ export function importBackup(
 }
 
 /**
- * Reads a backup file and returns the parsed data
- * Includes security validation for file type, size, and content
+ * Reads a backup file and returns the parsed data.
+ * Includes security validation for file type, size, and content.
+ * 
+ * @param {File} file - Backup file to read (must be JSON)
+ * @returns {Promise<BackupData>} Parsed backup data
+ * @throws {Error} If file is invalid, too large, or contains invalid JSON
+ * 
+ * @example
+ * const fileInput = document.querySelector('input[type="file"]');
+ * const file = fileInput.files[0];
+ * try {
+ *   const backup = await readBackupFile(file);
+ *   await importBackup(backup);
+ * } catch (error) {
+ *   console.error('Failed to read backup:', error);
+ * }
  */
 export function readBackupFile(file: File): Promise<BackupData> {
   return new Promise((resolve, reject) => {
