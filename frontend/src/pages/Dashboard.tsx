@@ -193,11 +193,24 @@ export const Dashboard = memo(function Dashboard() {
         </Typography>
       </Box>
       {/* Month Selector */}
-      <Paper elevation={1} sx={{ p: { xs: 1.5, sm: 2 }, borderRadius: 2 }}>
+      <Paper 
+        elevation={1} 
+        sx={{ 
+          p: { xs: 1.5, sm: 2 }, 
+          borderRadius: 2,
+          width: '100%',
+          maxWidth: '100%',
+          boxSizing: 'border-box',
+        }}
+      >
         <Stack 
           direction={{ xs: 'column', sm: 'row' }} 
           spacing={{ xs: 1.5, sm: 2 }} 
           alignItems={{ xs: 'stretch', sm: 'center' }}
+          sx={{
+            width: '100%',
+            maxWidth: '100%',
+          }}
         >
           <Box 
             sx={{ 
@@ -206,6 +219,8 @@ export const Dashboard = memo(function Dashboard() {
               gap: { xs: 1, sm: 1.5 }, 
               flexShrink: 0,
               width: { xs: '100%', sm: 'auto' },
+              minWidth: 0,
+              maxWidth: { xs: '100%', sm: 'none' },
             }}
           >
             <CalendarMonthIcon 
@@ -218,8 +233,10 @@ export const Dashboard = memo(function Dashboard() {
             <FormControl 
               size="small" 
               sx={{ 
-                minWidth: { xs: '100%', sm: 200 },
+                minWidth: 0,
+                width: { xs: '100%', sm: 200 },
                 flex: { xs: 1, sm: 'none' },
+                maxWidth: { xs: '100%', sm: 200 },
               }}
             >
               <InputLabel>Select Month</InputLabel>
@@ -227,9 +244,29 @@ export const Dashboard = memo(function Dashboard() {
                 value={selectedMonthId}
                 label="Select Month"
                 onChange={(e) => setSelectedMonthId(e.target.value)}
+                sx={{
+                  width: '100%',
+                  maxWidth: '100%',
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxWidth: { xs: '90vw', sm: 'none' },
+                      maxHeight: { xs: '60vh', sm: 'none' },
+                    },
+                  },
+                }}
               >
                 {availableMonths.map((month) => (
-                  <MenuItem key={month.id} value={month.id}>
+                  <MenuItem 
+                    key={month.id} 
+                    value={month.id}
+                    sx={{
+                      whiteSpace: 'normal',
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                    }}
+                  >
                     {month.label}
                   </MenuItem>
                 ))}
@@ -244,6 +281,8 @@ export const Dashboard = memo(function Dashboard() {
               fontSize: { xs: '0.8125rem', sm: '0.875rem' },
               wordWrap: 'break-word',
               overflowWrap: 'break-word',
+              width: { xs: '100%', sm: 'auto' },
+              minWidth: 0,
             }}
           >
             Viewing metrics for: <strong>{formatMonthDate(selectedMonthId)}</strong>
