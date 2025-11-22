@@ -1,13 +1,13 @@
 {
   "chunks": [
     {
-      "name": "index-B-lDI66p.js",
+      "name": "index-CJUB4wwC.js",
       "size": 568424,
       "sizeFormatted": "555.1 KB",
       "type": "main"
     },
     {
-      "name": "transactionExportPDF-Czz-08dA.js",
+      "name": "transactionExportPDF-BDc9I75N.js",
       "size": 421079,
       "sizeFormatted": "411.21 KB",
       "type": "chunk"
@@ -37,25 +37,25 @@
       "type": "vendor"
     },
     {
-      "name": "index.es-BmkQVqQx.js",
+      "name": "index.es-BFwD6Q4K.js",
       "size": 150511,
       "sizeFormatted": "146.98 KB",
       "type": "chunk"
     },
     {
-      "name": "Settings-BCPvKOGb.js",
+      "name": "Settings-fk_cP6nf.js",
       "size": 110833,
       "sizeFormatted": "108.24 KB",
       "type": "chunk"
     },
     {
-      "name": "Planner-DJ8Nctif.js",
+      "name": "Planner-_tdwb6vG.js",
       "size": 50139,
       "sizeFormatted": "48.96 KB",
       "type": "chunk"
     },
     {
-      "name": "Transactions-Co4N3S6R.js",
+      "name": "Transactions-CVt_EDEj.js",
       "size": 49817,
       "sizeFormatted": "48.65 KB",
       "type": "chunk"
@@ -73,9 +73,9 @@
       "type": "chunk"
     },
     {
-      "name": "Recurring-ppghTzzk.js",
-      "size": 24079,
-      "sizeFormatted": "23.51 KB",
+      "name": "Recurring-CUaCNR0V.js",
+      "size": 24265,
+      "sizeFormatted": "23.7 KB",
       "type": "chunk"
     },
     {
@@ -85,13 +85,13 @@
       "type": "chunk"
     },
     {
-      "name": "EMIs-C7cGz4XK.js",
+      "name": "EMIs-BDvsdXEV.js",
       "size": 19100,
       "sizeFormatted": "18.65 KB",
       "type": "chunk"
     },
     {
-      "name": "Dashboard-Bx1pREec.js",
+      "name": "Dashboard-DQL6naNU.js",
       "size": 17815,
       "sizeFormatted": "17.4 KB",
       "type": "chunk"
@@ -109,7 +109,7 @@
       "type": "chunk"
     },
     {
-      "name": "Analytics-CY8XekhF.js",
+      "name": "Analytics-_yL3UIWa.js",
       "size": 13246,
       "sizeFormatted": "12.94 KB",
       "type": "chunk"
@@ -121,19 +121,19 @@
       "type": "chunk"
     },
     {
-      "name": "CreditCardDashboard-Sd6BYJdG.js",
+      "name": "CreditCardDashboard-c7atZjIm.js",
       "size": 11022,
       "sizeFormatted": "10.76 KB",
       "type": "chunk"
     },
     {
-      "name": "BankAccounts-CFGzfESg.js",
+      "name": "BankAccounts-DzqfNkUf.js",
       "size": 10604,
       "sizeFormatted": "10.36 KB",
       "type": "chunk"
     },
     {
-      "name": "TransactionFormDialog-BqSem7tJ.js",
+      "name": "TransactionFormDialog-B3tRZ-GR.js",
       "size": 9625,
       "sizeFormatted": "9.4 KB",
       "type": "chunk"
@@ -151,13 +151,13 @@
       "type": "chunk"
     },
     {
-      "name": "Banks-CZS_tsFU.js",
+      "name": "Banks-CC-_nT2a.js",
       "size": 7167,
       "sizeFormatted": "7 KB",
       "type": "chunk"
     },
     {
-      "name": "TransferFormDialog-7NgNT-JT.js",
+      "name": "TransferFormDialog-CF-2tcQV.js",
       "size": 6365,
       "sizeFormatted": "6.22 KB",
       "type": "chunk"
@@ -169,19 +169,19 @@
       "type": "chunk"
     },
     {
-      "name": "BudgetVsActual-C8Pl7oSl.js",
+      "name": "BudgetVsActual-DlWD8MVM.js",
       "size": 4745,
       "sizeFormatted": "4.63 KB",
       "type": "chunk"
     },
     {
-      "name": "ConversionWizard-Bkkul8Ba.js",
+      "name": "ConversionWizard-0pKhGRos.js",
       "size": 4635,
       "sizeFormatted": "4.53 KB",
       "type": "chunk"
     },
     {
-      "name": "useAggregatedPlannedMonthsStore-CDCwd_sz.js",
+      "name": "useAggregatedPlannedMonthsStore-CbaSuOmP.js",
       "size": 4604,
       "sizeFormatted": "4.5 KB",
       "type": "chunk"
@@ -193,7 +193,7 @@
       "type": "chunk"
     },
     {
-      "name": "ConfirmDialog-0Lr16CUr.js",
+      "name": "ConfirmDialog-DhhGEUWe.js",
       "size": 4131,
       "sizeFormatted": "4.03 KB",
       "type": "chunk"
@@ -301,13 +301,13 @@
       "type": "chunk"
     },
     {
-      "name": "useUndoStore-F2K5KE0Y.js",
+      "name": "useUndoStore-CZbQdE6-.js",
       "size": 930,
       "sizeFormatted": "930 Bytes",
       "type": "chunk"
     },
     {
-      "name": "useTemplatesStore-CS7ok6Yt.js",
+      "name": "useTemplatesStore-D9CGizxI.js",
       "size": 909,
       "sizeFormatted": "909 Bytes",
       "type": "chunk"
@@ -325,7 +325,7 @@
       "type": "chunk"
     },
     {
-      "name": "usePlannerStore-C6CmtMKS.js",
+      "name": "usePlannerStore-NzwdmjrD.js",
       "size": 546,
       "sizeFormatted": "546 Bytes",
       "type": "chunk"
@@ -337,7 +337,7 @@
       "type": "chunk"
     }
   ],
-  "totalSize": 2693070,
+  "totalSize": 2693256,
   "totalSizeFormatted": "2.57 MB",
   "chunksCount": 56
 }
