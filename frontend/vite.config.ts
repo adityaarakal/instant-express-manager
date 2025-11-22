@@ -140,13 +140,20 @@ function bundleSizeAnalyzer() {
   }
 }
 
+// Get base path for GitHub Pages deployment
+const getBasePath = () => {
+  return process.env.NODE_ENV === 'production' ? '/instant-express-manager/' : '/';
+};
+
+const basePath = getBasePath();
+
 // https://vitejs.dev/config/
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(version),
   },
   // GitHub Pages deployment - set base path based on environment
-  base: process.env.NODE_ENV === 'production' ? '/instant-express-manager/' : '/',
+  base: basePath,
   plugins: [
     injectVersionMeta(),
     bundleSizeAnalyzer(),
@@ -162,8 +169,8 @@ export default defineConfig({
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
-        scope: '/',
-        start_url: '/',
+        scope: basePath,
+        start_url: basePath,
         icons: [
           {
             src: 'pwa-192x192.png',
@@ -188,6 +195,9 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
+        // Navigation fallback for SPA routing - all routes should serve index.html
+        navigateFallback: basePath + 'index.html',
+        navigateFallbackDenylist: [/^\/_/, /\/[^/?]+\.[^/]+$/], // Exclude API routes and files with extensions
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/api\./i,
