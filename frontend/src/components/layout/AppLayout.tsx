@@ -144,7 +144,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           fontWeight={700}
           sx={{
             fontSize: { xs: '1rem', sm: '1.25rem' },
-            color: '#ffffff',
+            color: 'inherit',
           }}
         >
           Planned Expenses
@@ -196,13 +196,13 @@ export function AppLayout({ children }: AppLayoutProps) {
                   display: 'flex',
                   flexDirection: 'row',
                   flexWrap: 'nowrap',
-                  color: '#ffffff',
+                  color: 'inherit',
                   '&.Mui-selected': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-                    color: '#ffffff',
+                    backgroundColor: 'action.selected',
+                    color: 'primary.main',
                   },
                   '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    backgroundColor: 'action.hover',
                   },
                 }}
               >
@@ -282,9 +282,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                   minHeight: 44,
                   p: 1,
                   flexShrink: 0,
-                  color: '#ffffff',
+                  color: 'inherit',
                   '&:hover': {
-                    backgroundColor: theme.palette.mode === 'dark' ? undefined : 'rgba(255, 255, 255, 0.1)',
+                    backgroundColor: 'action.hover',
                   },
                 }}
                 aria-label="Toggle navigation menu"
@@ -301,7 +301,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 minWidth: 0,
-                color: '#ffffff',
+                color: 'inherit',
               }}
             >
               Planned Expenses
@@ -335,10 +335,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                         px: { md: 1, lg: 1.5 },
                         fontSize: { md: '0.8125rem', lg: '0.875rem' },
                         flexShrink: 0,
-                        color: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.9)',
+                        color: isActive ? 'primary.main' : 'inherit',
                         '&:hover': {
-                          color: '#ffffff',
-                          backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                          backgroundColor: 'action.hover',
                         },
                       }}
                     >
