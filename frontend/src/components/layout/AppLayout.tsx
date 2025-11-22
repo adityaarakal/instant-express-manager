@@ -144,9 +144,10 @@ export function AppLayout({ children }: AppLayoutProps) {
           fontWeight={700}
           sx={{
             fontSize: { xs: '1rem', sm: '1.25rem' },
+            color: 'inherit',
           }}
         >
-          Planned Expenses
+          Instant Expense Manager
         </Typography>
       </Toolbar>
       <Divider sx={{ flexShrink: 0 }} />
@@ -195,6 +196,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   display: 'flex',
                   flexDirection: 'row',
                   flexWrap: 'nowrap',
+                  color: 'inherit',
                   '&.Mui-selected': {
                     backgroundColor: 'action.selected',
                     color: 'primary.main',
@@ -280,6 +282,10 @@ export function AppLayout({ children }: AppLayoutProps) {
                   minHeight: 44,
                   p: 1,
                   flexShrink: 0,
+                  color: 'inherit',
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
                 }}
                 aria-label="Toggle navigation menu"
               >
@@ -295,9 +301,10 @@ export function AppLayout({ children }: AppLayoutProps) {
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 minWidth: 0,
+                color: 'inherit',
               }}
             >
-              Planned Expenses
+              Instant Expense Manager
             </Typography>
           </Stack>
           <Stack 
@@ -328,6 +335,10 @@ export function AppLayout({ children }: AppLayoutProps) {
                         px: { md: 1, lg: 1.5 },
                         fontSize: { md: '0.8125rem', lg: '0.875rem' },
                         flexShrink: 0,
+                        color: isActive ? 'primary.main' : 'inherit',
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                        },
                       }}
                     >
                       {label}
@@ -435,7 +446,6 @@ export function AppLayout({ children }: AppLayoutProps) {
           touchAction: !isDesktop && mobileOpen ? 'none' : 'auto',
         }}
       >
-        <Toolbar sx={{ display: { xs: 'block', md: 'none' }, minHeight: { xs: 56, sm: 64 } }} />
         <Container
           maxWidth="lg"
           sx={{
