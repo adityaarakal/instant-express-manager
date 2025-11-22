@@ -18,6 +18,8 @@ import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ClearIcon from '@mui/icons-material/Clear';
 import PrintIcon from '@mui/icons-material/Print';
+import PreviewIcon from '@mui/icons-material/Preview';
+import { PrintPreview } from '../components/common/PrintPreview';
 import { useAggregatedPlannedMonthsStore } from '../store/useAggregatedPlannedMonthsStore';
 import { usePlannerStore } from '../store/usePlannerStore';
 import { MonthViewHeader } from '../components/planner/MonthViewHeader';
@@ -51,10 +53,16 @@ export const Planner = memo(function Planner() {
   const [minAmount, setMinAmount] = useState<number | null>(null);
   const [maxAmount, setMaxAmount] = useState<number | null>(null);
   const [showNegativeOnly, setShowNegativeOnly] = useState<boolean>(false);
+  const [printPreviewOpen, setPrintPreviewOpen] = useState<boolean>(false);
   const tableRef = useRef<HTMLDivElement>(null);
+  const printContentRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handlePrintPreview = () => {
+    setPrintPreviewOpen(true);
   };
 
   // Enhanced keyboard navigation
@@ -281,15 +289,26 @@ export const Planner = memo(function Planner() {
             </Select>
           </FormControl>
           {activeMonth && (
-            <Button
-              variant="outlined"
-              startIcon={<PrintIcon />}
-              onClick={handlePrint}
-              size="small"
-              aria-label="Print month view"
-            >
-              Print
-            </Button>
+            <Stack direction="row" spacing={1}>
+              <Button
+                variant="outlined"
+                startIcon={<PreviewIcon />}
+                onClick={handlePrintPreview}
+                size="small"
+                aria-label="Print preview"
+              >
+                Preview
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<PrintIcon />}
+                onClick={handlePrint}
+                size="small"
+                aria-label="Print month view"
+              >
+                Print
+              </Button>
+            </Stack>
           )}
         </Stack>
       </Paper>
@@ -389,6 +408,37 @@ export const Planner = memo(function Planner() {
           </Typography>
         </Paper>
       )}
+      <PrintPreview
+        open={printPreviewOpen}
+        onClose={() => setPrintPreviewOpen(false)}
+        title={`Print Preview - ${activeMonth ? formatMonthDate(activeMonth.monthStart) : 'Month View'}`}
+      >
+        <div ref={printContentRef}>
+          {activeMonth && totals && (
+            <>
+              <div className="print-header">
+                <Typography variant="h5" component="h1">
+                  {formatMonthDate(activeMonth.monthStart)}
+                </Typography>
+                <Typography variant="caption" className="print-metadata">
+                  Generated on {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString()}
+                </Typography>
+              </div>
+              {filteredMonth && filteredMonth.accounts.length > 0 && (
+                <>
+                  <AccountTable month={filteredMonth} />
+                  <TotalsFooter month={activeMonth} totals={totals} />
+                </>
+              )}
+              <div className="print-footer">
+                <Typography variant="caption">
+                  Instant Express Manager - Monthly Planner Report
+                </Typography>
+              </div>
+            </>
+          )}
+        </div>
+      </PrintPreview>
     </Stack>
   );
 });

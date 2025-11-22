@@ -197,6 +197,75 @@ body {
     color: #666 !important;
   }
 
+  /* Print page breaks */
+  .print-page-break {
+    page-break-after: always;
+  }
+
+  .print-page-break-avoid {
+    page-break-inside: avoid;
+  }
+
+  /* Print summary reports with better formatting */
+  .print-summary-report {
+    page-break-after: always;
+    margin-bottom: 24px;
+  }
+
+  .print-summary-report h2 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #000;
+  }
+
+  .print-summary-report table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+  }
+
+  .print-summary-report th,
+  .print-summary-report td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+
+  .print-summary-report th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+  }
+
+  /* Print dashboard with grid layout */
+  .print-dashboard {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    page-break-inside: avoid;
+  }
+
+  @media print {
+    .print-dashboard {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* Print charts with better sizing */
+  .print-chart {
+    page-break-inside: avoid;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Print metadata */
+  .print-metadata {
+    font-size: 9px;
+    color: #666;
+    margin-top: 8px;
+    text-align: center;
+  }
+
   /* Hide charts in print by default (can be enabled per chart) */
   .no-print-chart {
     display: none !important;
