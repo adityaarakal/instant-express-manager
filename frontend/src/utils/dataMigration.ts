@@ -100,6 +100,7 @@ export async function migratePlannedMonthSnapshot(
           name: oldAccount.accountName,
           accountType,
           currentBalance: initialBalance,
+          initialBalance, // Preserve initial balance
           accountNumber: oldAccount.id, // Use old ID as account number for reference
         });
 

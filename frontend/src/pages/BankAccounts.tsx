@@ -78,6 +78,7 @@ export function BankAccounts() {
     accountType: 'Savings' as BankAccount['accountType'],
     accountNumber: '',
     currentBalance: 0,
+    initialBalance: 0, // Track initial balance separately
     creditLimit: 0,
     outstandingBalance: 0,
     statementDate: '',
@@ -142,6 +143,7 @@ export function BankAccounts() {
         accountType: account.accountType,
         accountNumber: account.accountNumber || '',
         currentBalance: account.currentBalance,
+        initialBalance: account.initialBalance ?? account.currentBalance ?? 0,
         creditLimit: account.creditLimit || 0,
         outstandingBalance: account.outstandingBalance || 0,
         statementDate: account.statementDate || '',
@@ -156,6 +158,7 @@ export function BankAccounts() {
         accountType: 'Savings',
         accountNumber: '',
         currentBalance: 0,
+        initialBalance: 0,
         creditLimit: 0,
         outstandingBalance: 0,
         statementDate: '',
@@ -174,28 +177,42 @@ export function BankAccounts() {
   const handleSave = async () => {
     if (!formData.name.trim() || !formData.bankId) return;
 
-    const accountData = {
-      name: formData.name,
-      bankId: formData.bankId,
-      accountType: formData.accountType,
-      accountNumber: formData.accountNumber || undefined,
-      currentBalance: formData.currentBalance,
-      creditLimit: formData.accountType === 'CreditCard' ? formData.creditLimit : undefined,
-      outstandingBalance: formData.accountType === 'CreditCard' ? formData.outstandingBalance : undefined,
-      statementDate: formData.statementDate || undefined,
-      dueDate: formData.accountType === 'CreditCard' ? formData.dueDate : undefined,
-      notes: formData.notes || undefined,
-    };
-
     setIsSaving(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 200));
       
       if (editingAccount) {
-        updateAccount(editingAccount.id, accountData);
+        // When updating, preserve existing initialBalance (don't pass it in updates)
+        const updateData = {
+          name: formData.name,
+          bankId: formData.bankId,
+          accountType: formData.accountType,
+          accountNumber: formData.accountNumber || undefined,
+          currentBalance: formData.currentBalance,
+          creditLimit: formData.accountType === 'CreditCard' ? formData.creditLimit : undefined,
+          outstandingBalance: formData.accountType === 'CreditCard' ? formData.outstandingBalance : undefined,
+          statementDate: formData.statementDate || undefined,
+          dueDate: formData.accountType === 'CreditCard' ? formData.dueDate : undefined,
+          notes: formData.notes || undefined,
+        };
+        updateAccount(editingAccount.id, updateData);
         showSuccess('Account updated successfully');
       } else {
-        createAccount(accountData);
+        // When creating, set initialBalance to currentBalance
+        const createData = {
+          name: formData.name,
+          bankId: formData.bankId,
+          accountType: formData.accountType,
+          accountNumber: formData.accountNumber || undefined,
+          currentBalance: formData.currentBalance,
+          initialBalance: formData.currentBalance,
+          creditLimit: formData.accountType === 'CreditCard' ? formData.creditLimit : undefined,
+          outstandingBalance: formData.accountType === 'CreditCard' ? formData.outstandingBalance : undefined,
+          statementDate: formData.statementDate || undefined,
+          dueDate: formData.accountType === 'CreditCard' ? formData.dueDate : undefined,
+          notes: formData.notes || undefined,
+        };
+        createAccount(createData);
         showSuccess('Account created successfully');
       }
       handleCloseDialog();

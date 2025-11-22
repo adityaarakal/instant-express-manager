@@ -161,6 +161,8 @@ export function updateBankAccountCommand(
         accountType: original.accountType,
         currentBalance: original.currentBalance,
         bankId: original.bankId,
+        // Note: initialBalance is preserved automatically in updateAccount
+        // and cannot be changed via updates
       });
     },
   };
