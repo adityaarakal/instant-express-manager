@@ -36,7 +36,7 @@ jobs:
           npm install
           cd frontend && npm install
           # Ensure Rollup optional dependencies are installed (fix for npm workspace bug)
-          cd frontend && npm install @rollup/rollup-linux-x64-gnu --save-optional || npm rebuild @rollup/rollup-linux-x64-gnu || true
+          npm install @rollup/rollup-linux-x64-gnu --save-optional || npm rebuild @rollup/rollup-linux-x64-gnu || true
       
       - name: Build
         run: cd frontend && npm run build
