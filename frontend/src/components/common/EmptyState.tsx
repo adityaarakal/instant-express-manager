@@ -1,4 +1,4 @@
-import { Box, Button, Paper, Stack, Typography, Link, Chip } from '@mui/material';
+import { Box, Button, Paper, Stack, Typography, Link, Chip, useMediaQuery, useTheme } from '@mui/material';
 import type { ReactNode } from 'react';
 import InfoIcon from '@mui/icons-material/Info';
 import LaunchIcon from '@mui/icons-material/Launch';
@@ -43,6 +43,8 @@ export function EmptyState({
   links,
   quickStart,
 }: EmptyStateProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   // Support both single action and multiple actions
   const allActions = actions || (action ? [action] : []);
 
@@ -60,11 +62,33 @@ export function EmptyState({
         boxSizing: 'border-box',
       }}
     >
-      <Stack spacing={3} alignItems="center" sx={{ width: '100%' }}>
-        {icon && <Box sx={{ color: 'text.secondary', opacity: 0.7 }}>{icon}</Box>}
+      <Stack spacing={{ xs: 2, sm: 3 }} alignItems="center" sx={{ width: '100%' }}>
+        {icon && (
+          <Box 
+            sx={{ 
+              color: 'text.secondary', 
+              opacity: 0.7,
+              '& svg': {
+                fontSize: { xs: 48, sm: 64 },
+              },
+            }}
+          >
+            {icon}
+          </Box>
+        )}
         
-        <Stack spacing={1} alignItems="center" sx={{ width: '100%', px: 2 }}>
-          <Typography variant="h6" color="text.primary" fontWeight="medium">
+        <Stack spacing={{ xs: 0.75, sm: 1 }} alignItems="center" sx={{ width: '100%', px: { xs: 1, sm: 2 } }}>
+          <Typography 
+            variant="h6" 
+            color="text.primary" 
+            fontWeight="medium"
+            sx={{
+              fontSize: { xs: '1rem', sm: '1.25rem' },
+              textAlign: 'center',
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+            }}
+          >
             {title}
           </Typography>
           {description && (
@@ -72,12 +96,14 @@ export function EmptyState({
               variant="body2" 
               color="text.secondary" 
               sx={{ 
-                maxWidth: 500,
+                maxWidth: { xs: '100%', sm: 500 },
                 width: '100%',
                 wordWrap: 'break-word',
                 overflowWrap: 'break-word',
                 hyphens: 'auto',
                 textAlign: 'center',
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                px: { xs: 1, sm: 0 },
               }}
             >
               {description}
@@ -87,18 +113,34 @@ export function EmptyState({
 
         {/* Quick Start Steps */}
         {quickStart && quickStart.length > 0 && (
-          <Box sx={{ width: '100%', maxWidth: 500, textAlign: 'left', px: 2 }}>
-            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1, textAlign: 'left' }}>
+          <Box sx={{ width: '100%', maxWidth: { xs: '100%', sm: 500 }, textAlign: 'left', px: { xs: 1, sm: 2 } }}>
+            <Typography 
+              variant="subtitle2" 
+              color="text.secondary" 
+              sx={{ 
+                mb: { xs: 0.75, sm: 1 }, 
+                textAlign: 'left',
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               Quick Start:
             </Typography>
-            <Stack spacing={1} sx={{ width: '100%' }}>
+            <Stack spacing={{ xs: 0.75, sm: 1 }} sx={{ width: '100%' }}>
               {quickStart.map((step, index) => (
-                <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, width: '100%' }}>
+                <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: { xs: 0.75, sm: 1 }, width: '100%' }}>
                   <Chip 
                     label={index + 1} 
                     size="small" 
                     color="primary" 
-                    sx={{ minWidth: 24, height: 24, fontSize: '0.75rem', flexShrink: 0 }}
+                    sx={{ 
+                      minWidth: { xs: 20, sm: 24 }, 
+                      height: { xs: 20, sm: 24 }, 
+                      fontSize: { xs: '0.6875rem', sm: '0.75rem' }, 
+                      flexShrink: 0,
+                      '& .MuiChip-label': {
+                        px: { xs: 0.5, sm: 0.75 },
+                      },
+                    }}
                   />
                   <Typography 
                     variant="body2" 
@@ -109,6 +151,7 @@ export function EmptyState({
                       overflowWrap: 'break-word',
                       hyphens: 'auto',
                       textAlign: 'left',
+                      fontSize: { xs: '0.8125rem', sm: '0.875rem' },
                     }}
                   >
                     {step}
@@ -122,11 +165,11 @@ export function EmptyState({
         {/* Actions */}
         {allActions.length > 0 && (
           <Stack 
-            direction={allActions.length > 1 ? 'column' : 'row'} 
-            spacing={1.5} 
+            direction={isMobile || allActions.length > 1 ? 'column' : 'row'} 
+            spacing={{ xs: 1, sm: 1.5 }} 
             sx={{ 
               width: '100%', 
-              maxWidth: 400,
+              maxWidth: { xs: '100%', sm: 400 },
               alignItems: 'center',
               justifyContent: 'center',
             }}
@@ -138,10 +181,13 @@ export function EmptyState({
                 color={act.color || 'primary'}
                 startIcon={act.icon}
                 onClick={act.onClick}
-                fullWidth={allActions.length > 1}
+                fullWidth={isMobile || allActions.length > 1}
                 sx={{ 
                   mt: index === 0 ? 0 : 0,
-                  ...(allActions.length === 1 && {
+                  minHeight: { xs: 44, sm: 40 },
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                  px: { xs: 1.5, sm: 2 },
+                  ...(allActions.length === 1 && !isMobile && {
                     minWidth: 200,
                   }),
                 }}
@@ -154,11 +200,20 @@ export function EmptyState({
 
         {/* Tips */}
         {tips && tips.length > 0 && (
-          <Box sx={{ width: '100%', maxWidth: 500, mt: 1, px: 2 }}>
-            <Stack spacing={1.5} alignItems="flex-start" sx={{ width: '100%' }}>
+          <Box sx={{ width: '100%', maxWidth: { xs: '100%', sm: 500 }, mt: { xs: 0.75, sm: 1 }, px: { xs: 1, sm: 2 } }}>
+            <Stack spacing={{ xs: 1, sm: 1.5 }} alignItems="flex-start" sx={{ width: '100%' }}>
               {tips.map((tip, index) => (
-                <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, width: '100%' }}>
-                  {tip.icon || <InfoIcon sx={{ fontSize: 18, color: 'info.main', mt: 0.5, flexShrink: 0 }} />}
+                <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: { xs: 0.75, sm: 1 }, width: '100%' }}>
+                  {tip.icon || (
+                    <InfoIcon 
+                      sx={{ 
+                        fontSize: { xs: 16, sm: 18 }, 
+                        color: 'info.main', 
+                        mt: { xs: 0.25, sm: 0.5 }, 
+                        flexShrink: 0 
+                      }} 
+                    />
+                  )}
                   <Typography 
                     variant="body2" 
                     color="text.secondary" 
@@ -168,6 +223,7 @@ export function EmptyState({
                       overflowWrap: 'break-word',
                       hyphens: 'auto',
                       textAlign: 'left',
+                      fontSize: { xs: '0.8125rem', sm: '0.875rem' },
                     }}
                   >
                     {tip.text}
@@ -180,7 +236,16 @@ export function EmptyState({
 
         {/* Links */}
         {links && links.length > 0 && (
-          <Stack direction="row" spacing={2} sx={{ mt: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            spacing={{ xs: 1, sm: 2 }} 
+            sx={{ 
+              mt: { xs: 0.75, sm: 1 }, 
+              flexWrap: 'wrap', 
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
             {links.map((link, index) => (
               <Link
                 key={index}
@@ -191,13 +256,15 @@ export function EmptyState({
                 sx={{ 
                   display: 'flex', 
                   alignItems: 'center', 
-                  gap: 0.5,
-                  fontSize: '0.875rem',
+                  gap: { xs: 0.5, sm: 0.5 },
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
                   color: 'primary.main',
+                  minHeight: { xs: 44, sm: 'auto' },
+                  px: { xs: 1, sm: 0 },
                 }}
               >
                 {link.label}
-                {link.external && <LaunchIcon sx={{ fontSize: 14 }} />}
+                {link.external && <LaunchIcon sx={{ fontSize: { xs: 12, sm: 14 } }} />}
               </Link>
             ))}
           </Stack>
