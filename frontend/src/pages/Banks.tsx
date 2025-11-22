@@ -40,6 +40,9 @@ import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { EmptyState } from '../components/common/EmptyState';
+import { ViewToggle } from '../components/common/ViewToggle';
+import { useViewMode } from '../hooks/useViewMode';
+import { BankCard } from '../components/banks/BankCard';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import type { Bank } from '../types/banks';
 
@@ -48,6 +51,7 @@ export function Banks() {
   const { showSuccess, showError, showToast } = useToastStore();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { viewMode, toggleViewMode } = useViewMode('banks-view-mode');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBank, setEditingBank] = useState<Bank | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -226,23 +230,26 @@ export function Banks() {
         >
           Banks
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpenDialog()}
-          aria-label="Add new bank"
-          fullWidth={isMobile}
-          size={isMobile ? 'medium' : 'large'}
-          sx={{ 
-            flexShrink: 0,
-            minHeight: { xs: 44, sm: 48 },
-            fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-            whiteSpace: 'nowrap',
-            px: { xs: 1.5, sm: 2 },
-          }}
-        >
-          Add Bank
-        </Button>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <ViewToggle viewMode={viewMode} onToggle={toggleViewMode} aria-label="Toggle between table and card view" />
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenDialog()}
+            aria-label="Add new bank"
+            fullWidth={isMobile}
+            size={isMobile ? 'medium' : 'large'}
+            sx={{ 
+              flexShrink: 0,
+              minHeight: { xs: 44, sm: 48 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              whiteSpace: 'nowrap',
+              px: { xs: 1.5, sm: 2 },
+            }}
+          >
+            Add Bank
+          </Button>
+        </Stack>
       </Box>
 
       <Paper sx={{ p: { xs: 1.5, sm: 2 } }}>
@@ -358,8 +365,53 @@ export function Banks() {
         )}
       </Paper>
 
-      <TableContainer 
-        component={Paper}
+      <Paper>
+        {/* Card View or Table View based on view mode */}
+        {viewMode === 'card' ? (
+          <Box sx={{ p: { xs: 1, sm: 2 } }}>
+            {isLoading ? (
+              <Stack spacing={1.5}>
+                {[...Array(5)].map((_, i) => (
+                  <Box key={i} sx={{ height: 150, bgcolor: 'action.hover', borderRadius: 1 }} />
+                ))}
+              </Stack>
+            ) : filteredBanks.length === 0 ? (
+              <Box sx={{ py: 4, px: 2 }}>
+                <EmptyState
+                  icon={<AccountBalanceIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
+                  title={banks.length === 0 ? 'No Banks Yet' : 'No Banks Match Filters'}
+                  description={
+                    banks.length === 0
+                      ? 'Start by adding your first bank. You can add banks, credit cards, or wallets to organize your accounts.'
+                      : 'Try adjusting your search or filter criteria to find what you\'re looking for.'
+                  }
+                  action={
+                    banks.length === 0
+                      ? {
+                          label: 'Add Your First Bank',
+                          onClick: () => handleOpenDialog(),
+                          icon: <AddIcon />,
+                        }
+                      : undefined
+                  }
+                />
+              </Box>
+            ) : (
+              <Stack spacing={1.5}>
+                {filteredBanks.map((bank) => (
+                  <BankCard
+                    key={bank.id}
+                    bank={bank}
+                    isDeleting={deletingId === bank.id}
+                    onEdit={() => handleOpenDialog(bank)}
+                    onDelete={() => handleDeleteClick(bank.id)}
+                  />
+                ))}
+              </Stack>
+            )}
+          </Box>
+        ) : (
+          <TableContainer
         sx={{
           overflowX: 'auto',
           maxWidth: '100%',
@@ -480,6 +532,8 @@ export function Banks() {
           </TableBody>
         </Table>
       </TableContainer>
+        )}
+      </Paper>
 
       <Dialog 
         open={dialogOpen} 

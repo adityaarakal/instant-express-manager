@@ -52,6 +52,9 @@ import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { EmptyState } from '../components/common/EmptyState';
 import { ConversionWizard } from '../components/common/ConversionWizard';
+import { ViewToggle } from '../components/common/ViewToggle';
+import { useViewMode } from '../hooks/useViewMode';
+import { EMICard } from '../components/emis/EMICard';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import SavingsIcon from '@mui/icons-material/Savings';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
@@ -80,6 +83,7 @@ export function EMIs() {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { viewMode, toggleViewMode } = useViewMode('emis-view-mode');
   const [activeTab, setActiveTab] = useState<TabValue>('expense');
   const { emis: expenseEMIs, createEMI: createExpenseEMI, updateEMI: updateExpenseEMI, deleteEMI: deleteExpenseEMI, pauseEMI: pauseExpenseEMI, resumeEMI: resumeExpenseEMI, getGeneratedTransactions: getExpenseGeneratedTransactions, convertToRecurring: convertExpenseEMIToRecurring } = useExpenseEMIsStore();
   const { emis: savingsEMIs, createEMI: createSavingsEMI, updateEMI: updateSavingsEMI, deleteEMI: deleteSavingsEMI, pauseEMI: pauseSavingsEMI, resumeEMI: resumeSavingsEMI, getGeneratedTransactions: getSavingsGeneratedTransactions, convertToRecurring: convertSavingsEMIToRecurring } = useSavingsInvestmentEMIsStore();
@@ -444,24 +448,27 @@ export function EMIs() {
         >
           EMIs
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpenDialog()}
-          disabled={accounts.length === 0}
-          aria-label={accounts.length === 0 ? 'Add EMI (requires at least one bank account)' : 'Add new EMI'}
-          fullWidth={isMobile}
-          size={isMobile ? 'medium' : 'large'}
-          sx={{ 
-            flexShrink: 0,
-            minHeight: { xs: 44, sm: 48 },
-            fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-            whiteSpace: 'nowrap',
-            px: { xs: 1.5, sm: 2 },
-          }}
-        >
-          Add EMI
-        </Button>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <ViewToggle viewMode={viewMode} onToggle={toggleViewMode} aria-label="Toggle between table and card view" />
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenDialog()}
+            disabled={accounts.length === 0}
+            aria-label={accounts.length === 0 ? 'Add EMI (requires at least one bank account)' : 'Add new EMI'}
+            fullWidth={isMobile}
+            size={isMobile ? 'medium' : 'large'}
+            sx={{ 
+              flexShrink: 0,
+              minHeight: { xs: 44, sm: 48 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              whiteSpace: 'nowrap',
+              px: { xs: 1.5, sm: 2 },
+            }}
+          >
+            Add EMI
+          </Button>
+        </Stack>
       </Box>
 
       <Collapse in={infoAlertOpen}>
@@ -542,7 +549,123 @@ export function EMIs() {
           </Tabs>
         )}
 
-        <TableContainer
+        {/* Card View or Table View based on view mode */}
+        {viewMode === 'card' ? (
+          <Box sx={{ p: { xs: 1, sm: 2 } }}>
+            {isLoading ? (
+              <Stack spacing={1.5}>
+                {[...Array(5)].map((_, i) => (
+                  <Box key={i} sx={{ height: 200, bgcolor: 'action.hover', borderRadius: 1 }} />
+                ))}
+              </Stack>
+            ) : paginatedEMIs.length === 0 ? (
+              <Box sx={{ py: 4, px: 2 }}>
+                <EmptyState
+                  icon={
+                    activeTab === 'expense' ? (
+                      <CreditCardIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />
+                    ) : (
+                      <SavingsIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />
+                    )
+                  }
+                  title={allEMIs.length === 0 ? 'No EMIs Yet' : 'No EMIs on This Page'}
+                  description={
+                    allEMIs.length === 0
+                      ? activeTab === 'expense'
+                        ? 'Start tracking your expense EMIs by adding your first EMI. Track credit card bills, loans, and other installment-based expenses.'
+                        : 'Start tracking your savings/investment EMIs by adding your first EMI. Track SIPs and other recurring investments.'
+                      : 'Navigate to a different page to see more EMIs.'
+                  }
+                  actions={
+                    allEMIs.length === 0
+                      ? accounts.length > 0
+                        ? [
+                            {
+                              label: `Add ${activeTab === 'expense' ? 'Expense' : 'Savings/Investment'} EMI`,
+                              onClick: () => handleOpenDialog(),
+                              icon: <AddIcon />,
+                            },
+                          ]
+                        : [
+                            {
+                              label: 'Add Account',
+                              onClick: () => navigate('/accounts'),
+                              icon: <AddIcon />,
+                            },
+                          ]
+                      : undefined
+                  }
+                />
+              </Box>
+            ) : (
+              <Stack spacing={1.5}>
+                {paginatedEMIs
+                  .sort((a, b) => b.startDate.localeCompare(a.startDate))
+                  .map((emi) => (
+                    <EMICard
+                      key={emi.id}
+                      emi={emi}
+                      type={activeTab}
+                      accountName={accountsMap.get(emi.accountId) || '—'}
+                      isDeleting={deletingId === emi.id}
+                      onEdit={() => handleOpenDialog(emi)}
+                      onDelete={() => handleDeleteClick(emi.id)}
+                      onPauseResume={() => handlePauseResume(emi)}
+                      onConvertToRecurring={() => handleConvertToRecurringClick(emi)}
+                      onViewTransactions={
+                        getGeneratedTransactionsCount(emi.id) > 0
+                          ? () => {
+                              navigate(`/transactions?tab=${activeTab === 'expense' ? 'expense' : 'savings'}&emi=${emi.id}`);
+                            }
+                          : undefined
+                      }
+                      transactionsCount={getGeneratedTransactionsCount(emi.id)}
+                      progress={getProgress(emi)}
+                      formatCurrency={formatCurrency}
+                      formatDate={formatDate}
+                    />
+                  ))}
+              </Stack>
+            )}
+            {!isLoading && paginatedEMIs.length > 0 && (
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+                <TablePagination
+                  component="div"
+                  count={allEMIs.length}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  rowsPerPage={rowsPerPage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  rowsPerPageOptions={[10, 25]}
+                  labelRowsPerPage="Rows:"
+                  labelDisplayedRows={({ from, to, count }) =>
+                    `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`
+                  }
+                  sx={{
+                    '& .MuiTablePagination-toolbar': {
+                      flexWrap: 'wrap',
+                      gap: 1,
+                      px: 1,
+                    },
+                    '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                      fontSize: '0.75rem',
+                    },
+                    '& .MuiTablePagination-select': {
+                      fontSize: '0.75rem',
+                      minHeight: 36,
+                    },
+                    '& .MuiIconButton-root': {
+                      minWidth: 40,
+                      minHeight: 40,
+                      p: 0.5,
+                    },
+                  }}
+                />
+              </Box>
+            )}
+          </Box>
+        ) : (
+          <TableContainer
           sx={{
             overflowX: 'auto',
             maxWidth: '100%',
@@ -851,7 +974,8 @@ export function EMIs() {
             </TableBody>
           </Table>
         </TableContainer>
-        {!isLoading && allEMIs.length > 0 && (
+        )}
+        {!isLoading && allEMIs.length > 0 && viewMode === 'table' && (
           <TablePagination
             component="div"
             count={allEMIs.length}
