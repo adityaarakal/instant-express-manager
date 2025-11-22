@@ -260,25 +260,46 @@ export const Planner = memo(function Planner() {
   }
 
   return (
-    <Stack spacing={3}>
-      <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }} className="no-print">
-        <Stack spacing={2}>
+    <Stack spacing={{ xs: 2, sm: 3 }}>
+      <Paper 
+        elevation={1} 
+        sx={{ 
+          p: { xs: 2, sm: 3 }, 
+          borderRadius: 2 
+        }} 
+        className="no-print"
+      >
+        <Stack spacing={{ xs: 1.5, sm: 2 }}>
           <MonthSearchFilter
             months={filteredMonthsData}
             onFilterChange={handleFilterChange}
           />
           <Stack 
             direction={{ xs: 'column', sm: 'row' }} 
-            spacing={2} 
+            spacing={{ xs: 1.5, sm: 2 }} 
             alignItems={{ xs: 'stretch', sm: 'center' }}
           >
-            <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 200 }, flex: { xs: 1, sm: '0 1 auto' } }}>
+            <FormControl 
+              size="small" 
+              sx={{ 
+                minWidth: { xs: '100%', sm: 200 }, 
+                flex: { xs: 1, sm: '0 1 auto' } 
+              }}
+            >
               <InputLabel id="month-select-label">Select Month</InputLabel>
               <Select
                 labelId="month-select-label"
                 value={activeMonthId ?? ''}
                 label="Select Month"
                 onChange={(e) => setActiveMonth(e.target.value)}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: { xs: '60vh', sm: 'none' },
+                      maxWidth: { xs: '90vw', sm: 'none' },
+                    },
+                  },
+                }}
               >
                 {/* Sort months in descending order (latest first) to prioritize current/recent months */}
                 {filteredMonths
@@ -296,10 +317,11 @@ export const Planner = memo(function Planner() {
             {activeMonth && (
               <Stack 
                 direction="row" 
-                spacing={1}
+                spacing={{ xs: 1, sm: 1.5 }}
                 sx={{ 
                   justifyContent: { xs: 'flex-start', sm: 'flex-end' },
-                  flexShrink: 0
+                  flexShrink: 0,
+                  width: { xs: '100%', sm: 'auto' },
                 }}
               >
                 <Button
@@ -308,6 +330,12 @@ export const Planner = memo(function Planner() {
                   onClick={handlePrintPreview}
                   size="small"
                   aria-label="Print preview"
+                  sx={{
+                    minHeight: { xs: 44, sm: 40 },
+                    fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                    px: { xs: 1.5, sm: 2 },
+                    flex: { xs: 1, sm: '0 1 auto' },
+                  }}
                 >
                   Preview
                 </Button>
@@ -317,6 +345,12 @@ export const Planner = memo(function Planner() {
                   onClick={handlePrint}
                   size="small"
                   aria-label="Print month view"
+                  sx={{
+                    minHeight: { xs: 44, sm: 40 },
+                    fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                    px: { xs: 1.5, sm: 2 },
+                    flex: { xs: 1, sm: '0 1 auto' },
+                  }}
                 >
                   Print
                 </Button>

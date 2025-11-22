@@ -25,11 +25,25 @@ export function TotalsFooter({ month, totals }: TotalsFooterProps) {
   );
 
   return (
-    <Paper elevation={1} sx={{ p: 3, borderRadius: 2, bgcolor: 'background.default' }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>
+    <Paper 
+      elevation={1} 
+      sx={{ 
+        p: { xs: 2, sm: 3 }, 
+        borderRadius: 2, 
+        bgcolor: 'background.default' 
+      }}
+    >
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          mb: { xs: 1.5, sm: 2 },
+          fontSize: { xs: '1.125rem', sm: '1.25rem' },
+          fontWeight: 700,
+        }}
+      >
         Totals Summary
       </Typography>
-      <Stack spacing={2}>
+      <Stack spacing={{ xs: 1.5, sm: 2 }}>
         {buckets.map((bucket) => {
           const pending = totals.pending[bucket.id] ?? 0;
           const paid = totals.paid[bucket.id] ?? 0;
@@ -41,41 +55,92 @@ export function TotalsFooter({ month, totals }: TotalsFooterProps) {
               key={bucket.id}
               sx={{
                 display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
                 justifyContent: 'space-between',
-                alignItems: 'center',
-                p: 1.5,
+                alignItems: { xs: 'flex-start', sm: 'center' },
+                gap: { xs: 1, sm: 0 },
+                p: { xs: 1.25, sm: 1.5 },
                 borderRadius: 1,
                 bgcolor: 'action.hover',
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: { xs: 0.75, sm: 1 },
+                  flexWrap: 'wrap',
+                }}
+              >
                 <Box
                   sx={{
-                    width: 12,
-                    height: 12,
+                    width: { xs: 10, sm: 12 },
+                    height: { xs: 10, sm: 12 },
                     borderRadius: '50%',
                     bgcolor: bucket.color,
+                    flexShrink: 0,
                   }}
                 />
-                <Typography variant="body1" fontWeight="medium">
+                <Typography 
+                  variant="body1" 
+                  fontWeight="medium"
+                  sx={{
+                    fontSize: { xs: '0.875rem', sm: '1rem' },
+                  }}
+                >
                   {bucket.name}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography 
+                  variant="caption" 
+                  color="text.secondary"
+                  sx={{
+                    fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                  }}
+                >
                   ({status})
                 </Typography>
               </Box>
-              <Stack direction="row" spacing={2} alignItems="center">
+              <Stack 
+                direction="row" 
+                spacing={{ xs: 1, sm: 2 }} 
+                alignItems="center"
+                flexWrap="wrap"
+                sx={{
+                  justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+                }}
+              >
                 {status === 'Pending' && pending > 0 && (
-                  <Typography variant="body2" color="warning.main">
+                  <Typography 
+                    variant="body2" 
+                    color="warning.main"
+                    sx={{
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     Pending: {formatCurrency(pending)}
                   </Typography>
                 )}
                 {status === 'Paid' && paid > 0 && (
-                  <Typography variant="body2" color="success.main">
+                  <Typography 
+                    variant="body2" 
+                    color="success.main"
+                    sx={{
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     Paid: {formatCurrency(paid)}
                   </Typography>
                 )}
-                <Typography variant="body1" fontWeight="bold">
+                <Typography 
+                  variant="body1" 
+                  fontWeight="bold"
+                  sx={{
+                    fontSize: { xs: '0.9375rem', sm: '1rem' },
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   {formatCurrency(all)}
                 </Typography>
               </Stack>

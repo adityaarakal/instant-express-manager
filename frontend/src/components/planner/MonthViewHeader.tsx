@@ -40,22 +40,47 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
 
   return (
     <>
-    <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
-      <Stack spacing={2}>
-          <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-        <Stack direction="row" spacing={2} alignItems="center">
-          <CalendarMonthIcon color="primary" />
-          <Typography variant="h5" component="h2">
+    <Paper elevation={1} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
+      <Stack spacing={{ xs: 1.5, sm: 2 }}>
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            spacing={{ xs: 1.5, sm: 2 }} 
+            alignItems={{ xs: 'flex-start', sm: 'center' }} 
+            justifyContent="space-between"
+          >
+        <Stack direction="row" spacing={{ xs: 1, sm: 2 }} alignItems="center">
+          <CalendarMonthIcon color="primary" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }} />
+          <Typography 
+            variant="h5" 
+            component="h2"
+            sx={{
+              fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
+              fontWeight: 700,
+            }}
+          >
             {formatMonthDate(month.monthStart)}
           </Typography>
             </Stack>
-            <Stack direction="row" spacing={1}>
+            <Stack 
+              direction="row" 
+              spacing={{ xs: 1, sm: 1.5 }}
+              sx={{ 
+                width: { xs: '100%', sm: 'auto' },
+                justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+              }}
+            >
               <Button
                 variant="outlined"
                 startIcon={<CompareArrowsIcon />}
                 onClick={() => setCompareDialogOpen(true)}
                 size="small"
                 className="no-print"
+                sx={{
+                  minHeight: { xs: 44, sm: 40 },
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                  px: { xs: 1.5, sm: 2 },
+                  flex: { xs: 1, sm: '0 1 auto' },
+                }}
               >
                 Compare
               </Button>
@@ -65,19 +90,52 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
                 onClick={() => setDuplicateDialogOpen(true)}
                 size="small"
                 className="no-print"
+                sx={{
+                  minHeight: { xs: 44, sm: 40 },
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                  px: { xs: 1.5, sm: 2 },
+                  flex: { xs: 1, sm: '0 1 auto' },
+                }}
               >
                 Copy Month
               </Button>
             </Stack>
         </Stack>
 
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 200 }}>
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          spacing={{ xs: 1.5, sm: 2 }} 
+          alignItems={{ xs: 'stretch', sm: 'center' }}
+          flexWrap="wrap"
+        >
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: { xs: 0.75, sm: 1 }, 
+              minWidth: { xs: '100%', sm: 200 },
+              flexWrap: { xs: 'wrap', sm: 'nowrap' },
+            }}
+          >
             <AccountBalanceIcon fontSize="small" color="action" />
-            <Typography variant="body2" color="text.secondary" sx={{ minWidth: 60 }}>
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ 
+                minWidth: { xs: 'auto', sm: 60 },
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              }}
+            >
               Inflow:
             </Typography>
-            <Typography variant="body1" fontWeight="medium">
+            <Typography 
+              variant="body1" 
+              fontWeight="medium"
+              sx={{
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                wordBreak: 'break-word',
+              }}
+            >
               {formatCurrency(month.inflowTotal)}
             </Typography>
             <Button
@@ -86,18 +144,45 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
               onClick={() => {
                 navigate('/transactions?tab=income');
               }}
-              sx={{ ml: 1 }}
+              sx={{ 
+                ml: { xs: 0, sm: 1 },
+                minHeight: { xs: 36, sm: 32 },
+                fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                px: { xs: 1, sm: 1.5 },
+              }}
               className="no-print"
             >
               Edit
             </Button>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 200 }}>
-            <Typography variant="body2" color="text.secondary" sx={{ minWidth: 90 }}>
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: { xs: 0.75, sm: 1 }, 
+              minWidth: { xs: '100%', sm: 200 },
+              flexWrap: { xs: 'wrap', sm: 'nowrap' },
+            }}
+          >
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ 
+                minWidth: { xs: 'auto', sm: 90 },
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              }}
+            >
               Fixed Factor:
             </Typography>
-            <Typography variant="body1" fontWeight="medium">
+            <Typography 
+              variant="body1" 
+              fontWeight="medium"
+              sx={{
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                wordBreak: 'break-word',
+              }}
+            >
               {formatCurrency(month.fixedFactor)}
             </Typography>
             <Button
@@ -106,7 +191,12 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
               onClick={() => {
                 navigate('/settings');
               }}
-              sx={{ ml: 1 }}
+              sx={{ 
+                ml: { xs: 0, sm: 1 },
+                minHeight: { xs: 36, sm: 32 },
+                fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                px: { xs: 1, sm: 1.5 },
+              }}
               className="no-print"
             >
               Edit
@@ -119,6 +209,13 @@ export function MonthViewHeader({ month }: MonthViewHeaderProps) {
               size="small"
               color="error"
               variant="outlined"
+              sx={{
+                fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                height: { xs: 24, sm: 28 },
+                '& .MuiChip-label': {
+                  px: { xs: 0.75, sm: 1 },
+                },
+              }}
             />
           )}
         </Stack>

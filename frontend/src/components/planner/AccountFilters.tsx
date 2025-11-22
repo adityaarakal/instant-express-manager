@@ -122,18 +122,29 @@ export const AccountFilters = memo(function AccountFilters({
     showNegativeOnly;
 
   return (
-    <Paper elevation={1} sx={{ p: 2, borderRadius: 2 }} className="no-print">
-      <Stack spacing={2}>
-        <Stack direction="row" spacing={1} alignItems="center">
+    <Paper elevation={1} sx={{ p: { xs: 1.5, sm: 2 }, borderRadius: 2 }} className="no-print">
+      <Stack spacing={{ xs: 1.5, sm: 2 }}>
+        <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" gap={0.5}>
           <FilterListIcon fontSize="small" color="action" />
-          <Typography variant="subtitle2" fontWeight="bold">
+          <Typography 
+            variant="subtitle2" 
+            fontWeight="bold"
+            sx={{
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+            }}
+          >
             Quick Filters
           </Typography>
           <IconButton
             size="small"
             onClick={(e) => setPresetsAnchorEl(e.currentTarget)}
             aria-label="filter presets"
-            sx={{ ml: 'auto' }}
+            sx={{ 
+              ml: 'auto',
+              minWidth: { xs: 40, sm: 40 },
+              minHeight: { xs: 40, sm: 40 },
+              p: { xs: 0.5, sm: 0.75 },
+            }}
           >
             <BookmarkIcon fontSize="small" />
           </IconButton>
@@ -145,7 +156,14 @@ export const AccountFilters = memo(function AccountFilters({
               size="small"
               color="primary"
               variant="outlined"
-              sx={{ cursor: 'pointer' }}
+              sx={{ 
+                cursor: 'pointer',
+                fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                height: { xs: 24, sm: 28 },
+                '& .MuiChip-label': {
+                  px: { xs: 0.75, sm: 1 },
+                },
+              }}
             />
           )}
         </Stack>
@@ -156,7 +174,7 @@ export const AccountFilters = memo(function AccountFilters({
           onClose={() => setPresetsAnchorEl(null)}
         />
 
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, sm: 2 }}>
           <FormControl fullWidth size="small">
             <InputLabel id="account-filter-label">Filter by Account</InputLabel>
             <Select
@@ -164,6 +182,14 @@ export const AccountFilters = memo(function AccountFilters({
               value={selectedAccount ?? ''}
               label="Filter by Account"
               onChange={(e) => onAccountChange(e.target.value || null)}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    maxHeight: { xs: '60vh', sm: 'none' },
+                    maxWidth: { xs: '90vw', sm: 'none' },
+                  },
+                },
+              }}
             >
               <MenuItem value="">All Accounts</MenuItem>
               {month.accounts.map((account) => (
@@ -181,6 +207,14 @@ export const AccountFilters = memo(function AccountFilters({
               value={selectedBucket ?? ''}
               label="Filter by Bucket"
               onChange={(e) => onBucketChange(e.target.value || null)}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    maxHeight: { xs: '60vh', sm: 'none' },
+                    maxWidth: { xs: '90vw', sm: 'none' },
+                  },
+                },
+              }}
             >
               <MenuItem value="">All Buckets</MenuItem>
               {buckets.map((bucket) => (
@@ -201,13 +235,22 @@ export const AccountFilters = memo(function AccountFilters({
             </Select>
           </FormControl>
 
-          <FormControl size="small">
+          <FormControl size="small" sx={{ width: { xs: '100%', sm: 'auto' } }}>
             <ToggleButtonGroup
               value={showNegativeOnly ? 'negative' : 'all'}
               exclusive
               onChange={(_, value) => onNegativeOnlyChange(value === 'negative')}
               aria-label="filter by remaining cash"
               size="small"
+              fullWidth
+              sx={{
+                width: { xs: '100%', sm: 'auto' },
+                '& .MuiToggleButton-root': {
+                  minHeight: { xs: 44, sm: 40 },
+                  fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                  px: { xs: 1.5, sm: 1 },
+                },
+              }}
             >
               <ToggleButton value="all" aria-label="all accounts">
                 All Accounts
@@ -225,14 +268,19 @@ export const AccountFilters = memo(function AccountFilters({
             startIcon={showAdvanced ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             onClick={() => setShowAdvanced(!showAdvanced)}
             variant="text"
+            sx={{
+              minHeight: { xs: 44, sm: 40 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              px: { xs: 1, sm: 1.5 },
+            }}
           >
             {showAdvanced ? 'Hide' : 'Show'} Advanced Filters
           </Button>
         </Stack>
 
         <Collapse in={showAdvanced}>
-          <Stack spacing={2} sx={{ pt: 1, borderTop: 1, borderColor: 'divider' }}>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+          <Stack spacing={{ xs: 1.5, sm: 2 }} sx={{ pt: 1, borderTop: 1, borderColor: 'divider' }}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, sm: 2 }}>
               <FormControl fullWidth size="small">
                 <InputLabel id="account-type-filter-label">Filter by Account Type</InputLabel>
                 <Select
@@ -240,6 +288,14 @@ export const AccountFilters = memo(function AccountFilters({
                   value={selectedAccountType ?? ''}
                   label="Filter by Account Type"
                   onChange={(e) => onAccountTypeChange(e.target.value || null)}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        maxHeight: { xs: '60vh', sm: 'none' },
+                        maxWidth: { xs: '90vw', sm: 'none' },
+                      },
+                    },
+                  }}
                 >
                   <MenuItem value="">All Types</MenuItem>
                   {accountTypes.map((type) => (
@@ -257,6 +313,14 @@ export const AccountFilters = memo(function AccountFilters({
                   value={selectedStatus ?? ''}
                   label="Filter by Status"
                   onChange={(e) => onStatusChange(e.target.value || null)}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        maxHeight: { xs: '60vh', sm: 'none' },
+                        maxWidth: { xs: '90vw', sm: 'none' },
+                      },
+                    },
+                  }}
                 >
                   <MenuItem value="">All Statuses</MenuItem>
                   <MenuItem value="pending">Pending</MenuItem>
@@ -265,7 +329,7 @@ export const AccountFilters = memo(function AccountFilters({
               </FormControl>
             </Stack>
 
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, sm: 2 }}>
               <TextField
                 label="Min Amount"
                 type="number"
@@ -289,7 +353,13 @@ export const AccountFilters = memo(function AccountFilters({
         </Collapse>
 
         {hasActiveFilters && (
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+          <Stack 
+            direction="row" 
+            spacing={{ xs: 0.5, sm: 1 }} 
+            flexWrap="wrap" 
+            useFlexGap
+            gap={{ xs: 0.5, sm: 1 }}
+          >
             {selectedAccount && (
               <Chip
                 label={`Account: ${month.accounts.find((a) => a.id === selectedAccount)?.accountName ?? ''}`}
@@ -297,6 +367,16 @@ export const AccountFilters = memo(function AccountFilters({
                 size="small"
                 color="primary"
                 variant="outlined"
+                sx={{
+                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                  height: { xs: 24, sm: 28 },
+                  '& .MuiChip-label': {
+                    px: { xs: 0.75, sm: 1 },
+                    maxWidth: { xs: 150, sm: 'none' },
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  },
+                }}
               />
             )}
             {selectedBucket && (
@@ -306,6 +386,13 @@ export const AccountFilters = memo(function AccountFilters({
                 size="small"
                 color="primary"
                 variant="outlined"
+                sx={{
+                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                  height: { xs: 24, sm: 28 },
+                  '& .MuiChip-label': {
+                    px: { xs: 0.75, sm: 1 },
+                  },
+                }}
               />
             )}
             {selectedAccountType && (
@@ -315,6 +402,13 @@ export const AccountFilters = memo(function AccountFilters({
                 size="small"
                 color="primary"
                 variant="outlined"
+                sx={{
+                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                  height: { xs: 24, sm: 28 },
+                  '& .MuiChip-label': {
+                    px: { xs: 0.75, sm: 1 },
+                  },
+                }}
               />
             )}
             {selectedStatus && (
@@ -324,6 +418,13 @@ export const AccountFilters = memo(function AccountFilters({
                 size="small"
                 color="primary"
                 variant="outlined"
+                sx={{
+                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                  height: { xs: 24, sm: 28 },
+                  '& .MuiChip-label': {
+                    px: { xs: 0.75, sm: 1 },
+                  },
+                }}
               />
             )}
             {minAmount !== null && (
@@ -333,6 +434,13 @@ export const AccountFilters = memo(function AccountFilters({
                 size="small"
                 color="primary"
                 variant="outlined"
+                sx={{
+                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                  height: { xs: 24, sm: 28 },
+                  '& .MuiChip-label': {
+                    px: { xs: 0.75, sm: 1 },
+                  },
+                }}
               />
             )}
             {maxAmount !== null && (
@@ -342,6 +450,13 @@ export const AccountFilters = memo(function AccountFilters({
                 size="small"
                 color="primary"
                 variant="outlined"
+                sx={{
+                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                  height: { xs: 24, sm: 28 },
+                  '& .MuiChip-label': {
+                    px: { xs: 0.75, sm: 1 },
+                  },
+                }}
               />
             )}
             {showNegativeOnly && (
@@ -351,6 +466,13 @@ export const AccountFilters = memo(function AccountFilters({
                 size="small"
                 color="warning"
                 variant="outlined"
+                sx={{
+                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                  height: { xs: 24, sm: 28 },
+                  '& .MuiChip-label': {
+                    px: { xs: 0.75, sm: 1 },
+                  },
+                }}
               />
             )}
           </Stack>
