@@ -25,8 +25,31 @@ if (isDevelopment && typeof window !== 'undefined') {
 // Initialize performance monitoring
 trackWebVitals();
 
+// Get base path from environment or use default
+// For GitHub Pages, this should be '/instant-express-manager'
+// For local development, this should be '/'
+const getBasePath = () => {
+  // In development, always use '/'
+  if (import.meta.env.DEV) {
+    return '/';
+  }
+  
+  // In production, check if we're on GitHub Pages
+  // GitHub Pages serves from /instant-express-manager/ subdirectory
+  const pathname = window.location.pathname;
+  const hostname = window.location.hostname;
+  
+  // Check if we're on GitHub Pages (github.io domain or path starts with /instant-express-manager)
+  if (hostname.includes('github.io') || pathname.startsWith('/instant-express-manager')) {
+    return '/instant-express-manager';
+  }
+  
+  // Default to root for other production deployments
+  return '/';
+};
+
 const app = (
-    <BrowserRouter>
+    <BrowserRouter basename={getBasePath()}>
       <App />
     </BrowserRouter>
 );

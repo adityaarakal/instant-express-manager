@@ -455,7 +455,15 @@ export function EMIs() {
           sx={{ mb: 2 }}
         >
           <AlertTitle>When to Use EMIs</AlertTitle>
-          <Typography variant="body2" component="div" sx={{ mt: 1 }}>
+          <Typography 
+            variant="body2" 
+            component="div" 
+            sx={{ 
+              mt: 1,
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+            }}
+          >
             <strong>EMIs are for fixed-term commitments with a known end date:</strong>
             <ul style={{ marginTop: '8px', marginBottom: '0', paddingLeft: '20px' }}>
               <li>Have a <strong>fixed number of installments</strong> (e.g., 12, 24, 36)</li>
@@ -463,7 +471,16 @@ export function EMIs() {
               <li>Require an <strong>end date</strong></li>
               <li>Examples: Home loans, car loans, credit card EMIs, personal loans</li>
             </ul>
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+            <Typography 
+              variant="caption" 
+              color="text.secondary" 
+              sx={{ 
+                mt: 1, 
+                display: 'block',
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
+              }}
+            >
               💡 <strong>Not sure?</strong> If your payment is ongoing without a fixed end date, use <strong>Recurring Templates</strong> instead (for subscriptions, utility bills, salary, etc.)
             </Typography>
           </Typography>
@@ -482,6 +499,11 @@ export function EMIs() {
             '& .MuiTableCell-root': {
               whiteSpace: 'nowrap',
               minWidth: 100,
+            },
+            '& .MuiTableRow-root:has(.MuiTableCell-root[colspan])': {
+              '& .MuiTableCell-root': {
+                whiteSpace: 'normal',
+              },
             },
           }}
         >
@@ -503,8 +525,18 @@ export function EMIs() {
                 <TableSkeleton rows={5} columns={8} />
               ) : paginatedEMIs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} align="center" sx={{ border: 'none', py: 4 }}>
-                    <EmptyState
+                  <TableCell 
+                    colSpan={8} 
+                    align="center" 
+                    sx={{ 
+                      border: 'none', 
+                      py: 4,
+                      px: { xs: 2, sm: 4 },
+                      width: '100%',
+                    }}
+                  >
+                    <Box sx={{ maxWidth: '100%', width: '100%', mx: 'auto' }}>
+                      <EmptyState
                       icon={
                         activeTab === 'expense' ? (
                           <CreditCardIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />
@@ -516,8 +548,8 @@ export function EMIs() {
                       description={
                         allEMIs.length === 0
                           ? activeTab === 'expense'
-                            ? 'Start tracking your expense EMIs by adding your first EMI. Track credit card bills, loans, and other recurring expenses with installments.'
-                            : 'Start tracking your savings/investment EMIs by adding your first EMI. Track SIPs, loans, and other recurring investments with installments.'
+                            ? 'Start tracking your expense EMIs by adding your first EMI. Track credit card bills, loans, and other installment-based expenses.'
+                            : 'Start tracking your savings/investment EMIs by adding your first EMI. Track SIPs and other recurring investments.'
                           : 'Navigate to a different page to see more EMIs.'
                       }
                       actions={
@@ -532,12 +564,8 @@ export function EMIs() {
                               ]
                             : [
                                 {
-                                  label: 'Add Bank Account',
-                                  onClick: () => {
-                                    const accountsUrl = new URL(window.location.href);
-                                    accountsUrl.pathname = '/bank-accounts';
-                                    window.location.href = accountsUrl.toString();
-                                  },
+                                  label: 'Add Account',
+                                  onClick: () => navigate('/accounts'),
                                   icon: <AddIcon />,
                                 },
                               ]
@@ -588,6 +616,7 @@ export function EMIs() {
                           : undefined
                       }
                     />
+                    </Box>
                   </TableCell>
                 </TableRow>
               ) : (

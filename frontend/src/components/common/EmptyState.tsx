@@ -47,16 +47,39 @@ export function EmptyState({
   const allActions = actions || (action ? [action] : []);
 
   return (
-    <Paper elevation={0} sx={{ p: 6, borderRadius: 3, textAlign: 'center', border: 1, borderColor: 'divider' }}>
-      <Stack spacing={3} alignItems="center">
+    <Paper 
+      elevation={0} 
+      sx={{ 
+        p: { xs: 3, sm: 6 }, 
+        borderRadius: 3, 
+        textAlign: 'center', 
+        border: 1, 
+        borderColor: 'divider',
+        width: '100%',
+        maxWidth: '100%',
+        boxSizing: 'border-box',
+      }}
+    >
+      <Stack spacing={3} alignItems="center" sx={{ width: '100%' }}>
         {icon && <Box sx={{ color: 'text.secondary', opacity: 0.7 }}>{icon}</Box>}
         
-        <Stack spacing={1} alignItems="center">
+        <Stack spacing={1} alignItems="center" sx={{ width: '100%', px: 2 }}>
           <Typography variant="h6" color="text.primary" fontWeight="medium">
             {title}
           </Typography>
           {description && (
-            <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 500 }}>
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ 
+                maxWidth: 500,
+                width: '100%',
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
+                hyphens: 'auto',
+                textAlign: 'center',
+              }}
+            >
               {description}
             </Typography>
           )}
@@ -64,20 +87,30 @@ export function EmptyState({
 
         {/* Quick Start Steps */}
         {quickStart && quickStart.length > 0 && (
-          <Box sx={{ width: '100%', maxWidth: 500, textAlign: 'left' }}>
-            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1, textAlign: 'center' }}>
+          <Box sx={{ width: '100%', maxWidth: 500, textAlign: 'left', px: 2 }}>
+            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1, textAlign: 'left' }}>
               Quick Start:
             </Typography>
-            <Stack spacing={1}>
+            <Stack spacing={1} sx={{ width: '100%' }}>
               {quickStart.map((step, index) => (
-                <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, width: '100%' }}>
                   <Chip 
                     label={index + 1} 
                     size="small" 
                     color="primary" 
-                    sx={{ minWidth: 24, height: 24, fontSize: '0.75rem' }}
+                    sx={{ minWidth: 24, height: 24, fontSize: '0.75rem', flexShrink: 0 }}
                   />
-                  <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary" 
+                    sx={{ 
+                      flex: 1,
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                      hyphens: 'auto',
+                      textAlign: 'left',
+                    }}
+                  >
                     {step}
                   </Typography>
                 </Box>
@@ -91,8 +124,12 @@ export function EmptyState({
           <Stack 
             direction={allActions.length > 1 ? 'column' : 'row'} 
             spacing={1.5} 
-            sx={{ width: '100%', maxWidth: 400 }}
-            alignItems="center"
+            sx={{ 
+              width: '100%', 
+              maxWidth: 400,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
             {allActions.map((act, index) => (
               <Button
@@ -102,7 +139,12 @@ export function EmptyState({
                 startIcon={act.icon}
                 onClick={act.onClick}
                 fullWidth={allActions.length > 1}
-                sx={{ mt: index === 0 ? 0 : 0 }}
+                sx={{ 
+                  mt: index === 0 ? 0 : 0,
+                  ...(allActions.length === 1 && {
+                    minWidth: 200,
+                  }),
+                }}
               >
                 {act.label}
               </Button>
@@ -112,12 +154,22 @@ export function EmptyState({
 
         {/* Tips */}
         {tips && tips.length > 0 && (
-          <Box sx={{ width: '100%', maxWidth: 500, mt: 1 }}>
-            <Stack spacing={1.5} alignItems="flex-start">
+          <Box sx={{ width: '100%', maxWidth: 500, mt: 1, px: 2 }}>
+            <Stack spacing={1.5} alignItems="flex-start" sx={{ width: '100%' }}>
               {tips.map((tip, index) => (
                 <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, width: '100%' }}>
                   {tip.icon || <InfoIcon sx={{ fontSize: 18, color: 'info.main', mt: 0.5, flexShrink: 0 }} />}
-                  <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary" 
+                    sx={{ 
+                      flex: 1,
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                      hyphens: 'auto',
+                      textAlign: 'left',
+                    }}
+                  >
                     {tip.text}
                   </Typography>
                 </Box>

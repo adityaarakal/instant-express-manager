@@ -606,7 +606,15 @@ export function Recurring() {
           sx={{ mb: 2 }}
         >
           <AlertTitle>When to Use Recurring Templates</AlertTitle>
-          <Typography variant="body2" component="div" sx={{ mt: 1 }}>
+          <Typography 
+            variant="body2" 
+            component="div" 
+            sx={{ 
+              mt: 1,
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+            }}
+          >
             <strong>Recurring Templates are for ongoing/repeating transactions:</strong>
             <ul style={{ marginTop: '8px', marginBottom: '0', paddingLeft: '20px' }}>
               <li><strong>No fixed number of installments</strong> (can be indefinite)</li>
@@ -615,7 +623,16 @@ export function Recurring() {
               <li>More <strong>flexible frequencies</strong> (Monthly, Weekly, Quarterly, Yearly, Custom)</li>
               <li>Examples: Monthly salary, Netflix subscription, utility bills, SIP investments, insurance premiums</li>
             </ul>
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+            <Typography 
+              variant="caption" 
+              color="text.secondary" 
+              sx={{ 
+                mt: 1, 
+                display: 'block',
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
+              }}
+            >
               💡 <strong>Not sure?</strong> If your payment has a fixed number of installments with a known end date, use <strong>EMIs</strong> instead (for loans, credit card EMIs, etc.)
             </Typography>
           </Typography>
@@ -636,6 +653,11 @@ export function Recurring() {
               whiteSpace: 'nowrap',
               minWidth: 100,
             },
+            '& .MuiTableRow-root:has(.MuiTableCell-root[colspan])': {
+              '& .MuiTableCell-root': {
+                whiteSpace: 'normal',
+              },
+            },
           }}
         >
           <Table aria-label={`${activeTab} recurring templates table`} sx={{ minWidth: 800 }}>
@@ -655,8 +677,18 @@ export function Recurring() {
                 <TableSkeleton rows={5} columns={7} />
               ) : paginatedTemplates.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ border: 'none', py: 4 }}>
-                    <EmptyState
+                  <TableCell 
+                    colSpan={7} 
+                    align="center" 
+                    sx={{ 
+                      border: 'none', 
+                      py: 4,
+                      px: { xs: 2, sm: 4 },
+                      width: '100%',
+                    }}
+                  >
+                    <Box sx={{ maxWidth: '100%', width: '100%', mx: 'auto' }}>
+                      <EmptyState
                       icon={<RepeatIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
                       title={allTemplates.length === 0 ? 'No Recurring Templates Yet' : 'No Templates on This Page'}
                       description={
@@ -676,12 +708,8 @@ export function Recurring() {
                               ]
                             : [
                                 {
-                                  label: 'Add Bank Account',
-                                  onClick: () => {
-                                    const accountsUrl = new URL(window.location.href);
-                                    accountsUrl.pathname = '/bank-accounts';
-                                    window.location.href = accountsUrl.toString();
-                                  },
+                                  label: 'Add Account',
+                                  onClick: () => navigate('/accounts'),
                                   icon: <AddIcon />,
                                 },
                               ]
@@ -751,6 +779,7 @@ export function Recurring() {
                           : undefined
                       }
                     />
+                    </Box>
                   </TableCell>
                 </TableRow>
               ) : (
