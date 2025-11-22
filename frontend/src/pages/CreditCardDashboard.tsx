@@ -19,6 +19,8 @@ import {
   Tooltip,
   Alert,
   AlertTitle,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import PaymentIcon from '@mui/icons-material/Payment';
@@ -66,6 +68,8 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
   const accounts = useBankAccountsStore((state) => state.accounts);
   const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
   const banks = useBanksStore((state) => state.banks);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const creditCards = useMemo(
     () => accounts.filter((acc) => acc.accountType === 'CreditCard'),
@@ -140,22 +144,39 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
 
   if (creditCards.length === 0) {
     return (
-      <Stack spacing={3}>
+      <Stack spacing={{ xs: 2, sm: 3 }}>
         <Box 
           sx={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
             alignItems: { xs: 'flex-start', sm: 'center' },
             flexDirection: { xs: 'column', sm: 'row' },
-            gap: 2,
+            gap: { xs: 1.5, sm: 2 },
+            mb: { xs: 1, sm: 0 },
           }}
         >
-          <Typography variant="h4" sx={{ flexShrink: 0 }}>Credit Card Dashboard</Typography>
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              flexShrink: 0,
+              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+              fontWeight: 700,
+            }}
+          >
+            Credit Card Dashboard
+          </Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => navigate('/accounts')}
-            sx={{ flexShrink: 0 }}
+            sx={{ 
+              flexShrink: 0,
+              minHeight: { xs: 44, sm: 48 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              whiteSpace: 'nowrap',
+              px: { xs: 1.5, sm: 2 },
+            }}
+            fullWidth={isMobile}
           >
             Add Credit Card
           </Button>
@@ -175,7 +196,7 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
   }
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={{ xs: 2, sm: 3 }}>
       <Box 
         sx={{ 
           display: 'flex', 
@@ -183,56 +204,121 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
           alignItems: { xs: 'flex-start', sm: 'center' },
           flexDirection: { xs: 'column', sm: 'row' },
           flexWrap: { xs: 'nowrap', sm: 'wrap' },
-          gap: 2,
+          gap: { xs: 1.5, sm: 2 },
+          mb: { xs: 1, sm: 0 },
         }}
       >
-        <Typography variant="h4" sx={{ flexShrink: 0 }}>Credit Card Dashboard</Typography>
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            flexShrink: 0,
+            fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+            fontWeight: 700,
+          }}
+        >
+          Credit Card Dashboard
+        </Typography>
         <Button
           variant="outlined"
           startIcon={<AddIcon />}
           onClick={() => navigate('/accounts')}
-          sx={{ flexShrink: 0 }}
+          sx={{ 
+            flexShrink: 0,
+            minHeight: { xs: 44, sm: 48 },
+            fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+            whiteSpace: 'nowrap',
+            px: { xs: 1.5, sm: 2 },
+          }}
+          fullWidth={isMobile}
         >
           Add Credit Card
         </Button>
       </Box>
 
       {/* Overall Statistics */}
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ flexWrap: 'wrap' }}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, sm: 2 }} sx={{ flexWrap: 'wrap' }}>
         <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(25% - 12px)' } }}>
-          <Card>
-            <CardContent>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
+          <Card sx={{ height: '100%' }}>
+            <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+              <Typography 
+                variant="body2" 
+                color="text.secondary" 
+                gutterBottom
+                sx={{
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                }}
+              >
                 Total Outstanding
               </Typography>
-              <Typography variant="h5" color="error">
+              <Typography 
+                variant="h5" 
+                color="error"
+                sx={{
+                  fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                  fontWeight: 600,
+                  wordBreak: 'break-word',
+                }}
+              >
                 {formatCurrency(overallStats.totalOutstanding)}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography 
+                variant="caption" 
+                color="text.secondary"
+                sx={{
+                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                }}
+              >
                 Across {overallStats.totalCards} card{overallStats.totalCards !== 1 ? 's' : ''}
               </Typography>
             </CardContent>
           </Card>
         </Box>
         <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(25% - 12px)' } }}>
-          <Card>
-            <CardContent>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
+          <Card sx={{ height: '100%' }}>
+            <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+              <Typography 
+                variant="body2" 
+                color="text.secondary" 
+                gutterBottom
+                sx={{
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                }}
+              >
                 Total Credit Limit
               </Typography>
-              <Typography variant="h5">
+              <Typography 
+                variant="h5"
+                sx={{
+                  fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                  fontWeight: 600,
+                  wordBreak: 'break-word',
+                }}
+              >
                 {formatCurrency(overallStats.totalLimit)}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography 
+                variant="caption" 
+                color="text.secondary"
+                sx={{
+                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                }}
+              >
                 Available: {formatCurrency(overallStats.totalAvailable)}
               </Typography>
             </CardContent>
           </Card>
         </Box>
         <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(25% - 12px)' } }}>
-          <Card>
-            <CardContent>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
+          <Card sx={{ height: '100%' }}>
+            <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+              <Typography 
+                variant="body2" 
+                color="text.secondary" 
+                gutterBottom
+                sx={{
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                }}
+              >
                 Overall Utilization
               </Typography>
               <Typography
@@ -244,10 +330,20 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
                       ? 'warning.main'
                       : 'success.main'
                 }
+                sx={{
+                  fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                  fontWeight: 600,
+                }}
               >
                 {overallStats.overallUtilization.toFixed(1)}%
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography 
+                variant="caption" 
+                color="text.secondary"
+                sx={{
+                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                }}
+              >
                 {overallStats.overallUtilization > 80
                   ? 'High utilization'
                   : overallStats.overallUtilization > 50
@@ -258,19 +354,40 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
           </Card>
         </Box>
         <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(25% - 12px)' } }}>
-          <Card>
-            <CardContent>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
+          <Card sx={{ height: '100%' }}>
+            <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+              <Typography 
+                variant="body2" 
+                color="text.secondary" 
+                gutterBottom
+                sx={{
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                }}
+              >
                 Payment Status
               </Typography>
-              <Typography variant="h5" color={overallStats.overdueCards > 0 ? 'error' : overallStats.dueSoonCards > 0 ? 'warning.main' : 'success.main'}>
+              <Typography 
+                variant="h5" 
+                color={overallStats.overdueCards > 0 ? 'error' : overallStats.dueSoonCards > 0 ? 'warning.main' : 'success.main'}
+                sx={{
+                  fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                  fontWeight: 600,
+                  wordBreak: 'break-word',
+                }}
+              >
                 {overallStats.overdueCards > 0
                   ? `${overallStats.overdueCards} Overdue`
                   : overallStats.dueSoonCards > 0
                     ? `${overallStats.dueSoonCards} Due Soon`
                     : 'All Paid'}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography 
+                variant="caption" 
+                color="text.secondary"
+                sx={{
+                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                }}
+              >
                 {overallStats.overdueCards > 0
                   ? 'Action required'
                   : overallStats.dueSoonCards > 0
@@ -284,66 +401,218 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
 
       {/* Alerts for overdue/due soon */}
       {overallStats.overdueCards > 0 && (
-        <Alert severity="error">
+        <Alert 
+          severity="error"
+          sx={{
+            fontSize: { xs: '0.875rem', sm: '1rem' },
+            '& .MuiAlertTitle-root': {
+              fontSize: { xs: '0.9375rem', sm: '1rem' },
+              fontWeight: 600,
+            },
+          }}
+        >
           <AlertTitle>Overdue Payments</AlertTitle>
           You have {overallStats.overdueCards} credit card{overallStats.overdueCards !== 1 ? 's' : ''} with overdue payments. Please make payments immediately to avoid penalties.
         </Alert>
       )}
       {overallStats.overdueCards === 0 && overallStats.dueSoonCards > 0 && (
-        <Alert severity="warning">
+        <Alert 
+          severity="warning"
+          sx={{
+            fontSize: { xs: '0.875rem', sm: '1rem' },
+            '& .MuiAlertTitle-root': {
+              fontSize: { xs: '0.9375rem', sm: '1rem' },
+              fontWeight: 600,
+            },
+          }}
+        >
           <AlertTitle>Upcoming Due Dates</AlertTitle>
           You have {overallStats.dueSoonCards} credit card{overallStats.dueSoonCards !== 1 ? 's' : ''} with payments due within the next 7 days.
         </Alert>
       )}
 
       {/* Credit Cards List */}
-      <Paper elevation={1} sx={{ p: 2 }}>
-        <Typography variant="h6" gutterBottom>
+      <Paper elevation={1} sx={{ p: { xs: 1.5, sm: 2 } }}>
+        <Typography 
+          variant="h6" 
+          gutterBottom
+          sx={{
+            fontSize: { xs: '1.125rem', sm: '1.25rem' },
+            fontWeight: 600,
+            mb: { xs: 1, sm: 2 },
+          }}
+        >
           Credit Cards
         </Typography>
-        <TableContainer>
-          <Table>
+        <TableContainer
+          sx={{
+            overflowX: 'auto',
+            maxWidth: '100%',
+          }}
+        >
+          <Table sx={{ minWidth: { xs: 600, sm: 800 } }}>
             <TableHead>
               <TableRow>
-                <TableCell>Card Name</TableCell>
-                <TableCell>Bank</TableCell>
-                <TableCell align="right">Outstanding</TableCell>
-                <TableCell align="right">Credit Limit</TableCell>
-                <TableCell align="right">Utilization</TableCell>
-                <TableCell>Due Date</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell align="center">Actions</TableCell>
+                <TableCell
+                  sx={{
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    fontWeight: 600,
+                    padding: { xs: '8px 4px', sm: '16px' },
+                  }}
+                >
+                  Card Name
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    fontWeight: 600,
+                    padding: { xs: '8px 4px', sm: '16px' },
+                  }}
+                >
+                  Bank
+                </TableCell>
+                <TableCell 
+                  align="right"
+                  sx={{
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    fontWeight: 600,
+                    padding: { xs: '8px 4px', sm: '16px' },
+                  }}
+                >
+                  Outstanding
+                </TableCell>
+                <TableCell 
+                  align="right"
+                  sx={{
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    fontWeight: 600,
+                    padding: { xs: '8px 4px', sm: '16px' },
+                  }}
+                >
+                  Credit Limit
+                </TableCell>
+                <TableCell 
+                  align="right"
+                  sx={{
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    fontWeight: 600,
+                    padding: { xs: '8px 4px', sm: '16px' },
+                  }}
+                >
+                  Utilization
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    fontWeight: 600,
+                    padding: { xs: '8px 4px', sm: '16px' },
+                  }}
+                >
+                  Due Date
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    fontWeight: 600,
+                    padding: { xs: '8px 4px', sm: '16px' },
+                  }}
+                >
+                  Status
+                </TableCell>
+                <TableCell 
+                  align="center"
+                  sx={{
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    fontWeight: 600,
+                    padding: { xs: '8px 4px', sm: '16px' },
+                  }}
+                >
+                  Actions
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {cardStats.map((stat) => (
                 <TableRow key={stat.card.id} hover>
-                  <TableCell>
-                    <Typography variant="body2" fontWeight="medium">
+                  <TableCell
+                    sx={{
+                      padding: { xs: '8px 4px', sm: '16px' },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    }}
+                  >
+                    <Typography 
+                      variant="body2" 
+                      fontWeight="medium"
+                      sx={{
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        wordBreak: 'break-word',
+                      }}
+                    >
                       {stat.card.name}
                     </Typography>
                     {stat.card.accountNumber && (
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography 
+                        variant="caption" 
+                        color="text.secondary"
+                        sx={{
+                          fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                        }}
+                      >
                         ****{stat.card.accountNumber.slice(-4)}
                       </Typography>
                     )}
                   </TableCell>
-                  <TableCell>{getBankName(stat.card.bankId)}</TableCell>
-                  <TableCell align="right">
+                  <TableCell
+                    sx={{
+                      padding: { xs: '8px 4px', sm: '16px' },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      wordBreak: 'break-word',
+                    }}
+                  >
+                    {getBankName(stat.card.bankId)}
+                  </TableCell>
+                  <TableCell 
+                    align="right"
+                    sx={{
+                      padding: { xs: '8px 4px', sm: '16px' },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    }}
+                  >
                     <Typography
                       variant="body2"
                       color={stat.card.currentBalance > 0 ? 'error' : 'text.primary'}
                       fontWeight="medium"
+                      sx={{
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        whiteSpace: 'nowrap',
+                      }}
                     >
                       {formatCurrency(stat.card.currentBalance)}
                     </Typography>
                   </TableCell>
-                  <TableCell align="right">
-                    <Typography variant="body2">
+                  <TableCell 
+                    align="right"
+                    sx={{
+                      padding: { xs: '8px 4px', sm: '16px' },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    }}
+                  >
+                    <Typography 
+                      variant="body2"
+                      sx={{
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
                       {formatCurrency(stat.card.creditLimit || 0)}
                     </Typography>
                   </TableCell>
-                  <TableCell align="right">
+                  <TableCell 
+                    align="right"
+                    sx={{
+                      padding: { xs: '8px 4px', sm: '16px' },
+                    }}
+                  >
                     <Chip
                       label={`${stat.utilization.toFixed(1)}%`}
                       size="small"
@@ -354,12 +623,31 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
                             ? 'warning'
                             : 'success'
                       }
+                      sx={{
+                        fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                        height: { xs: 24, sm: 28 },
+                        '& .MuiChip-label': {
+                          px: { xs: 0.75, sm: 1 },
+                        },
+                      }}
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell
+                    sx={{
+                      padding: { xs: '8px 4px', sm: '16px' },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    }}
+                  >
                     {stat.card.dueDate ? (
                       <Box>
-                        <Typography variant="body2">{formatDate(stat.card.dueDate)}</Typography>
+                        <Typography 
+                          variant="body2"
+                          sx={{
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                          }}
+                        >
+                          {formatDate(stat.card.dueDate)}
+                        </Typography>
                         {stat.daysUntilDue !== null && (
                           <Typography
                             variant="caption"
@@ -370,6 +658,9 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
                                   ? 'warning.main'
                                   : 'text.secondary'
                             }
+                            sx={{
+                              fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                            }}
                           >
                             {stat.isOverdue
                               ? `${Math.abs(stat.daysUntilDue)} days overdue`
@@ -380,45 +671,110 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
                         )}
                       </Box>
                     ) : (
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary"
+                        sx={{
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        }}
+                      >
                         Not set
                       </Typography>
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell
+                    sx={{
+                      padding: { xs: '8px 4px', sm: '16px' },
+                    }}
+                  >
                     {stat.isOverdue ? (
-                      <Chip label="Overdue" color="error" size="small" icon={<WarningIcon />} />
+                      <Chip 
+                        label="Overdue" 
+                        color="error" 
+                        size="small" 
+                        icon={<WarningIcon sx={{ fontSize: { xs: 14, sm: 16 } }} />}
+                        sx={{
+                          fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                          height: { xs: 24, sm: 28 },
+                          '& .MuiChip-label': {
+                            px: { xs: 0.75, sm: 1 },
+                          },
+                        }}
+                      />
                     ) : stat.isDueSoon ? (
-                      <Chip label="Due Soon" color="warning" size="small" />
+                      <Chip 
+                        label="Due Soon" 
+                        color="warning" 
+                        size="small"
+                        sx={{
+                          fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                          height: { xs: 24, sm: 28 },
+                          '& .MuiChip-label': {
+                            px: { xs: 0.75, sm: 1 },
+                          },
+                        }}
+                      />
                     ) : (
-                      <Chip label="Current" color="success" size="small" />
+                      <Chip 
+                        label="Current" 
+                        color="success" 
+                        size="small"
+                        sx={{
+                          fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                          height: { xs: 24, sm: 28 },
+                          '& .MuiChip-label': {
+                            px: { xs: 0.75, sm: 1 },
+                          },
+                        }}
+                      />
                     )}
                   </TableCell>
-                  <TableCell align="center">
-                    <Tooltip title="View Transactions">
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          navigate('/transactions', { state: { accountId: stat.card.id } });
-                        }}
-                        aria-label="View transactions"
-                      >
-                        <VisibilityIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Record Payment">
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          navigate('/transactions', {
-                            state: { accountId: stat.card.id, action: 'addPayment' },
-                          });
-                        }}
-                        aria-label="Record payment"
-                      >
-                        <PaymentIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+                  <TableCell 
+                    align="center"
+                    sx={{
+                      padding: { xs: '8px 4px', sm: '16px' },
+                    }}
+                  >
+                    <Stack 
+                      direction="row" 
+                      spacing={{ xs: 0.5, sm: 1 }} 
+                      justifyContent="center"
+                    >
+                      <Tooltip title="View Transactions">
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            navigate('/transactions', { state: { accountId: stat.card.id } });
+                          }}
+                          aria-label="View transactions"
+                          sx={{
+                            minWidth: { xs: 40, sm: 48 },
+                            minHeight: { xs: 40, sm: 48 },
+                            p: { xs: 0.5, sm: 1 },
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Record Payment">
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            navigate('/transactions', {
+                              state: { accountId: stat.card.id, action: 'addPayment' },
+                            });
+                          }}
+                          aria-label="Record payment"
+                          sx={{
+                            minWidth: { xs: 40, sm: 48 },
+                            minHeight: { xs: 40, sm: 48 },
+                            p: { xs: 0.5, sm: 1 },
+                          }}
+                        >
+                          <PaymentIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Stack>
                   </TableCell>
                 </TableRow>
               ))}
@@ -432,28 +788,113 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
         .filter((stat) => stat.recentPayments.length > 0)
         .slice(0, 1)
         .map((stat) => (
-          <Paper key={stat.card.id} elevation={1} sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>
+          <Paper key={stat.card.id} elevation={1} sx={{ p: { xs: 1.5, sm: 2 } }}>
+            <Typography 
+              variant="h6" 
+              gutterBottom
+              sx={{
+                fontSize: { xs: '1.125rem', sm: '1.25rem' },
+                fontWeight: 600,
+                mb: { xs: 1, sm: 2 },
+              }}
+            >
               Recent Payment History - {stat.card.name}
             </Typography>
-          <TableContainer>
-            <Table size="small">
+          <TableContainer
+            sx={{
+              overflowX: 'auto',
+              maxWidth: '100%',
+            }}
+          >
+            <Table size="small" sx={{ minWidth: { xs: 400, sm: 500 } }}>
               <TableHead>
                 <TableRow>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell align="right">Amount</TableCell>
-                  <TableCell>Status</TableCell>
+                  <TableCell
+                    sx={{
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      fontWeight: 600,
+                      padding: { xs: '8px 4px', sm: '12px' },
+                    }}
+                  >
+                    Date
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      fontWeight: 600,
+                      padding: { xs: '8px 4px', sm: '12px' },
+                    }}
+                  >
+                    Description
+                  </TableCell>
+                  <TableCell 
+                    align="right"
+                    sx={{
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      fontWeight: 600,
+                      padding: { xs: '8px 4px', sm: '12px' },
+                    }}
+                  >
+                    Amount
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      fontWeight: 600,
+                      padding: { xs: '8px 4px', sm: '12px' },
+                    }}
+                  >
+                    Status
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {stat.recentPayments.map((tx) => (
                   <TableRow key={tx.id}>
-                    <TableCell>{formatDate(tx.date)}</TableCell>
-                    <TableCell>{tx.description || 'Payment'}</TableCell>
-                    <TableCell align="right">{formatCurrency(tx.amount)}</TableCell>
-                    <TableCell>
-                      <Chip label={tx.status} color="success" size="small" />
+                    <TableCell
+                      sx={{
+                        padding: { xs: '8px 4px', sm: '12px' },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      }}
+                    >
+                      {formatDate(tx.date)}
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        padding: { xs: '8px 4px', sm: '12px' },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      {tx.description || 'Payment'}
+                    </TableCell>
+                    <TableCell 
+                      align="right"
+                      sx={{
+                        padding: { xs: '8px 4px', sm: '12px' },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {formatCurrency(tx.amount)}
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        padding: { xs: '8px 4px', sm: '12px' },
+                      }}
+                    >
+                      <Chip 
+                        label={tx.status} 
+                        color="success" 
+                        size="small"
+                        sx={{
+                          fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                          height: { xs: 24, sm: 28 },
+                          '& .MuiChip-label': {
+                            px: { xs: 0.75, sm: 1 },
+                          },
+                        }}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -467,12 +908,34 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
       <CreditCardAnalysisChart accounts={creditCards} transactions={expenseTransactions} />
 
       {/* Due Date Calendar View */}
-      <Paper elevation={1} sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-          <CalendarTodayIcon color="primary" />
-          <Typography variant="h6">Upcoming Due Dates</Typography>
+      <Paper elevation={1} sx={{ p: { xs: 1.5, sm: 2 } }}>
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: { xs: 0.75, sm: 1 }, 
+            mb: { xs: 1.5, sm: 2 } 
+          }}
+        >
+          <CalendarTodayIcon 
+            color="primary" 
+            sx={{ fontSize: { xs: 20, sm: 24 } }}
+          />
+          <Typography 
+            variant="h6"
+            sx={{
+              fontSize: { xs: '1.125rem', sm: '1.25rem' },
+              fontWeight: 600,
+            }}
+          >
+            Upcoming Due Dates
+          </Typography>
         </Box>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ flexWrap: 'wrap' }}>
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          spacing={{ xs: 1.5, sm: 2 }} 
+          sx={{ flexWrap: 'wrap' }}
+        >
           {cardStats
             .filter((stat) => stat.card.dueDate)
             .sort((a, b) => {
@@ -481,7 +944,12 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
               return aDays - bDays;
             })
             .map((stat) => (
-              <Box key={stat.card.id} sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(33.333% - 11px)' } }}>
+              <Box 
+                key={stat.card.id} 
+                sx={{ 
+                  flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(33.333% - 11px)' } 
+                }}
+              >
                 <Card
                   variant="outlined"
                   sx={{
@@ -491,23 +959,78 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
                         : stat.isDueSoon
                           ? 'warning.main'
                           : 'divider',
+                    height: '100%',
                   }}
                 >
-                  <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 1 }}>
-                      <Typography variant="subtitle1" fontWeight="medium">
+                  <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                    <Box 
+                      sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'start', 
+                        mb: { xs: 1, sm: 1.5 },
+                        flexWrap: 'wrap',
+                        gap: { xs: 0.5, sm: 1 },
+                      }}
+                    >
+                      <Typography 
+                        variant="subtitle1" 
+                        fontWeight="medium"
+                        sx={{
+                          fontSize: { xs: '0.9375rem', sm: '1rem' },
+                          wordBreak: 'break-word',
+                        }}
+                      >
                         {stat.card.name}
                       </Typography>
                       {stat.isOverdue ? (
-                        <Chip label="Overdue" color="error" size="small" />
+                        <Chip 
+                          label="Overdue" 
+                          color="error" 
+                          size="small"
+                          sx={{
+                            fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                            height: { xs: 24, sm: 28 },
+                            '& .MuiChip-label': {
+                              px: { xs: 0.75, sm: 1 },
+                            },
+                          }}
+                        />
                       ) : stat.isDueSoon ? (
-                        <Chip label="Due Soon" color="warning" size="small" />
+                        <Chip 
+                          label="Due Soon" 
+                          color="warning" 
+                          size="small"
+                          sx={{
+                            fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                            height: { xs: 24, sm: 28 },
+                            '& .MuiChip-label': {
+                              px: { xs: 0.75, sm: 1 },
+                            },
+                          }}
+                        />
                       ) : null}
                     </Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                    <Typography 
+                      variant="body2" 
+                      color="text.secondary" 
+                      gutterBottom
+                      sx={{
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                      }}
+                    >
                       Due Date: {formatDate(stat.card.dueDate)}
                     </Typography>
-                    <Typography variant="h6" color={stat.isOverdue ? 'error' : 'text.primary'}>
+                    <Typography 
+                      variant="h6" 
+                      color={stat.isOverdue ? 'error' : 'text.primary'}
+                      sx={{
+                        fontSize: { xs: '1.125rem', sm: '1.25rem' },
+                        fontWeight: 600,
+                        wordBreak: 'break-word',
+                        mb: { xs: 0.5, sm: 1 },
+                      }}
+                    >
                       {formatCurrency(stat.card.currentBalance)}
                     </Typography>
                     {stat.daysUntilDue !== null && (
@@ -520,13 +1043,25 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
                               ? 'warning.main'
                               : 'text.secondary'
                         }
+                        sx={{
+                          fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                          display: 'block',
+                          mb: { xs: 1, sm: 1.5 },
+                        }}
                       >
                         {stat.isOverdue
                           ? `${Math.abs(stat.daysUntilDue)} days overdue`
                           : `${stat.daysUntilDue} days remaining`}
                       </Typography>
                     )}
-                    <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+                    <Box 
+                      sx={{ 
+                        mt: { xs: 1.5, sm: 2 }, 
+                        display: 'flex', 
+                        gap: { xs: 0.75, sm: 1 },
+                        flexDirection: { xs: 'column', sm: 'row' },
+                      }}
+                    >
                       <Button
                         size="small"
                         variant="outlined"
@@ -535,6 +1070,12 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
                           navigate('/transactions', {
                             state: { accountId: stat.card.id, action: 'addPayment' },
                           });
+                        }}
+                        fullWidth={isMobile}
+                        sx={{
+                          minHeight: { xs: 44, sm: 36 },
+                          fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                          px: { xs: 1.5, sm: 2 },
                         }}
                       >
                         Pay Now
@@ -546,6 +1087,12 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
                         onClick={() => {
                           navigate('/transactions', { state: { accountId: stat.card.id } });
                         }}
+                        fullWidth={isMobile}
+                        sx={{
+                          minHeight: { xs: 44, sm: 36 },
+                          fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                          px: { xs: 1.5, sm: 2 },
+                        }}
                       >
                         View
                       </Button>
@@ -556,8 +1103,14 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
             ))}
         </Stack>
         {cardStats.filter((stat) => stat.card.dueDate).length === 0 && (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
-            <Typography variant="body2" color="text.secondary">
+          <Box sx={{ textAlign: 'center', py: { xs: 3, sm: 4 } }}>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.875rem', sm: '0.875rem' },
+              }}
+            >
               No due dates set for credit cards. Add due dates in account settings.
             </Typography>
           </Box>
