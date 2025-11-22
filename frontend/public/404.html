@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirecting...</title>
+    <script>
+      // GitHub Pages 404.html redirect for SPA routing
+      // When a route like /instant-express-manager/banks is accessed directly,
+      // GitHub Pages serves this 404.html, which redirects to index.html
+      // React Router will then handle the routing based on the URL pathname
+      
+      (function() {
+        const path = window.location.pathname;
+        const search = window.location.search;
+        const hash = window.location.hash;
+        
+        // Base path for GitHub Pages
+        const basePath = '/instant-express-manager';
+        
+        // If we're on GitHub Pages (path starts with basePath)
+        if (path.startsWith(basePath)) {
+          // Redirect to index.html - React Router will handle the routing
+          // The pathname will be preserved in the URL, so React Router can match it
+          window.location.replace(basePath + '/index.html' + search + hash);
+        } else {
+          // Fallback for other deployments
+          window.location.replace('/index.html' + search + hash);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <p>Redirecting...</p>
+    <noscript>
+      <p>Please enable JavaScript to continue.</p>
+      <meta http-equiv="refresh" content="0;url=/instant-express-manager/index.html" />
+    </noscript>
+  </body>
+</html>
+
