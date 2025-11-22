@@ -1,5 +1,5 @@
-import { useMemo, memo, lazy, Suspense, useState } from 'react';
-import { Stack, Box, CircularProgress, Paper, Typography, FormControl, InputLabel, Select, MenuItem, Divider, Button } from '@mui/material';
+import { useMemo, memo, lazy, Suspense, useState, useEffect } from 'react';
+import { Stack, Box, CircularProgress, Paper, Typography, FormControl, InputLabel, Select, MenuItem, Divider, Button, IconButton } from '@mui/material';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import SavingsIcon from '@mui/icons-material/Savings';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
@@ -7,6 +7,7 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import PrintIcon from '@mui/icons-material/Print';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore';
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
@@ -14,9 +15,8 @@ import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { calculateDashboardMetrics } from '../utils/dashboard';
 import { SummaryCard } from '../components/dashboard/SummaryCard';
 import { DueSoonReminders } from '../components/dashboard/DueSoonReminders';
-import { EmptyState } from '../components/common/EmptyState';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import AddIcon from '@mui/icons-material/Add';
+import { WidgetSettings } from '../components/dashboard/WidgetSettings';
+import { useDashboardWidgetsStore } from '../store/useDashboardWidgetsStore';
 
 // Lazy load chart components for better performance
 const SavingsTrendChart = lazy(() =>
@@ -47,6 +47,14 @@ export const Dashboard = memo(function Dashboard() {
   const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
   const savingsTransactions = useSavingsInvestmentTransactionsStore((state) => state.transactions);
   const accounts = useBankAccountsStore((state) => state.accounts);
+  const { getEnabledWidgets, initializeWidgets } = useDashboardWidgetsStore();
+  const [widgetSettingsOpen, setWidgetSettingsOpen] = useState(false);
+  
+  // Initialize widgets on mount
+  useEffect(() => {
+    initializeWidgets();
+  }, [initializeWidgets]);
+  
   // Get current month as default - always prioritize current/latest month
   const getCurrentMonthId = () => {
     const now = new Date();
@@ -55,6 +63,8 @@ export const Dashboard = memo(function Dashboard() {
   
   // Always default to current month - latest/future focused
   const [selectedMonthId, setSelectedMonthId] = useState<string>(getCurrentMonthId());
+  
+  const enabledWidgets = getEnabledWidgets();
 
   // Generate list of available months (current month first, then last 12 months)
   // Prioritize latest and future months
@@ -110,80 +120,28 @@ export const Dashboard = memo(function Dashboard() {
     );
   }, [incomeTransactions, expenseTransactions, savingsTransactions, accounts, selectedMonthId]);
 
-  const hasNoData = 
-    incomeTransactions.length === 0 && 
-    expenseTransactions.length === 0 && 
-    savingsTransactions.length === 0;
-
-  if (hasNoData) {
-    return (
-      <Stack spacing={3}>
-        <Box className="no-print" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-          <Typography variant="h4">Dashboard</Typography>
-        </Box>
-        <EmptyState
-          icon={<DashboardIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
-          title="No Dashboard Data Available"
-          description="Add transactions to see your financial dashboard with metrics, charts, and insights. The dashboard provides an overview of your income, expenses, savings, and financial health."
-          actions={[
-            {
-              label: 'Add Transaction',
-              onClick: () => {
-                const transactionsUrl = new URL(window.location.href);
-                transactionsUrl.pathname = '/transactions';
-                window.location.href = transactionsUrl.toString();
-              },
-              icon: <AddIcon />,
-            },
-            ...(accounts.length === 0
-              ? [
-                  {
-                    label: 'Add Bank Account First',
-                    onClick: () => {
-                      const accountsUrl = new URL(window.location.href);
-                      accountsUrl.pathname = '/bank-accounts';
-                      window.location.href = accountsUrl.toString();
-                    },
-                    variant: 'outlined' as const,
-                  },
-                ]
-              : []),
-          ]}
-          tips={[
-            {
-              text: 'The dashboard shows monthly and overall financial metrics at a glance.',
-            },
-            {
-              text: 'Add income, expense, and savings transactions to see comprehensive insights.',
-            },
-            {
-              text: 'View trends, upcoming due dates, and budget vs actual comparisons.',
-            },
-          ]}
-          quickStart={[
-            'Add your first bank account if you haven\'t already',
-            'Add income and expense transactions',
-            'Return to Dashboard to see metrics and charts',
-            'Explore monthly and overall financial insights',
-          ]}
-        />
-      </Stack>
-    );
-  }
-
   return (
     <Stack spacing={3}>
       <Box className="no-print" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h4">Dashboard</Typography>
-        <Button
-          variant="outlined"
-          startIcon={<PrintIcon />}
-          onClick={handlePrint}
-          size="small"
-          aria-label="Print dashboard"
-        >
-          Print
-        </Button>
+        <Stack direction="row" spacing={1}>
+          <IconButton
+            onClick={() => setWidgetSettingsOpen(true)}
+            aria-label="Widget settings"
+            size="small"
+          >
+            <SettingsIcon />
+          </IconButton>
+          <Button
+            variant="outlined"
+            startIcon={<PrintIcon />}
+            onClick={handlePrint}
+            size="small"
+            aria-label="Print dashboard"
+          >
+            Print
+          </Button>
+        </Stack>
       </Box>
       <Box className="print-header print-only" sx={{ display: 'none' }}>
         <Typography variant="h4">Financial Dashboard</Typography>
@@ -215,47 +173,49 @@ export const Dashboard = memo(function Dashboard() {
         </Stack>
       </Paper>
 
-      {/* Monthly Metrics Section */}
-      <Box>
-        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <CalendarMonthIcon fontSize="small" />
-          Monthly Metrics - {formatMonthDate(selectedMonthId)}
-        </Typography>
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          spacing={3}
-          sx={{ alignItems: 'stretch', width: '100%' }}
-        >
-          <SummaryCard
-            label="Monthly Income"
-            value={metrics.monthlyIncome}
-            description={`Income received in ${formatMonthDate(selectedMonthId)}`}
-            color="success"
-            icon={<AccountBalanceIcon fontSize="small" />}
-          />
-          <SummaryCard
-            label="Monthly Expenses"
-            value={metrics.monthlyExpenses}
-            description={`Expenses in ${formatMonthDate(selectedMonthId)}`}
-            color="error"
-            icon={<PendingActionsIcon fontSize="small" />}
-          />
-          <SummaryCard
-            label="Monthly Savings"
-            value={metrics.monthlySavings}
-            description={`Savings in ${formatMonthDate(selectedMonthId)}`}
-            color="success"
-            icon={<SavingsIcon fontSize="small" />}
-          />
-          <SummaryCard
-            label="Monthly Investments"
-            value={metrics.monthlyInvestments}
-            description={`Investments (SIP/LumpSum) in ${formatMonthDate(selectedMonthId)}`}
-            color="info"
-            icon={<TrendingUpIcon fontSize="small" />}
-          />
-        </Stack>
-      </Box>
+      {/* Monthly Metrics Section - Summary Cards Widget */}
+      {enabledWidgets.some((w) => w.id === 'summary-cards') && (
+        <Box>
+          <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CalendarMonthIcon fontSize="small" />
+            Monthly Metrics - {formatMonthDate(selectedMonthId)}
+          </Typography>
+          <Stack
+            direction={{ xs: 'column', md: 'row' }}
+            spacing={3}
+            sx={{ alignItems: 'stretch', width: '100%' }}
+          >
+            <SummaryCard
+              label="Monthly Income"
+              value={metrics.monthlyIncome}
+              description={`Income received in ${formatMonthDate(selectedMonthId)}`}
+              color="success"
+              icon={<AccountBalanceIcon fontSize="small" />}
+            />
+            <SummaryCard
+              label="Monthly Expenses"
+              value={metrics.monthlyExpenses}
+              description={`Expenses in ${formatMonthDate(selectedMonthId)}`}
+              color="error"
+              icon={<PendingActionsIcon fontSize="small" />}
+            />
+            <SummaryCard
+              label="Monthly Savings"
+              value={metrics.monthlySavings}
+              description={`Savings in ${formatMonthDate(selectedMonthId)}`}
+              color="success"
+              icon={<SavingsIcon fontSize="small" />}
+            />
+            <SummaryCard
+              label="Monthly Investments"
+              value={metrics.monthlyInvestments}
+              description={`Investments (SIP/LumpSum) in ${formatMonthDate(selectedMonthId)}`}
+              color="info"
+              icon={<TrendingUpIcon fontSize="small" />}
+            />
+          </Stack>
+        </Box>
+      )}
 
       <Divider />
 
@@ -309,21 +269,32 @@ export const Dashboard = memo(function Dashboard() {
       </Stack>
       </Box>
 
-      <DueSoonReminders reminders={metrics.upcomingDueDates} />
+      {/* Due Soon Reminders Widget */}
+      {enabledWidgets.some((w) => w.id === 'due-soon-reminders') && (
+        <DueSoonReminders reminders={metrics.upcomingDueDates} />
+      )}
 
-      <Suspense fallback={<ChartLoader />}>
-        <SavingsTrendChart trend={metrics.savingsTrend} />
-      </Suspense>
+      {/* Savings Trend Chart Widget */}
+      {enabledWidgets.some((w) => w.id === 'savings-trend-chart') && (
+        <Suspense fallback={<ChartLoader />}>
+          <SavingsTrendChart trend={metrics.savingsTrend} />
+        </Suspense>
+      )}
 
-      <Suspense fallback={<ChartLoader />}>
-        <BudgetVsActual monthId={selectedMonthId} />
-      </Suspense>
+      {/* Budget vs Actual Widget */}
+      {enabledWidgets.some((w) => w.id === 'budget-vs-actual') && (
+        <Suspense fallback={<ChartLoader />}>
+          <BudgetVsActual monthId={selectedMonthId} />
+        </Suspense>
+      )}
 
       <Box className="print-footer print-only" sx={{ display: 'none' }}>
         <Typography variant="caption">
           Generated by Instant Express Manager | {new Date().toLocaleDateString('en-IN')} | Page {window.location.pathname}
         </Typography>
       </Box>
+      
+      <WidgetSettings open={widgetSettingsOpen} onClose={() => setWidgetSettingsOpen(false)} />
     </Stack>
   );
 });

@@ -18,11 +18,9 @@ import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ClearIcon from '@mui/icons-material/Clear';
 import PrintIcon from '@mui/icons-material/Print';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import PreviewIcon from '@mui/icons-material/Preview';
+import { PrintPreview } from '../components/common/PrintPreview';
 import { useAggregatedPlannedMonthsStore } from '../store/useAggregatedPlannedMonthsStore';
-import { exportPlannerMonthToExcel } from '../utils/excelExport';
 import { usePlannerStore } from '../store/usePlannerStore';
 import { MonthViewHeader } from '../components/planner/MonthViewHeader';
 import { StatusRibbon } from '../components/planner/StatusRibbon';
@@ -30,9 +28,7 @@ import { AccountTable } from '../components/planner/AccountTable';
 import { TotalsFooter } from '../components/planner/TotalsFooter';
 import { MonthSearchFilter } from '../components/planner/MonthSearchFilter';
 import { AccountFilters } from '../components/planner/AccountFilters';
-import { BulkOperationsToolbar } from '../components/planner/BulkOperationsToolbar';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
-import { useBulkOperationsStore } from '../store/useBulkOperationsStore';
 import { EmptyState } from '../components/common/EmptyState';
 import type { AggregatedMonth } from '../types/plannedExpensesAggregated';
 import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
@@ -49,7 +45,6 @@ export const Planner = memo(function Planner() {
   const navigate = useNavigate();
   const { getMonth, getAvailableMonths, getBucketTotals, updateBucketStatus } = useAggregatedPlannedMonthsStore();
   const { activeMonthId, setActiveMonth } = usePlannerStore();
-  const { isBulkMode, isMonthSelected, toggleMonthSelection } = useBulkOperationsStore();
   const [filteredMonths, setFilteredMonths] = useState<string[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
   const [selectedBucket, setSelectedBucket] = useState<string | null>(null);
@@ -58,10 +53,16 @@ export const Planner = memo(function Planner() {
   const [minAmount, setMinAmount] = useState<number | null>(null);
   const [maxAmount, setMaxAmount] = useState<number | null>(null);
   const [showNegativeOnly, setShowNegativeOnly] = useState<boolean>(false);
+  const [printPreviewOpen, setPrintPreviewOpen] = useState<boolean>(false);
   const tableRef = useRef<HTMLDivElement>(null);
+  const printContentRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handlePrintPreview = () => {
+    setPrintPreviewOpen(true);
   };
 
   // Enhanced keyboard navigation
@@ -245,33 +246,14 @@ export const Planner = memo(function Planner() {
         <EmptyState
           icon={<EditCalendarIcon sx={{ fontSize: 48 }} />}
           title="No Planned Months"
-          description="No transaction data is available. Add transactions to see monthly planning views with bucket-based allocations and financial planning."
-          actions={[
-            {
-              label: 'Add Transaction',
-              onClick: () => {
-                navigate('/transactions');
-              },
-              icon: <UploadFileIcon />,
+          description="No transaction data is available. Add transactions to see monthly planning views."
+          action={{
+            label: 'Add Transaction',
+            onClick: () => {
+              navigate('/transactions');
             },
-          ]}
-          tips={[
-            {
-              text: 'The Planner automatically creates monthly views based on your transactions.',
-            },
-            {
-              text: 'Add income and expense transactions to see monthly planning with bucket allocations.',
-            },
-            {
-              text: 'Use buckets to organize expenses and track spending by category.',
-            },
-          ]}
-          quickStart={[
-            'Add your first income transaction to get started',
-            'Add expense transactions with bucket assignments',
-            'View monthly planning in the Planner page',
-            'Track allocations and remaining cash for each month',
-          ]}
+            icon: <UploadFileIcon />,
+          }}
         />
       </Stack>
     );
@@ -299,38 +281,24 @@ export const Planner = memo(function Planner() {
                 .map((monthId) => {
                   const month = getMonth(monthId);
                   return month ? (
-                    <MenuItem
-                      key={monthId}
-                      value={monthId}
-                      onClick={(e) => {
-                        if (isBulkMode) {
-                          e.stopPropagation();
-                          toggleMonthSelection(monthId);
-                          // Don't change active month in bulk mode
-                          e.preventDefault();
-                        }
-                      }}
-                    >
-                      {isBulkMode ? (
-                        <>
-                          {isMonthSelected(monthId) ? (
-                            <CheckBoxIcon fontSize="small" sx={{ mr: 1 }} color="primary" />
-                          ) : (
-                            <CheckBoxOutlineBlankIcon fontSize="small" sx={{ mr: 1 }} />
-                          )}
-                          {formatMonthDate(month.monthStart)}
-                        </>
-                      ) : (
-                        formatMonthDate(month.monthStart)
-                      )}
+                    <MenuItem key={monthId} value={monthId}>
+                      {formatMonthDate(month.monthStart)}
                     </MenuItem>
                   ) : null;
                 })}
             </Select>
           </FormControl>
-          <BulkOperationsToolbar availableMonthIds={filteredMonths} />
           {activeMonth && (
-            <>
+            <Stack direction="row" spacing={1}>
+              <Button
+                variant="outlined"
+                startIcon={<PreviewIcon />}
+                onClick={handlePrintPreview}
+                size="small"
+                aria-label="Print preview"
+              >
+                Preview
+              </Button>
               <Button
                 variant="outlined"
                 startIcon={<PrintIcon />}
@@ -340,20 +308,7 @@ export const Planner = memo(function Planner() {
               >
                 Print
               </Button>
-              <Button
-                variant="outlined"
-                startIcon={<FileDownloadIcon />}
-                onClick={() => {
-                  if (activeMonth) {
-                    exportPlannerMonthToExcel(activeMonth);
-                  }
-                }}
-                size="small"
-                aria-label="Export month to Excel"
-              >
-                Export Excel
-              </Button>
-            </>
+            </Stack>
           )}
         </Stack>
       </Paper>
@@ -431,31 +386,16 @@ export const Planner = memo(function Planner() {
                 <EmptyState
                   icon={<FilterListIcon sx={{ fontSize: 48 }} />}
                   title="No Accounts Match Filters"
-                  description="No accounts found matching the current filters. Try adjusting your filter criteria to see more results."
-                  actions={[
-                    {
-                      label: 'Clear Filters',
-                      onClick: () => {
-                        setSelectedAccount(null);
-                        setSelectedBucket(null);
-                        setSelectedAccountType(null);
-                        setSelectedStatus(null);
-                        setMinAmount(null);
-                        setMaxAmount(null);
-                        setShowNegativeOnly(false);
-                      },
-                      variant: 'outlined' as const,
-                      icon: <ClearIcon />,
+                  description="No accounts found matching the current filters. Try adjusting your filter criteria."
+                  action={{
+                    label: 'Clear Filters',
+                    onClick: () => {
+                      setSelectedAccount(null);
+                      setSelectedBucket(null);
+                      setShowNegativeOnly(false);
                     },
-                  ]}
-                  tips={[
-                    {
-                      text: 'Try removing one or more filters to see more accounts.',
-                    },
-                    {
-                      text: 'Check if the selected month has transaction data.',
-                    },
-                  ]}
+                    icon: <ClearIcon />,
+                  }}
                 />
               )}
             </>
@@ -468,6 +408,37 @@ export const Planner = memo(function Planner() {
           </Typography>
         </Paper>
       )}
+      <PrintPreview
+        open={printPreviewOpen}
+        onClose={() => setPrintPreviewOpen(false)}
+        title={`Print Preview - ${activeMonth ? formatMonthDate(activeMonth.monthStart) : 'Month View'}`}
+      >
+        <div ref={printContentRef}>
+          {activeMonth && totals && (
+            <>
+              <div className="print-header">
+                <Typography variant="h5" component="h1">
+                  {formatMonthDate(activeMonth.monthStart)}
+                </Typography>
+                <Typography variant="caption" className="print-metadata">
+                  Generated on {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString()}
+                </Typography>
+              </div>
+              {filteredMonth && filteredMonth.accounts.length > 0 && (
+                <>
+                  <AccountTable month={filteredMonth} />
+                  <TotalsFooter month={activeMonth} totals={totals} />
+                </>
+              )}
+              <div className="print-footer">
+                <Typography variant="caption">
+                  Instant Express Manager - Monthly Planner Report
+                </Typography>
+              </div>
+            </>
+          )}
+        </div>
+      </PrintPreview>
     </Stack>
   );
 });

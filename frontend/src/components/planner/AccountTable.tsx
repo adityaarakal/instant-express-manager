@@ -1,4 +1,4 @@
-import { useMemo, memo } from 'react';
+import { useMemo, memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Paper,
@@ -13,12 +13,18 @@ import {
   Tooltip,
   Button,
   Box,
+  Checkbox,
+  Menu,
+  MenuItem,
+  Chip,
 } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import AddIcon from '@mui/icons-material/Add';
 import WarningIcon from '@mui/icons-material/Warning';
 import RestoreIcon from '@mui/icons-material/Restore';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import ClearAllIcon from '@mui/icons-material/ClearAll';
 import IconButton from '@mui/material/IconButton';
 import type { AggregatedMonth } from '../../types/plannedExpensesAggregated';
 import { DEFAULT_BUCKETS } from '../../config/plannedExpenses';
@@ -83,11 +89,77 @@ const getOriginalBucketAmount = (
 export const AccountTable = memo(function AccountTable({ month }: AccountTableProps) {
   const navigate = useNavigate();
   const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
-  const { hasOverride, addOverride, removeOverride } = useDueDateOverridesStore();
+  const { hasOverride, addOverride, removeOverride, clearMonth } = useDueDateOverridesStore();
+  const [bulkMenuAnchor, setBulkMenuAnchor] = useState<HTMLElement | null>(null);
   const buckets = useMemo(
     () => DEFAULT_BUCKETS.filter((bucket) => month.bucketOrder.includes(bucket.id)),
     [month.bucketOrder],
   );
+
+  // Calculate override statistics
+  const overrideStats = useMemo(() => {
+    let totalZeroed = 0;
+    let totalOverridden = 0;
+    const accountOverrides = new Map<string, number>();
+
+    month.accounts.forEach((account) => {
+      let accountOverrideCount = 0;
+      buckets.forEach((bucket) => {
+        const dueDate = account.bucketDueDates?.[bucket.id] ?? month.dueDates[bucket.id];
+        const isPastDue = isDueDatePassed(dueDate);
+        const originalAmount = getOriginalBucketAmount(
+          account.id,
+          bucket.id,
+          month.id,
+          expenseTransactions,
+        );
+        const bucketAmount = account.bucketAmounts[bucket.id];
+        const isZeroed = isPastDue && (bucketAmount === null || bucketAmount === 0) && originalAmount > 0;
+        const isOverridden = hasOverride(month.id, account.id, bucket.id);
+
+        if (isZeroed) totalZeroed++;
+        if (isOverridden) {
+          totalOverridden++;
+          accountOverrideCount++;
+        }
+      });
+      if (accountOverrideCount > 0) {
+        accountOverrides.set(account.id, accountOverrideCount);
+      }
+    });
+
+    return { totalZeroed, totalOverridden, accountOverrides };
+  }, [month, buckets, expenseTransactions, hasOverride]);
+
+  // Bulk override functions
+  const handleBulkOverrideAll = () => {
+    month.accounts.forEach((account) => {
+      buckets.forEach((bucket) => {
+        const dueDate = account.bucketDueDates?.[bucket.id] ?? month.dueDates[bucket.id];
+        const isPastDue = isDueDatePassed(dueDate);
+        const originalAmount = getOriginalBucketAmount(
+          account.id,
+          bucket.id,
+          month.id,
+          expenseTransactions,
+        );
+        const bucketAmount = account.bucketAmounts[bucket.id];
+        const isZeroed = isPastDue && (bucketAmount === null || bucketAmount === 0) && originalAmount > 0;
+        if (isZeroed && !hasOverride(month.id, account.id, bucket.id)) {
+          addOverride(month.id, account.id, bucket.id);
+        }
+      });
+    });
+    setBulkMenuAnchor(null);
+  };
+
+
+  const handleClearAllOverrides = () => {
+    if (window.confirm('Are you sure you want to clear all overrides for this month?')) {
+      clearMonth(month.id);
+    }
+    setBulkMenuAnchor(null);
+  };
 
   if (month.accounts.length === 0) {
     return (
@@ -108,6 +180,75 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
 
   return (
     <TableContainer component={Paper} elevation={1} sx={{ borderRadius: 2 }}>
+      {(overrideStats.totalZeroed > 0 || overrideStats.totalOverridden > 0) && (
+        <Box
+          sx={{
+            p: 1.5,
+            borderBottom: 1,
+            borderColor: 'divider',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 1,
+          }}
+          className="no-print"
+        >
+          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+            {overrideStats.totalZeroed > 0 && (
+              <Chip
+                icon={<WarningIcon />}
+                label={`${overrideStats.totalZeroed} zeroed item${overrideStats.totalZeroed !== 1 ? 's' : ''}`}
+                size="small"
+                color="warning"
+                variant="outlined"
+              />
+            )}
+            {overrideStats.totalOverridden > 0 && (
+              <Chip
+                icon={<CheckCircleIcon />}
+                label={`${overrideStats.totalOverridden} override${overrideStats.totalOverridden !== 1 ? 's' : ''} active`}
+                size="small"
+                color="success"
+                variant="outlined"
+              />
+            )}
+          </Stack>
+          <Stack direction="row" spacing={1}>
+            {overrideStats.totalZeroed > 0 && (
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<RestoreIcon />}
+                onClick={handleBulkOverrideAll}
+              >
+                Override All Zeroed
+              </Button>
+            )}
+            {overrideStats.totalOverridden > 0 && (
+              <>
+                <IconButton
+                  size="small"
+                  onClick={(e) => setBulkMenuAnchor(e.currentTarget)}
+                  aria-label="bulk override options"
+                >
+                  <MoreVertIcon />
+                </IconButton>
+                <Menu
+                  anchorEl={bulkMenuAnchor}
+                  open={Boolean(bulkMenuAnchor)}
+                  onClose={() => setBulkMenuAnchor(null)}
+                >
+                  <MenuItem onClick={handleClearAllOverrides}>
+                    <ClearAllIcon sx={{ mr: 1 }} fontSize="small" />
+                    Clear All Overrides
+                  </MenuItem>
+                </Menu>
+              </>
+            )}
+          </Stack>
+        </Box>
+      )}
       <Table size="small" stickyHeader>
         <TableHead>
           <TableRow>
@@ -269,30 +410,35 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
                   <TableCell key={bucket.id} align="right">
                     {showToggle ? (
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
+                        <Checkbox
+                          size="small"
+                          checked={isOverridden}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              addOverride(month.id, account.id, bucket.id);
+                            } else {
+                              removeOverride(month.id, account.id, bucket.id);
+                            }
+                          }}
+                          sx={{ p: 0.5 }}
+                          aria-label={isOverridden ? 'Remove override' : 'Add override'}
+                        />
                         {isOverridden ? (
                           <>
                             <Typography variant="body2" color="success.main" sx={{ fontWeight: 'medium' }}>
                               {formatCurrency(originalAmount)}
                             </Typography>
                             <Tooltip
-                              title={`Override active: Amount re-enabled despite past due date. Click to remove override.`}
+                              title={`Override active: Amount re-enabled despite past due date (${dueDate ? new Date(dueDate).toLocaleDateString() : 'N/A'}).`}
                               arrow
                             >
-                              <IconButton
-                                size="small"
-                                color="success"
-                                onClick={() => removeOverride(month.id, account.id, bucket.id)}
-                                sx={{ p: 0.5 }}
-                                aria-label="Remove override"
-                              >
-                                <CheckCircleIcon fontSize="small" />
-                              </IconButton>
+                              <CheckCircleIcon fontSize="small" color="success" />
                             </Tooltip>
                           </>
                         ) : (
                           <>
                             <Tooltip
-                              title={`Due date (${dueDate ? new Date(dueDate).toLocaleDateString() : 'N/A'}) has passed. Original amount: ${formatCurrency(originalAmount)}. Click to re-enable.`}
+                              title={`Due date (${dueDate ? new Date(dueDate).toLocaleDateString() : 'N/A'}) has passed. Original amount: ${formatCurrency(originalAmount)}. Check to re-enable.`}
                               arrow
                             >
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -315,17 +461,6 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
                                 </Typography>
                                 <WarningIcon fontSize="small" sx={{ color: 'warning.main', fontSize: 16 }} />
                               </Box>
-                            </Tooltip>
-                            <Tooltip title="Re-enable this amount (override due date zeroing)" arrow>
-                              <IconButton
-                                size="small"
-                                color="primary"
-                                onClick={() => addOverride(month.id, account.id, bucket.id)}
-                                sx={{ p: 0.5 }}
-                                aria-label="Re-enable amount"
-                              >
-                                <RestoreIcon fontSize="small" />
-                              </IconButton>
                             </Tooltip>
                           </>
                         )}

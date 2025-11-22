@@ -14,15 +14,19 @@ import {
   TextField,
   Collapse,
   Button,
+  IconButton,
 } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ClearIcon from '@mui/icons-material/Clear';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
 import type { AggregatedMonth } from '../../types/plannedExpensesAggregated';
 import { DEFAULT_BUCKETS } from '../../config/plannedExpenses';
 import type { BankAccount } from '../../types/bankAccounts';
 import { useBankAccountsStore } from '../../store/useBankAccountsStore';
+import { FilterPresetsManager } from './FilterPresetsManager';
+import type { FilterPreset } from '../../store/useFilterPresetsStore';
 
 interface AccountFiltersProps {
   month: AggregatedMonth;
@@ -62,6 +66,30 @@ export const AccountFilters = memo(function AccountFilters({
   onClear,
 }: AccountFiltersProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [presetsAnchorEl, setPresetsAnchorEl] = useState<HTMLElement | null>(null);
+
+  const currentFilters: FilterPreset['filters'] = useMemo(
+    () => ({
+      selectedAccount,
+      selectedBucket,
+      selectedAccountType,
+      selectedStatus,
+      minAmount,
+      maxAmount,
+      showNegativeOnly,
+    }),
+    [selectedAccount, selectedBucket, selectedAccountType, selectedStatus, minAmount, maxAmount, showNegativeOnly],
+  );
+
+  const handleLoadPreset = (filters: FilterPreset['filters']) => {
+    onAccountChange(filters.selectedAccount);
+    onBucketChange(filters.selectedBucket);
+    onAccountTypeChange(filters.selectedAccountType);
+    onStatusChange(filters.selectedStatus);
+    onMinAmountChange(filters.minAmount);
+    onMaxAmountChange(filters.maxAmount);
+    onNegativeOnlyChange(filters.showNegativeOnly);
+  };
   const accounts = useBankAccountsStore((state) => state.accounts);
   const accountsMap = useMemo(() => {
     const map = new Map<string, BankAccount>();
@@ -101,6 +129,14 @@ export const AccountFilters = memo(function AccountFilters({
           <Typography variant="subtitle2" fontWeight="bold">
             Quick Filters
           </Typography>
+          <IconButton
+            size="small"
+            onClick={(e) => setPresetsAnchorEl(e.currentTarget)}
+            aria-label="filter presets"
+            sx={{ ml: 'auto' }}
+          >
+            <BookmarkIcon fontSize="small" />
+          </IconButton>
           {hasActiveFilters && (
             <Chip
               icon={<ClearIcon />}
@@ -109,10 +145,16 @@ export const AccountFilters = memo(function AccountFilters({
               size="small"
               color="primary"
               variant="outlined"
-              sx={{ ml: 'auto', cursor: 'pointer' }}
+              sx={{ cursor: 'pointer' }}
             />
           )}
         </Stack>
+        <FilterPresetsManager
+          currentFilters={currentFilters}
+          onLoadPreset={handleLoadPreset}
+          anchorEl={presetsAnchorEl}
+          onClose={() => setPresetsAnchorEl(null)}
+        />
 
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
           <FormControl fullWidth size="small">

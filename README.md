@@ -9,40 +9,38 @@ A comprehensive standalone financial management Progressive Web App (PWA) built 
 - 💰 **Transactions**: Track income, expenses, and savings/investment transactions
 - 📅 **EMIs**: Manage expense and savings/investment EMIs with installment tracking
 - 🔄 **Recurring Transactions**: Set up recurring income, expenses, and savings/investments
-    - 📊 **Planner**: Monthly financial planning with bucket-based allocations (defaults to current/latest month)
-      - **Bulk Operations**: Select multiple months and perform bulk actions (mark all paid/pending, export)
-      - **Month Comparison**: Side-by-side comparison of any two months with difference highlighting
-    - 📈 **Analytics**: Comprehensive financial analytics and insights with advanced charts (Pie, Area, Bar, Line)
-    - 💳 **Credit Card Dashboard**: Dedicated view for credit card management with outstanding balance, payment history, and due date calendar
-    - 📱 **Dashboard**: Overview of your financial health with monthly and overall metrics (defaults to current month)
+- 📊 **Planner**: Monthly financial planning with bucket-based allocations (defaults to current/latest month)
+- 📈 **Analytics**: Comprehensive financial analytics and insights with advanced charts (Pie, Area, Bar, Line)
+- 💳 **Credit Card Dashboard**: Dedicated view for credit card management with outstanding balance, payment history, and due date calendar
+- 📱 **Dashboard**: Overview of your financial health with monthly and overall metrics (defaults to current month)
 
 ### User Experience
 - ✅ **Toast Notifications**: Real-time feedback for all operations
 - ⏳ **Loading States**: Skeleton loaders and spinners for better UX
 - ↩️ **Undo Functionality**: Restore deleted items within 10 minutes
 - 💾 **Data Backup/Restore**: Full backup and restore functionality
-- ⌨️ **Keyboard Shortcuts**: Power user shortcuts for faster navigation with comprehensive help dialog (press `?` anywhere)
-- 📖 **Enhanced Empty States**: Contextual actions, tips, and quick-start guides for better onboarding
+- ⌨️ **Keyboard Shortcuts**: Power user shortcuts for faster navigation (with comprehensive help dialog)
 - 🎨 **Dark/Light Theme**: System-aware theme switching
 - 📱 **Responsive Design**: Works on desktop, tablet, and mobile
+- 🖼️ **Enhanced Empty States**: Contextual actions, tips, and quick-start guides for empty data views
+- 🔖 **Filter Presets**: Save and load filter configurations for quick access
+- 📄 **Print Preview**: Preview and optimize print layouts before printing
+- 🎛️ **Customizable Dashboard**: Show/hide and reorder dashboard widgets to your preference
 
 ### Data Management
 - 🔒 **Local Storage**: All data stored locally using IndexedDB (via localforage)
 - 🔄 **Auto-Generation**: Automatic EMI and recurring transaction generation (all recurring transactions generated upfront)
 - ✅ **Data Validation**: Comprehensive validation and business rules
 - 🔍 **Data Health Checks**: Identify and fix data inconsistencies
-- 📤 **Data Export**: Export data in multiple formats (CSV, Excel, JSON, PDF)
-    - 📊 **Excel Export**: Export transactions, analytics, and planner data to Excel (.xlsx) with multiple sheets
-    - 📄 **PDF Export**: Export reports and transactions to PDF format
-    - 📋 **CSV Export**: Export transactions to CSV
-    - 💾 **JSON Export**: Export data in JSON format with formatting options
-    - ⏰ **Scheduled Exports**: Automatically export transactions on a schedule (daily, weekly, monthly)
-    - 📊 **Projections Integration**: Import projections from CSV/Excel, auto-populate inflow totals, track savings targets
-    - 🔔 **Browser Notifications**: Get notified about upcoming payment due dates with configurable settings and quiet hours
-    - 💰 **Automatic Balance Updates**: Account balances automatically update when transactions are received/paid/completed
-- 📥 **Data Import**: Import data from CSV, Excel, and JSON with schema validation
+- 📤 **CSV Export**: Export transactions to CSV
+- ⏰ **Scheduled Exports**: Automatically export transactions on a schedule (daily, weekly, monthly) with background sync support
+- 🔄 **Background Sync**: Scheduled exports work even when the app is closed (requires browser support)
+- 📊 **Projections Integration**: Import projections from CSV/Excel, auto-populate inflow totals, track savings targets
+- 💰 **Automatic Balance Updates**: Account balances automatically update when transactions are received/paid/completed
 - 🔄 **Balance Sync**: Sync existing account balances with transactions (useful for old data)
 - 🗑️ **Clear All Data**: Reset the app to a clean state by clearing all storage (irreversible)
+- ✅ **Due Date Overrides**: Enhanced UI for overriding zeroed amounts with bulk actions
+- ♿ **Accessibility**: Comprehensive screen reader support with testing guide
 
 ## 🛠️ Tech Stack
 

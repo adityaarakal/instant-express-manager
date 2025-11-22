@@ -17,6 +17,7 @@ import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStor
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useTransferTransactionsStore } from '../store/useTransferTransactionsStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
+import { registerBackgroundSync, isBackgroundSyncSupported } from './backgroundSync';
 
 /**
  * Check if a schedule should run now
@@ -124,6 +125,12 @@ export async function executeScheduledExport(schedule: ExportSchedule): Promise<
     // Calculate next run time
     const nextRun = calculateNextRunTime(schedule);
     updateLastRun(schedule.id, nextRun);
+    
+    // Register background sync for next run if supported
+    if (isBackgroundSyncSupported()) {
+      const nextSchedule = { ...schedule, nextRun };
+      await registerBackgroundSync({ schedule: nextSchedule });
+    }
     
     // Show notification
     if ('Notification' in window && Notification.permission === 'granted') {
