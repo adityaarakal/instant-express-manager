@@ -210,12 +210,12 @@ export function Banks() {
         sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
-          alignItems: 'center',
-          flexDirection: isMobile ? 'column' : 'row',
-          gap: isMobile ? 2 : 0,
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: 2,
         }}
       >
-        <Typography variant="h4">Banks</Typography>
+        <Typography variant="h4" sx={{ flexShrink: 0 }}>Banks</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -223,6 +223,7 @@ export function Banks() {
           aria-label="Add new bank"
           fullWidth={isMobile}
           size={isMobile ? 'medium' : 'large'}
+          sx={{ flexShrink: 0 }}
         >
           Add Bank
         </Button>
@@ -230,8 +231,9 @@ export function Banks() {
 
       <Paper sx={{ p: 2 }}>
         <Stack 
-          direction={isMobile ? 'column' : 'row'} 
+          direction={{ xs: 'column', sm: 'row' }} 
           spacing={2}
+          alignItems={{ xs: 'stretch', sm: 'center' }}
         >
           <TextField
             size="small"

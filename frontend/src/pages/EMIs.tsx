@@ -428,12 +428,12 @@ export function EMIs() {
         sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
-          alignItems: 'center',
-          flexDirection: isMobile ? 'column' : 'row',
-          gap: isMobile ? 2 : 0,
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: 2,
         }}
       >
-        <Typography variant="h4">EMIs</Typography>
+        <Typography variant="h4" sx={{ flexShrink: 0 }}>EMIs</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -442,6 +442,7 @@ export function EMIs() {
           aria-label={accounts.length === 0 ? 'Add EMI (requires at least one bank account)' : 'Add new EMI'}
           fullWidth={isMobile}
           size={isMobile ? 'medium' : 'large'}
+          sx={{ flexShrink: 0 }}
         >
           Add EMI
         </Button>

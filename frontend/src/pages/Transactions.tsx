@@ -758,16 +758,20 @@ export function Transactions() {
         sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
-          alignItems: 'center',
-          flexDirection: isMobile ? 'column' : 'row',
-          gap: isMobile ? 2 : 0,
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: 2,
         }}
       >
-        <Typography variant="h4">Transactions</Typography>
+        <Typography variant="h4" sx={{ flexShrink: 0 }}>Transactions</Typography>
         <Stack 
-          direction={isMobile ? 'column' : 'row'} 
+          direction={{ xs: 'column', sm: 'row' }} 
           spacing={2}
-          sx={{ width: isMobile ? '100%' : 'auto' }}
+          sx={{ 
+            width: { xs: '100%', sm: 'auto' },
+            alignItems: { xs: 'stretch', sm: 'center' },
+            flexShrink: 0
+          }}
         >
               {selectedIds.size > 0 && activeTab !== 'transfers' && (() => {
                 const { showReceivedPaidCompleted, showPending } = getBulkStatusButtonConfig();
