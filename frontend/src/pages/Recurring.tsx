@@ -574,17 +574,27 @@ export function Recurring() {
   };
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={{ xs: 2, sm: 3 }}>
       <Box 
         sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: { xs: 'flex-start', sm: 'center' },
           flexDirection: { xs: 'column', sm: 'row' },
-          gap: 2,
+          gap: { xs: 1.5, sm: 2 },
+          mb: { xs: 1, sm: 0 },
         }}
       >
-        <Typography variant="h4" sx={{ flexShrink: 0 }}>Recurring Templates</Typography>
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            flexShrink: 0,
+            fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+            fontWeight: 700,
+          }}
+        >
+          Recurring Templates
+        </Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -593,7 +603,13 @@ export function Recurring() {
           aria-label={accounts.length === 0 ? 'Add recurring template (requires at least one bank account)' : 'Add new recurring template'}
           fullWidth={isMobile}
           size={isMobile ? 'medium' : 'large'}
-          sx={{ flexShrink: 0 }}
+          sx={{ 
+            flexShrink: 0,
+            minHeight: { xs: 44, sm: 48 },
+            fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+            whiteSpace: 'nowrap',
+            px: { xs: 1.5, sm: 2 },
+          }}
         >
           Add Template
         </Button>
@@ -640,27 +656,69 @@ export function Recurring() {
       </Collapse>
 
       <Paper>
-        <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
-          <Tab label="Recurring Incomes" value="income" />
-          <Tab label="Recurring Expenses" value="expense" />
-          <Tab label="Recurring Savings/Investments" value="savings" />
-        </Tabs>
+        {isMobile ? (
+          <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Template Type</InputLabel>
+              <Select
+                value={activeTab}
+                onChange={(e) => setActiveTab(e.target.value as TabValue)}
+                sx={{
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  '& .MuiSelect-select': {
+                    py: 1.5,
+                  },
+                }}
+              >
+                <MenuItem value="income">Recurring Incomes</MenuItem>
+                <MenuItem value="expense">Recurring Expenses</MenuItem>
+                <MenuItem value="savings">Recurring Savings/Investments</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        ) : (
+          <Tabs 
+            value={activeTab} 
+            onChange={(_, v) => setActiveTab(v)}
+            sx={{
+              '& .MuiTab-root': {
+                minHeight: 72,
+                fontSize: '0.875rem',
+                px: 3,
+                minWidth: 160,
+              },
+            }}
+          >
+            <Tab label="Recurring Incomes" value="income" />
+            <Tab label="Recurring Expenses" value="expense" />
+            <Tab label="Recurring Savings/Investments" value="savings" />
+          </Tabs>
+        )}
 
         <TableContainer
           sx={{
             overflowX: 'auto',
+            maxWidth: '100%',
             '& .MuiTableCell-root': {
               whiteSpace: 'nowrap',
-              minWidth: 100,
+              minWidth: { xs: 80, sm: 100 },
+              padding: { xs: '8px 4px', sm: '16px' },
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
             },
             '& .MuiTableRow-root:has(.MuiTableCell-root[colspan])': {
               '& .MuiTableCell-root': {
                 whiteSpace: 'normal',
               },
             },
+            '& .MuiTableHead-root .MuiTableCell-root': {
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              fontWeight: 600,
+              padding: { xs: '12px 4px', sm: '16px' },
+            },
           }}
         >
-          <Table aria-label={`${activeTab} recurring templates table`} sx={{ minWidth: 800 }}>
+          <Table aria-label={`${activeTab} recurring templates table`} sx={{ minWidth: { xs: 600, sm: 800 } }}>
             <TableHead>
               <TableRow>
                 <TableCell>Name</TableCell>
@@ -788,16 +846,37 @@ export function Recurring() {
                   .map((template) => (
                     <TableRow key={template.id} hover>
                       <TableCell>
-                        <Typography variant="body2" fontWeight="medium">
+                        <Typography 
+                          variant="body2" 
+                          fontWeight="medium"
+                          sx={{
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            wordBreak: 'break-word',
+                          }}
+                        >
                           {template.name}
                         </Typography>
                         {activeTab === 'expense' && (
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography 
+                            variant="caption" 
+                            color="text.secondary"
+                            sx={{
+                              fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                              wordBreak: 'break-word',
+                            }}
+                          >
                             {(template as RecurringExpense).bucket}
                           </Typography>
                         )}
                         {activeTab === 'savings' && (
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography 
+                            variant="caption" 
+                            color="text.secondary"
+                            sx={{
+                              fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                              wordBreak: 'break-word',
+                            }}
+                          >
                             {(template as RecurringSavingsInvestment).destination}
                           </Typography>
                         )}
@@ -813,6 +892,10 @@ export function Recurring() {
                               ? 'error'
                               : 'text.primary'
                           }
+                          sx={{
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            whiteSpace: 'nowrap',
+                          }}
                         >
                           {formatDate(template.nextDueDate)}
                         </Typography>
@@ -828,28 +911,54 @@ export function Recurring() {
                               ? 'default'
                               : 'warning'
                           }
+                          sx={{
+                            fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                            height: { xs: 24, sm: 28 },
+                            '& .MuiChip-label': {
+                              px: { xs: 0.75, sm: 1 },
+                            },
+                          }}
                         />
                       </TableCell>
                       <TableCell align="right">
-                        <Stack direction="row" spacing={1} justifyContent="flex-end">
-                          <Link
-                            component="button"
-                            variant="body2"
-                            onClick={() => {
-                              const count = getGeneratedTransactionsCount(template.id);
-                              if (count > 0) {
-                                navigate(`/transactions?tab=${activeTab}`);
-                              }
-                            }}
-                            sx={{ textDecoration: 'none' }}
-                          >
-                            {getGeneratedTransactionsCount(template.id)} transactions
-                          </Link>
+                        <Stack 
+                          direction="row" 
+                          spacing={{ xs: 0.5, sm: 1 }} 
+                          justifyContent="flex-end"
+                          flexWrap="wrap"
+                          sx={{ gap: { xs: 0.5, sm: 1 } }}
+                        >
+                          {!isMobile && (
+                            <Link
+                              component="button"
+                              variant="body2"
+                              onClick={() => {
+                                const count = getGeneratedTransactionsCount(template.id);
+                                if (count > 0) {
+                                  navigate(`/transactions?tab=${activeTab}`);
+                                }
+                              }}
+                              sx={{ 
+                                textDecoration: 'none',
+                                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                                minHeight: { xs: 40, sm: 'auto' },
+                                display: 'flex',
+                                alignItems: 'center',
+                              }}
+                            >
+                              {getGeneratedTransactionsCount(template.id)} transactions
+                            </Link>
+                          )}
                           <IconButton
                             size="small"
                             onClick={() => handlePauseResume(template)}
                             disabled={template.status === 'Completed' || deletingId !== null}
                             aria-label={template.status === 'Active' ? `Pause recurring template ${template.name}` : `Resume recurring template ${template.name}`}
+                            sx={{
+                              minWidth: { xs: 40, sm: 48 },
+                              minHeight: { xs: 40, sm: 48 },
+                              p: { xs: 0.5, sm: 1 },
+                            }}
                           >
                             {template.status === 'Active' ? (
                               <PauseIcon fontSize="small" />
@@ -865,6 +974,11 @@ export function Recurring() {
                               aria-label={`Convert recurring template ${template.name} to EMI`}
                               title="Convert to EMI"
                               color="primary"
+                              sx={{
+                                minWidth: { xs: 40, sm: 48 },
+                                minHeight: { xs: 40, sm: 48 },
+                                p: { xs: 0.5, sm: 1 },
+                              }}
                             >
                               <SwapHorizIcon fontSize="small" />
                             </IconButton>
@@ -874,6 +988,11 @@ export function Recurring() {
                             onClick={() => handleOpenDialog(template)}
                             disabled={deletingId !== null}
                             aria-label={`Edit recurring template ${template.name}`}
+                            sx={{
+                              minWidth: { xs: 40, sm: 48 },
+                              minHeight: { xs: 40, sm: 48 },
+                              p: { xs: 0.5, sm: 1 },
+                            }}
                           >
                             <EditIcon fontSize="small" />
                           </IconButton>
@@ -883,6 +1002,11 @@ export function Recurring() {
                             color="error"
                             disabled={deletingId !== null}
                             aria-label={`Delete recurring template ${template.name}`}
+                            sx={{
+                              minWidth: { xs: 40, sm: 48 },
+                              minHeight: { xs: 40, sm: 48 },
+                              p: { xs: 0.5, sm: 1 },
+                            }}
                           >
                             {deletingId === template.id ? (
                               <CircularProgress size={16} aria-label="Deleting" />
@@ -914,16 +1038,60 @@ export function Recurring() {
             sx={{
               '& .MuiTablePagination-toolbar': {
                 flexWrap: isMobile ? 'wrap' : 'nowrap',
+                gap: { xs: 1, sm: 0 },
+                px: { xs: 1, sm: 2 },
+              },
+              '& .MuiTablePagination-selectLabel': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                mr: { xs: 0.5, sm: 1 },
+              },
+              '& .MuiTablePagination-displayedRows': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              },
+              '& .MuiTablePagination-select': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                minHeight: { xs: 36, sm: 40 },
+              },
+              '& .MuiIconButton-root': {
+                minWidth: { xs: 40, sm: 48 },
+                minHeight: { xs: 40, sm: 48 },
+                p: { xs: 0.5, sm: 1 },
               },
             }}
           />
         )}
       </Paper>
 
-      <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-        <DialogTitle>{editingTemplate ? 'Edit Template' : 'Add Recurring Template'}</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
+      <Dialog 
+        open={dialogOpen} 
+        onClose={handleCloseDialog} 
+        maxWidth="md" 
+        fullWidth
+        fullScreen={isMobile}
+        PaperProps={{
+          sx: {
+            m: { xs: 0, sm: 2 },
+            maxHeight: { xs: '100vh', sm: '90vh' },
+            width: { xs: '100%', sm: 'auto' },
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            fontSize: { xs: '1.125rem', sm: '1.25rem' },
+            fontWeight: 700,
+            pb: { xs: 1, sm: 2 },
+          }}
+        >
+          {editingTemplate ? 'Edit Template' : 'Add Recurring Template'}
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 },
+          }}
+        >
+          <Stack spacing={{ xs: 1.5, sm: 2 }} sx={{ mt: { xs: 0, sm: 1 } }}>
             <TextField
               label="Template Name"
               value={formData.name}
@@ -938,6 +1106,14 @@ export function Recurring() {
                 value={formData.accountId}
                 label="Account"
                 onChange={(e) => setFormData({ ...formData, accountId: e.target.value })}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: { xs: '60vh', sm: 'none' },
+                      maxWidth: { xs: '90vw', sm: 'none' },
+                    },
+                  },
+                }}
               >
                 {accounts.map((account) => (
                   <MenuItem key={account.id} value={account.id}>
@@ -965,6 +1141,14 @@ export function Recurring() {
                 onChange={(e) => {
                   const newFrequency = e.target.value as 'Monthly' | 'Weekly' | 'Yearly' | 'Custom' | 'Quarterly';
                   setFormData({ ...formData, frequency: newFrequency });
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: { xs: '60vh', sm: 'none' },
+                      maxWidth: { xs: '90vw', sm: 'none' },
+                    },
+                  },
                 }}
               >
                 {frequencyOptions.map((option) => (
@@ -1026,6 +1210,14 @@ export function Recurring() {
                   value={formData.category}
                   label="Category"
                   onChange={(e) => setFormData({ ...formData, category: e.target.value as IncomeCategory })}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        maxHeight: { xs: '60vh', sm: 'none' },
+                        maxWidth: { xs: '90vw', sm: 'none' },
+                      },
+                    },
+                  }}
                 >
                   <MenuItem value="Salary">Salary</MenuItem>
                   <MenuItem value="Bonus">Bonus</MenuItem>
