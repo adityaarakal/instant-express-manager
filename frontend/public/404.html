@@ -8,7 +8,7 @@
       // GitHub Pages 404.html redirect for SPA routing
       // When a route like /instant-express-manager/banks is accessed directly,
       // GitHub Pages serves this 404.html, which redirects to index.html
-      // React Router will then handle the routing based on the URL pathname
+      // We preserve the original path in sessionStorage so React Router can handle it
       
       (function() {
         const path = window.location.pathname;
@@ -20,9 +20,15 @@
         
         // If we're on GitHub Pages (path starts with basePath)
         if (path.startsWith(basePath)) {
-          // Redirect to index.html - React Router will handle the routing
-          // The pathname will be preserved in the URL, so React Router can match it
-          window.location.replace(basePath + '/index.html' + search + hash);
+          // Extract the route path (everything after basePath)
+          const routePath = path.substring(basePath.length) || '/';
+          
+          // Store the original path in sessionStorage
+          // This will be read by the app to restore the URL after index.html loads
+          sessionStorage.setItem('github-pages-redirect', routePath + search + hash);
+          
+          // Redirect to index.html
+          window.location.replace(basePath + '/index.html');
         } else {
           // Fallback for other deployments
           window.location.replace('/index.html' + search + hash);
