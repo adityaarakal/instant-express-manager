@@ -121,6 +121,27 @@ export const Dashboard = memo(function Dashboard() {
     );
   }, [incomeTransactions, expenseTransactions, savingsTransactions, accounts, selectedMonthId]);
 
+  // Calculate total bank balances
+  const bankBalanceMetrics = useMemo(() => {
+    const totalBalance = accounts.reduce((sum, acc) => {
+      if (acc.accountType === 'CreditCard') {
+        // For credit cards, show available credit (limit - outstanding)
+        return sum + (acc.creditLimit || 0) - (acc.outstandingBalance || 0);
+      }
+      return sum + acc.currentBalance;
+    }, 0);
+    
+    const totalOutstanding = accounts
+      .filter(acc => acc.accountType === 'CreditCard')
+      .reduce((sum, acc) => sum + (acc.outstandingBalance || 0), 0);
+    
+    const totalCreditLimit = accounts
+      .filter(acc => acc.accountType === 'CreditCard')
+      .reduce((sum, acc) => sum + (acc.creditLimit || 0), 0);
+
+    return { totalBalance, totalOutstanding, totalCreditLimit };
+  }, [accounts]);
+
   return (
     <Stack 
       spacing={{ xs: 2, sm: 2.5, md: 3 }}
@@ -289,6 +310,80 @@ export const Dashboard = memo(function Dashboard() {
           </Typography>
         </Stack>
       </Paper>
+
+      {/* Consolidated Bank Balance Section */}
+      <Box>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            mb: { xs: 1.5, sm: 2 }, 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1,
+            fontSize: { xs: '1rem', sm: '1.25rem' },
+          }}
+        >
+          <AccountBalanceIcon fontSize="small" />
+          Consolidated Bank Balance
+        </Typography>
+        <Paper 
+          elevation={2} 
+          sx={{ 
+            p: { xs: 2, sm: 3 }, 
+            borderRadius: 2,
+            background: (theme) => 
+              theme.palette.mode === 'dark' 
+                ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(20, 184, 166, 0.1) 100%)'
+                : 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(20, 184, 166, 0.05) 100%)',
+            border: (theme) => `1px solid ${theme.palette.mode === 'dark' ? 'rgba(99, 102, 241, 0.3)' : 'rgba(99, 102, 241, 0.2)'}`,
+          }}
+        >
+          <Stack spacing={1.5}>
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+              Total Available Balance (All Banks)
+            </Typography>
+            <Typography 
+              variant="h4" 
+              color="primary.main"
+              sx={{ 
+                fontWeight: 'bold',
+                fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.5rem' },
+              }}
+            >
+              {new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              }).format(bankBalanceMetrics.totalBalance)}
+            </Typography>
+            {bankBalanceMetrics.totalOutstanding > 0 && (
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 0.5, sm: 2 }} sx={{ mt: 1 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                  Credit Card Outstanding: <strong style={{ color: 'inherit' }}>{new Intl.NumberFormat('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }).format(bankBalanceMetrics.totalOutstanding)}</strong>
+                </Typography>
+                {bankBalanceMetrics.totalCreditLimit > 0 && (
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                    Total Credit Limit: <strong style={{ color: 'inherit' }}>{new Intl.NumberFormat('en-IN', {
+                      style: 'currency',
+                      currency: 'INR',
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(bankBalanceMetrics.totalCreditLimit)}</strong>
+                  </Typography>
+                )}
+              </Stack>
+            )}
+          </Stack>
+        </Paper>
+      </Box>
+
+      <Divider />
 
       {/* Monthly Metrics Section - Summary Cards Widget */}
       {enabledWidgets.some((w) => w.id === 'summary-cards') && (

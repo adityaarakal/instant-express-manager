@@ -1,6 +1,6 @@
 {
   "name": "instant-express-manager",
-  "version": "1.0.110",
+  "version": "1.0.112",
   "description": "React PWA TypeScript application for Expense Manager with localStorage",
   "private": true,
   "workspaces": [
