@@ -189,9 +189,11 @@ export const Analytics = memo(function Analytics() {
             {
               label: 'Add Transaction',
               onClick: () => {
-                const transactionsUrl = new URL(window.location.href);
-                transactionsUrl.pathname = '/transactions';
-                window.location.href = transactionsUrl.toString();
+                // Use window.location for external navigation to preserve base path
+                const basePath = window.location.pathname.startsWith('/instant-express-manager') 
+                  ? '/instant-express-manager' 
+                  : '';
+                window.location.href = `${basePath}/transactions`;
               },
             },
           ]}

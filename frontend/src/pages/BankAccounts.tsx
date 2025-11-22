@@ -361,6 +361,11 @@ export function BankAccounts() {
             whiteSpace: 'nowrap',
             minWidth: 100,
           },
+          '& .MuiTableRow-root:has(.MuiTableCell-root[colspan])': {
+            '& .MuiTableCell-root': {
+              whiteSpace: 'normal',
+            },
+          },
         }}
       >
         <Table aria-label="Bank accounts table" sx={{ minWidth: 800 }}>
@@ -379,25 +384,36 @@ export function BankAccounts() {
               <TableSkeleton rows={5} columns={isCreditCard ? 6 : 5} />
             ) : filteredAccounts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={isCreditCard ? 6 : 5} align="center" sx={{ border: 'none', py: 4 }}>
-                  <EmptyState
-                    icon={<AccountBalanceWalletIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
-                    title={accounts.length === 0 ? 'No Accounts Yet' : 'No Accounts Match Filters'}
-                    description={
-                      accounts.length === 0
-                        ? 'Create your first bank account to start tracking transactions. Link it to a bank to organize your finances.'
-                        : 'Try adjusting your filter criteria to find the accounts you\'re looking for.'
-                    }
-                    action={
-                      accounts.length === 0
-                        ? {
-                            label: 'Add Your First Account',
-                            onClick: () => handleOpenDialog(),
-                            icon: <AddIcon />,
-                          }
-                        : undefined
-                    }
-                  />
+                <TableCell 
+                  colSpan={isCreditCard ? 6 : 5} 
+                  align="center" 
+                  sx={{ 
+                    border: 'none', 
+                    py: 4,
+                    px: { xs: 2, sm: 4 },
+                    width: '100%',
+                  }}
+                >
+                  <Box sx={{ maxWidth: '100%', width: '100%', mx: 'auto' }}>
+                    <EmptyState
+                      icon={<AccountBalanceWalletIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
+                      title={accounts.length === 0 ? 'No Accounts Yet' : 'No Accounts Match Filters'}
+                      description={
+                        accounts.length === 0
+                          ? 'Create your first bank account to start tracking transactions. Link it to a bank to organize your finances.'
+                          : 'Try adjusting your filter criteria to find the accounts you\'re looking for.'
+                      }
+                      action={
+                        accounts.length === 0
+                          ? {
+                              label: 'Add Your First Account',
+                              onClick: () => handleOpenDialog(),
+                              icon: <AddIcon />,
+                            }
+                          : undefined
+                      }
+                    />
+                  </Box>
                 </TableCell>
               </TableRow>
             ) : (

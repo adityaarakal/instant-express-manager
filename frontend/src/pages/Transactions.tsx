@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Alert,
   AlertTitle,
@@ -118,6 +118,7 @@ import type { TabValue } from '../components/transactions/TransactionFormDialog'
 type ExtendedTabValue = TabValue | 'transfers';
 
 export function Transactions() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<ExtendedTabValue>(() => {
     const tabParam = searchParams.get('tab');
@@ -941,6 +942,11 @@ export function Transactions() {
               whiteSpace: 'nowrap',
               minWidth: 100,
             },
+            '& .MuiTableRow-root:has(.MuiTableCell-root[colspan])': {
+              '& .MuiTableCell-root': {
+                whiteSpace: 'normal',
+              },
+            },
           }}
         >
           <Table aria-label={`${activeTab} transactions table`} sx={{ minWidth: 900 }}>
@@ -990,8 +996,18 @@ export function Transactions() {
                 <>
                   {paginatedTransactions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} align="center" sx={{ border: 'none', py: 4 }}>
-                        <EmptyState
+                      <TableCell 
+                        colSpan={8} 
+                        align="center" 
+                        sx={{ 
+                          border: 'none', 
+                          py: 4,
+                          px: { xs: 2, sm: 4 },
+                          width: '100%',
+                        }}
+                      >
+                        <Box sx={{ maxWidth: '100%', width: '100%', mx: 'auto' }}>
+                          <EmptyState
                           icon={<AttachMoneyIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
                           title={
                             incomeTransactions.length === 0
@@ -1002,7 +1018,7 @@ export function Transactions() {
                           }
                           description={
                             incomeTransactions.length === 0
-                              ? 'Start tracking your income by adding your first income transaction. Record salaries, bonuses, freelancing, and other income sources.'
+                              ? 'Start tracking your income by adding your first transaction. Record salaries, bonuses, and other income sources.'
                               : filteredAndSortedTransactions.length === 0
                               ? 'Try adjusting your search or filter criteria to find the transactions you\'re looking for.'
                               : 'Navigate to a different page to see more transactions.'
@@ -1019,12 +1035,8 @@ export function Transactions() {
                                   ]
                                 : [
                                     {
-                                      label: 'Add Bank Account',
-                                      onClick: () => {
-                                        const accountsUrl = new URL(window.location.href);
-                                        accountsUrl.pathname = '/bank-accounts';
-                                        window.location.href = accountsUrl.toString();
-                                      },
+                                      label: 'Add Account',
+                                      onClick: () => navigate('/accounts'),
                                       icon: <AddIcon />,
                                     },
                                   ]
@@ -1073,6 +1085,7 @@ export function Transactions() {
                               : undefined
                           }
                         />
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -1137,9 +1150,19 @@ export function Transactions() {
                 <>
                   {paginatedTransactions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9} align="center" sx={{ border: 'none', py: 4 }}>
-                        <EmptyState
-                          icon={<ShoppingCartIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
+                      <TableCell 
+                        colSpan={9} 
+                        align="center" 
+                        sx={{ 
+                          border: 'none', 
+                          py: 4,
+                          px: { xs: 2, sm: 4 },
+                          width: '100%',
+                        }}
+                      >
+                        <Box sx={{ maxWidth: '100%', width: '100%', mx: 'auto' }}>
+                          <EmptyState
+                            icon={<ShoppingCartIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
                           title={
                             expenseTransactions.length === 0
                               ? 'No Expense Transactions Yet'
@@ -1149,7 +1172,7 @@ export function Transactions() {
                           }
                           description={
                             expenseTransactions.length === 0
-                              ? 'Start tracking your expenses by adding your first expense transaction. Record bills, utilities, responsibilities, and other expenses.'
+                              ? 'Start tracking your expenses by adding your first transaction. Record bills, utilities, and other expenses.'
                               : filteredAndSortedTransactions.length === 0
                               ? 'Try adjusting your search or filter criteria to find the transactions you\'re looking for.'
                               : 'Navigate to a different page to see more transactions.'
@@ -1166,12 +1189,8 @@ export function Transactions() {
                                   ]
                                 : [
                                     {
-                                      label: 'Add Bank Account',
-                                      onClick: () => {
-                                        const accountsUrl = new URL(window.location.href);
-                                        accountsUrl.pathname = '/bank-accounts';
-                                        window.location.href = accountsUrl.toString();
-                                      },
+                                      label: 'Add Account',
+                                      onClick: () => navigate('/accounts'),
                                       icon: <AddIcon />,
                                     },
                                   ]
@@ -1220,6 +1239,7 @@ export function Transactions() {
                               : undefined
                           }
                         />
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -1285,9 +1305,19 @@ export function Transactions() {
                 <>
                   {paginatedTransactions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9} align="center" sx={{ border: 'none', py: 4 }}>
-                        <EmptyState
-                          icon={<SavingsIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
+                      <TableCell 
+                        colSpan={9} 
+                        align="center" 
+                        sx={{ 
+                          border: 'none', 
+                          py: 4,
+                          px: { xs: 2, sm: 4 },
+                          width: '100%',
+                        }}
+                      >
+                        <Box sx={{ maxWidth: '100%', width: '100%', mx: 'auto' }}>
+                          <EmptyState
+                            icon={<SavingsIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
                           title={
                             savingsTransactions.length === 0
                               ? 'No Savings/Investment Transactions Yet'
@@ -1297,7 +1327,7 @@ export function Transactions() {
                           }
                           description={
                             savingsTransactions.length === 0
-                              ? 'Start tracking your savings and investments by adding your first transaction. Record SIPs, lump sum investments, withdrawals, and returns.'
+                              ? 'Start tracking your savings and investments by adding your first transaction. Record SIPs, investments, and returns.'
                               : filteredAndSortedTransactions.length === 0
                               ? 'Try adjusting your search or filter criteria to find the transactions you\'re looking for.'
                               : 'Navigate to a different page to see more transactions.'
@@ -1314,12 +1344,8 @@ export function Transactions() {
                                   ]
                                 : [
                                     {
-                                      label: 'Add Bank Account',
-                                      onClick: () => {
-                                        const accountsUrl = new URL(window.location.href);
-                                        accountsUrl.pathname = '/bank-accounts';
-                                        window.location.href = accountsUrl.toString();
-                                      },
+                                      label: 'Add Account',
+                                      onClick: () => navigate('/accounts'),
                                       icon: <AddIcon />,
                                     },
                                   ]
@@ -1368,6 +1394,7 @@ export function Transactions() {
                               : undefined
                           }
                         />
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -1433,9 +1460,19 @@ export function Transactions() {
                 <>
                   {paginatedTransactions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={10} align="center" sx={{ border: 'none', py: 4 }}>
-                        <EmptyState
-                          icon={<SwapHorizIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
+                      <TableCell 
+                        colSpan={10} 
+                        align="center" 
+                        sx={{ 
+                          border: 'none', 
+                          py: 4,
+                          px: { xs: 2, sm: 4 },
+                          width: '100%',
+                        }}
+                      >
+                        <Box sx={{ maxWidth: '100%', width: '100%', mx: 'auto' }}>
+                          <EmptyState
+                            icon={<SwapHorizIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
                           title={
                             transferTransactions.length === 0
                               ? 'No Transfers Yet'
@@ -1464,22 +1501,14 @@ export function Transactions() {
                                 ? [
                                     {
                                       label: 'Add Another Account',
-                                      onClick: () => {
-                                        const accountsUrl = new URL(window.location.href);
-                                        accountsUrl.pathname = '/bank-accounts';
-                                        window.location.href = accountsUrl.toString();
-                                      },
+                                      onClick: () => navigate('/accounts'),
                                       icon: <AddIcon />,
                                     },
                                   ]
                                 : [
                                     {
-                                      label: 'Add Bank Accounts',
-                                      onClick: () => {
-                                        const accountsUrl = new URL(window.location.href);
-                                        accountsUrl.pathname = '/bank-accounts';
-                                        window.location.href = accountsUrl.toString();
-                                      },
+                                      label: 'Add Account',
+                                      onClick: () => navigate('/accounts'),
                                       icon: <AddIcon />,
                                     },
                                   ]
@@ -1528,6 +1557,7 @@ export function Transactions() {
                               : undefined
                           }
                         />
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ) : (
