@@ -24,6 +24,8 @@ import {
   useMediaQuery,
   Menu,
   MenuItem,
+  FormControl,
+  Select,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -47,6 +49,7 @@ import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { EmptyState } from '../components/common/EmptyState';
 import { TransactionFilters, type FilterState } from '../components/transactions/TransactionFilters';
+import { TransactionCard } from '../components/transactions/TransactionCard';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import SavingsIcon from '@mui/icons-material/Savings';
@@ -985,53 +988,193 @@ export function Transactions() {
       <TransactionFilters ref={searchInputRef} type={activeTab} accounts={accounts} onFilterChange={setFilters} />
 
       <Paper>
-        <Tabs
-          value={activeTab}
-          onChange={(_, v) => {
-            setActiveTab(v);
-            setSelectedIds(new Set());
-          }}
-          aria-label="Transaction type tabs"
-          variant={isMobile ? 'scrollable' : 'standard'}
-          scrollButtons={isMobile ? 'auto' : false}
-          sx={{
-            '& .MuiTab-root': {
-              minHeight: { xs: 48, sm: 72 },
-              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-              px: { xs: 1.5, sm: 3 },
-              minWidth: { xs: 'auto', sm: 160 },
-            },
-          }}
-        >
-          <Tab label="Income" value="income" aria-controls="income-tabpanel" />
-          <Tab label="Expense" value="expense" aria-controls="expense-tabpanel" />
-          <Tab label={isMobile ? 'Savings' : 'Savings/Investment'} value="savings" aria-controls="savings-tabpanel" />
-          <Tab label="Transfers" value="transfers" aria-controls="transfers-tabpanel" />
-        </Tabs>
-
-        <TableContainer
-          sx={{
-            overflowX: 'auto',
-            maxWidth: '100%',
-            '& .MuiTableCell-root': {
-              whiteSpace: 'nowrap',
-              minWidth: { xs: 80, sm: 100 },
-              padding: { xs: '8px 4px', sm: '16px' },
-              fontSize: { xs: '0.75rem', sm: '0.875rem' },
-            },
-            '& .MuiTableRow-root:has(.MuiTableCell-root[colspan])': {
-              '& .MuiTableCell-root': {
-                whiteSpace: 'normal',
+        {/* Mobile: Use Select dropdown for tabs */}
+        {isMobile ? (
+          <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+            <FormControl fullWidth size="small">
+              <Select
+                value={activeTab}
+                onChange={(e) => {
+                  setActiveTab(e.target.value as ExtendedTabValue);
+                  setSelectedIds(new Set());
+                }}
+                sx={{
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  '& .MuiSelect-select': {
+                    py: 1.5,
+                  },
+                }}
+              >
+                <MenuItem value="income">Income</MenuItem>
+                <MenuItem value="expense">Expense</MenuItem>
+                <MenuItem value="savings">Savings/Investment</MenuItem>
+                <MenuItem value="transfers">Transfers</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        ) : (
+          <Tabs
+            value={activeTab}
+            onChange={(_, v) => {
+              setActiveTab(v);
+              setSelectedIds(new Set());
+            }}
+            aria-label="Transaction type tabs"
+            variant="standard"
+            sx={{
+              '& .MuiTab-root': {
+                minHeight: 72,
+                fontSize: '0.875rem',
+                px: 3,
+                minWidth: 160,
               },
-            },
-            '& .MuiTableHead-root .MuiTableCell-root': {
-              fontSize: { xs: '0.75rem', sm: '0.875rem' },
-              fontWeight: 600,
-              padding: { xs: '12px 4px', sm: '16px' },
-            },
-          }}
-        >
-          <Table aria-label={`${activeTab} transactions table`} sx={{ minWidth: { xs: 600, sm: 900 } }}>
+            }}
+          >
+            <Tab label="Income" value="income" aria-controls="income-tabpanel" />
+            <Tab label="Expense" value="expense" aria-controls="expense-tabpanel" />
+            <Tab label="Savings/Investment" value="savings" aria-controls="savings-tabpanel" />
+            <Tab label="Transfers" value="transfers" aria-controls="transfers-tabpanel" />
+          </Tabs>
+        )}
+
+        {/* Mobile: Card Layout, Desktop: Table Layout */}
+        {isMobile ? (
+          <Box sx={{ p: { xs: 1, sm: 2 } }}>
+            {isLoading ? (
+              <Stack spacing={1.5}>
+                {[...Array(5)].map((_, i) => (
+                  <Box key={i} sx={{ height: 120, bgcolor: 'action.hover', borderRadius: 1 }} />
+                ))}
+              </Stack>
+            ) : paginatedTransactions.length === 0 ? (
+              <Box sx={{ py: 4, px: 2 }}>
+                <EmptyState
+                  icon={
+                    activeTab === 'income' ? <AttachMoneyIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} /> :
+                    activeTab === 'expense' ? <ShoppingCartIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} /> :
+                    activeTab === 'savings' ? <SavingsIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} /> :
+                    <SwapHorizIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />
+                  }
+                  title={
+                    (activeTab === 'income' && incomeTransactions.length === 0) ||
+                    (activeTab === 'expense' && expenseTransactions.length === 0) ||
+                    (activeTab === 'savings' && savingsTransactions.length === 0) ||
+                    (activeTab === 'transfers' && transferTransactions.length === 0)
+                      ? `No ${activeTab === 'savings' ? 'Savings/Investment' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Transactions Yet`
+                      : filteredAndSortedTransactions.length === 0
+                      ? 'No Transactions Match Filters'
+                      : 'No Transactions on This Page'
+                  }
+                  description={
+                    filteredAndSortedTransactions.length === 0
+                      ? 'Try adjusting your search or filter criteria to find the transactions you\'re looking for.'
+                      : 'Navigate to a different page to see more transactions.'
+                  }
+                />
+              </Box>
+            ) : (
+              <Stack spacing={1.5}>
+                {paginatedTransactions.map((transaction) => {
+                  let accountName: string;
+                  let toAccountName: string | undefined;
+                  
+                  if (activeTab === 'transfers') {
+                    const transfer = transaction as TransferTransaction;
+                    accountName = accountsMap.get(transfer.fromAccountId) || '—';
+                    toAccountName = accountsMap.get(transfer.toAccountId) || '—';
+                  } else {
+                    const tx = transaction as IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction;
+                    accountName = accountsMap.get(tx.accountId) || '—';
+                  }
+                  
+                  return (
+                    <TransactionCard
+                      key={transaction.id}
+                      transaction={transaction}
+                      type={activeTab}
+                      accountName={accountName}
+                      toAccountName={toAccountName}
+                      isSelected={selectedIds.has(transaction.id)}
+                      isDeleting={deletingIds.has(transaction.id)}
+                      onSelect={() => handleSelectTransaction(transaction.id)}
+                      onEdit={() => {
+                        if (activeTab === 'transfers') {
+                          handleOpenTransferDialog(transaction.id);
+                        } else {
+                          handleOpenDialog(transaction.id);
+                        }
+                      }}
+                      onDelete={() => handleDeleteClick(transaction.id, activeTab)}
+                      formatCurrency={formatCurrency}
+                      formatDate={formatDate}
+                    />
+                  );
+                })}
+              </Stack>
+            )}
+            {!isLoading && filteredAndSortedTransactions.length > 0 && (
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+                <TablePagination
+                  component="div"
+                  count={filteredAndSortedTransactions.length}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  rowsPerPage={rowsPerPage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  rowsPerPageOptions={[10, 25]}
+                  labelRowsPerPage="Rows:"
+                  labelDisplayedRows={({ from, to, count }) =>
+                    `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`
+                  }
+                  sx={{
+                    '& .MuiTablePagination-toolbar': {
+                      flexWrap: 'wrap',
+                      gap: 1,
+                      px: 1,
+                    },
+                    '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                      fontSize: '0.75rem',
+                    },
+                    '& .MuiTablePagination-select': {
+                      fontSize: '0.75rem',
+                      minHeight: 36,
+                    },
+                    '& .MuiIconButton-root': {
+                      minWidth: 40,
+                      minHeight: 40,
+                      p: 0.5,
+                    },
+                  }}
+                />
+              </Box>
+            )}
+          </Box>
+        ) : (
+          <>
+            <TableContainer
+            sx={{
+              overflowX: 'auto',
+              maxWidth: '100%',
+              '& .MuiTableCell-root': {
+                whiteSpace: 'nowrap',
+                minWidth: 100,
+                padding: '16px',
+                fontSize: '0.875rem',
+              },
+              '& .MuiTableRow-root:has(.MuiTableCell-root[colspan])': {
+                '& .MuiTableCell-root': {
+                  whiteSpace: 'normal',
+                },
+              },
+              '& .MuiTableHead-root .MuiTableCell-root': {
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                padding: '16px',
+              },
+            }}
+          >
+            <Table aria-label={`${activeTab} transactions table`} sx={{ minWidth: 900 }}>
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">
@@ -1778,37 +1921,36 @@ export function Transactions() {
             onPageChange={handleChangePage}
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={isMobile ? [10, 25] : [10, 25, 50, 100]}
-            labelRowsPerPage={isMobile ? 'Rows:' : 'Rows per page:'}
+            rowsPerPageOptions={[10, 25, 50, 100]}
+            labelRowsPerPage="Rows per page:"
             labelDisplayedRows={({ from, to, count }) =>
-              isMobile 
-                ? `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`
-                : `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`
+              `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`
             }
             sx={{
               '& .MuiTablePagination-toolbar': {
-                flexWrap: isMobile ? 'wrap' : 'nowrap',
-                gap: { xs: 1, sm: 0 },
-                px: { xs: 1, sm: 2 },
+                flexWrap: 'nowrap',
+                px: 2,
               },
               '& .MuiTablePagination-selectLabel': {
-                fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                mr: { xs: 0.5, sm: 1 },
+                fontSize: '0.875rem',
+                mr: 1,
               },
               '& .MuiTablePagination-displayedRows': {
-                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                fontSize: '0.875rem',
               },
               '& .MuiTablePagination-select': {
-                fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                minHeight: { xs: 36, sm: 40 },
+                fontSize: '0.875rem',
+                minHeight: 40,
               },
               '& .MuiIconButton-root': {
-                minWidth: { xs: 40, sm: 48 },
-                minHeight: { xs: 40, sm: 48 },
-                p: { xs: 0.5, sm: 1 },
+                minWidth: 48,
+                minHeight: 48,
+                p: 1,
               },
             }}
           />
+        )}
+          </>
         )}
       </Paper>
 
