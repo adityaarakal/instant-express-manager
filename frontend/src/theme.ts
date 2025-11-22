@@ -10,9 +10,9 @@ const lightColors = {
     contrastText: '#ffffff',
   },
   secondary: {
-    main: '#ec4899', // Pink - vibrant, creative
-    light: '#f472b6',
-    dark: '#db2777',
+    main: '#14b8a6', // Teal - vibrant, modern
+    light: '#5eead4',
+    dark: '#0d9488',
     contrastText: '#ffffff',
   },
   success: {
@@ -57,9 +57,9 @@ const darkColors = {
     contrastText: '#0f172a',
   },
   secondary: {
-    main: '#f472b6', // Pink - lighter for dark mode
-    light: '#f9a8d4',
-    dark: '#ec4899',
+    main: '#5eead4', // Teal - lighter for dark mode
+    light: '#99f6e4',
+    dark: '#14b8a6',
     contrastText: '#0f172a',
   },
   success: {
@@ -123,8 +123,8 @@ export const createAppTheme = (mode: PaletteMode = 'light') => {
         letterSpacing: '-0.03em',
         lineHeight: 1.1,
         background: mode === 'dark'
-          ? 'linear-gradient(135deg, #818cf8 0%, #f472b6 50%, #38bdf8 100%)'
-          : 'linear-gradient(135deg, #6366f1 0%, #ec4899 50%, #0ea5e9 100%)',
+          ? 'linear-gradient(135deg, #818cf8 0%, #5eead4 50%, #38bdf8 100%)'
+          : 'linear-gradient(135deg, #6366f1 0%, #14b8a6 50%, #0ea5e9 100%)',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
         backgroundClip: 'text',
@@ -135,8 +135,8 @@ export const createAppTheme = (mode: PaletteMode = 'light') => {
         letterSpacing: '-0.02em',
         lineHeight: 1.2,
         background: mode === 'dark'
-          ? 'linear-gradient(135deg, #818cf8 0%, #f472b6 100%)'
-          : 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
+          ? 'linear-gradient(135deg, #818cf8 0%, #5eead4 100%)'
+          : 'linear-gradient(135deg, #6366f1 0%, #14b8a6 100%)',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
         backgroundClip: 'text',
@@ -178,16 +178,16 @@ export const createAppTheme = (mode: PaletteMode = 'light') => {
         : '0 1px 3px 0 rgba(99, 102, 241, 0.2), 0 1px 2px 0 rgba(99, 102, 241, 0.15)',
       mode === 'dark'
         ? '0 3px 6px 0 rgba(0, 0, 0, 0.4), 0 2px 4px 0 rgba(0, 0, 0, 0.3)'
-        : '0 3px 6px 0 rgba(99, 102, 241, 0.25), 0 2px 4px 0 rgba(236, 72, 153, 0.2)',
+        : '0 3px 6px 0 rgba(99, 102, 241, 0.25), 0 2px 4px 0 rgba(20, 184, 166, 0.2)',
       mode === 'dark'
         ? '0 10px 20px 0 rgba(0, 0, 0, 0.5), 0 3px 6px 0 rgba(0, 0, 0, 0.3)'
-        : '0 10px 20px 0 rgba(99, 102, 241, 0.3), 0 3px 6px 0 rgba(236, 72, 153, 0.25)',
+        : '0 10px 20px 0 rgba(99, 102, 241, 0.3), 0 3px 6px 0 rgba(20, 184, 166, 0.25)',
       mode === 'dark'
         ? '0 15px 25px 0 rgba(0, 0, 0, 0.6), 0 5px 10px 0 rgba(0, 0, 0, 0.4)'
-        : '0 15px 25px 0 rgba(99, 102, 241, 0.35), 0 5px 10px 0 rgba(236, 72, 153, 0.3)',
+        : '0 15px 25px 0 rgba(99, 102, 241, 0.35), 0 5px 10px 0 rgba(20, 184, 166, 0.3)',
       mode === 'dark'
         ? '0 20px 30px 0 rgba(0, 0, 0, 0.7), 0 8px 10px 0 rgba(0, 0, 0, 0.5)'
-        : '0 20px 30px 0 rgba(99, 102, 241, 0.4), 0 8px 10px 0 rgba(236, 72, 153, 0.35)',
+        : '0 20px 30px 0 rgba(99, 102, 241, 0.4), 0 8px 10px 0 rgba(20, 184, 166, 0.35)',
       'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none',
       'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none', 'none',
     ],
@@ -201,7 +201,7 @@ export const createAppTheme = (mode: PaletteMode = 'light') => {
           root: {
             backgroundImage: mode === 'dark'
               ? 'linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1a1f3a 100%)'
-              : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 25%, #ec4899 50%, #f472b6 75%, #6366f1 100%)',
+              : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 25%, #14b8a6 50%, #5eead4 75%, #6366f1 100%)',
             backgroundSize: '400% 400%',
             animation: 'gradientShift 15s ease infinite',
             borderBottom: `2px solid ${mode === 'dark' ? alpha('#818cf8', 0.3) : alpha('#ffffff', 0.3)}`,
@@ -219,7 +219,7 @@ export const createAppTheme = (mode: PaletteMode = 'light') => {
           paper: {
             backgroundImage: mode === 'dark'
               ? 'linear-gradient(180deg, #1e293b 0%, #0f172a 50%, #1a1f3a 100%)'
-              : 'linear-gradient(180deg, #8b5cf6 0%, #6366f1 25%, #ec4899 50%, #f472b6 75%, #8b5cf6 100%)',
+              : 'linear-gradient(180deg, #8b5cf6 0%, #6366f1 25%, #14b8a6 50%, #5eead4 75%, #8b5cf6 100%)',
             backgroundSize: '200% 200%',
             animation: 'gradientShift 20s ease infinite',
             borderRight: `2px solid ${mode === 'dark' ? alpha('#818cf8', 0.3) : alpha('#ffffff', 0.3)}`,
@@ -235,7 +235,7 @@ export const createAppTheme = (mode: PaletteMode = 'light') => {
           root: {
             backgroundImage: mode === 'dark'
               ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(26, 31, 58, 0.95) 50%, rgba(15, 23, 42, 0.95) 100%)'
-              : 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.12) 25%, rgba(236, 72, 153, 0.1) 50%, rgba(14, 165, 233, 0.08) 75%, rgba(99, 102, 241, 0.15) 100%)',
+              : 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.12) 25%, rgba(20, 184, 166, 0.1) 50%, rgba(14, 165, 233, 0.08) 75%, rgba(99, 102, 241, 0.15) 100%)',
             backgroundSize: '200% 200%',
             transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
             border: mode === 'dark' 
@@ -264,12 +264,12 @@ export const createAppTheme = (mode: PaletteMode = 'light') => {
             '&:hover': {
               transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
               backgroundImage: mode === 'dark'
-                ? 'linear-gradient(135deg, rgba(129, 140, 248, 0.2) 0%, rgba(244, 114, 182, 0.15) 50%, rgba(56, 189, 248, 0.1) 100%)'
-                : 'linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(139, 92, 246, 0.2) 25%, rgba(236, 72, 153, 0.15) 50%, rgba(14, 165, 233, 0.12) 75%, rgba(99, 102, 241, 0.25) 100%)',
+                ? 'linear-gradient(135deg, rgba(129, 140, 248, 0.2) 0%, rgba(94, 234, 212, 0.15) 50%, rgba(56, 189, 248, 0.1) 100%)'
+                : 'linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(139, 92, 246, 0.2) 25%, rgba(20, 184, 166, 0.15) 50%, rgba(14, 165, 233, 0.12) 75%, rgba(99, 102, 241, 0.25) 100%)',
               transform: 'translateY(-4px) scale(1.01)',
               boxShadow: mode === 'dark'
-                ? '0 24px 48px 0 rgba(129, 140, 248, 0.4), 0 12px 24px 0 rgba(244, 114, 182, 0.3)'
-                : '0 24px 48px 0 rgba(99, 102, 241, 0.5), 0 12px 24px 0 rgba(236, 72, 153, 0.4)',
+                ? '0 24px 48px 0 rgba(129, 140, 248, 0.4), 0 12px 24px 0 rgba(94, 234, 212, 0.3)'
+                : '0 24px 48px 0 rgba(99, 102, 241, 0.5), 0 12px 24px 0 rgba(20, 184, 166, 0.4)',
             },
           },
           elevation1: {
@@ -280,12 +280,12 @@ export const createAppTheme = (mode: PaletteMode = 'light') => {
           elevation2: {
             boxShadow: mode === 'dark'
               ? '0 3px 6px 0 rgba(0, 0, 0, 0.4), 0 2px 4px 0 rgba(0, 0, 0, 0.3)'
-              : '0 3px 6px 0 rgba(99, 102, 241, 0.25), 0 2px 4px 0 rgba(236, 72, 153, 0.2)',
+              : '0 3px 6px 0 rgba(99, 102, 241, 0.25), 0 2px 4px 0 rgba(20, 184, 166, 0.2)',
           },
           elevation3: {
             boxShadow: mode === 'dark'
               ? '0 10px 20px 0 rgba(0, 0, 0, 0.5), 0 3px 6px 0 rgba(0, 0, 0, 0.3)'
-              : '0 10px 20px 0 rgba(99, 102, 241, 0.3), 0 3px 6px 0 rgba(236, 72, 153, 0.25)',
+              : '0 10px 20px 0 rgba(99, 102, 241, 0.3), 0 3px 6px 0 rgba(20, 184, 166, 0.25)',
           },
         },
       },
@@ -294,7 +294,7 @@ export const createAppTheme = (mode: PaletteMode = 'light') => {
           root: {
             backgroundImage: mode === 'dark'
               ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(26, 31, 58, 0.95) 50%, rgba(15, 23, 42, 0.95) 100%)'
-              : 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.15) 25%, rgba(236, 72, 153, 0.12) 50%, rgba(14, 165, 233, 0.1) 75%, rgba(99, 102, 241, 0.2) 100%)',
+              : 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.15) 25%, rgba(20, 184, 166, 0.12) 50%, rgba(14, 165, 233, 0.1) 75%, rgba(99, 102, 241, 0.2) 100%)',
             backgroundSize: '200% 200%',
             border: mode === 'dark' 
               ? `2px solid ${alpha('#818cf8', 0.4)}`
@@ -325,11 +325,11 @@ export const createAppTheme = (mode: PaletteMode = 'light') => {
             '&:hover': {
               transform: 'translateY(-8px) scale(1.02)',
               backgroundImage: mode === 'dark'
-                ? 'linear-gradient(135deg, rgba(129, 140, 248, 0.25) 0%, rgba(244, 114, 182, 0.2) 50%, rgba(56, 189, 248, 0.15) 100%)'
-                : 'linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(139, 92, 246, 0.25) 25%, rgba(236, 72, 153, 0.2) 50%, rgba(14, 165, 233, 0.15) 75%, rgba(99, 102, 241, 0.3) 100%)',
+                ? 'linear-gradient(135deg, rgba(129, 140, 248, 0.25) 0%, rgba(94, 234, 212, 0.2) 50%, rgba(56, 189, 248, 0.15) 100%)'
+                : 'linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(139, 92, 246, 0.25) 25%, rgba(20, 184, 166, 0.2) 50%, rgba(14, 165, 233, 0.15) 75%, rgba(99, 102, 241, 0.3) 100%)',
               boxShadow: mode === 'dark'
-                ? '0 32px 64px 0 rgba(129, 140, 248, 0.5), 0 16px 32px 0 rgba(244, 114, 182, 0.4)'
-                : '0 32px 64px 0 rgba(99, 102, 241, 0.6), 0 16px 32px 0 rgba(236, 72, 153, 0.5)',
+                ? '0 32px 64px 0 rgba(129, 140, 248, 0.5), 0 16px 32px 0 rgba(94, 234, 212, 0.4)'
+                : '0 32px 64px 0 rgba(99, 102, 241, 0.6), 0 16px 32px 0 rgba(20, 184, 166, 0.5)',
               '&::before': {
                 opacity: 1,
               },
@@ -478,7 +478,7 @@ export const createAppTheme = (mode: PaletteMode = 'light') => {
           root: {
             backgroundImage: mode === 'dark'
               ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(26, 31, 58, 0.95) 50%, rgba(15, 23, 42, 0.95) 100%)'
-              : 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.12) 25%, rgba(236, 72, 153, 0.1) 50%, rgba(14, 165, 233, 0.08) 75%, rgba(99, 102, 241, 0.15) 100%)',
+              : 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.12) 25%, rgba(20, 184, 166, 0.1) 50%, rgba(14, 165, 233, 0.08) 75%, rgba(99, 102, 241, 0.15) 100%)',
             backgroundSize: '200% 200%',
             borderRadius: 16,
             border: mode === 'dark' 
@@ -531,7 +531,7 @@ export const createAppTheme = (mode: PaletteMode = 'light') => {
           paper: {
             backgroundImage: mode === 'dark'
               ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.98) 0%, rgba(26, 31, 58, 0.98) 50%, rgba(15, 23, 42, 0.98) 100%)'
-              : 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.18) 25%, rgba(236, 72, 153, 0.15) 50%, rgba(14, 165, 233, 0.12) 75%, rgba(99, 102, 241, 0.2) 100%)',
+              : 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.18) 25%, rgba(20, 184, 166, 0.15) 50%, rgba(14, 165, 233, 0.12) 75%, rgba(99, 102, 241, 0.2) 100%)',
             backgroundSize: '200% 200%',
             borderRadius: 24,
             border: mode === 'dark' 
@@ -539,8 +539,8 @@ export const createAppTheme = (mode: PaletteMode = 'light') => {
               : `2px solid ${alpha('#6366f1', 0.5)}`,
             backdropFilter: 'blur(20px) saturate(180%)',
             boxShadow: mode === 'dark'
-              ? '0 32px 64px 0 rgba(129, 140, 248, 0.4), 0 16px 32px 0 rgba(244, 114, 182, 0.3)'
-              : '0 32px 64px 0 rgba(99, 102, 241, 0.5), 0 16px 32px 0 rgba(236, 72, 153, 0.4)',
+              ? '0 32px 64px 0 rgba(129, 140, 248, 0.4), 0 16px 32px 0 rgba(94, 234, 212, 0.3)'
+              : '0 32px 64px 0 rgba(99, 102, 241, 0.5), 0 16px 32px 0 rgba(20, 184, 166, 0.4)',
           },
         },
       },
