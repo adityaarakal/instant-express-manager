@@ -111,22 +111,22 @@ This document tracks the comprehensive responsive design implementation to make 
   - [x] Dialog sizing
   - Status: Complete
 
-### Phase 6: Recurring Page
-- [ ] **Task 6.1**: Recurring header and controls
-  - [ ] Title and add button responsive
-  - [ ] Tabs responsive
-  - Status: Pending
+### Phase 6: Recurring Page ✅ COMPLETE
+- [x] **Task 6.1**: Recurring header and controls
+  - [x] Title and add button responsive
+  - [x] Tabs responsive
+  - Status: Complete
 
-- [ ] **Task 6.2**: Recurring table
-  - [ ] Table responsive scrolling
-  - [ ] Frequency badges on mobile
-  - [ ] Action buttons responsive
-  - Status: Pending
+- [x] **Task 6.2**: Recurring table
+  - [x] Table responsive scrolling
+  - [x] Frequency badges on mobile
+  - [x] Action buttons responsive
+  - Status: Complete
 
-- [ ] **Task 6.3**: Recurring dialog
-  - [ ] Form fields responsive
-  - [ ] Dialog sizing
-  - Status: Pending
+- [x] **Task 6.3**: Recurring dialog
+  - [x] Form fields responsive
+  - [x] Dialog sizing
+  - Status: Complete
 
 ### Phase 7: Analytics Page
 - [ ] **Task 7.1**: Analytics header and controls
