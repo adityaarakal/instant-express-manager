@@ -25,13 +25,13 @@ Implement toggle between table and card views for all tables in the application.
 - Status: Complete
 - **Note**: Already had TransactionCard component
 
-### Phase 3: EMIs Page
-- [ ] Create EMICard component
-- [ ] Add view toggle button
-- [ ] Implement card view rendering
-- [ ] Update table rendering to respect view toggle
-- [ ] Test toggle functionality
-- Status: Pending
+### Phase 3: EMIs Page ✅ COMPLETE
+- [x] Create EMICard component
+- [x] Add view toggle button
+- [x] Implement card view rendering
+- [x] Update table rendering to respect view toggle
+- [x] Test toggle functionality
+- Status: Complete
 
 ### Phase 4: Recurring Page
 - [ ] Create RecurringCard component

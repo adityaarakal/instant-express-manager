@@ -52,6 +52,9 @@ import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { EmptyState } from '../components/common/EmptyState';
 import { ConversionWizard } from '../components/common/ConversionWizard';
+import { ViewToggle } from '../components/common/ViewToggle';
+import { useViewMode } from '../hooks/useViewMode';
+import { RecurringCard } from '../components/recurring/RecurringCard';
 import RepeatIcon from '@mui/icons-material/Repeat';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import type {
@@ -104,6 +107,7 @@ export function Recurring() {
   const [isConverting, setIsConverting] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { viewMode, toggleViewMode } = useViewMode('recurring-view-mode');
 
   // Simulate initial load
   useEffect(() => {
@@ -595,24 +599,27 @@ export function Recurring() {
         >
           Recurring Templates
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpenDialog()}
-          disabled={accounts.length === 0}
-          aria-label={accounts.length === 0 ? 'Add recurring template (requires at least one bank account)' : 'Add new recurring template'}
-          fullWidth={isMobile}
-          size={isMobile ? 'medium' : 'large'}
-          sx={{ 
-            flexShrink: 0,
-            minHeight: { xs: 44, sm: 48 },
-            fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-            whiteSpace: 'nowrap',
-            px: { xs: 1.5, sm: 2 },
-          }}
-        >
-          Add Template
-        </Button>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <ViewToggle viewMode={viewMode} onToggle={toggleViewMode} aria-label="Toggle between table and card view" />
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenDialog()}
+            disabled={accounts.length === 0}
+            aria-label={accounts.length === 0 ? 'Add recurring template (requires at least one bank account)' : 'Add new recurring template'}
+            fullWidth={isMobile}
+            size={isMobile ? 'medium' : 'large'}
+            sx={{ 
+              flexShrink: 0,
+              minHeight: { xs: 44, sm: 48 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              whiteSpace: 'nowrap',
+              px: { xs: 1.5, sm: 2 },
+            }}
+          >
+            Add Template
+          </Button>
+        </Stack>
       </Box>
 
       <Collapse in={infoAlertOpen}>
@@ -696,7 +703,118 @@ export function Recurring() {
           </Tabs>
         )}
 
-        <TableContainer
+        {/* Card View or Table View based on view mode */}
+        {viewMode === 'card' ? (
+          <Box sx={{ p: { xs: 1, sm: 2 } }}>
+            {isLoading ? (
+              <Stack spacing={1.5}>
+                {[...Array(5)].map((_, i) => (
+                  <Box key={i} sx={{ height: 200, bgcolor: 'action.hover', borderRadius: 1 }} />
+                ))}
+              </Stack>
+            ) : paginatedTemplates.length === 0 ? (
+              <Box sx={{ py: 4, px: 2 }}>
+                <EmptyState
+                  icon={<RepeatIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
+                  title={allTemplates.length === 0 ? 'No Recurring Templates Yet' : 'No Templates on This Page'}
+                  description={
+                    allTemplates.length === 0
+                      ? `Start automating your ${activeTab === 'income' ? 'income' : activeTab === 'expense' ? 'expense' : 'savings/investment'} tracking by creating your first recurring template. Set up automatic transaction generation for regular ${activeTab === 'income' ? 'income' : activeTab === 'expense' ? 'expenses' : 'savings/investments'}.`
+                      : 'Navigate to a different page to see more templates.'
+                  }
+                  actions={
+                    allTemplates.length === 0
+                      ? accounts.length > 0
+                        ? [
+                            {
+                              label: `Add ${activeTab === 'income' ? 'Income' : activeTab === 'expense' ? 'Expense' : 'Savings/Investment'} Template`,
+                              onClick: () => handleOpenDialog(),
+                              icon: <AddIcon />,
+                            },
+                          ]
+                        : [
+                            {
+                              label: 'Add Account',
+                              onClick: () => navigate('/accounts'),
+                              icon: <AddIcon />,
+                            },
+                          ]
+                      : undefined
+                  }
+                />
+              </Box>
+            ) : (
+              <Stack spacing={1.5}>
+                {paginatedTemplates
+                  .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+                  .map((template) => (
+                    <RecurringCard
+                      key={template.id}
+                      template={template}
+                      type={activeTab}
+                      accountName={accountsMap.get(template.accountId) || '—'}
+                      isDeleting={deletingId === template.id}
+                      onEdit={() => handleOpenDialog(template)}
+                      onDelete={() => handleDeleteClick(template.id)}
+                      onPauseResume={() => handlePauseResume(template)}
+                      onConvertToEMI={
+                        (activeTab === 'expense' || activeTab === 'savings')
+                          ? () => handleConvertToEMIClick(template as RecurringExpense | RecurringSavingsInvestment)
+                          : undefined
+                      }
+                      onViewTransactions={
+                        getGeneratedTransactionsCount(template.id) > 0
+                          ? () => {
+                              navigate(`/transactions?tab=${activeTab === 'income' ? 'income' : activeTab === 'expense' ? 'expense' : 'savings'}&recurring=${template.id}`);
+                            }
+                          : undefined
+                      }
+                      transactionsCount={getGeneratedTransactionsCount(template.id)}
+                      formatCurrency={formatCurrency}
+                      formatDate={formatDate}
+                    />
+                  ))}
+              </Stack>
+            )}
+            {!isLoading && paginatedTemplates.length > 0 && (
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+                <TablePagination
+                  component="div"
+                  count={allTemplates.length}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  rowsPerPage={rowsPerPage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  rowsPerPageOptions={[10, 25]}
+                  labelRowsPerPage="Rows:"
+                  labelDisplayedRows={({ from, to, count }) =>
+                    `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`
+                  }
+                  sx={{
+                    '& .MuiTablePagination-toolbar': {
+                      flexWrap: 'wrap',
+                      gap: 1,
+                      px: 1,
+                    },
+                    '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                      fontSize: '0.75rem',
+                    },
+                    '& .MuiTablePagination-select': {
+                      fontSize: '0.75rem',
+                      minHeight: 36,
+                    },
+                    '& .MuiIconButton-root': {
+                      minWidth: 40,
+                      minHeight: 40,
+                      p: 0.5,
+                    },
+                  }}
+                />
+              </Box>
+            )}
+          </Box>
+        ) : (
+          <TableContainer
           sx={{
             overflowX: 'auto',
             maxWidth: '100%',
@@ -1022,7 +1140,8 @@ export function Recurring() {
             </TableBody>
           </Table>
         </TableContainer>
-        {!isLoading && allTemplates.length > 0 && (
+        )}
+        {!isLoading && allTemplates.length > 0 && viewMode === 'table' && (
           <TablePagination
             component="div"
             count={allTemplates.length}
