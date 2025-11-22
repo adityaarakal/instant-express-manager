@@ -50,6 +50,8 @@ import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { EmptyState } from '../components/common/EmptyState';
 import { TransactionFilters, type FilterState } from '../components/transactions/TransactionFilters';
 import { TransactionCard } from '../components/transactions/TransactionCard';
+import { ViewToggle } from '../components/common/ViewToggle';
+import { useViewMode } from '../hooks/useViewMode';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import SavingsIcon from '@mui/icons-material/Savings';
@@ -166,6 +168,7 @@ export function Transactions() {
   const [exportTemplateDialogOpen, setExportTemplateDialogOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { viewMode, toggleViewMode } = useViewMode('transactions-view-mode');
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Simulate initial load
@@ -788,6 +791,7 @@ export function Transactions() {
             flexWrap: { sm: 'wrap', md: 'nowrap' },
           }}
         >
+          <ViewToggle viewMode={viewMode} onToggle={toggleViewMode} aria-label="Toggle between table and card view" />
               {selectedIds.size > 0 && activeTab !== 'transfers' && (() => {
                 const { showReceivedPaidCompleted, showPending } = getBulkStatusButtonConfig();
                 return (
@@ -1038,8 +1042,8 @@ export function Transactions() {
           </Tabs>
         )}
 
-        {/* Mobile: Card Layout, Desktop: Table Layout */}
-        {isMobile ? (
+        {/* Card Layout or Table Layout based on view mode */}
+        {viewMode === 'card' ? (
           <Box sx={{ p: { xs: 1, sm: 2 } }}>
             {isLoading ? (
               <Stack spacing={1.5}>
