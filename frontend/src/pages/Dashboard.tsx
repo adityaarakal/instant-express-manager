@@ -12,7 +12,6 @@ import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore'
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
-import { useBanksStore } from '../store/useBanksStore';
 import { calculateDashboardMetrics } from '../utils/dashboard';
 import { SummaryCard } from '../components/dashboard/SummaryCard';
 import { DueSoonReminders } from '../components/dashboard/DueSoonReminders';
@@ -49,7 +48,6 @@ export const Dashboard = memo(function Dashboard() {
   const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
   const savingsTransactions = useSavingsInvestmentTransactionsStore((state) => state.transactions);
   const accounts = useBankAccountsStore((state) => state.accounts);
-  const banks = useBanksStore((state) => state.banks);
   const { getEnabledWidgets, initializeWidgets } = useDashboardWidgetsStore();
   const [widgetSettingsOpen, setWidgetSettingsOpen] = useState(false);
   
@@ -313,7 +311,7 @@ export const Dashboard = memo(function Dashboard() {
         </Stack>
       </Paper>
 
-      {/* Current Bank Balances Section */}
+      {/* Consolidated Bank Balance Section */}
       <Box>
         <Typography 
           variant="h6" 
@@ -326,181 +324,63 @@ export const Dashboard = memo(function Dashboard() {
           }}
         >
           <AccountBalanceIcon fontSize="small" />
-          Current Bank Balances
+          Consolidated Bank Balance
         </Typography>
-        {accounts.length === 0 ? (
-          <Paper 
-            elevation={1} 
-            sx={{ 
-              p: { xs: 2, sm: 3 }, 
-              borderRadius: 2,
-              textAlign: 'center',
-            }}
-          >
-            <Typography variant="body1" color="text.secondary">
-              No bank accounts found. Add accounts to see balances here.
+        <Paper 
+          elevation={2} 
+          sx={{ 
+            p: { xs: 2, sm: 3 }, 
+            borderRadius: 2,
+            background: (theme) => 
+              theme.palette.mode === 'dark' 
+                ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(20, 184, 166, 0.1) 100%)'
+                : 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(20, 184, 166, 0.05) 100%)',
+            border: (theme) => `1px solid ${theme.palette.mode === 'dark' ? 'rgba(99, 102, 241, 0.3)' : 'rgba(99, 102, 241, 0.2)'}`,
+          }}
+        >
+          <Stack spacing={1.5}>
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+              Total Available Balance (All Banks)
             </Typography>
-          </Paper>
-        ) : (
-          <Stack spacing={{ xs: 2, sm: 2.5 }}>
-            {/* Total Balance Card */}
-            <Paper 
-              elevation={2} 
+            <Typography 
+              variant="h4" 
+              color="primary.main"
               sx={{ 
-                p: { xs: 2, sm: 3 }, 
-                borderRadius: 2,
-                background: (theme) => 
-                  theme.palette.mode === 'dark' 
-                    ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(20, 184, 166, 0.1) 100%)'
-                    : 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(20, 184, 166, 0.05) 100%)',
-                border: (theme) => `1px solid ${theme.palette.mode === 'dark' ? 'rgba(99, 102, 241, 0.3)' : 'rgba(99, 102, 241, 0.2)'}`,
+                fontWeight: 'bold',
+                fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.5rem' },
               }}
             >
-              <Stack spacing={1.5}>
+              {new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              }).format(bankBalanceMetrics.totalBalance)}
+            </Typography>
+            {bankBalanceMetrics.totalOutstanding > 0 && (
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 0.5, sm: 2 }} sx={{ mt: 1 }}>
                 <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-                  Total Available Balance
-                </Typography>
-                <Typography 
-                  variant="h4" 
-                  color="primary.main"
-                  sx={{ 
-                    fontWeight: 'bold',
-                    fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.5rem' },
-                  }}
-                >
-                  {new Intl.NumberFormat('en-IN', {
+                  Credit Card Outstanding: <strong style={{ color: 'inherit' }}>{new Intl.NumberFormat('en-IN', {
                     style: 'currency',
                     currency: 'INR',
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
-                  }).format(bankBalanceMetrics.totalBalance)}
+                  }).format(bankBalanceMetrics.totalOutstanding)}</strong>
                 </Typography>
-                {bankBalanceMetrics.totalOutstanding > 0 && (
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 0.5, sm: 2 }} sx={{ mt: 1 }}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-                      Credit Card Outstanding: <strong style={{ color: 'inherit' }}>{new Intl.NumberFormat('en-IN', {
-                        style: 'currency',
-                        currency: 'INR',
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }).format(bankBalanceMetrics.totalOutstanding)}</strong>
-                    </Typography>
-                    {bankBalanceMetrics.totalCreditLimit > 0 && (
-                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-                        Total Credit Limit: <strong style={{ color: 'inherit' }}>{new Intl.NumberFormat('en-IN', {
-                          style: 'currency',
-                          currency: 'INR',
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        }).format(bankBalanceMetrics.totalCreditLimit)}</strong>
-                      </Typography>
-                    )}
-                  </Stack>
+                {bankBalanceMetrics.totalCreditLimit > 0 && (
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                    Total Credit Limit: <strong style={{ color: 'inherit' }}>{new Intl.NumberFormat('en-IN', {
+                      style: 'currency',
+                      currency: 'INR',
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(bankBalanceMetrics.totalCreditLimit)}</strong>
+                  </Typography>
                 )}
               </Stack>
-            </Paper>
-            
-            {/* Individual Account Balances */}
-            <Stack 
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={{ xs: 2, sm: 2.5 }}
-              sx={{ flexWrap: 'wrap' }}
-            >
-              {accounts.map((account) => {
-                const bank = banks.find(b => b.id === account.bankId);
-                const bankName = bank?.name || 'Unknown Bank';
-                
-                return (
-                  <Paper 
-                    key={account.id}
-                    elevation={1} 
-                    sx={{ 
-                      p: { xs: 1.5, sm: 2 }, 
-                      borderRadius: 2,
-                      flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12.5px)', md: '1 1 calc(33.333% - 16.67px)' },
-                      minWidth: { xs: '100%', sm: '200px' },
-                    }}
-                  >
-                    <Stack spacing={1}>
-                      <Typography 
-                        variant="subtitle2" 
-                        color="text.secondary"
-                        sx={{ 
-                          fontSize: { xs: '0.75rem', sm: '0.8125rem' },
-                          fontWeight: 600,
-                        }}
-                      >
-                        {account.name}
-                      </Typography>
-                      <Typography 
-                        variant="body2" 
-                        color="text.secondary"
-                        sx={{ 
-                          fontSize: { xs: '0.6875rem', sm: '0.75rem' },
-                        }}
-                      >
-                        {bankName} • {account.accountType}
-                      </Typography>
-                      {account.accountType === 'CreditCard' ? (
-                        <Stack spacing={0.5}>
-                          <Typography 
-                            variant="h6" 
-                            color={account.outstandingBalance && account.creditLimit && (account.outstandingBalance / account.creditLimit) > 0.8 ? 'error.main' : 'primary.main'}
-                            sx={{ 
-                              fontWeight: 'bold',
-                              fontSize: { xs: '1.125rem', sm: '1.25rem' },
-                            }}
-                          >
-                            {new Intl.NumberFormat('en-IN', {
-                              style: 'currency',
-                              currency: 'INR',
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            }).format((account.creditLimit || 0) - (account.outstandingBalance || 0))}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6875rem', sm: '0.75rem' } }}>
-                            Available Credit
-                          </Typography>
-                          {account.outstandingBalance !== undefined && account.outstandingBalance > 0 && (
-                            <Typography variant="caption" color="error.main" sx={{ fontSize: { xs: '0.6875rem', sm: '0.75rem' } }}>
-                              Outstanding: {new Intl.NumberFormat('en-IN', {
-                                style: 'currency',
-                                currency: 'INR',
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }).format(account.outstandingBalance)}
-                            </Typography>
-                          )}
-                        </Stack>
-                      ) : (
-                        <Stack spacing={0.5}>
-                          <Typography 
-                            variant="h6" 
-                            color="primary.main"
-                            sx={{ 
-                              fontWeight: 'bold',
-                              fontSize: { xs: '1.125rem', sm: '1.25rem' },
-                            }}
-                          >
-                            {new Intl.NumberFormat('en-IN', {
-                              style: 'currency',
-                              currency: 'INR',
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            }).format(account.currentBalance)}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.6875rem', sm: '0.75rem' } }}>
-                            Current Balance
-                          </Typography>
-                        </Stack>
-                      )}
-                    </Stack>
-                  </Paper>
-                );
-              })}
-            </Stack>
+            )}
           </Stack>
-        )}
+        </Paper>
       </Box>
 
       <Divider />
