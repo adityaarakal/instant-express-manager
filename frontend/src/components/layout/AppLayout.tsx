@@ -180,12 +180,24 @@ export function AppLayout({ children }: AppLayoutProps) {
           sx={{
             display: 'flex',
             justifyContent: 'space-between',
-            gap: { xs: 1, sm: 2 },
+            gap: { xs: 0.5, sm: 1, md: 2 },
             minHeight: { xs: 56, sm: 64 },
-            px: { xs: 1, sm: 2 },
+            px: { xs: 0.5, sm: 1, md: 2 },
+            overflow: 'hidden',
+            width: '100%',
+            maxWidth: '100%',
           }}
         >
-          <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 1 }} sx={{ flexShrink: 0 }}>
+          <Stack 
+            direction="row" 
+            alignItems="center" 
+            spacing={{ xs: 0.5, sm: 1 }} 
+            sx={{ 
+              flexShrink: 0,
+              minWidth: 0,
+              maxWidth: { xs: '50%', sm: '40%', md: 'auto' },
+            }}
+          >
             {!isDesktop && (
               <IconButton
                 color="inherit"
@@ -196,6 +208,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   minWidth: 44,
                   minHeight: 44,
                   p: 1,
+                  flexShrink: 0,
                 }}
                 aria-label="Toggle navigation menu"
               >
@@ -206,10 +219,11 @@ export function AppLayout({ children }: AppLayoutProps) {
               variant="h6" 
               fontWeight={700}
               sx={{
-                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontSize: { xs: '0.875rem', sm: '1rem', md: '1.25rem' },
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
+                minWidth: 0,
               }}
             >
               Planned Expenses
@@ -217,11 +231,13 @@ export function AppLayout({ children }: AppLayoutProps) {
           </Stack>
           <Stack 
             direction="row" 
-            spacing={{ xs: 0.5, sm: 1 }} 
+            spacing={{ xs: 0.25, sm: 0.5, md: 1 }} 
             alignItems="center"
             sx={{
-              flexShrink: 0,
-              flexWrap: { xs: 'nowrap', sm: 'nowrap' },
+              flexShrink: 1,
+              minWidth: 0,
+              justifyContent: 'flex-end',
+              flexWrap: 'nowrap',
             }}
           >
             {isDesktop &&
@@ -230,7 +246,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   key={label}
                   to={to}
                   end={navEnd}
-                  style={{ textDecoration: 'none' }}
+                  style={{ textDecoration: 'none', flexShrink: 0 }}
                 >
                   {({ isActive }) => (
                     <Button
@@ -238,8 +254,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                       sx={{ 
                         fontWeight: 600,
                         minHeight: 44,
-                        px: { md: 1.5, lg: 2 },
-                        fontSize: { md: '0.875rem', lg: '0.9375rem' },
+                        px: { md: 1, lg: 1.5 },
+                        fontSize: { md: '0.8125rem', lg: '0.875rem' },
+                        flexShrink: 0,
                       }}
                     >
                       {label}
@@ -247,22 +264,29 @@ export function AppLayout({ children }: AppLayoutProps) {
                   )}
                 </NavLink>
               ))}
-            <UndoRedoToolbar />
-            <SaveStatusIndicator />
+            <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+              <UndoRedoToolbar />
+            </Box>
+            <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+              <SaveStatusIndicator />
+            </Box>
             <IconButton
-              size="medium"
+              size="small"
               onClick={() => setShortcutsHelpOpen(true)}
               title="Keyboard Shortcuts (?)"
               aria-label="Show keyboard shortcuts help"
               sx={{
-                minWidth: 44,
-                minHeight: 44,
-                p: 1,
+                minWidth: { xs: 36, sm: 40, md: 44 },
+                minHeight: { xs: 36, sm: 40, md: 44 },
+                p: { xs: 0.5, sm: 0.75, md: 1 },
+                flexShrink: 0,
               }}
             >
               <HelpOutlineIcon fontSize="small" />
             </IconButton>
-            <ThemeModeToggle />
+            <Box sx={{ flexShrink: 0 }}>
+              <ThemeModeToggle />
+            </Box>
           </Stack>
         </Toolbar>
       </AppBar>

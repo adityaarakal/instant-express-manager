@@ -64,7 +64,26 @@ export function SaveStatusIndicator() {
   };
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center' }}>{getStatusContent()}</Box>
+    <Box 
+      sx={{ 
+        display: 'flex', 
+        alignItems: 'center',
+        flexShrink: 0,
+        '& .MuiChip-root': {
+          fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+          height: { xs: 24, sm: 28 },
+          '& .MuiChip-label': {
+            px: { xs: 0.75, sm: 1 },
+          },
+          '& .MuiChip-icon': {
+            fontSize: { xs: '0.875rem', sm: '1rem' },
+            marginLeft: { xs: 0.25, sm: 0.5 },
+          },
+        },
+      }}
+    >
+      {getStatusContent()}
+    </Box>
   );
 }
 

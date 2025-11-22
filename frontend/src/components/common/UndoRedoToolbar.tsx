@@ -12,7 +12,11 @@ export function UndoRedoToolbar() {
   const { undo, redo, canUndo, canRedo, lastAction } = useUndoRedo();
 
   return (
-    <Stack direction="row" spacing={0.5}>
+    <Stack 
+      direction="row" 
+      spacing={{ xs: 0.25, sm: 0.5 }}
+      sx={{ flexShrink: 0 }}
+    >
       <Tooltip
         title={
           canUndo
@@ -26,6 +30,11 @@ export function UndoRedoToolbar() {
             disabled={!canUndo}
             size="small"
             aria-label="Undo last action"
+            sx={{
+              minWidth: { xs: 32, sm: 36, md: 40 },
+              minHeight: { xs: 32, sm: 36, md: 40 },
+              p: { xs: 0.5, sm: 0.75 },
+            }}
           >
             <UndoIcon fontSize="small" />
           </IconButton>
@@ -44,6 +53,11 @@ export function UndoRedoToolbar() {
             disabled={!canRedo}
             size="small"
             aria-label="Redo last action"
+            sx={{
+              minWidth: { xs: 32, sm: 36, md: 40 },
+              minHeight: { xs: 32, sm: 36, md: 40 },
+              p: { xs: 0.5, sm: 0.75 },
+            }}
           >
             <RedoIcon fontSize="small" />
           </IconButton>

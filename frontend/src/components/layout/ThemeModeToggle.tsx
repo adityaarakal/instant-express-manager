@@ -32,7 +32,17 @@ export function ThemeModeToggle() {
   return (
     <>
       <Tooltip title={`Theme mode: ${activeOption.label}`}>
-        <IconButton color="primary" onClick={handleOpen} size="small">
+        <IconButton 
+          color="primary" 
+          onClick={handleOpen} 
+          size="small"
+          sx={{
+            minWidth: { xs: 36, sm: 40, md: 44 },
+            minHeight: { xs: 36, sm: 40, md: 44 },
+            p: { xs: 0.5, sm: 0.75, md: 1 },
+            flexShrink: 0,
+          }}
+        >
           {activeOption.icon}
         </IconButton>
       </Tooltip>
