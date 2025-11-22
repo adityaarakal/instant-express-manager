@@ -140,18 +140,18 @@ This document tracks the comprehensive responsive design implementation to make 
   - [x] Chart legends on mobile
   - Status: Complete
 
-### Phase 8: Banks & Accounts Pages
-- [ ] **Task 8.1**: Banks page responsive
-  - [ ] Header and add button
-  - [ ] Bank cards grid responsive
-  - [ ] Bank dialog responsive
-  - Status: Pending
+### Phase 8: Banks & Accounts Pages ✅ COMPLETE
+- [x] **Task 8.1**: Banks page responsive
+  - [x] Header and add button
+  - [x] Bank table responsive
+  - [x] Bank dialog responsive
+  - Status: Complete
 
-- [ ] **Task 8.2**: BankAccounts page responsive
-  - [ ] Header and add button
-  - [ ] Account cards grid responsive
-  - [ ] Account dialog responsive
-  - Status: Pending
+- [x] **Task 8.2**: BankAccounts page responsive
+  - [x] Header and add button
+  - [x] Account table responsive
+  - [x] Account dialog responsive
+  - Status: Complete
 
 ### Phase 9: Credit Card Dashboard
 - [ ] **Task 9.1**: Credit card header
