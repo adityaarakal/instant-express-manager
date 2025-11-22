@@ -26,6 +26,8 @@ import {
   FormControlLabel,
   Alert,
   Box,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -94,6 +96,8 @@ const getTypeLabel = (type: ExportScheduleType): string => {
 export function ScheduledExports() {
   const { schedules, addSchedule, updateSchedule, deleteSchedule } = useExportSchedulesStore();
   const { showSuccess, showError } = useToastStore();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<ExportSchedule | null>(null);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
@@ -211,15 +215,34 @@ export function ScheduledExports() {
   return (
     <Paper elevation={0} sx={{ p: 2, bgcolor: 'action.hover' }}>
       <Stack spacing={2}>
-        <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-          <Stack direction="row" spacing={1} alignItems="center">
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          spacing={{ xs: 1.5, sm: 2 }} 
+          alignItems={{ xs: 'flex-start', sm: 'center' }} 
+          justifyContent="space-between"
+        >
+          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" sx={{ gap: { xs: 0.5, sm: 1 } }}>
             <ScheduleIcon color="action" />
             <Typography variant="subtitle2" fontWeight="bold">
               Scheduled Exports
             </Typography>
-            <Chip label={`${enabledCount} active`} size="small" variant="outlined" color={enabledCount > 0 ? 'success' : 'default'} />
+            <Chip 
+              label={`${enabledCount} active`} 
+              size="small" 
+              variant="outlined" 
+              color={enabledCount > 0 ? 'success' : 'default'}
+              sx={{ flexShrink: 0 }}
+            />
           </Stack>
-          <Stack direction="row" spacing={1}>
+          <Stack 
+            direction="row" 
+            spacing={1} 
+            alignItems="center"
+            sx={{ 
+              width: { xs: '100%', sm: 'auto' },
+              justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+            }}
+          >
             {notificationPermission !== 'granted' && (
               <Tooltip title="Enable notifications for export completion alerts">
                 <IconButton
@@ -227,6 +250,10 @@ export function ScheduledExports() {
                   onClick={handleRequestNotificationPermission}
                   aria-label="Request notification permission"
                   color={notificationPermission === 'denied' ? 'error' : 'default'}
+                  sx={{
+                    minWidth: { xs: 48, sm: 40 },
+                    minHeight: { xs: 48, sm: 40 },
+                  }}
                 >
                   <NotificationsIcon fontSize="small" />
                 </IconButton>
@@ -237,6 +264,12 @@ export function ScheduledExports() {
               size="small"
               startIcon={<AddIcon />}
               onClick={() => handleOpenDialog()}
+              fullWidth={isMobile}
+              sx={{
+                minHeight: { xs: 44, sm: 36 },
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                whiteSpace: 'nowrap',
+              }}
             >
               Add Schedule
             </Button>
