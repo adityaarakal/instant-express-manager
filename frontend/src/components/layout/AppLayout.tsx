@@ -64,6 +64,30 @@ export function AppLayout({ children }: AppLayoutProps) {
     setMobileOpen((prev) => !prev);
   };
 
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (!isDesktop && mobileOpen) {
+      // Store original overflow values
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      const originalPaddingRight = document.body.style.paddingRight;
+      
+      // Calculate scrollbar width to prevent layout shift
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      
+      // Lock body scroll
+      document.body.style.overflow = 'hidden';
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+      }
+      
+      return () => {
+        // Restore original styles
+        document.body.style.overflow = originalStyle;
+        document.body.style.paddingRight = originalPaddingRight;
+      };
+    }
+  }, [mobileOpen, isDesktop]);
+
   // Global keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -89,8 +113,17 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, [shortcutsHelpOpen]);
 
   const DrawerContent = (
-    <Box role="presentation" sx={{ mt: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }}>
+    <Box 
+      role="presentation" 
+      sx={{ 
+        mt: 1, 
+        height: '100%', 
+        display: 'flex', 
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
+      <Toolbar sx={{ minHeight: { xs: 56, sm: 64 }, flexShrink: 0 }}>
         <Typography 
           variant="h6" 
           fontWeight={700}
@@ -101,16 +134,31 @@ export function AppLayout({ children }: AppLayoutProps) {
           Planned Expenses
         </Typography>
       </Toolbar>
-      <Divider />
+      <Divider sx={{ flexShrink: 0 }} />
       <List 
         sx={{ 
           px: { xs: 0.5, sm: 1 },
           flexGrow: 1,
           overflowY: 'auto',
+          overflowX: 'hidden',
           display: 'flex',
           flexDirection: 'column',
           flexWrap: 'nowrap',
           width: '100%',
+          WebkitOverflowScrolling: 'touch',
+          '&::-webkit-scrollbar': {
+            width: '8px',
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: 'transparent',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'rgba(0, 0, 0, 0.2)',
+            borderRadius: '4px',
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            },
+          },
         }}
       >
         {navItems.map(({ label, to, icon, end: navEnd }) => (
@@ -314,6 +362,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           onClose={handleDrawerToggle}
           ModalProps={{
             keepMounted: true,
+            disableScrollLock: false,
           }}
           sx={{
             display: { xs: 'block', md: 'none' },
@@ -321,6 +370,10 @@ export function AppLayout({ children }: AppLayoutProps) {
               boxSizing: 'border-box', 
               width: { xs: 280, sm: drawerWidth },
               maxWidth: '85vw',
+              overflow: 'hidden',
+            },
+            '& .MuiBackdrop-root': {
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
             },
           }}
         >
