@@ -57,9 +57,56 @@ body {
 /* Mobile optimizations */
 @media (max-width: 600px) {
   /* Ensure touch targets are at least 44x44px for mobile */
-  button, a, [role="button"] {
+  /* Buttons, links, and interactive elements */
+  button:not(.MuiIconButton-root), 
+  a[role="button"], 
+  [role="button"]:not(.MuiIconButton-root) {
     min-height: 44px;
     min-width: 44px;
+  }
+  
+  /* Icon buttons should be at least 48x48px for better touch targets */
+  .MuiIconButton-root {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 12px;
+  }
+  
+  /* List item buttons should meet touch target requirements */
+  .MuiListItemButton-root {
+    min-height: 48px;
+  }
+  
+  /* Clickable chips should meet touch target requirements */
+  .MuiChip-root[role="button"],
+  .MuiChip-clickable {
+    min-height: 44px;
+    padding: 8px 12px;
+  }
+  
+  /* Table pagination icon buttons should meet touch target requirements */
+  .MuiTablePagination-root .MuiIconButton-root {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Links should have minimum touch target */
+  a:not([role="button"]) {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 4px;
+  }
+  
+  /* Touch feedback for interactive elements */
+  button:active,
+  .MuiIconButton-root:active,
+  .MuiListItemButton-root:active,
+  .MuiChip-clickable:active,
+  a:active {
+    opacity: 0.7;
+    transform: scale(0.98);
+    transition: opacity 0.2s, transform 0.1s;
   }
   
   /* Improve table scrolling on mobile */
