@@ -31,6 +31,9 @@ import IconButton from '@mui/material/IconButton';
 import type { AggregatedMonth } from '../../types/plannedExpensesAggregated';
 import { DEFAULT_BUCKETS } from '../../config/plannedExpenses';
 import { EmptyState } from '../common/EmptyState';
+import { ViewToggle } from '../common/ViewToggle';
+import { useViewMode } from '../../hooks/useViewMode';
+import { PlannerAccountCard } from './PlannerAccountCard';
 import { useExpenseTransactionsStore } from '../../store/useExpenseTransactionsStore';
 import { useAggregatedPlannedMonthsStore } from '../../store/useAggregatedPlannedMonthsStore';
 import { useDueDateOverridesStore } from '../../store/useDueDateOverridesStore';
@@ -95,6 +98,7 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
   const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
   const { hasOverride, addOverride, removeOverride, clearMonth } = useDueDateOverridesStore();
   const [bulkMenuAnchor, setBulkMenuAnchor] = useState<HTMLElement | null>(null);
+  const { viewMode, toggleViewMode } = useViewMode('planner-account-table-view-mode');
   const buckets = useMemo(
     () => DEFAULT_BUCKETS.filter((bucket) => month.bucketOrder.includes(bucket.id)),
     [month.bucketOrder],
@@ -183,30 +187,29 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
   }
 
   return (
-    <TableContainer 
-      component={Paper} 
+    <Paper 
       elevation={1} 
       sx={{ 
         borderRadius: 2,
-        overflowX: 'auto',
+        overflow: 'visible',
         maxWidth: '100%',
       }}
     >
-      {(overrideStats.totalZeroed > 0 || overrideStats.totalOverridden > 0) && (
-        <Box
-          sx={{
-            p: { xs: 1, sm: 1.5 },
-            borderBottom: 1,
-            borderColor: 'divider',
-            display: 'flex',
-            flexDirection: { xs: 'column', sm: 'row' },
-            alignItems: { xs: 'flex-start', sm: 'center' },
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: { xs: 1, sm: 1 },
-          }}
-          className="no-print"
-        >
+      <Box
+        sx={{
+          p: { xs: 1, sm: 1.5 },
+          borderBottom: (overrideStats.totalZeroed > 0 || overrideStats.totalOverridden > 0) ? 1 : 0,
+          borderColor: 'divider',
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: { xs: 1, sm: 1 },
+        }}
+        className="no-print"
+      >
+        {(overrideStats.totalZeroed > 0 || overrideStats.totalOverridden > 0) && (
           <Stack 
             direction="row" 
             spacing={{ xs: 0.5, sm: 1 }} 
@@ -247,65 +250,93 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
               />
             )}
           </Stack>
-          <Stack 
-            direction="row" 
-            spacing={{ xs: 0.5, sm: 1 }}
-            sx={{
-              width: { xs: '100%', sm: 'auto' },
-              justifyContent: { xs: 'flex-start', sm: 'flex-end' },
-            }}
-          >
-            {overrideStats.totalZeroed > 0 && (
-              <Button
+        )}
+        <Stack 
+          direction="row" 
+          spacing={{ xs: 0.5, sm: 1 }}
+          alignItems="center"
+          sx={{
+            width: { xs: '100%', sm: 'auto' },
+            justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+          }}
+        >
+          <ViewToggle viewMode={viewMode} onToggle={toggleViewMode} aria-label="Toggle between table and card view for accounts" />
+          {overrideStats.totalZeroed > 0 && (
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<RestoreIcon />}
+              onClick={handleBulkOverrideAll}
+              sx={{
+                minHeight: { xs: 40, sm: 36 },
+                fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                px: { xs: 1, sm: 1.5 },
+                whiteSpace: { xs: 'nowrap', sm: 'nowrap' },
+              }}
+            >
+              Override All Zeroed
+            </Button>
+          )}
+          {overrideStats.totalOverridden > 0 && (
+            <>
+              <IconButton
                 size="small"
-                variant="outlined"
-                startIcon={<RestoreIcon />}
-                onClick={handleBulkOverrideAll}
+                onClick={(e) => setBulkMenuAnchor(e.currentTarget)}
+                aria-label="bulk override options"
                 sx={{
-                  minHeight: { xs: 40, sm: 36 },
-                  fontSize: { xs: '0.75rem', sm: '0.8125rem' },
-                  px: { xs: 1, sm: 1.5 },
-                  whiteSpace: { xs: 'nowrap', sm: 'nowrap' },
+                  minWidth: { xs: 40, sm: 40 },
+                  minHeight: { xs: 40, sm: 40 },
+                  p: { xs: 0.5, sm: 0.75 },
                 }}
               >
-                Override All Zeroed
-              </Button>
-            )}
-            {overrideStats.totalOverridden > 0 && (
-              <>
-                <IconButton
-                  size="small"
-                  onClick={(e) => setBulkMenuAnchor(e.currentTarget)}
-                  aria-label="bulk override options"
-                  sx={{
-                    minWidth: { xs: 40, sm: 40 },
-                    minHeight: { xs: 40, sm: 40 },
-                    p: { xs: 0.5, sm: 0.75 },
-                  }}
-                >
-                  <MoreVertIcon fontSize="small" />
-                </IconButton>
-                <Menu
-                  anchorEl={bulkMenuAnchor}
-                  open={Boolean(bulkMenuAnchor)}
-                  onClose={() => setBulkMenuAnchor(null)}
-                  PaperProps={{
-                    sx: {
-                      maxWidth: { xs: '90vw', sm: 'none' },
-                    },
-                  }}
-                >
-                  <MenuItem onClick={handleClearAllOverrides}>
-                    <ClearAllIcon sx={{ mr: 1 }} fontSize="small" />
-                    Clear All Overrides
-                  </MenuItem>
-                </Menu>
-              </>
-            )}
+                <MoreVertIcon fontSize="small" />
+              </IconButton>
+              <Menu
+                anchorEl={bulkMenuAnchor}
+                open={Boolean(bulkMenuAnchor)}
+                onClose={() => setBulkMenuAnchor(null)}
+                PaperProps={{
+                  sx: {
+                    maxWidth: { xs: '90vw', sm: 'none' },
+                  },
+                }}
+              >
+                <MenuItem onClick={handleClearAllOverrides}>
+                  <ClearAllIcon sx={{ mr: 1 }} fontSize="small" />
+                  Clear All Overrides
+                </MenuItem>
+              </Menu>
+            </>
+          )}
+        </Stack>
+      </Box>
+      {viewMode === 'card' ? (
+        <Box sx={{ p: { xs: 1.5, sm: 2 } }}>
+          <Stack spacing={1.5}>
+            {month.accounts.map((account) => (
+              <PlannerAccountCard
+                key={account.id}
+                account={account}
+                monthId={month.id}
+                buckets={buckets}
+                formatCurrency={formatCurrency}
+                isDueDatePassed={isDueDatePassed}
+                getOriginalBucketAmount={getOriginalBucketAmount}
+                onAddTransaction={() => {
+                  navigate(`/transactions?tab=expense&account=${account.id}&month=${month.id}`);
+                }}
+              />
+            ))}
           </Stack>
         </Box>
-      )}
-      <Table 
+      ) : (
+        <TableContainer 
+          sx={{ 
+            overflowX: 'auto',
+            maxWidth: '100%',
+          }}
+        >
+          <Table 
         size="small" 
         stickyHeader
         sx={{
@@ -626,6 +657,8 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
           ))}
         </TableBody>
       </Table>
-    </TableContainer>
+        </TableContainer>
+      )}
+    </Paper>
   );
 });
