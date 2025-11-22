@@ -89,14 +89,26 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, [shortcutsHelpOpen]);
 
   const DrawerContent = (
-    <Box role="presentation" sx={{ mt: 1 }}>
-      <Toolbar>
-        <Typography variant="h6" fontWeight={700}>
+    <Box role="presentation" sx={{ mt: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }}>
+        <Typography 
+          variant="h6" 
+          fontWeight={700}
+          sx={{
+            fontSize: { xs: '1rem', sm: '1.25rem' },
+          }}
+        >
           Planned Expenses
         </Typography>
       </Toolbar>
       <Divider />
-      <List sx={{ px: 1 }}>
+      <List 
+        sx={{ 
+          px: { xs: 0.5, sm: 1 },
+          flexGrow: 1,
+          overflowY: 'auto',
+        }}
+      >
         {navItems.map(({ label, to, icon, end: navEnd }) => (
           <NavLink
             key={label}
@@ -110,14 +122,31 @@ export function AppLayout({ children }: AppLayoutProps) {
                 selected={isActive}
                 sx={{
                   borderRadius: 2,
+                  minHeight: 48,
+                  py: { xs: 1, sm: 1.25 },
                   '&.Mui-selected': {
                     backgroundColor: 'action.selected',
                     color: 'primary.main',
                   },
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
                 }}
               >
-                <ListItemIcon sx={{ minWidth: 36 }}>{icon}</ListItemIcon>
-                <ListItemText primary={label} />
+                <ListItemIcon 
+                  sx={{ 
+                    minWidth: { xs: 40, sm: 36 },
+                    justifyContent: 'center',
+                  }}
+                >
+                  {icon}
+                </ListItemIcon>
+                <ListItemText 
+                  primary={label}
+                  primaryTypographyProps={{
+                    fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                  }}
+                />
               </ListItemButton>
             )}
           </NavLink>
@@ -141,26 +170,50 @@ export function AppLayout({ children }: AppLayoutProps) {
           sx={{
             display: 'flex',
             justifyContent: 'space-between',
-            gap: 2,
+            gap: { xs: 1, sm: 2 },
+            minHeight: { xs: 56, sm: 64 },
+            px: { xs: 1, sm: 2 },
           }}
         >
-          <Stack direction="row" alignItems="center" spacing={1}>
+          <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 1 }} sx={{ flexShrink: 0 }}>
             {!isDesktop && (
               <IconButton
                 color="inherit"
                 edge="start"
                 onClick={handleDrawerToggle}
-                size="small"
+                size="medium"
+                sx={{ 
+                  minWidth: 44,
+                  minHeight: 44,
+                  p: 1,
+                }}
                 aria-label="Toggle navigation menu"
               >
                 <MenuIcon />
               </IconButton>
             )}
-            <Typography variant="h6" fontWeight={700}>
+            <Typography 
+              variant="h6" 
+              fontWeight={700}
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
               Planned Expenses
             </Typography>
           </Stack>
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack 
+            direction="row" 
+            spacing={{ xs: 0.5, sm: 1 }} 
+            alignItems="center"
+            sx={{
+              flexShrink: 0,
+              flexWrap: { xs: 'nowrap', sm: 'nowrap' },
+            }}
+          >
             {isDesktop &&
               navItems.map(({ label, to, end: navEnd }) => (
                 <NavLink
@@ -172,7 +225,12 @@ export function AppLayout({ children }: AppLayoutProps) {
                   {({ isActive }) => (
                     <Button
                       color={isActive ? 'primary' : 'inherit'}
-                      sx={{ fontWeight: 600 }}
+                      sx={{ 
+                        fontWeight: 600,
+                        minHeight: 44,
+                        px: { md: 1.5, lg: 2 },
+                        fontSize: { md: '0.875rem', lg: '0.9375rem' },
+                      }}
                     >
                       {label}
                     </Button>
@@ -182,10 +240,15 @@ export function AppLayout({ children }: AppLayoutProps) {
             <UndoRedoToolbar />
             <SaveStatusIndicator />
             <IconButton
-              size="small"
+              size="medium"
               onClick={() => setShortcutsHelpOpen(true)}
               title="Keyboard Shortcuts (?)"
               aria-label="Show keyboard shortcuts help"
+              sx={{
+                minWidth: 44,
+                minHeight: 44,
+                p: 1,
+              }}
             >
               <HelpOutlineIcon fontSize="small" />
             </IconButton>
@@ -212,7 +275,11 @@ export function AppLayout({ children }: AppLayoutProps) {
           }}
           sx={{
             display: { xs: 'block', md: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { 
+              boxSizing: 'border-box', 
+              width: { xs: 280, sm: drawerWidth },
+              maxWidth: '85vw',
+            },
           }}
         >
           {DrawerContent}
@@ -237,19 +304,21 @@ export function AppLayout({ children }: AppLayoutProps) {
         sx={{
           flexGrow: 1,
           width: { md: `calc(100% - ${drawerWidth}px)` },
-          mt: 8,
-          px: { xs: 2, md: 6 },
-          pb: { xs: 6, md: 8 },
+          mt: { xs: 7, sm: 8 },
+          px: { xs: 1, sm: 2, md: 3, lg: 6 },
+          pb: { xs: 4, sm: 6, md: 8 },
+          minHeight: '100vh',
         }}
       >
-        <Toolbar sx={{ display: { xs: 'block', md: 'none' } }} />
+        <Toolbar sx={{ display: { xs: 'block', md: 'none' }, minHeight: { xs: 56, sm: 64 } }} />
         <Container
           maxWidth="lg"
           sx={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 3,
-            py: { xs: 3, md: 4 },
+            gap: { xs: 2, sm: 3 },
+            py: { xs: 2, sm: 3, md: 4 },
+            px: { xs: 0, sm: 2 },
           }}
         >
           {children}
