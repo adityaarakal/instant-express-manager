@@ -144,6 +144,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           fontWeight={700}
           sx={{
             fontSize: { xs: '1rem', sm: '1.25rem' },
+            color: theme.palette.mode === 'dark' ? undefined : '#ffffff',
           }}
         >
           Planned Expenses
@@ -195,12 +196,13 @@ export function AppLayout({ children }: AppLayoutProps) {
                   display: 'flex',
                   flexDirection: 'row',
                   flexWrap: 'nowrap',
+                  color: theme.palette.mode === 'dark' ? undefined : '#ffffff',
                   '&.Mui-selected': {
-                    backgroundColor: 'action.selected',
-                    color: 'primary.main',
+                    backgroundColor: theme.palette.mode === 'dark' ? 'action.selected' : 'rgba(255, 255, 255, 0.2)',
+                    color: theme.palette.mode === 'dark' ? 'primary.main' : '#ffffff',
                   },
                   '&:hover': {
-                    backgroundColor: 'action.hover',
+                    backgroundColor: theme.palette.mode === 'dark' ? 'action.hover' : 'rgba(255, 255, 255, 0.15)',
                   },
                 }}
               >
@@ -280,6 +282,10 @@ export function AppLayout({ children }: AppLayoutProps) {
                   minHeight: 44,
                   p: 1,
                   flexShrink: 0,
+                  color: theme.palette.mode === 'dark' ? undefined : '#ffffff',
+                  '&:hover': {
+                    backgroundColor: theme.palette.mode === 'dark' ? undefined : 'rgba(255, 255, 255, 0.1)',
+                  },
                 }}
                 aria-label="Toggle navigation menu"
               >
@@ -295,6 +301,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 minWidth: 0,
+                color: theme.palette.mode === 'dark' ? undefined : '#ffffff',
               }}
             >
               Planned Expenses
@@ -328,6 +335,11 @@ export function AppLayout({ children }: AppLayoutProps) {
                         px: { md: 1, lg: 1.5 },
                         fontSize: { md: '0.8125rem', lg: '0.875rem' },
                         flexShrink: 0,
+                        color: theme.palette.mode === 'dark' ? undefined : isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.9)',
+                        '&:hover': {
+                          color: theme.palette.mode === 'dark' ? undefined : '#ffffff',
+                          backgroundColor: theme.palette.mode === 'dark' ? undefined : 'rgba(255, 255, 255, 0.1)',
+                        },
                       }}
                     >
                       {label}

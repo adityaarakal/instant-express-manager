@@ -41,7 +41,7 @@ const lightColors = {
   },
   background: {
     default: '#f0f9ff', // Sky blue 50 - soft, modern background
-    paper: '#ffffff',
+    paper: '#e0f2fe', // Sky blue 100 - colorful background instead of white
   },
   text: {
     primary: '#0f172a', // Slate 900
@@ -189,10 +189,11 @@ export const createAppTheme = (mode: PaletteMode = 'light') => {
           root: {
             backgroundImage: mode === 'dark'
               ? 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)'
-              : 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-            borderBottom: `1px solid ${mode === 'dark' ? alpha('#ffffff', 0.1) : alpha('#000000', 0.08)}`,
+              : 'linear-gradient(135deg, #0ea5e9 0%, #3b82f6 50%, #8b5cf6 100%)',
+            borderBottom: `1px solid ${mode === 'dark' ? alpha('#ffffff', 0.1) : alpha('#ffffff', 0.2)}`,
             backdropFilter: 'blur(10px)',
-            backgroundColor: mode === 'dark' ? alpha('#1e293b', 0.8) : alpha('#ffffff', 0.8),
+            backgroundColor: mode === 'dark' ? alpha('#1e293b', 0.8) : alpha('#0ea5e9', 0.9),
+            color: mode === 'dark' ? undefined : '#ffffff',
           },
         },
       },
@@ -201,18 +202,27 @@ export const createAppTheme = (mode: PaletteMode = 'light') => {
           paper: {
             backgroundImage: mode === 'dark'
               ? 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)'
-              : 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
-            borderRight: `1px solid ${mode === 'dark' ? alpha('#ffffff', 0.1) : alpha('#000000', 0.08)}`,
+              : 'linear-gradient(180deg, #8b5cf6 0%, #3b82f6 50%, #0ea5e9 100%)',
+            borderRight: `1px solid ${mode === 'dark' ? alpha('#ffffff', 0.1) : alpha('#ffffff', 0.2)}`,
+            color: mode === 'dark' ? undefined : '#ffffff',
           },
         },
       },
       MuiPaper: {
         styleOverrides: {
           root: {
-            backgroundImage: 'none',
+            backgroundImage: mode === 'dark'
+              ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%)'
+              : 'linear-gradient(135deg, rgba(240, 249, 255, 0.95) 0%, rgba(219, 234, 254, 0.95) 50%, rgba(237, 233, 254, 0.95) 100%)',
             transition: 'all 0.3s ease-in-out',
+            border: mode === 'dark' 
+              ? `1px solid ${alpha('#ffffff', 0.1)}`
+              : `1px solid ${alpha('#0ea5e9', 0.2)}`,
             '&:hover': {
               transition: 'all 0.3s ease-in-out',
+              backgroundImage: mode === 'dark'
+                ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%)'
+                : 'linear-gradient(135deg, rgba(240, 249, 255, 0.98) 0%, rgba(219, 234, 254, 0.98) 50%, rgba(237, 233, 254, 0.98) 100%)',
             },
           },
           elevation1: {
@@ -235,13 +245,21 @@ export const createAppTheme = (mode: PaletteMode = 'light') => {
       MuiCard: {
         styleOverrides: {
           root: {
-            backgroundImage: 'none',
+            backgroundImage: mode === 'dark'
+              ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%)'
+              : 'linear-gradient(135deg, rgba(240, 249, 255, 0.95) 0%, rgba(219, 234, 254, 0.95) 50%, rgba(237, 233, 254, 0.95) 100%)',
+            border: mode === 'dark' 
+              ? `1px solid ${alpha('#ffffff', 0.1)}`
+              : `1px solid ${alpha('#0ea5e9', 0.3)}`,
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             '&:hover': {
               transform: 'translateY(-2px)',
+              backgroundImage: mode === 'dark'
+                ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%)'
+                : 'linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(59, 130, 246, 0.15) 50%, rgba(139, 92, 246, 0.1) 100%)',
               boxShadow: mode === 'dark'
                 ? '0 20px 30px 0 rgba(0, 0, 0, 0.4), 0 8px 10px 0 rgba(0, 0, 0, 0.24)'
-                : '0 20px 30px 0 rgba(0, 0, 0, 0.15), 0 8px 10px 0 rgba(0, 0, 0, 0.1)',
+                : `0 20px 30px 0 ${alpha('#0ea5e9', 0.2)}, 0 8px 10px 0 ${alpha('#8b5cf6', 0.15)}`,
             },
           },
         },
@@ -326,8 +344,21 @@ export const createAppTheme = (mode: PaletteMode = 'light') => {
         styleOverrides: {
           root: {
             backgroundImage: mode === 'dark'
-              ? `linear-gradient(135deg, ${alpha(colors.primary.main, 0.1)} 0%, ${alpha(colors.secondary.main, 0.05)} 100%)`
-              : `linear-gradient(135deg, ${alpha(colors.primary.main, 0.05)} 0%, ${alpha(colors.secondary.main, 0.02)} 100%)`,
+              ? `linear-gradient(135deg, ${alpha(colors.primary.main, 0.2)} 0%, ${alpha(colors.secondary.main, 0.15)} 100%)`
+              : `linear-gradient(135deg, ${alpha(colors.primary.main, 0.15)} 0%, ${alpha(colors.secondary.main, 0.1)} 100%)`,
+          },
+        },
+      },
+      MuiTableContainer: {
+        styleOverrides: {
+          root: {
+            backgroundImage: mode === 'dark'
+              ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%)'
+              : 'linear-gradient(135deg, rgba(240, 249, 255, 0.95) 0%, rgba(219, 234, 254, 0.95) 50%, rgba(237, 233, 254, 0.95) 100%)',
+            borderRadius: 12,
+            border: mode === 'dark' 
+              ? `1px solid ${alpha('#ffffff', 0.1)}`
+              : `1px solid ${alpha('#0ea5e9', 0.2)}`,
           },
         },
       },
@@ -360,8 +391,11 @@ export const createAppTheme = (mode: PaletteMode = 'light') => {
           paper: {
             backgroundImage: mode === 'dark'
               ? 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)'
-              : 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+              : 'linear-gradient(135deg, rgba(240, 249, 255, 0.98) 0%, rgba(219, 234, 254, 0.98) 50%, rgba(237, 233, 254, 0.98) 100%)',
             borderRadius: 16,
+            border: mode === 'dark' 
+              ? `1px solid ${alpha('#ffffff', 0.1)}`
+              : `1px solid ${alpha('#0ea5e9', 0.3)}`,
           },
         },
       },
