@@ -40,6 +40,9 @@ import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { EmptyState } from '../components/common/EmptyState';
+import { ViewToggle } from '../components/common/ViewToggle';
+import { useViewMode } from '../hooks/useViewMode';
+import { BankAccountCard } from '../components/bankAccounts/BankAccountCard';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import type { BankAccount } from '../types/bankAccounts';
 
@@ -111,6 +114,7 @@ export function BankAccounts() {
   const [filterAccountType, setFilterAccountType] = useState<BankAccount['accountType'] | 'All'>('All');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { viewMode, toggleViewMode } = useViewMode('bank-accounts-view-mode');
 
   const filteredAccounts = useMemo(() => {
     return accounts
@@ -246,6 +250,7 @@ export function BankAccounts() {
   };
 
   const isCreditCard = formData.accountType === 'CreditCard';
+  const hasCreditCardAccounts = filteredAccounts.some(account => account.accountType === 'CreditCard');
 
   return (
     <Stack spacing={{ xs: 2, sm: 3 }}>
@@ -269,22 +274,34 @@ export function BankAccounts() {
         >
           Bank Accounts
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpenDialog()}
-          disabled={banks.length === 0}
-          sx={{ 
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={{ xs: 1, sm: 1.5, md: 2 }}
+          sx={{
+            width: { xs: '100%', sm: 'auto' },
+            alignItems: { xs: 'stretch', sm: 'center' },
             flexShrink: 0,
-            minHeight: { xs: 44, sm: 48 },
-            fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-            whiteSpace: 'nowrap',
-            px: { xs: 1.5, sm: 2 },
+            flexWrap: { sm: 'wrap', md: 'nowrap' },
           }}
-          fullWidth={isMobile}
         >
-          Add Account
-        </Button>
+          <ViewToggle viewMode={viewMode} onToggle={toggleViewMode} aria-label="Toggle between table and card view" />
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenDialog()}
+            disabled={banks.length === 0}
+            sx={{ 
+              flexShrink: 0,
+              minHeight: { xs: 44, sm: 48 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              whiteSpace: 'nowrap',
+              px: { xs: 1.5, sm: 2 },
+            }}
+            fullWidth={isMobile}
+          >
+            Add Account
+          </Button>
+        </Stack>
       </Box>
 
       {banks.length === 0 && (
@@ -430,138 +447,184 @@ export function BankAccounts() {
         </Paper>
       )}
 
-      <TableContainer 
-        component={Paper}
-        sx={{
-          overflowX: 'auto',
-          maxWidth: '100%',
-          '& .MuiTableCell-root': {
-            whiteSpace: 'nowrap',
-            minWidth: { xs: 80, sm: 100 },
-            padding: { xs: '8px 4px', sm: '16px' },
-            fontSize: { xs: '0.75rem', sm: '0.875rem' },
-          },
-          '& .MuiTableRow-root:has(.MuiTableCell-root[colspan])': {
+      {viewMode === 'card' ? (
+        <Box sx={{ p: { xs: 1, sm: 2 } }}>
+          {isLoading ? (
+            <Stack spacing={1.5}>
+              {[...Array(5)].map((_, i) => (
+                <Box key={i} sx={{ height: 200, bgcolor: 'action.hover', borderRadius: 1 }} />
+              ))}
+            </Stack>
+          ) : filteredAccounts.length === 0 ? (
+            <Box sx={{ py: 4, px: 2 }}>
+              <EmptyState
+                icon={<AccountBalanceWalletIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
+                title={accounts.length === 0 ? 'No Accounts Yet' : 'No Accounts Match Filters'}
+                description={
+                  accounts.length === 0
+                    ? 'Create your first bank account to start tracking transactions. Link it to a bank to organize your finances.'
+                    : 'Try adjusting your filter criteria to find the accounts you\'re looking for.'
+                }
+                action={
+                  accounts.length === 0
+                    ? {
+                        label: 'Add Your First Account',
+                        onClick: () => handleOpenDialog(),
+                        icon: <AddIcon />,
+                      }
+                    : undefined
+                }
+              />
+            </Box>
+          ) : (
+            <Stack spacing={1.5}>
+              {filteredAccounts.map((account) => (
+                <BankAccountCard
+                  key={account.id}
+                  account={account}
+                  bankName={banksMap.get(account.bankId) || '—'}
+                  isDeleting={deletingId === account.id}
+                  onEdit={() => handleOpenDialog(account)}
+                  onDelete={() => handleDeleteClick(account.id)}
+                  formatCurrency={formatCurrency}
+                />
+              ))}
+            </Stack>
+          )}
+        </Box>
+      ) : (
+        <TableContainer 
+          component={Paper}
+          sx={{
+            overflowX: 'auto',
+            maxWidth: '100%',
             '& .MuiTableCell-root': {
-              whiteSpace: 'normal',
+              whiteSpace: 'nowrap',
+              minWidth: { xs: 80, sm: 100 },
+              padding: { xs: '8px 4px', sm: '16px' },
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
             },
-          },
-          '& .MuiTableHead-root .MuiTableCell-root': {
-            fontSize: { xs: '0.75rem', sm: '0.875rem' },
-            fontWeight: 600,
-            padding: { xs: '12px 4px', sm: '16px' },
-          },
-        }}
-      >
-        <Table aria-label="Bank accounts table" sx={{ minWidth: { xs: 600, sm: 800 } }}>
-          <TableHead>
-            <TableRow>
-              <TableCell>Account Name</TableCell>
-              <TableCell>Bank</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell align="right">Balance</TableCell>
-              {isCreditCard && <TableCell align="right">Outstanding</TableCell>}
-              <TableCell align="right">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {isLoading ? (
-              <TableSkeleton rows={5} columns={isCreditCard ? 6 : 5} />
-            ) : filteredAccounts.length === 0 ? (
+            '& .MuiTableRow-root:has(.MuiTableCell-root[colspan])': {
+              '& .MuiTableCell-root': {
+                whiteSpace: 'normal',
+              },
+            },
+            '& .MuiTableHead-root .MuiTableCell-root': {
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              fontWeight: 600,
+              padding: { xs: '12px 4px', sm: '16px' },
+            },
+          }}
+        >
+          <Table aria-label="Bank accounts table" sx={{ minWidth: { xs: 600, sm: 800 } }}>
+            <TableHead>
               <TableRow>
-                <TableCell 
-                  colSpan={isCreditCard ? 6 : 5} 
-                  align="center" 
-                  sx={{ 
-                    border: 'none', 
-                    py: 4,
-                    px: { xs: 2, sm: 4 },
-                    width: '100%',
-                  }}
-                >
-                  <Box sx={{ maxWidth: '100%', width: '100%', mx: 'auto' }}>
-                    <EmptyState
-                      icon={<AccountBalanceWalletIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
-                      title={accounts.length === 0 ? 'No Accounts Yet' : 'No Accounts Match Filters'}
-                      description={
-                        accounts.length === 0
-                          ? 'Create your first bank account to start tracking transactions. Link it to a bank to organize your finances.'
-                          : 'Try adjusting your filter criteria to find the accounts you\'re looking for.'
-                      }
-                      action={
-                        accounts.length === 0
-                          ? {
-                              label: 'Add Your First Account',
-                              onClick: () => handleOpenDialog(),
-                              icon: <AddIcon />,
-                            }
-                          : undefined
-                      }
-                    />
-                  </Box>
-                </TableCell>
+                <TableCell>Account Name</TableCell>
+                <TableCell>Bank</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell align="right">Balance</TableCell>
+                {hasCreditCardAccounts && <TableCell align="right">Outstanding</TableCell>}
+                <TableCell align="right">Actions</TableCell>
               </TableRow>
-            ) : (
-              filteredAccounts.map((account) => (
-                <TableRow key={account.id} hover>
-                  <TableCell>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight="medium"
+            </TableHead>
+            <TableBody>
+              {isLoading ? (
+                <TableSkeleton rows={5} columns={hasCreditCardAccounts ? 6 : 5} />
+              ) : filteredAccounts.length === 0 ? (
+                <TableRow>
+                  <TableCell 
+                    colSpan={hasCreditCardAccounts ? 6 : 5} 
+                    align="center" 
+                    sx={{ 
+                      border: 'none', 
+                      py: 4,
+                      px: { xs: 2, sm: 4 },
+                      width: '100%',
+                    }}
+                  >
+                    <Box sx={{ maxWidth: '100%', width: '100%', mx: 'auto' }}>
+                      <EmptyState
+                        icon={<AccountBalanceWalletIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
+                        title={accounts.length === 0 ? 'No Accounts Yet' : 'No Accounts Match Filters'}
+                        description={
+                          accounts.length === 0
+                            ? 'Create your first bank account to start tracking transactions. Link it to a bank to organize your finances.'
+                            : 'Try adjusting your filter criteria to find the accounts you\'re looking for.'
+                        }
+                        action={
+                          accounts.length === 0
+                            ? {
+                                label: 'Add Your First Account',
+                                onClick: () => handleOpenDialog(),
+                                icon: <AddIcon />,
+                              }
+                            : undefined
+                        }
+                      />
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredAccounts.map((account) => (
+                  <TableRow key={account.id} hover>
+                    <TableCell>
+                      <Typography 
+                        variant="body2" 
+                        fontWeight="medium"
+                        sx={{
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                          wordBreak: 'break-word',
+                        }}
+                      >
+                        {account.name}
+                      </Typography>
+                      {account.accountNumber && (
+                        <Typography 
+                          variant="caption" 
+                          color="text.secondary"
+                          sx={{
+                            fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                            wordBreak: 'break-word',
+                          }}
+                        >
+                          {account.accountNumber}
+                        </Typography>
+                      )}
+                    </TableCell>
+                    <TableCell
                       sx={{
                         fontSize: { xs: '0.75rem', sm: '0.875rem' },
                         wordBreak: 'break-word',
                       }}
                     >
-                      {account.name}
-                    </Typography>
-                    {account.accountNumber && (
-                      <Typography 
-                        variant="caption" 
-                        color="text.secondary"
+                      {banksMap.get(account.bankId) || '—'}
+                    </TableCell>
+                    <TableCell>
+                      <Chip 
+                        label={account.accountType} 
+                        size="small"
                         sx={{
                           fontSize: { xs: '0.6875rem', sm: '0.75rem' },
-                          wordBreak: 'break-word',
+                          height: { xs: 24, sm: 28 },
+                          '& .MuiChip-label': {
+                            px: { xs: 0.75, sm: 1 },
+                          },
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      <Typography
+                        variant="body2"
+                        color={account.currentBalance < 0 ? 'error' : 'text.primary'}
+                        sx={{
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                          whiteSpace: 'nowrap',
                         }}
                       >
-                        {account.accountNumber}
-                      </Typography>
-                    )}
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                      wordBreak: 'break-word',
-                    }}
-                  >
-                    {banksMap.get(account.bankId) || '—'}
-                  </TableCell>
-                  <TableCell>
-                    <Chip 
-                      label={account.accountType} 
-                      size="small"
-                      sx={{
-                        fontSize: { xs: '0.6875rem', sm: '0.75rem' },
-                        height: { xs: 24, sm: 28 },
-                        '& .MuiChip-label': {
-                          px: { xs: 0.75, sm: 1 },
-                        },
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    <Typography
-                      variant="body2"
-                      color={account.currentBalance < 0 ? 'error' : 'text.primary'}
-                      sx={{
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
                       {formatCurrency(account.currentBalance)}
                     </Typography>
                   </TableCell>
-                  {isCreditCard && (
+                  {hasCreditCardAccounts && (
                     <TableCell align="right">
                       <Typography
                         sx={{
@@ -569,57 +632,58 @@ export function BankAccounts() {
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        {account.outstandingBalance
+                        {account.accountType === 'CreditCard' && account.outstandingBalance
                           ? formatCurrency(account.outstandingBalance)
                           : '—'}
                       </Typography>
                     </TableCell>
                   )}
-                  <TableCell align="right">
-                    <Stack 
-                      direction="row" 
-                      spacing={{ xs: 0.5, sm: 1 }} 
-                      justifyContent="flex-end"
-                    >
-                      <IconButton 
-                        size="small" 
-                        onClick={() => handleOpenDialog(account)} 
-                        disabled={deletingId !== null}
-                        aria-label={`Edit account ${account.name}`}
-                        sx={{
-                          minWidth: { xs: 40, sm: 48 },
-                          minHeight: { xs: 40, sm: 48 },
-                          p: { xs: 0.5, sm: 1 },
-                        }}
+                    <TableCell align="right">
+                      <Stack 
+                        direction="row" 
+                        spacing={{ xs: 0.5, sm: 1 }} 
+                        justifyContent="flex-end"
                       >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton 
-                        size="small" 
-                        onClick={() => handleDeleteClick(account.id)} 
-                        color="error"
-                        disabled={deletingId !== null}
-                        aria-label={`Delete account ${account.name}`}
-                        sx={{
-                          minWidth: { xs: 40, sm: 48 },
-                          minHeight: { xs: 40, sm: 48 },
-                          p: { xs: 0.5, sm: 1 },
-                        }}
-                      >
-                        {deletingId === account.id ? (
-                          <CircularProgress size={16} aria-label="Deleting" />
-                        ) : (
-                          <DeleteIcon fontSize="small" />
-                        )}
-                      </IconButton>
-                    </Stack>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                        <IconButton 
+                          size="small" 
+                          onClick={() => handleOpenDialog(account)} 
+                          disabled={deletingId !== null}
+                          aria-label={`Edit account ${account.name}`}
+                          sx={{
+                            minWidth: { xs: 40, sm: 48 },
+                            minHeight: { xs: 40, sm: 48 },
+                            p: { xs: 0.5, sm: 1 },
+                          }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton 
+                          size="small" 
+                          onClick={() => handleDeleteClick(account.id)} 
+                          color="error"
+                          disabled={deletingId !== null}
+                          aria-label={`Delete account ${account.name}`}
+                          sx={{
+                            minWidth: { xs: 40, sm: 48 },
+                            minHeight: { xs: 40, sm: 48 },
+                            p: { xs: 0.5, sm: 1 },
+                          }}
+                        >
+                          {deletingId === account.id ? (
+                            <CircularProgress size={16} aria-label="Deleting" />
+                          ) : (
+                            <DeleteIcon fontSize="small" />
+                          )}
+                        </IconButton>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
       <Dialog 
         open={dialogOpen} 

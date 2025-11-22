@@ -32,6 +32,10 @@ import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useBanksStore } from '../store/useBanksStore';
 import { EmptyState } from '../components/common/EmptyState';
+import { ViewToggle } from '../components/common/ViewToggle';
+import { useViewMode } from '../hooks/useViewMode';
+import { CreditCardCard } from '../components/creditCards/CreditCardCard';
+import { PaymentHistoryCard } from '../components/creditCards/PaymentHistoryCard';
 import { CreditCardAnalysisChart } from '../components/analytics/CreditCardAnalysisChart';
 
 const formatCurrency = (value: number): string => {
@@ -70,6 +74,8 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
   const banks = useBanksStore((state) => state.banks);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { viewMode: cardsViewMode, toggleViewMode: toggleCardsViewMode } = useViewMode('credit-cards-view-mode');
+  const { viewMode: paymentsViewMode, toggleViewMode: togglePaymentsViewMode } = useViewMode('payment-history-view-mode');
 
   const creditCards = useMemo(
     () => accounts.filter((acc) => acc.accountType === 'CreditCard'),
@@ -433,18 +439,56 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
 
       {/* Credit Cards List */}
       <Paper elevation={1} sx={{ p: { xs: 1.5, sm: 2 } }}>
-        <Typography 
-          variant="h6" 
-          gutterBottom
+        <Box
           sx={{
-            fontSize: { xs: '1.125rem', sm: '1.25rem' },
-            fontWeight: 600,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
             mb: { xs: 1, sm: 2 },
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: { xs: 1, sm: 2 },
           }}
         >
-          Credit Cards
-        </Typography>
-        <TableContainer
+          <Typography 
+            variant="h6" 
+            sx={{
+              fontSize: { xs: '1.125rem', sm: '1.25rem' },
+              fontWeight: 600,
+            }}
+          >
+            Credit Cards
+          </Typography>
+          <ViewToggle viewMode={cardsViewMode} onToggle={toggleCardsViewMode} aria-label="Toggle between table and card view for credit cards" />
+        </Box>
+        {cardsViewMode === 'card' ? (
+          <Stack spacing={1.5}>
+            {cardStats.map((stat) => (
+              <CreditCardCard
+                key={stat.card.id}
+                card={stat.card}
+                bankName={getBankName(stat.card.bankId)}
+                outstanding={stat.card.currentBalance}
+                creditLimit={stat.card.creditLimit || 0}
+                utilization={stat.utilization}
+                dueDate={stat.card.dueDate}
+                daysUntilDue={stat.daysUntilDue}
+                isOverdue={stat.isOverdue}
+                isDueSoon={stat.isDueSoon}
+                onViewTransactions={() => {
+                  navigate('/transactions', { state: { accountId: stat.card.id } });
+                }}
+                onRecordPayment={() => {
+                  navigate('/transactions', {
+                    state: { accountId: stat.card.id, action: 'addPayment' },
+                  });
+                }}
+                formatCurrency={formatCurrency}
+                formatDate={formatDate}
+              />
+            ))}
+          </Stack>
+        ) : (
+          <TableContainer
           sx={{
             overflowX: 'auto',
             maxWidth: '100%',
@@ -781,6 +825,7 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
             </TableBody>
           </Table>
         </TableContainer>
+        )}
       </Paper>
 
       {/* Payment History for Cards */}
@@ -789,18 +834,40 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
         .slice(0, 1)
         .map((stat) => (
           <Paper key={stat.card.id} elevation={1} sx={{ p: { xs: 1.5, sm: 2 } }}>
-            <Typography 
-              variant="h6" 
-              gutterBottom
+            <Box
               sx={{
-                fontSize: { xs: '1.125rem', sm: '1.25rem' },
-                fontWeight: 600,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
                 mb: { xs: 1, sm: 2 },
+                flexDirection: { xs: 'column', sm: 'row' },
+                gap: { xs: 1, sm: 2 },
               }}
             >
-              Recent Payment History - {stat.card.name}
-            </Typography>
-          <TableContainer
+              <Typography 
+                variant="h6" 
+                sx={{
+                  fontSize: { xs: '1.125rem', sm: '1.25rem' },
+                  fontWeight: 600,
+                }}
+              >
+                Recent Payment History - {stat.card.name}
+              </Typography>
+              <ViewToggle viewMode={paymentsViewMode} onToggle={togglePaymentsViewMode} aria-label="Toggle between table and card view for payment history" />
+            </Box>
+            {paymentsViewMode === 'card' ? (
+              <Stack spacing={1.5}>
+                {stat.recentPayments.map((payment) => (
+                  <PaymentHistoryCard
+                    key={payment.id}
+                    payment={payment}
+                    formatCurrency={formatCurrency}
+                    formatDate={formatDate}
+                  />
+                ))}
+              </Stack>
+            ) : (
+              <TableContainer
             sx={{
               overflowX: 'auto',
               maxWidth: '100%',
@@ -901,6 +968,7 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
               </TableBody>
             </Table>
           </TableContainer>
+            )}
           </Paper>
         ))}
 
