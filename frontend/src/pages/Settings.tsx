@@ -44,6 +44,9 @@ import { StorageMonitoring } from '../components/common/StorageMonitoring';
 import { ErrorTrackingDialog } from '../components/common/ErrorTrackingDialog';
 import { StorageCleanupDialog } from '../components/common/StorageCleanupDialog';
 import { RefErrorRemediationDialog } from '../components/common/RefErrorRemediationDialog';
+import { ViewToggle } from '../components/common/ViewToggle';
+import { useViewMode } from '../hooks/useViewMode';
+import { BalanceSyncResultCard } from '../components/settings/BalanceSyncResultCard';
 import {
   enableAnalytics,
   disableAnalytics,
@@ -80,6 +83,7 @@ export function Settings() {
   const { showSuccess, showError, showWarning, showInfo } = useToastStore();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { viewMode: syncResultsViewMode, toggleViewMode: toggleSyncResultsViewMode } = useViewMode('balance-sync-results-view-mode');
   const [localSettings, setLocalSettings] = useState(settings);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importReplaceMode, setImportReplaceMode] = useState(false);
@@ -1692,15 +1696,32 @@ export function Settings() {
           },
         }}
       >
-        <DialogTitle
+        <Box
           sx={{
-            fontSize: { xs: '1.125rem', sm: '1.25rem' },
-            fontWeight: 700,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            px: { xs: 2, sm: 3 },
+            pt: { xs: 2, sm: 3 },
             pb: { xs: 1, sm: 2 },
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: { xs: 1, sm: 2 },
           }}
         >
-          Balance Sync Results
-        </DialogTitle>
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{
+              fontSize: { xs: '1.125rem', sm: '1.25rem' },
+              fontWeight: 700,
+            }}
+          >
+            Balance Sync Results
+          </Typography>
+          {syncResults.length > 0 && (
+            <ViewToggle viewMode={syncResultsViewMode} onToggle={toggleSyncResultsViewMode} aria-label="Toggle between table and card view for balance sync results" />
+          )}
+        </Box>
         <DialogContent
           sx={{
             px: { xs: 2, sm: 3 },
@@ -1728,7 +1749,18 @@ export function Settings() {
                   {syncResults.filter((r) => r.updated).length} account(s) updated,{' '}
                   {syncResults.filter((r) => !r.updated).length} account(s) already in sync.
                 </Typography>
-                <TableContainer
+                {syncResultsViewMode === 'card' ? (
+                  <Stack spacing={1.5}>
+                    {syncResults.map((result) => (
+                      <BalanceSyncResultCard
+                        key={result.accountId}
+                        result={result}
+                        formatCurrency={formatCurrency}
+                      />
+                    ))}
+                  </Stack>
+                ) : (
+                  <TableContainer
                   sx={{
                     overflowX: 'auto',
                     maxWidth: '100%',
@@ -1879,6 +1911,7 @@ export function Settings() {
                     </TableBody>
                   </Table>
                 </TableContainer>
+                )}
               </>
             )}
           </Stack>
