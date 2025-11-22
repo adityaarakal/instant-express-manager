@@ -19,9 +19,13 @@ A comprehensive standalone financial management Progressive Web App (PWA) built 
 - ⏳ **Loading States**: Skeleton loaders and spinners for better UX
 - ↩️ **Undo Functionality**: Restore deleted items within 10 minutes
 - 💾 **Data Backup/Restore**: Full backup and restore functionality
-- ⌨️ **Keyboard Shortcuts**: Power user shortcuts for faster navigation
+- ⌨️ **Keyboard Shortcuts**: Power user shortcuts for faster navigation (with comprehensive help dialog)
 - 🎨 **Dark/Light Theme**: System-aware theme switching
 - 📱 **Responsive Design**: Works on desktop, tablet, and mobile
+- 🖼️ **Enhanced Empty States**: Contextual actions, tips, and quick-start guides for empty data views
+- 🔖 **Filter Presets**: Save and load filter configurations for quick access
+- 📄 **Print Preview**: Preview and optimize print layouts before printing
+- 🎛️ **Customizable Dashboard**: Show/hide and reorder dashboard widgets to your preference
 
 ### Data Management
 - 🔒 **Local Storage**: All data stored locally using IndexedDB (via localforage)
@@ -29,11 +33,14 @@ A comprehensive standalone financial management Progressive Web App (PWA) built 
 - ✅ **Data Validation**: Comprehensive validation and business rules
 - 🔍 **Data Health Checks**: Identify and fix data inconsistencies
 - 📤 **CSV Export**: Export transactions to CSV
-- ⏰ **Scheduled Exports**: Automatically export transactions on a schedule (daily, weekly, monthly)
+- ⏰ **Scheduled Exports**: Automatically export transactions on a schedule (daily, weekly, monthly) with background sync support
+- 🔄 **Background Sync**: Scheduled exports work even when the app is closed (requires browser support)
 - 📊 **Projections Integration**: Import projections from CSV/Excel, auto-populate inflow totals, track savings targets
 - 💰 **Automatic Balance Updates**: Account balances automatically update when transactions are received/paid/completed
 - 🔄 **Balance Sync**: Sync existing account balances with transactions (useful for old data)
 - 🗑️ **Clear All Data**: Reset the app to a clean state by clearing all storage (irreversible)
+- ✅ **Due Date Overrides**: Enhanced UI for overriding zeroed amounts with bulk actions
+- ♿ **Accessibility**: Comprehensive screen reader support with testing guide
 
 ## 🛠️ Tech Stack
 
