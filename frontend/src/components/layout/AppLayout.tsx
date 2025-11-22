@@ -446,7 +446,6 @@ export function AppLayout({ children }: AppLayoutProps) {
           touchAction: !isDesktop && mobileOpen ? 'none' : 'auto',
         }}
       >
-        <Toolbar sx={{ display: { xs: 'block', md: 'none' }, minHeight: { xs: 56, sm: 64 } }} />
         <Container
           maxWidth="lg"
           sx={{
