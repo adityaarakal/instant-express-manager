@@ -64,26 +64,41 @@ export function AppLayout({ children }: AppLayoutProps) {
     setMobileOpen((prev) => !prev);
   };
 
-  // Lock body scroll when mobile drawer is open
+  // Lock body and main content scroll when mobile drawer is open
   useEffect(() => {
     if (!isDesktop && mobileOpen) {
       // Store original overflow values
-      const originalStyle = window.getComputedStyle(document.body).overflow;
-      const originalPaddingRight = document.body.style.paddingRight;
+      const originalBodyOverflow = window.getComputedStyle(document.body).overflow;
+      const originalBodyPaddingRight = document.body.style.paddingRight;
+      const originalHtmlOverflow = window.getComputedStyle(document.documentElement).overflow;
+      const originalRootOverflow = document.getElementById('root')?.style.overflow || '';
       
       // Calculate scrollbar width to prevent layout shift
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       
-      // Lock body scroll
+      // Lock scroll on html, body, and root
+      document.documentElement.style.overflow = 'hidden';
       document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
       if (scrollbarWidth > 0) {
         document.body.style.paddingRight = `${scrollbarWidth}px`;
+      }
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        rootElement.style.overflow = 'hidden';
       }
       
       return () => {
         // Restore original styles
-        document.body.style.overflow = originalStyle;
-        document.body.style.paddingRight = originalPaddingRight;
+        document.documentElement.style.overflow = originalHtmlOverflow;
+        document.body.style.overflow = originalBodyOverflow;
+        document.body.style.position = '';
+        document.body.style.width = '';
+        document.body.style.paddingRight = originalBodyPaddingRight;
+        if (rootElement) {
+          rootElement.style.overflow = originalRootOverflow || '';
+        }
       };
     }
   }, [mobileOpen, isDesktop]);
@@ -363,6 +378,8 @@ export function AppLayout({ children }: AppLayoutProps) {
           ModalProps={{
             keepMounted: true,
             disableScrollLock: false,
+            disableEnforceFocus: false,
+            disableAutoFocus: false,
           }}
           sx={{
             display: { xs: 'block', md: 'none' },
@@ -374,6 +391,14 @@ export function AppLayout({ children }: AppLayoutProps) {
             },
             '& .MuiBackdrop-root': {
               backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+            },
+            '& .MuiModal-root': {
+              overflow: 'hidden',
             },
           }}
         >
@@ -405,7 +430,9 @@ export function AppLayout({ children }: AppLayoutProps) {
           pb: { xs: 4, sm: 6, md: 8 },
           minHeight: '100vh',
           overflowX: 'hidden',
+          overflowY: !isDesktop && mobileOpen ? 'hidden' : 'auto',
           boxSizing: 'border-box',
+          touchAction: !isDesktop && mobileOpen ? 'none' : 'auto',
         }}
       >
         <Toolbar sx={{ display: { xs: 'block', md: 'none' }, minHeight: { xs: 56, sm: 64 } }} />
