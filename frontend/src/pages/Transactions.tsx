@@ -1003,13 +1003,69 @@ export function Transactions() {
                               ? 'Try adjusting your search or filter criteria to find the transactions you\'re looking for.'
                               : 'Navigate to a different page to see more transactions.'
                           }
-                          action={
+                          actions={
+                            incomeTransactions.length === 0
+                              ? accounts.length > 0
+                                ? [
+                                    {
+                                      label: 'Add Income Transaction',
+                                      onClick: () => handleOpenDialog('income'),
+                                      icon: <AddIcon />,
+                                    },
+                                  ]
+                                : [
+                                    {
+                                      label: 'Add Bank Account',
+                                      onClick: () => {
+                                        const accountsUrl = new URL(window.location.href);
+                                        accountsUrl.pathname = '/bank-accounts';
+                                        window.location.href = accountsUrl.toString();
+                                      },
+                                      icon: <AddIcon />,
+                                    },
+                                  ]
+                              : filteredAndSortedTransactions.length === 0
+                              ? [
+                                  {
+                                    label: 'Clear Filters',
+                                    onClick: () => {
+                                      setFilters({
+                                        dateFrom: '',
+                                        dateTo: '',
+                                        accountId: '',
+                                        category: '',
+                                        status: '',
+                                        searchTerm: '',
+                                      });
+                                    },
+                                    variant: 'outlined' as const,
+                                  },
+                                ]
+                              : undefined
+                          }
+                          tips={
+                            incomeTransactions.length === 0
+                              ? [
+                                  {
+                                    text: 'Track all income sources including salary, bonuses, freelance work, and investments.',
+                                  },
+                                  {
+                                    text: 'Mark transactions as "Received" when money is actually in your account.',
+                                  },
+                                  {
+                                    text: 'Use categories and client/project names to organize your income for better reporting.',
+                                  },
+                                ]
+                              : undefined
+                          }
+                          quickStart={
                             incomeTransactions.length === 0 && accounts.length > 0
-                              ? {
-                                  label: 'Add Income Transaction',
-                                  onClick: () => handleOpenDialog('income'),
-                                  icon: <AddIcon />,
-                                }
+                              ? [
+                                  'Click "Add Income Transaction" to create your first entry',
+                                  'Enter the amount, date, and select the account',
+                                  'Choose a category and add description',
+                                  'Mark as "Received" when payment is confirmed',
+                                ]
                               : undefined
                           }
                         />
@@ -1094,13 +1150,69 @@ export function Transactions() {
                               ? 'Try adjusting your search or filter criteria to find the transactions you\'re looking for.'
                               : 'Navigate to a different page to see more transactions.'
                           }
-                          action={
+                          actions={
+                            expenseTransactions.length === 0
+                              ? accounts.length > 0
+                                ? [
+                                    {
+                                      label: 'Add Expense Transaction',
+                                      onClick: () => handleOpenDialog('expense'),
+                                      icon: <AddIcon />,
+                                    },
+                                  ]
+                                : [
+                                    {
+                                      label: 'Add Bank Account',
+                                      onClick: () => {
+                                        const accountsUrl = new URL(window.location.href);
+                                        accountsUrl.pathname = '/bank-accounts';
+                                        window.location.href = accountsUrl.toString();
+                                      },
+                                      icon: <AddIcon />,
+                                    },
+                                  ]
+                              : filteredAndSortedTransactions.length === 0
+                              ? [
+                                  {
+                                    label: 'Clear Filters',
+                                    onClick: () => {
+                                      setFilters({
+                                        dateFrom: '',
+                                        dateTo: '',
+                                        accountId: '',
+                                        category: '',
+                                        status: '',
+                                        searchTerm: '',
+                                      });
+                                    },
+                                    variant: 'outlined' as const,
+                                  },
+                                ]
+                              : undefined
+                          }
+                          tips={
+                            expenseTransactions.length === 0
+                              ? [
+                                  {
+                                    text: 'Use buckets to categorize expenses for better monthly planning and budgeting.',
+                                  },
+                                  {
+                                    text: 'Set due dates for bills to track payment deadlines and avoid late fees.',
+                                  },
+                                  {
+                                    text: 'Mark expenses as "Paid" only when payment is actually made from your account.',
+                                  },
+                                ]
+                              : undefined
+                          }
+                          quickStart={
                             expenseTransactions.length === 0 && accounts.length > 0
-                              ? {
-                                  label: 'Add Expense Transaction',
-                                  onClick: () => handleOpenDialog('expense'),
-                                  icon: <AddIcon />,
-                                }
+                              ? [
+                                  'Click "Add Expense Transaction" to record your first expense',
+                                  'Select the account, category, and bucket',
+                                  'Enter amount, date, and set due date if applicable',
+                                  'Mark as "Paid" when payment is confirmed',
+                                ]
                               : undefined
                           }
                         />
@@ -1186,13 +1298,69 @@ export function Transactions() {
                               ? 'Try adjusting your search or filter criteria to find the transactions you\'re looking for.'
                               : 'Navigate to a different page to see more transactions.'
                           }
-                          action={
+                          actions={
+                            savingsTransactions.length === 0
+                              ? accounts.length > 0
+                                ? [
+                                    {
+                                      label: 'Add Savings/Investment Transaction',
+                                      onClick: () => handleOpenDialog('savings'),
+                                      icon: <AddIcon />,
+                                    },
+                                  ]
+                                : [
+                                    {
+                                      label: 'Add Bank Account',
+                                      onClick: () => {
+                                        const accountsUrl = new URL(window.location.href);
+                                        accountsUrl.pathname = '/bank-accounts';
+                                        window.location.href = accountsUrl.toString();
+                                      },
+                                      icon: <AddIcon />,
+                                    },
+                                  ]
+                              : filteredAndSortedTransactions.length === 0
+                              ? [
+                                  {
+                                    label: 'Clear Filters',
+                                    onClick: () => {
+                                      setFilters({
+                                        dateFrom: '',
+                                        dateTo: '',
+                                        accountId: '',
+                                        category: '',
+                                        status: '',
+                                        searchTerm: '',
+                                      });
+                                    },
+                                    variant: 'outlined' as const,
+                                  },
+                                ]
+                              : undefined
+                          }
+                          tips={
+                            savingsTransactions.length === 0
+                              ? [
+                                  {
+                                    text: 'Track all types of investments: SIPs, mutual funds, stocks, FDs, and more.',
+                                  },
+                                  {
+                                    text: 'Use destination field to specify where the money is invested (e.g., "HDFC Mutual Fund").',
+                                  },
+                                  {
+                                    text: 'Mark as "Completed" when the investment transaction is finalized.',
+                                  },
+                                ]
+                              : undefined
+                          }
+                          quickStart={
                             savingsTransactions.length === 0 && accounts.length > 0
-                              ? {
-                                  label: 'Add Savings/Investment Transaction',
-                                  onClick: () => handleOpenDialog('savings'),
-                                  icon: <AddIcon />,
-                                }
+                              ? [
+                                  'Click "Add Savings/Investment Transaction" to record your first investment',
+                                  'Select account, type (SIP, Lump Sum, etc.), and destination',
+                                  'Enter amount and date of investment',
+                                  'Mark as "Completed" when transaction is confirmed',
+                                ]
                               : undefined
                           }
                         />
@@ -1278,13 +1446,81 @@ export function Transactions() {
                               ? 'Try adjusting your search or filter criteria to find the transfers you\'re looking for.'
                               : 'Navigate to a different page to see more transfers.'
                           }
-                          action={
-                            transferTransactions.length === 0 && accounts.length > 0
-                              ? {
-                                  label: 'Add Transfer',
-                                  onClick: () => handleOpenTransferDialog(),
-                                  icon: <AddIcon />,
-                                }
+                          actions={
+                            transferTransactions.length === 0
+                              ? accounts.length >= 2
+                                ? [
+                                    {
+                                      label: 'Add Transfer',
+                                      onClick: () => handleOpenTransferDialog(),
+                                      icon: <AddIcon />,
+                                    },
+                                  ]
+                                : accounts.length === 1
+                                ? [
+                                    {
+                                      label: 'Add Another Account',
+                                      onClick: () => {
+                                        const accountsUrl = new URL(window.location.href);
+                                        accountsUrl.pathname = '/bank-accounts';
+                                        window.location.href = accountsUrl.toString();
+                                      },
+                                      icon: <AddIcon />,
+                                    },
+                                  ]
+                                : [
+                                    {
+                                      label: 'Add Bank Accounts',
+                                      onClick: () => {
+                                        const accountsUrl = new URL(window.location.href);
+                                        accountsUrl.pathname = '/bank-accounts';
+                                        window.location.href = accountsUrl.toString();
+                                      },
+                                      icon: <AddIcon />,
+                                    },
+                                  ]
+                              : filteredAndSortedTransactions.length === 0
+                              ? [
+                                  {
+                                    label: 'Clear Filters',
+                                    onClick: () => {
+                                      setFilters({
+                                        dateFrom: '',
+                                        dateTo: '',
+                                        accountId: '',
+                                        category: '',
+                                        status: '',
+                                        searchTerm: '',
+                                      });
+                                    },
+                                    variant: 'outlined' as const,
+                                  },
+                                ]
+                              : undefined
+                          }
+                          tips={
+                            transferTransactions.length === 0
+                              ? [
+                                  {
+                                    text: 'Track money movements between your accounts (e.g., from checking to savings).',
+                                  },
+                                  {
+                                    text: 'Transfers automatically update balances in both source and destination accounts.',
+                                  },
+                                  {
+                                    text: 'Use transfers to accurately reflect account balances and cash flow.',
+                                  },
+                                ]
+                              : undefined
+                          }
+                          quickStart={
+                            transferTransactions.length === 0 && accounts.length >= 2
+                              ? [
+                                  'Click "Add Transfer" to record money movement',
+                                  'Select source and destination accounts',
+                                  'Enter amount, date, and description',
+                                  'Mark as "Completed" when transfer is confirmed',
+                                ]
                               : undefined
                           }
                         />

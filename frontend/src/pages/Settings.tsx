@@ -34,6 +34,7 @@ import { DataHealthCheck } from '../components/common/DataHealthCheck';
 import { ExportHistory } from '../components/common/ExportHistory';
 import { ScheduledExports } from '../components/common/ScheduledExports';
 import { ProjectionsIntegration } from '../components/common/ProjectionsIntegration';
+import { NotificationSettings } from '../components/common/NotificationSettings';
 import { AccessibilityCheck } from '../components/common/AccessibilityCheck';
 import { SecurityCheck } from '../components/common/SecurityCheck';
 import { PerformanceMetricsDialog } from '../components/common/PerformanceMetricsDialog';
@@ -505,6 +506,16 @@ export function Settings() {
               Import projections from CSV or Excel files to auto-populate inflow totals and track savings targets.
             </Typography>
             <ProjectionsIntegration />
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={2}>
+            <Typography variant="h6">Browser Notifications</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Configure browser notifications for due date reminders and summaries.
+            </Typography>
+            <NotificationSettings />
           </Stack>
 
           <Divider />

@@ -30,9 +30,12 @@ export interface BackupData {
 }
 
 /**
- * Get current app version
- * Uses __APP_VERSION__ from vite.config.ts (injected at build time)
- * Falls back to reading from package.json or default version
+ * Gets the current app version.
+ * Uses __APP_VERSION__ from vite.config.ts (injected at build time).
+ * Falls back to default version if not available.
+ * 
+ * @private
+ * @returns {string} Current app version string (e.g., "1.0.61")
  */
 function getAppVersion(): string {
   // Try to get version from Vite-injected constant
@@ -51,7 +54,15 @@ function getAppVersion(): string {
 }
 
 /**
- * Exports all application data to a JSON backup
+ * Exports all application data to a JSON backup object.
+ * Includes all banks, accounts, transactions, EMIs, and recurring templates.
+ * 
+ * @returns {BackupData} Complete backup data structure with version and timestamp
+ * 
+ * @example
+ * const backup = exportBackup();
+ * // backup contains all application data
+ * console.log(`Backup created for version ${backup.version}`);
  */
 export function exportBackup(): BackupData {
   return performanceMonitor.trackOperation('exportBackup', () => {
@@ -77,7 +88,15 @@ export function exportBackup(): BackupData {
 }
 
 /**
- * Downloads the backup as a JSON file
+ * Exports and downloads backup as a JSON file.
+ * Automatically tracks the export in export history.
+ * 
+ * @returns {void}
+ * 
+ * @example
+ * // User clicks "Download Backup" button
+ * downloadBackup();
+ * // File is downloaded: financial-manager-backup-2025-01-20.json
  */
 export function downloadBackup(): void {
   const backup = exportBackup();
@@ -106,7 +125,18 @@ export function downloadBackup(): void {
 }
 
 /**
- * Validates backup data structure
+ * Validates backup data structure.
+ * Type guard function that checks if data matches BackupData structure.
+ * 
+ * @param {unknown} data - Data to validate
+ * @returns {boolean} True if data is valid BackupData structure, false otherwise
+ * 
+ * @example
+ * const data = JSON.parse(fileContent);
+ * if (validateBackup(data)) {
+ *   // TypeScript now knows data is BackupData
+ *   importBackup(data);
+ * }
  */
 export function validateBackup(data: unknown): data is BackupData {
   if (!data || typeof data !== 'object') {
@@ -151,20 +181,41 @@ export function validateBackup(data: unknown): data is BackupData {
 }
 
 /**
- * Imports backup data into all stores
- * @param backupData The backup data to import
- * @param replaceExisting If true, replaces all existing data. If false, merges with existing data.
- * @returns Object with import status and migration info
+ * Imports backup data into all stores.
+ * Supports both replace and merge modes. In replace mode, all existing data is cleared first.
+ * In merge mode, new data is added without duplicates.
+ * 
+ * @param {BackupData} backupData - The backup data to import
+ * @param {boolean} [replaceExisting=false] - If true, replaces all existing data. If false, merges with existing data.
+ * @returns {Object} Import result object
+ * @returns {boolean} returns.success - True if import succeeded
+ * @returns {boolean} returns.migrated - True if backup version differs from current version
+ * @returns {string} returns.backupVersion - Version of the backup file
+ * @returns {string[]} [returns.warnings] - Array of warning messages (if any)
+ * @returns {string[]} [returns.errors] - Array of error messages (if any)
+ * 
+ * @throws {Error} If backup data structure is invalid
+ * 
+ * @example
+ * const backup = await readBackupFile(file);
+ * const result = importBackup(backup, true); // Replace existing data
+ * if (result.success) {
+ *   console.log('Backup imported successfully');
+ *   if (result.warnings) {
+ *     console.warn('Warnings:', result.warnings);
+ *   }
+ * }
  */
 export function importBackup(
   backupData: BackupData,
   replaceExisting: boolean = false
-): { success: boolean; migrated: boolean; backupVersion: string; warnings?: string[] } {
+): { success: boolean; migrated: boolean; backupVersion: string; warnings?: string[]; errors?: string[] } {
   if (!validateBackup(backupData)) {
     throw new Error('Invalid backup file format');
   }
 
   const warnings: string[] = [];
+  const errors: string[] = [];
   
   // Check if backup version is older than current app version
   const currentVersion = getAppVersion();
@@ -199,19 +250,57 @@ export function importBackup(
     );
   }
 
+  // Validate backup data structure
+  try {
+    if (!Array.isArray(backupData.data.banks)) errors.push('Invalid banks data structure');
+    if (!Array.isArray(backupData.data.bankAccounts)) errors.push('Invalid bankAccounts data structure');
+    if (!Array.isArray(backupData.data.incomeTransactions)) errors.push('Invalid incomeTransactions data structure');
+    if (!Array.isArray(backupData.data.expenseTransactions)) errors.push('Invalid expenseTransactions data structure');
+    if (!Array.isArray(backupData.data.savingsInvestmentTransactions)) errors.push('Invalid savingsInvestmentTransactions data structure');
+    if (!Array.isArray(backupData.data.expenseEMIs)) errors.push('Invalid expenseEMIs data structure');
+    if (!Array.isArray(backupData.data.savingsInvestmentEMIs)) errors.push('Invalid savingsInvestmentEMIs data structure');
+    if (!Array.isArray(backupData.data.recurringIncomes)) errors.push('Invalid recurringIncomes data structure');
+    if (!Array.isArray(backupData.data.recurringExpenses)) errors.push('Invalid recurringExpenses data structure');
+    if (!Array.isArray(backupData.data.recurringSavingsInvestments)) errors.push('Invalid recurringSavingsInvestments data structure');
+  } catch (error) {
+    errors.push(`Backup data structure validation failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Backup validation failed: ${errors.join('; ')}`);
+  }
+
+  // Store current state for rollback if replaceExisting
+  let rollbackState: Partial<BackupData['data']> | null = null;
   if (replaceExisting) {
-    // Replace all data
-    useBanksStore.setState({ banks: backupData.data.banks });
-    useBankAccountsStore.setState({ accounts: backupData.data.bankAccounts });
-    useIncomeTransactionsStore.setState({ transactions: backupData.data.incomeTransactions });
-    useExpenseTransactionsStore.setState({ transactions: backupData.data.expenseTransactions });
-    useSavingsInvestmentTransactionsStore.setState({ transactions: backupData.data.savingsInvestmentTransactions });
-    useExpenseEMIsStore.setState({ emis: backupData.data.expenseEMIs });
-    useSavingsInvestmentEMIsStore.setState({ emis: backupData.data.savingsInvestmentEMIs });
-    useRecurringIncomesStore.setState({ templates: backupData.data.recurringIncomes });
-    useRecurringExpensesStore.setState({ templates: backupData.data.recurringExpenses });
-    useRecurringSavingsInvestmentsStore.setState({ templates: backupData.data.recurringSavingsInvestments });
-  } else {
+    rollbackState = {
+      banks: [...useBanksStore.getState().banks],
+      bankAccounts: [...useBankAccountsStore.getState().accounts],
+      incomeTransactions: [...useIncomeTransactionsStore.getState().transactions],
+      expenseTransactions: [...useExpenseTransactionsStore.getState().transactions],
+      savingsInvestmentTransactions: [...useSavingsInvestmentTransactionsStore.getState().transactions],
+      expenseEMIs: [...useExpenseEMIsStore.getState().emis],
+      savingsInvestmentEMIs: [...useSavingsInvestmentEMIsStore.getState().emis],
+      recurringIncomes: [...useRecurringIncomesStore.getState().templates],
+      recurringExpenses: [...useRecurringExpensesStore.getState().templates],
+      recurringSavingsInvestments: [...useRecurringSavingsInvestmentsStore.getState().templates],
+    };
+  }
+
+  try {
+    if (replaceExisting) {
+      // Replace all data
+      useBanksStore.setState({ banks: backupData.data.banks });
+      useBankAccountsStore.setState({ accounts: backupData.data.bankAccounts });
+      useIncomeTransactionsStore.setState({ transactions: backupData.data.incomeTransactions });
+      useExpenseTransactionsStore.setState({ transactions: backupData.data.expenseTransactions });
+      useSavingsInvestmentTransactionsStore.setState({ transactions: backupData.data.savingsInvestmentTransactions });
+      useExpenseEMIsStore.setState({ emis: backupData.data.expenseEMIs });
+      useSavingsInvestmentEMIsStore.setState({ emis: backupData.data.savingsInvestmentEMIs });
+      useRecurringIncomesStore.setState({ templates: backupData.data.recurringIncomes });
+      useRecurringExpensesStore.setState({ templates: backupData.data.recurringExpenses });
+      useRecurringSavingsInvestmentsStore.setState({ templates: backupData.data.recurringSavingsInvestments });
+    } else {
     // Merge with existing data (avoid duplicates by ID)
     const existingBanks = useBanksStore.getState().banks;
     const existingAccounts = useBankAccountsStore.getState().accounts;
@@ -289,25 +378,61 @@ export function importBackup(
     useSavingsInvestmentEMIsStore.setState({ emis: mergedSavingsEMIs });
     useRecurringIncomesStore.setState({ templates: mergedRecurringIncomes });
     useRecurringExpensesStore.setState({ templates: mergedRecurringExpenses });
-    useRecurringSavingsInvestmentsStore.setState({ templates: mergedRecurringSavings });
+      useRecurringSavingsInvestmentsStore.setState({ templates: mergedRecurringSavings });
+    }
+
+    // After import, update schema version to current
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { useSchemaVersionStore } = require('../store/useSchemaVersionStore');
+    useSchemaVersionStore.getState().setSchemaVersion(currentVersion);
+
+    return {
+      success: true,
+      migrated: versionComparison < 0,
+      backupVersion,
+      warnings: warnings.length > 0 ? warnings : undefined,
+      errors: errors.length > 0 ? errors : undefined,
+    };
+  } catch (error) {
+    // Rollback if replaceExisting and error occurred
+    if (replaceExisting && rollbackState) {
+      try {
+        useBanksStore.setState({ banks: rollbackState.banks || [] });
+        useBankAccountsStore.setState({ accounts: rollbackState.bankAccounts || [] });
+        useIncomeTransactionsStore.setState({ transactions: rollbackState.incomeTransactions || [] });
+        useExpenseTransactionsStore.setState({ transactions: rollbackState.expenseTransactions || [] });
+        useSavingsInvestmentTransactionsStore.setState({ transactions: rollbackState.savingsInvestmentTransactions || [] });
+        useExpenseEMIsStore.setState({ emis: rollbackState.expenseEMIs || [] });
+        useSavingsInvestmentEMIsStore.setState({ emis: rollbackState.savingsInvestmentEMIs || [] });
+        useRecurringIncomesStore.setState({ templates: rollbackState.recurringIncomes || [] });
+        useRecurringExpensesStore.setState({ templates: rollbackState.recurringExpenses || [] });
+        useRecurringSavingsInvestmentsStore.setState({ templates: rollbackState.recurringSavingsInvestments || [] });
+      } catch (rollbackError) {
+        console.error('Rollback failed:', rollbackError);
+        errors.push(`Restore failed and rollback also failed: ${rollbackError instanceof Error ? rollbackError.message : String(rollbackError)}`);
+      }
+    }
+    throw new Error(`Backup restore failed: ${error instanceof Error ? error.message : String(error)}`);
   }
-
-  // After import, update schema version to current
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { useSchemaVersionStore } = require('../store/useSchemaVersionStore');
-  useSchemaVersionStore.getState().setSchemaVersion(currentVersion);
-
-  return {
-    success: true,
-    migrated: versionComparison < 0,
-    backupVersion,
-    warnings: warnings.length > 0 ? warnings : undefined,
-  };
 }
 
 /**
- * Reads a backup file and returns the parsed data
- * Includes security validation for file type, size, and content
+ * Reads a backup file and returns the parsed data.
+ * Includes security validation for file type, size, and content.
+ * 
+ * @param {File} file - Backup file to read (must be JSON)
+ * @returns {Promise<BackupData>} Parsed backup data
+ * @throws {Error} If file is invalid, too large, or contains invalid JSON
+ * 
+ * @example
+ * const fileInput = document.querySelector('input[type="file"]');
+ * const file = fileInput.files[0];
+ * try {
+ *   const backup = await readBackupFile(file);
+ *   await importBackup(backup);
+ * } catch (error) {
+ *   console.error('Failed to read backup:', error);
+ * }
  */
 export function readBackupFile(file: File): Promise<BackupData> {
   return new Promise((resolve, reject) => {

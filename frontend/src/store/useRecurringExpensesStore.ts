@@ -155,6 +155,15 @@ export const useRecurringExpensesStore = create<RecurringExpensesState>()(
                   if (!dateRangeValidation.isValid) {
                     throw new Error(`Date range validation failed: ${dateRangeValidation.errors.join(', ')}`);
                   }
+                  
+                  // Auto-mark as Completed if endDate is in the past
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const endDateObj = new Date(endDate);
+                  endDateObj.setHours(0, 0, 0, 0);
+                  if (endDateObj < today && template.status === 'Active') {
+                    updates.status = 'Completed';
+                  }
                 }
               }
               return state;

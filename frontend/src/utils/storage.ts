@@ -1,6 +1,7 @@
 import localforage from 'localforage';
 import { createJSONStorage } from 'zustand/middleware';
 import { useSaveStatusStore } from '../store/useSaveStatusStore';
+import { handleIndexedDBError, retryIndexedDBOperation } from './indexedDBErrorHandling';
 
 const storageInstances: Record<string, ReturnType<typeof createJSONStorage>> = {};
 const saveStatusTimers: Record<string, NodeJS.Timeout | null> = {};
@@ -66,7 +67,10 @@ export const getLocalforageStorage = (name: string) => {
       // Track save status with debouncing
       try {
         debouncedSetSaving(name);
-        await namespacedStore.setItem(key, value);
+        // Retry with exponential backoff on failure
+        await retryIndexedDBOperation(async () => {
+          await namespacedStore.setItem(key, value);
+        });
         debouncedSetSaved(name);
       } catch (error) {
         // Clear any pending timers on error
@@ -76,13 +80,18 @@ export const getLocalforageStorage = (name: string) => {
           saveStatusTimers[timerKey] = null;
         }
         useSaveStatusStore.getState().setError();
+        // Handle error with user-friendly message
+        handleIndexedDBError(error, 'save data', name);
         throw error;
       }
     },
     removeItem: async (key: string) => {
       try {
         debouncedSetSaving(name);
-        await namespacedStore.removeItem(key);
+        // Retry with exponential backoff on failure
+        await retryIndexedDBOperation(async () => {
+          await namespacedStore.removeItem(key);
+        });
         debouncedSetSaved(name);
       } catch (error) {
         // Clear any pending timers on error
@@ -92,6 +101,8 @@ export const getLocalforageStorage = (name: string) => {
           saveStatusTimers[timerKey] = null;
         }
         useSaveStatusStore.getState().setError();
+        // Handle error with user-friendly message
+        handleIndexedDBError(error, 'remove data', name);
         throw error;
       }
     },

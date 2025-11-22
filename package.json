@@ -14,7 +14,7 @@
     "install-protection": "bash scripts/install-git-protection.sh",
     "init-enforcement-lock": "bash scripts/validate-enforcement-lock.sh",
     "unlock-enforcement": "bash scripts/unlock-enforcement.sh",
-    "version": "node -p \"require('./package.json').version\"",
+    "version": "1.0.69",
     "version:set": "bash scripts/version-utils.sh && bash -c 'set_version $1' _",
     "version:major": "bash scripts/bump-version.sh major",
     "version:minor": "bash scripts/bump-version.sh minor",
