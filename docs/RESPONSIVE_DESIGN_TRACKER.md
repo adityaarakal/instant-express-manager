@@ -94,22 +94,22 @@ This document tracks the comprehensive responsive design implementation to make 
   - [x] Number formatting on mobile
   - Status: Complete
 
-### Phase 5: EMIs Page
-- [ ] **Task 5.1**: EMIs header and controls
-  - [ ] Title and add button responsive
-  - [ ] Tabs responsive
-  - Status: Pending
+### Phase 5: EMIs Page ✅ COMPLETE
+- [x] **Task 5.1**: EMIs header and controls
+  - [x] Title and add button responsive
+  - [x] Tabs responsive
+  - Status: Complete
 
-- [ ] **Task 5.2**: EMIs table
-  - [ ] Table responsive scrolling
-  - [ ] Progress bars on mobile
-  - [ ] Action buttons responsive
-  - Status: Pending
+- [x] **Task 5.2**: EMIs table
+  - [x] Table responsive scrolling
+  - [x] Progress bars on mobile
+  - [x] Action buttons responsive
+  - Status: Complete
 
-- [ ] **Task 5.3**: EMI dialog
-  - [ ] Form fields responsive
-  - [ ] Dialog sizing
-  - Status: Pending
+- [x] **Task 5.3**: EMI dialog
+  - [x] Form fields responsive
+  - [x] Dialog sizing
+  - Status: Complete
 
 ### Phase 6: Recurring Page
 - [ ] **Task 6.1**: Recurring header and controls
