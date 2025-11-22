@@ -12,18 +12,18 @@ Implement toggle between table and card views for all tables in the application.
 
 ## Pages with Tables
 
-### Phase 1: Create Reusable Components ✅
+### Phase 1: Create Reusable Components ✅ COMPLETE
 - [x] Create ViewToggle component
 - [x] Create useViewMode hook for state management
-- Status: Pending
+- Status: Complete
 
-### Phase 2: Transactions Page
-- [ ] Add view toggle button
-- [ ] Update conditional rendering to use view state instead of just isMobile
-- [ ] Ensure card view works for all transaction types
-- [ ] Test toggle functionality
-- Status: Pending
-- **Note**: Already has TransactionCard component
+### Phase 2: Transactions Page ✅ COMPLETE
+- [x] Add view toggle button
+- [x] Update conditional rendering to use view state instead of just isMobile
+- [x] Ensure card view works for all transaction types
+- [x] Test toggle functionality
+- Status: Complete
+- **Note**: Already had TransactionCard component
 
 ### Phase 3: EMIs Page
 - [ ] Create EMICard component
