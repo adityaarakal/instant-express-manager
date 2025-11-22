@@ -1257,6 +1257,14 @@ export function Recurring() {
                     value={formData.bucket}
                     label="Bucket"
                     onChange={(e) => setFormData({ ...formData, bucket: e.target.value as ExpenseBucket })}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          maxHeight: { xs: '60vh', sm: 'none' },
+                          maxWidth: { xs: '90vw', sm: 'none' },
+                        },
+                      },
+                    }}
                   >
                     <MenuItem value="Balance">Balance</MenuItem>
                     <MenuItem value="Savings">Savings</MenuItem>
@@ -1277,6 +1285,14 @@ export function Recurring() {
                     value={formData.type}
                     label="Type"
                     onChange={(e) => setFormData({ ...formData, type: e.target.value as SavingsInvestmentType })}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          maxHeight: { xs: '60vh', sm: 'none' },
+                          maxWidth: { xs: '90vw', sm: 'none' },
+                        },
+                      },
+                    }}
                   >
                     <MenuItem value="SIP">SIP</MenuItem>
                     <MenuItem value="LumpSum">Lump Sum</MenuItem>
