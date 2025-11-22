@@ -262,54 +262,67 @@ export const Planner = memo(function Planner() {
   return (
     <Stack spacing={3}>
       <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }} className="no-print">
-        <MonthSearchFilter
-          months={filteredMonthsData}
-          onFilterChange={handleFilterChange}
-        />
-          <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
-          <FormControl fullWidth size="small">
-            <InputLabel id="month-select-label">Select Month</InputLabel>
-            <Select
-              labelId="month-select-label"
-              value={activeMonthId ?? ''}
-              label="Select Month"
-              onChange={(e) => setActiveMonth(e.target.value)}
-            >
-              {/* Sort months in descending order (latest first) to prioritize current/recent months */}
-              {filteredMonths
-                .sort((a, b) => b.localeCompare(a)) // Latest first
-                .map((monthId) => {
-                  const month = getMonth(monthId);
-                  return month ? (
-                    <MenuItem key={monthId} value={monthId}>
-                      {formatMonthDate(month.monthStart)}
-                    </MenuItem>
-                  ) : null;
-                })}
-            </Select>
-          </FormControl>
-          {activeMonth && (
-            <Stack direction="row" spacing={1}>
-              <Button
-                variant="outlined"
-                startIcon={<PreviewIcon />}
-                onClick={handlePrintPreview}
-                size="small"
-                aria-label="Print preview"
+        <Stack spacing={2}>
+          <MonthSearchFilter
+            months={filteredMonthsData}
+            onFilterChange={handleFilterChange}
+          />
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            spacing={2} 
+            alignItems={{ xs: 'stretch', sm: 'center' }}
+          >
+            <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 200 }, flex: { xs: 1, sm: '0 1 auto' } }}>
+              <InputLabel id="month-select-label">Select Month</InputLabel>
+              <Select
+                labelId="month-select-label"
+                value={activeMonthId ?? ''}
+                label="Select Month"
+                onChange={(e) => setActiveMonth(e.target.value)}
               >
-                Preview
-              </Button>
-              <Button
-                variant="outlined"
-                startIcon={<PrintIcon />}
-                onClick={handlePrint}
-                size="small"
-                aria-label="Print month view"
+                {/* Sort months in descending order (latest first) to prioritize current/recent months */}
+                {filteredMonths
+                  .sort((a, b) => b.localeCompare(a)) // Latest first
+                  .map((monthId) => {
+                    const month = getMonth(monthId);
+                    return month ? (
+                      <MenuItem key={monthId} value={monthId}>
+                        {formatMonthDate(month.monthStart)}
+                      </MenuItem>
+                    ) : null;
+                  })}
+              </Select>
+            </FormControl>
+            {activeMonth && (
+              <Stack 
+                direction="row" 
+                spacing={1}
+                sx={{ 
+                  justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+                  flexShrink: 0
+                }}
               >
-                Print
-              </Button>
-            </Stack>
-          )}
+                <Button
+                  variant="outlined"
+                  startIcon={<PreviewIcon />}
+                  onClick={handlePrintPreview}
+                  size="small"
+                  aria-label="Print preview"
+                >
+                  Preview
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<PrintIcon />}
+                  onClick={handlePrint}
+                  size="small"
+                  aria-label="Print month view"
+                >
+                  Print
+                </Button>
+              </Stack>
+            )}
+          </Stack>
         </Stack>
       </Paper>
 

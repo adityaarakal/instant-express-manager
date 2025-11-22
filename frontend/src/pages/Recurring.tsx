@@ -579,12 +579,12 @@ export function Recurring() {
         sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
-          alignItems: 'center',
-          flexDirection: isMobile ? 'column' : 'row',
-          gap: isMobile ? 2 : 0,
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: 2,
         }}
       >
-        <Typography variant="h4">Recurring Templates</Typography>
+        <Typography variant="h4" sx={{ flexShrink: 0 }}>Recurring Templates</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -593,6 +593,7 @@ export function Recurring() {
           aria-label={accounts.length === 0 ? 'Add recurring template (requires at least one bank account)' : 'Add new recurring template'}
           fullWidth={isMobile}
           size={isMobile ? 'medium' : 'large'}
+          sx={{ flexShrink: 0 }}
         >
           Add Template
         </Button>

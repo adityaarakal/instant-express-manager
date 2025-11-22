@@ -122,9 +122,19 @@ export const Dashboard = memo(function Dashboard() {
 
   return (
     <Stack spacing={3}>
-      <Box className="no-print" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-        <Typography variant="h4">Dashboard</Typography>
-        <Stack direction="row" spacing={1}>
+      <Box 
+        className="no-print" 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          flexWrap: { xs: 'wrap', sm: 'nowrap' }, 
+          gap: 2,
+          flexDirection: { xs: 'column', sm: 'row' },
+        }}
+      >
+        <Typography variant="h4" sx={{ flexShrink: 0 }}>Dashboard</Typography>
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
           <IconButton
             onClick={() => setWidgetSettingsOpen(true)}
             aria-label="Widget settings"
@@ -151,23 +161,36 @@ export const Dashboard = memo(function Dashboard() {
       </Box>
       {/* Month Selector */}
       <Paper elevation={1} sx={{ p: 2, borderRadius: 2 }}>
-        <Stack direction="row" spacing={2} alignItems="center">
-          <CalendarMonthIcon color="primary" />
-          <FormControl size="small" sx={{ minWidth: 200 }}>
-            <InputLabel>Select Month</InputLabel>
-            <Select
-              value={selectedMonthId}
-              label="Select Month"
-              onChange={(e) => setSelectedMonthId(e.target.value)}
-            >
-              {availableMonths.map((month) => (
-                <MenuItem key={month.id} value={month.id}>
-                  {month.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Typography variant="body2" color="text.secondary">
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          spacing={2} 
+          alignItems={{ xs: 'stretch', sm: 'center' }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+            <CalendarMonthIcon color="primary" />
+            <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 200 } }}>
+              <InputLabel>Select Month</InputLabel>
+              <Select
+                value={selectedMonthId}
+                label="Select Month"
+                onChange={(e) => setSelectedMonthId(e.target.value)}
+              >
+                {availableMonths.map((month) => (
+                  <MenuItem key={month.id} value={month.id}>
+                    {month.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+          <Typography 
+            variant="body2" 
+            color="text.secondary"
+            sx={{ 
+              alignSelf: { xs: 'flex-start', sm: 'center' },
+              mt: { xs: 0, sm: 0 }
+            }}
+          >
             Viewing metrics for: <strong>{formatMonthDate(selectedMonthId)}</strong>
           </Typography>
         </Stack>
@@ -225,11 +248,11 @@ export const Dashboard = memo(function Dashboard() {
           <TrendingUpIcon fontSize="small" />
           Overall Metrics (All Time)
         </Typography>
-      <Stack
-        direction={{ xs: 'column', md: 'row' }}
-        spacing={3}
-        sx={{ alignItems: 'stretch', width: '100%' }}
-      >
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={3}
+          sx={{ alignItems: 'stretch', width: '100%' }}
+        >
         <SummaryCard
           label="Total Income"
           value={metrics.totalIncome}

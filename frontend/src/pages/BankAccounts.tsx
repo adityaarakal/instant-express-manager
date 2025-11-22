@@ -249,13 +249,23 @@ export function BankAccounts() {
 
   return (
     <Stack spacing={3}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h4">Bank Accounts</Typography>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: 2,
+        }}
+      >
+        <Typography variant="h4" sx={{ flexShrink: 0 }}>Bank Accounts</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => handleOpenDialog()}
           disabled={banks.length === 0}
+          sx={{ flexShrink: 0 }}
+          fullWidth={isMobile}
         >
           Add Account
         </Button>

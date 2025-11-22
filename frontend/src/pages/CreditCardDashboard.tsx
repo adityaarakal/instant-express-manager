@@ -141,12 +141,21 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
   if (creditCards.length === 0) {
     return (
       <Stack spacing={3}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h4">Credit Card Dashboard</Typography>
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: 2,
+          }}
+        >
+          <Typography variant="h4" sx={{ flexShrink: 0 }}>Credit Card Dashboard</Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => navigate('/accounts')}
+            sx={{ flexShrink: 0 }}
           >
             Add Credit Card
           </Button>
@@ -167,12 +176,22 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
 
   return (
     <Stack spacing={3}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-        <Typography variant="h4">Credit Card Dashboard</Typography>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          flexDirection: { xs: 'column', sm: 'row' },
+          flexWrap: { xs: 'nowrap', sm: 'wrap' },
+          gap: 2,
+        }}
+      >
+        <Typography variant="h4" sx={{ flexShrink: 0 }}>Credit Card Dashboard</Typography>
         <Button
           variant="outlined"
           startIcon={<AddIcon />}
           onClick={() => navigate('/accounts')}
+          sx={{ flexShrink: 0 }}
         >
           Add Credit Card
         </Button>

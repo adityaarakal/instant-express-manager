@@ -18,6 +18,8 @@ import {
   DialogContent,
   DialogActions,
   Menu,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
@@ -120,6 +122,8 @@ const getDateRange = (range: DateRange, customStart?: string, customEnd?: string
 };
 
 export const Analytics = memo(function Analytics() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [dateRange, setDateRange] = useState<DateRange>('last12months');
   const [activeTab, setActiveTab] = useState(0);
   const [customDateDialogOpen, setCustomDateDialogOpen] = useState(false);
@@ -166,8 +170,16 @@ export const Analytics = memo(function Analytics() {
   if (hasNoData) {
     return (
       <Stack spacing={3}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-          <Typography variant="h4">Analytics</Typography>
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            flexWrap: 'wrap', 
+            gap: 2 
+          }}
+        >
+          <Typography variant="h4" sx={{ flexShrink: 0 }}>Analytics</Typography>
         </Box>
         <EmptyState
           icon={<TrendingUpIcon sx={{ fontSize: 64, color: 'text.secondary', opacity: 0.5 }} />}
@@ -207,10 +219,24 @@ export const Analytics = memo(function Analytics() {
 
   return (
     <Stack spacing={3}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-        <Typography variant="h4">Analytics</Typography>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <FormControl size="small" sx={{ minWidth: 200 }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          flexDirection: { xs: 'column', sm: 'row' },
+          flexWrap: { xs: 'nowrap', sm: 'wrap' },
+          gap: 2,
+        }}
+      >
+        <Typography variant="h4" sx={{ flexShrink: 0 }}>Analytics</Typography>
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          spacing={1} 
+          alignItems={{ xs: 'stretch', sm: 'center' }}
+          sx={{ flexShrink: 0 }}
+        >
+          <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 200 } }}>
             <InputLabel>Date Range</InputLabel>
             <Select
               value={dateRange}
@@ -236,6 +262,7 @@ export const Analytics = memo(function Analytics() {
               variant="outlined"
               startIcon={<CalendarTodayIcon />}
               onClick={() => setCustomDateDialogOpen(true)}
+              fullWidth={isMobile}
             >
               {customStartDate && customEndDate
                 ? `${new Date(customStartDate).toLocaleDateString()} - ${new Date(customEndDate).toLocaleDateString()}`
