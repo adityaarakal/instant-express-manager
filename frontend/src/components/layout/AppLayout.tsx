@@ -107,6 +107,10 @@ export function AppLayout({ children }: AppLayoutProps) {
           px: { xs: 0.5, sm: 1 },
           flexGrow: 1,
           overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          flexWrap: 'nowrap',
+          width: '100%',
         }}
       >
         {navItems.map(({ label, to, icon, end: navEnd }) => (
@@ -114,7 +118,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             key={label}
             to={to}
             end={navEnd}
-            style={{ textDecoration: 'none', color: 'inherit' }}
+            style={{ textDecoration: 'none', color: 'inherit', width: '100%' }}
           >
             {({ isActive }) => (
               <ListItemButton
@@ -124,6 +128,10 @@ export function AppLayout({ children }: AppLayoutProps) {
                   borderRadius: 2,
                   minHeight: 48,
                   py: { xs: 1, sm: 1.25 },
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'row',
+                  flexWrap: 'nowrap',
                   '&.Mui-selected': {
                     backgroundColor: 'action.selected',
                     color: 'primary.main',
