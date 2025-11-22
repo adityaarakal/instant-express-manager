@@ -122,7 +122,14 @@ export const Dashboard = memo(function Dashboard() {
   }, [incomeTransactions, expenseTransactions, savingsTransactions, accounts, selectedMonthId]);
 
   return (
-    <Stack spacing={{ xs: 2, sm: 2.5, md: 3 }}>
+    <Stack 
+      spacing={{ xs: 2, sm: 2.5, md: 3 }}
+      sx={{
+        width: '100%',
+        maxWidth: '100%',
+        boxSizing: 'border-box',
+      }}
+    >
       <Box 
         className="no-print" 
         sx={{ 

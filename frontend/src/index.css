@@ -6,18 +6,34 @@
   color-scheme: light dark;
 }
 
+html {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
     sans-serif;
   background-color: rgb(249 250 251 / 1); /* gray-50 */
   color: rgb(15 23 42 / 1); /* slate-900 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
+  width: 100%;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 /* Screen reader only class for accessibility */

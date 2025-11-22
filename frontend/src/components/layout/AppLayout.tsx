@@ -156,7 +156,17 @@ export function AppLayout({ children }: AppLayoutProps) {
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: 'background.default' }}>
+    <Box 
+      sx={{ 
+        display: 'flex', 
+        minHeight: '100vh', 
+        width: '100%',
+        maxWidth: '100vw',
+        backgroundColor: 'background.default',
+        overflowX: 'hidden',
+        boxSizing: 'border-box',
+      }}
+    >
       <AppBar
         position="fixed"
         elevation={0}
@@ -304,10 +314,13 @@ export function AppLayout({ children }: AppLayoutProps) {
         sx={{
           flexGrow: 1,
           width: { md: `calc(100% - ${drawerWidth}px)` },
+          maxWidth: '100%',
           mt: { xs: 7, sm: 8 },
-          px: { xs: 1, sm: 2, md: 3, lg: 6 },
+          px: { xs: 1, sm: 2, md: 3, lg: 4 },
           pb: { xs: 4, sm: 6, md: 8 },
           minHeight: '100vh',
+          overflowX: 'hidden',
+          boxSizing: 'border-box',
         }}
       >
         <Toolbar sx={{ display: { xs: 'block', md: 'none' }, minHeight: { xs: 56, sm: 64 } }} />
@@ -319,6 +332,9 @@ export function AppLayout({ children }: AppLayoutProps) {
             gap: { xs: 2, sm: 3 },
             py: { xs: 2, sm: 3, md: 4 },
             px: { xs: 0, sm: 2 },
+            width: '100%',
+            maxWidth: '100%',
+            boxSizing: 'border-box',
           }}
         >
           {children}
