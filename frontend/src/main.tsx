@@ -48,6 +48,32 @@ const getBasePath = () => {
   return '/';
 };
 
+// Handle GitHub Pages 404.html redirect
+// When GitHub Pages serves 404.html, it stores the original path in sessionStorage
+// We restore it here before React Router initializes
+const handleGitHubPagesRedirect = () => {
+  if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+    const redirectPath = sessionStorage.getItem('github-pages-redirect');
+    if (redirectPath) {
+      // Clear the stored path
+      sessionStorage.removeItem('github-pages-redirect');
+      
+      // Get the base path
+      const basePath = getBasePath();
+      
+      // Update the URL to the original path before React Router loads
+      // This allows React Router to see the correct pathname
+      const newPath = basePath + redirectPath;
+      if (window.location.pathname + window.location.search + window.location.hash !== newPath) {
+        window.history.replaceState(null, '', newPath);
+      }
+    }
+  }
+};
+
+// Handle GitHub Pages redirect before initializing the app
+handleGitHubPagesRedirect();
+
 const app = (
     <BrowserRouter basename={getBasePath()}>
       <App />
