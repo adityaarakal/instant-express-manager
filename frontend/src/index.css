@@ -49,6 +49,11 @@ body {
   border-width: 0;
 }
 
+/* Prevent horizontal overflow globally */
+* {
+  box-sizing: border-box;
+}
+
 /* Mobile optimizations */
 @media (max-width: 600px) {
   /* Ensure touch targets are at least 44x44px for mobile */
@@ -60,6 +65,19 @@ body {
   /* Improve table scrolling on mobile */
   .MuiTableContainer-root {
     -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Prevent horizontal scroll on mobile */
+  body {
+    overflow-x: hidden;
+    position: relative;
+  }
+  
+  /* Ensure containers don't exceed viewport */
+  .MuiContainer-root {
+    max-width: 100% !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
   }
 }
 
