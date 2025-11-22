@@ -34,10 +34,11 @@ function ChartLoader() {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        minHeight: '300px',
+        minHeight: { xs: '250px', sm: '300px', md: '350px' },
+        width: '100%',
       }}
     >
-      <CircularProgress />
+      <CircularProgress size={40} />
     </Box>
   );
 }
@@ -121,33 +122,65 @@ export const Dashboard = memo(function Dashboard() {
   }, [incomeTransactions, expenseTransactions, savingsTransactions, accounts, selectedMonthId]);
 
   return (
-    <Stack spacing={3}>
+    <Stack 
+      spacing={{ xs: 2, sm: 2.5, md: 3 }}
+      sx={{
+        width: '100%',
+        maxWidth: '100%',
+        boxSizing: 'border-box',
+      }}
+    >
       <Box 
         className="no-print" 
         sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
-          alignItems: 'center', 
-          flexWrap: { xs: 'wrap', sm: 'nowrap' }, 
-          gap: 2,
+          alignItems: { xs: 'flex-start', sm: 'center' }, 
+          flexWrap: 'wrap', 
+          gap: { xs: 1.5, sm: 2 },
           flexDirection: { xs: 'column', sm: 'row' },
         }}
       >
-        <Typography variant="h4" sx={{ flexShrink: 0 }}>Dashboard</Typography>
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            flexShrink: 0,
+            fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+            fontWeight: 600,
+          }}
+        >
+          Dashboard
+        </Typography>
+        <Stack 
+          direction="row" 
+          spacing={{ xs: 1, sm: 1.5 }} 
+          alignItems="center" 
+          sx={{ 
+            flexShrink: 0,
+            width: { xs: '100%', sm: 'auto' },
+          }}
+        >
           <IconButton
             onClick={() => setWidgetSettingsOpen(true)}
             aria-label="Widget settings"
-            size="small"
+            size="medium"
+            sx={{
+              minWidth: 44,
+              minHeight: 44,
+            }}
           >
-            <SettingsIcon />
+            <SettingsIcon fontSize="small" />
           </IconButton>
           <Button
             variant="outlined"
             startIcon={<PrintIcon />}
             onClick={handlePrint}
-            size="small"
+            size="medium"
             aria-label="Print dashboard"
+            sx={{
+              minHeight: 44,
+              flex: { xs: 1, sm: 'none' },
+            }}
           >
             Print
           </Button>
@@ -160,23 +193,80 @@ export const Dashboard = memo(function Dashboard() {
         </Typography>
       </Box>
       {/* Month Selector */}
-      <Paper elevation={1} sx={{ p: 2, borderRadius: 2 }}>
+      <Paper 
+        elevation={1} 
+        sx={{ 
+          p: { xs: 1.5, sm: 2 }, 
+          borderRadius: 2,
+          width: '100%',
+          maxWidth: '100%',
+          boxSizing: 'border-box',
+        }}
+      >
         <Stack 
           direction={{ xs: 'column', sm: 'row' }} 
-          spacing={2} 
+          spacing={{ xs: 1.5, sm: 2 }} 
           alignItems={{ xs: 'stretch', sm: 'center' }}
+          sx={{
+            width: '100%',
+            maxWidth: '100%',
+          }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-            <CalendarMonthIcon color="primary" />
-            <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 200 } }}>
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: { xs: 1, sm: 1.5 }, 
+              flexShrink: 0,
+              width: { xs: '100%', sm: 'auto' },
+              minWidth: 0,
+              maxWidth: { xs: '100%', sm: 'none' },
+            }}
+          >
+            <CalendarMonthIcon 
+              color="primary" 
+              sx={{ 
+                fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                flexShrink: 0,
+              }} 
+            />
+            <FormControl 
+              size="small" 
+              sx={{ 
+                minWidth: 0,
+                width: { xs: '100%', sm: 200 },
+                flex: { xs: 1, sm: 'none' },
+                maxWidth: { xs: '100%', sm: 200 },
+              }}
+            >
               <InputLabel>Select Month</InputLabel>
               <Select
                 value={selectedMonthId}
                 label="Select Month"
                 onChange={(e) => setSelectedMonthId(e.target.value)}
+                sx={{
+                  width: '100%',
+                  maxWidth: '100%',
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxWidth: { xs: '90vw', sm: 'none' },
+                      maxHeight: { xs: '60vh', sm: 'none' },
+                    },
+                  },
+                }}
               >
                 {availableMonths.map((month) => (
-                  <MenuItem key={month.id} value={month.id}>
+                  <MenuItem 
+                    key={month.id} 
+                    value={month.id}
+                    sx={{
+                      whiteSpace: 'normal',
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                    }}
+                  >
                     {month.label}
                   </MenuItem>
                 ))}
@@ -188,7 +278,11 @@ export const Dashboard = memo(function Dashboard() {
             color="text.secondary"
             sx={{ 
               alignSelf: { xs: 'flex-start', sm: 'center' },
-              mt: { xs: 0, sm: 0 }
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              width: { xs: '100%', sm: 'auto' },
+              minWidth: 0,
             }}
           >
             Viewing metrics for: <strong>{formatMonthDate(selectedMonthId)}</strong>
@@ -199,13 +293,22 @@ export const Dashboard = memo(function Dashboard() {
       {/* Monthly Metrics Section - Summary Cards Widget */}
       {enabledWidgets.some((w) => w.id === 'summary-cards') && (
         <Box>
-          <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              mb: { xs: 1.5, sm: 2 }, 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1,
+              fontSize: { xs: '1rem', sm: '1.25rem' },
+            }}
+          >
             <CalendarMonthIcon fontSize="small" />
             Monthly Metrics - {formatMonthDate(selectedMonthId)}
           </Typography>
           <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            spacing={3}
+            direction={{ xs: 'column', sm: 'column', md: 'row' }}
+            spacing={{ xs: 2, sm: 2.5, md: 3 }}
             sx={{ alignItems: 'stretch', width: '100%' }}
           >
             <SummaryCard
@@ -244,13 +347,22 @@ export const Dashboard = memo(function Dashboard() {
 
       {/* Overall Metrics Section */}
       <Box>
-        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            mb: { xs: 1.5, sm: 2 }, 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1,
+            fontSize: { xs: '1rem', sm: '1.25rem' },
+          }}
+        >
           <TrendingUpIcon fontSize="small" />
           Overall Metrics (All Time)
         </Typography>
         <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          spacing={3}
+          direction={{ xs: 'column', sm: 'column', md: 'row' }}
+          spacing={{ xs: 2, sm: 2.5, md: 3 }}
           sx={{ alignItems: 'stretch', width: '100%' }}
         >
         <SummaryCard

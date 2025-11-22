@@ -423,17 +423,27 @@ export function EMIs() {
   };
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={{ xs: 2, sm: 3 }}>
       <Box 
         sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: { xs: 'flex-start', sm: 'center' },
           flexDirection: { xs: 'column', sm: 'row' },
-          gap: 2,
+          gap: { xs: 1.5, sm: 2 },
+          mb: { xs: 1, sm: 0 },
         }}
       >
-        <Typography variant="h4" sx={{ flexShrink: 0 }}>EMIs</Typography>
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            flexShrink: 0,
+            fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+            fontWeight: 700,
+          }}
+        >
+          EMIs
+        </Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -442,7 +452,13 @@ export function EMIs() {
           aria-label={accounts.length === 0 ? 'Add EMI (requires at least one bank account)' : 'Add new EMI'}
           fullWidth={isMobile}
           size={isMobile ? 'medium' : 'large'}
-          sx={{ flexShrink: 0 }}
+          sx={{ 
+            flexShrink: 0,
+            minHeight: { xs: 44, sm: 48 },
+            fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+            whiteSpace: 'nowrap',
+            px: { xs: 1.5, sm: 2 },
+          }}
         >
           Add EMI
         </Button>
@@ -488,26 +504,67 @@ export function EMIs() {
       </Collapse>
 
       <Paper>
-        <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
-          <Tab label="Expense EMIs" value="expense" />
-          <Tab label="Savings/Investment EMIs" value="savings" />
-        </Tabs>
+        {isMobile ? (
+          <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+            <FormControl fullWidth size="small">
+              <InputLabel>EMI Type</InputLabel>
+              <Select
+                value={activeTab}
+                onChange={(e) => setActiveTab(e.target.value as TabValue)}
+                sx={{
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  '& .MuiSelect-select': {
+                    py: 1.5,
+                  },
+                }}
+              >
+                <MenuItem value="expense">Expense EMIs</MenuItem>
+                <MenuItem value="savings">Savings/Investment EMIs</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        ) : (
+          <Tabs 
+            value={activeTab} 
+            onChange={(_, v) => setActiveTab(v)}
+            sx={{
+              '& .MuiTab-root': {
+                minHeight: 72,
+                fontSize: '0.875rem',
+                px: 3,
+                minWidth: 160,
+              },
+            }}
+          >
+            <Tab label="Expense EMIs" value="expense" />
+            <Tab label="Savings/Investment EMIs" value="savings" />
+          </Tabs>
+        )}
 
         <TableContainer
           sx={{
             overflowX: 'auto',
+            maxWidth: '100%',
             '& .MuiTableCell-root': {
               whiteSpace: 'nowrap',
-              minWidth: 100,
+              minWidth: { xs: 80, sm: 100 },
+              padding: { xs: '8px 4px', sm: '16px' },
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
             },
             '& .MuiTableRow-root:has(.MuiTableCell-root[colspan])': {
               '& .MuiTableCell-root': {
                 whiteSpace: 'normal',
               },
             },
+            '& .MuiTableHead-root .MuiTableCell-root': {
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              fontWeight: 600,
+              padding: { xs: '12px 4px', sm: '16px' },
+            },
           }}
         >
-          <Table aria-label={`${activeTab} EMIs table`} sx={{ minWidth: 800 }}>
+          <Table aria-label={`${activeTab} EMIs table`} sx={{ minWidth: { xs: 600, sm: 800 } }}>
             <TableHead>
               <TableRow>
                 <TableCell>Name</TableCell>
@@ -625,11 +682,25 @@ export function EMIs() {
                   .map((emi) => (
                     <TableRow key={emi.id} hover>
                       <TableCell>
-                        <Typography variant="body2" fontWeight="medium">
+                        <Typography 
+                          variant="body2" 
+                          fontWeight="medium"
+                          sx={{
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            wordBreak: 'break-word',
+                          }}
+                        >
                           {emi.name}
                         </Typography>
                         {activeTab === 'savings' && (
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography 
+                            variant="caption" 
+                            color="text.secondary"
+                            sx={{
+                              fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                              wordBreak: 'break-word',
+                            }}
+                          >
                             {(emi as SavingsInvestmentEMI).destination}
                           </Typography>
                         )}
@@ -639,13 +710,23 @@ export function EMIs() {
                       <TableCell>{emi.frequency}</TableCell>
                       <TableCell>{formatDate(emi.startDate)}</TableCell>
                       <TableCell>
-                        <Box sx={{ minWidth: 100 }}>
+                        <Box sx={{ minWidth: { xs: 80, sm: 100 } }}>
                           <LinearProgress
                             variant="determinate"
                             value={getProgress(emi)}
-                            sx={{ height: 8, borderRadius: 1 }}
+                            sx={{ 
+                              height: { xs: 6, sm: 8 }, 
+                              borderRadius: 1,
+                              mb: { xs: 0.25, sm: 0.5 },
+                            }}
                           />
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography 
+                            variant="caption" 
+                            color="text.secondary"
+                            sx={{
+                              fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                            }}
+                          >
                             {emi.completedInstallments} / {emi.totalInstallments}
                           </Typography>
                         </Box>
@@ -661,28 +742,54 @@ export function EMIs() {
                               ? 'default'
                               : 'warning'
                           }
+                          sx={{
+                            fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                            height: { xs: 24, sm: 28 },
+                            '& .MuiChip-label': {
+                              px: { xs: 0.75, sm: 1 },
+                            },
+                          }}
                         />
                       </TableCell>
                       <TableCell align="right">
-                        <Stack direction="row" spacing={1} justifyContent="flex-end">
-                          <Link
-                            component="button"
-                            variant="body2"
-                            onClick={() => {
-                              const count = getGeneratedTransactionsCount(emi.id);
-                              if (count > 0) {
-                                navigate(`/transactions?tab=${activeTab === 'expense' ? 'expense' : 'savings'}&emi=${emi.id}`);
-                              }
-                            }}
-                            sx={{ textDecoration: 'none' }}
-                          >
-                            {getGeneratedTransactionsCount(emi.id)} transactions
-                          </Link>
+                        <Stack 
+                          direction="row" 
+                          spacing={{ xs: 0.5, sm: 1 }} 
+                          justifyContent="flex-end"
+                          flexWrap="wrap"
+                          sx={{ gap: { xs: 0.5, sm: 1 } }}
+                        >
+                          {!isMobile && (
+                            <Link
+                              component="button"
+                              variant="body2"
+                              onClick={() => {
+                                const count = getGeneratedTransactionsCount(emi.id);
+                                if (count > 0) {
+                                  navigate(`/transactions?tab=${activeTab === 'expense' ? 'expense' : 'savings'}&emi=${emi.id}`);
+                                }
+                              }}
+                              sx={{ 
+                                textDecoration: 'none',
+                                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                                minHeight: { xs: 40, sm: 'auto' },
+                                display: 'flex',
+                                alignItems: 'center',
+                              }}
+                            >
+                              {getGeneratedTransactionsCount(emi.id)} transactions
+                            </Link>
+                          )}
                           <IconButton
                             size="small"
                             onClick={() => handlePauseResume(emi)}
                             disabled={emi.status === 'Completed' || deletingId !== null}
                             aria-label={emi.status === 'Active' ? `Pause EMI ${emi.name}` : `Resume EMI ${emi.name}`}
+                            sx={{
+                              minWidth: { xs: 40, sm: 48 },
+                              minHeight: { xs: 40, sm: 48 },
+                              p: { xs: 0.5, sm: 1 },
+                            }}
                           >
                             {emi.status === 'Active' ? (
                               <PauseIcon fontSize="small" />
@@ -697,6 +804,11 @@ export function EMIs() {
                             aria-label={`Convert EMI ${emi.name} to Recurring Template`}
                             title="Convert to Recurring Template"
                             color="primary"
+                            sx={{
+                              minWidth: { xs: 40, sm: 48 },
+                              minHeight: { xs: 40, sm: 48 },
+                              p: { xs: 0.5, sm: 1 },
+                            }}
                           >
                             <SwapHorizIcon fontSize="small" />
                           </IconButton>
@@ -705,6 +817,11 @@ export function EMIs() {
                             onClick={() => handleOpenDialog(emi)}
                             disabled={deletingId !== null}
                             aria-label={`Edit EMI ${emi.name}`}
+                            sx={{
+                              minWidth: { xs: 40, sm: 48 },
+                              minHeight: { xs: 40, sm: 48 },
+                              p: { xs: 0.5, sm: 1 },
+                            }}
                           >
                             <EditIcon fontSize="small" />
                           </IconButton>
@@ -714,6 +831,11 @@ export function EMIs() {
                             color="error"
                             disabled={deletingId !== null}
                             aria-label={`Delete EMI ${emi.name}`}
+                            sx={{
+                              minWidth: { xs: 40, sm: 48 },
+                              minHeight: { xs: 40, sm: 48 },
+                              p: { xs: 0.5, sm: 1 },
+                            }}
                           >
                             {deletingId === emi.id ? (
                               <CircularProgress size={16} aria-label="Deleting" />
@@ -745,19 +867,63 @@ export function EMIs() {
             sx={{
               '& .MuiTablePagination-toolbar': {
                 flexWrap: isMobile ? 'wrap' : 'nowrap',
+                gap: { xs: 1, sm: 0 },
+                px: { xs: 1, sm: 2 },
+              },
+              '& .MuiTablePagination-selectLabel': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                mr: { xs: 0.5, sm: 1 },
+              },
+              '& .MuiTablePagination-displayedRows': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              },
+              '& .MuiTablePagination-select': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                minHeight: { xs: 36, sm: 40 },
+              },
+              '& .MuiIconButton-root': {
+                minWidth: { xs: 40, sm: 48 },
+                minHeight: { xs: 40, sm: 48 },
+                p: { xs: 0.5, sm: 1 },
               },
             }}
           />
         )}
       </Paper>
 
-      <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-        <DialogTitle>{editingEMI ? 'Edit EMI' : 'Add EMI'}</DialogTitle>
-        <DialogContent>
+      <Dialog 
+        open={dialogOpen} 
+        onClose={handleCloseDialog} 
+        maxWidth="md" 
+        fullWidth
+        fullScreen={isMobile}
+        PaperProps={{
+          sx: {
+            m: { xs: 0, sm: 2 },
+            maxHeight: { xs: '100vh', sm: '90vh' },
+            width: { xs: '100%', sm: 'auto' },
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            fontSize: { xs: '1.125rem', sm: '1.25rem' },
+            fontWeight: 700,
+            pb: { xs: 1, sm: 2 },
+          }}
+        >
+          {editingEMI ? 'Edit EMI' : 'Add EMI'}
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 },
+          }}
+        >
           <div id="emi-dialog-description" className="sr-only">
             {editingEMI ? `Edit details for ${editingEMI.name}` : 'Enter details for a new EMI'}
           </div>
-          <Stack spacing={2} sx={{ mt: 1 }}>
+          <Stack spacing={{ xs: 1.5, sm: 2 }} sx={{ mt: { xs: 0, sm: 1 } }}>
             <TextField
               label="EMI Name"
               value={formData.name}
@@ -797,6 +963,14 @@ export function EMIs() {
                 value={formData.frequency}
                 label="Frequency"
                 onChange={(e) => setFormData({ ...formData, frequency: e.target.value as 'Monthly' | 'Quarterly' })}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: { xs: '60vh', sm: 'none' },
+                      maxWidth: { xs: '90vw', sm: 'none' },
+                    },
+                  },
+                }}
               >
                 <MenuItem value="Monthly">Monthly</MenuItem>
                 <MenuItem value="Quarterly">Quarterly</MenuItem>
@@ -846,6 +1020,14 @@ export function EMIs() {
                     value={formData.category}
                     label="Category"
                     onChange={(e) => setFormData({ ...formData, category: e.target.value as ExpenseEMI['category'] })}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          maxHeight: { xs: '60vh', sm: 'none' },
+                          maxWidth: { xs: '90vw', sm: 'none' },
+                        },
+                      },
+                    }}
                   >
                     <MenuItem value="CCEMI">CC EMI</MenuItem>
                     <MenuItem value="Loan">Loan</MenuItem>
@@ -859,6 +1041,14 @@ export function EMIs() {
                       value={formData.creditCardId}
                       label="Credit Card"
                       onChange={(e) => setFormData({ ...formData, creditCardId: e.target.value })}
+                      MenuProps={{
+                        PaperProps: {
+                          sx: {
+                            maxHeight: { xs: '60vh', sm: 'none' },
+                            maxWidth: { xs: '90vw', sm: 'none' },
+                          },
+                        },
+                      }}
                     >
                       {accounts
                         .filter((acc) => acc.accountType === 'CreditCard')
@@ -894,8 +1084,26 @@ export function EMIs() {
             />
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} disabled={isSaving}>Cancel</Button>
+        <DialogActions
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 },
+            gap: { xs: 1, sm: 1.5 },
+            flexDirection: { xs: 'column-reverse', sm: 'row' },
+          }}
+        >
+          <Button 
+            onClick={handleCloseDialog} 
+            disabled={isSaving}
+            fullWidth={isMobile}
+            sx={{
+              minHeight: { xs: 44, sm: 40 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              px: { xs: 1.5, sm: 2 },
+            }}
+          >
+            Cancel
+          </Button>
           <ButtonWithLoading
             onClick={handleSave}
             variant="contained"
@@ -907,6 +1115,12 @@ export function EMIs() {
               (activeTab === 'savings' && !formData.destination.trim()) ||
               isSaving
             }
+            fullWidth={isMobile}
+            sx={{
+              minHeight: { xs: 44, sm: 40 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              px: { xs: 1.5, sm: 2 },
+            }}
           >
             {editingEMI ? 'Update' : 'Create'}
           </ButtonWithLoading>

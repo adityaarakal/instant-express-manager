@@ -1,4 +1,4 @@
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, DialogContentText } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, DialogContentText, useMediaQuery, useTheme } from '@mui/material';
 import WarningIcon from '@mui/icons-material/Warning';
 import { Stack } from '@mui/material';
 
@@ -23,6 +23,9 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const getColor = () => {
     switch (severity) {
       case 'error':
@@ -44,23 +47,90 @@ export function ConfirmDialog({
       aria-describedby="confirm-dialog-description"
       maxWidth="sm"
       fullWidth
+      fullScreen={isMobile}
+      PaperProps={{
+        sx: {
+          m: { xs: 0, sm: 2 },
+          maxHeight: { xs: '100vh', sm: '90vh' },
+          width: { xs: '100%', sm: 'auto' },
+        },
+      }}
     >
-      <DialogTitle id="confirm-dialog-title">
-        <Stack direction="row" spacing={1} alignItems="center">
-          <WarningIcon color={getColor()} />
-          <Typography variant="h6" component="span">
+      <DialogTitle 
+        id="confirm-dialog-title"
+        sx={{
+          fontSize: { xs: '1.125rem', sm: '1.25rem' },
+          fontWeight: 700,
+          pb: { xs: 1, sm: 2 },
+        }}
+      >
+        <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+          <WarningIcon 
+            color={getColor()} 
+            sx={{ fontSize: { xs: 20, sm: 24 } }}
+          />
+          <Typography 
+            variant="h6" 
+            component="span"
+            sx={{
+              fontSize: { xs: '1.125rem', sm: '1.25rem' },
+              fontWeight: 700,
+              wordBreak: 'break-word',
+            }}
+          >
             {title}
           </Typography>
         </Stack>
       </DialogTitle>
-      <DialogContent>
-        <DialogContentText id="confirm-dialog-description">{message}</DialogContentText>
+      <DialogContent
+        sx={{
+          px: { xs: 2, sm: 3 },
+          pb: { xs: 2, sm: 3 },
+        }}
+      >
+        <DialogContentText 
+          id="confirm-dialog-description"
+          sx={{
+            fontSize: { xs: '0.875rem', sm: '1rem' },
+            wordWrap: 'break-word',
+            overflowWrap: 'break-word',
+          }}
+        >
+          {message}
+        </DialogContentText>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onCancel} color="inherit">
+      <DialogActions
+        sx={{
+          px: { xs: 2, sm: 3 },
+          pb: { xs: 2, sm: 3 },
+          gap: { xs: 1, sm: 1.5 },
+          flexDirection: { xs: 'column-reverse', sm: 'row' },
+        }}
+      >
+        <Button 
+          onClick={onCancel} 
+          color="inherit"
+          fullWidth={isMobile}
+          sx={{
+            minHeight: { xs: 44, sm: 40 },
+            fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+            px: { xs: 1.5, sm: 2 },
+          }}
+        >
           {cancelText}
         </Button>
-        <Button onClick={onConfirm} color={getColor()} variant="contained" autoFocus>
+        <Button 
+          onClick={onConfirm} 
+          color={getColor()} 
+          variant="contained" 
+          autoFocus
+          fullWidth={isMobile}
+          sx={{
+            minHeight: { xs: 44, sm: 40 },
+            fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+            px: { xs: 1.5, sm: 2 },
+          }}
+        >
           {confirmText}
         </Button>
       </DialogActions>

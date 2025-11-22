@@ -220,7 +220,7 @@ export const Analytics = memo(function Analytics() {
   }
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={{ xs: 2, sm: 3 }}>
       <Box 
         sx={{ 
           display: 'flex', 
@@ -228,17 +228,33 @@ export const Analytics = memo(function Analytics() {
           alignItems: { xs: 'flex-start', sm: 'center' },
           flexDirection: { xs: 'column', sm: 'row' },
           flexWrap: { xs: 'nowrap', sm: 'wrap' },
-          gap: 2,
+          gap: { xs: 1.5, sm: 2 },
+          mb: { xs: 1, sm: 0 },
         }}
       >
-        <Typography variant="h4" sx={{ flexShrink: 0 }}>Analytics</Typography>
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            flexShrink: 0,
+            fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+            fontWeight: 700,
+          }}
+        >
+          Analytics
+        </Typography>
         <Stack 
           direction={{ xs: 'column', sm: 'row' }} 
-          spacing={1} 
+          spacing={{ xs: 1, sm: 1.5 }} 
           alignItems={{ xs: 'stretch', sm: 'center' }}
-          sx={{ flexShrink: 0 }}
+          sx={{ flexShrink: 0, width: { xs: '100%', sm: 'auto' } }}
         >
-          <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 200 } }}>
+          <FormControl 
+            size="small" 
+            sx={{ 
+              minWidth: { xs: '100%', sm: 200 },
+              width: { xs: '100%', sm: 'auto' },
+            }}
+          >
             <InputLabel>Date Range</InputLabel>
             <Select
               value={dateRange}
@@ -249,6 +265,14 @@ export const Analytics = memo(function Analytics() {
                 if (newRange === 'custom') {
                   setCustomDateDialogOpen(true);
                 }
+              }}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    maxHeight: { xs: '60vh', sm: 'none' },
+                    maxWidth: { xs: '90vw', sm: 'none' },
+                  },
+                },
               }}
             >
               <MenuItem value="last3months">Last 3 Months</MenuItem>
@@ -265,6 +289,12 @@ export const Analytics = memo(function Analytics() {
               startIcon={<CalendarTodayIcon />}
               onClick={() => setCustomDateDialogOpen(true)}
               fullWidth={isMobile}
+              sx={{
+                minHeight: { xs: 44, sm: 40 },
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                px: { xs: 1.5, sm: 2 },
+                whiteSpace: { xs: 'nowrap', sm: 'nowrap' },
+              }}
             >
               {customStartDate && customEndDate
                 ? `${new Date(customStartDate).toLocaleDateString()} - ${new Date(customEndDate).toLocaleDateString()}`
@@ -277,6 +307,13 @@ export const Analytics = memo(function Analytics() {
             startIcon={<FileDownloadIcon />}
             endIcon={<ArrowDropDownIcon />}
             onClick={(e) => setExportMenuAnchor(e.currentTarget)}
+            fullWidth={isMobile}
+            sx={{
+              minHeight: { xs: 44, sm: 40 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              px: { xs: 1.5, sm: 2 },
+              whiteSpace: 'nowrap',
+            }}
           >
             Export
           </Button>
@@ -284,6 +321,11 @@ export const Analytics = memo(function Analytics() {
             anchorEl={exportMenuAnchor}
             open={Boolean(exportMenuAnchor)}
             onClose={() => setExportMenuAnchor(null)}
+            PaperProps={{
+              sx: {
+                maxWidth: { xs: '90vw', sm: 'none' },
+              },
+            }}
           >
             <MenuItem
               onClick={() => {
@@ -354,10 +396,36 @@ export const Analytics = memo(function Analytics() {
         </Stack>
       </Box>
 
-      <Dialog open={customDateDialogOpen} onClose={() => setCustomDateDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Custom Date Range</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
+      <Dialog 
+        open={customDateDialogOpen} 
+        onClose={() => setCustomDateDialogOpen(false)} 
+        maxWidth="sm" 
+        fullWidth
+        fullScreen={isMobile}
+        PaperProps={{
+          sx: {
+            m: { xs: 0, sm: 2 },
+            maxHeight: { xs: '100vh', sm: '90vh' },
+            width: { xs: '100%', sm: 'auto' },
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            fontSize: { xs: '1.125rem', sm: '1.25rem' },
+            fontWeight: 700,
+            pb: { xs: 1, sm: 2 },
+          }}
+        >
+          Custom Date Range
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 },
+          }}
+        >
+          <Stack spacing={{ xs: 1.5, sm: 2 }} sx={{ mt: { xs: 0, sm: 1 } }}>
             <TextField
               label="Start Date"
               type="date"
@@ -376,32 +444,94 @@ export const Analytics = memo(function Analytics() {
             />
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCustomDateDialogOpen(false)}>Cancel</Button>
+        <DialogActions
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 },
+            gap: { xs: 1, sm: 1.5 },
+            flexDirection: { xs: 'column-reverse', sm: 'row' },
+          }}
+        >
+          <Button 
+            onClick={() => setCustomDateDialogOpen(false)}
+            fullWidth={isMobile}
+            sx={{
+              minHeight: { xs: 44, sm: 40 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              px: { xs: 1.5, sm: 2 },
+            }}
+          >
+            Cancel
+          </Button>
           <Button
             onClick={handleCustomDateRange}
             variant="contained"
             disabled={!customStartDate || !customEndDate || customStartDate > customEndDate}
+            fullWidth={isMobile}
+            sx={{
+              minHeight: { xs: 44, sm: 40 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              px: { xs: 1.5, sm: 2 },
+            }}
           >
             Apply
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Paper elevation={1} sx={{ p: 2 }}>
-        <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
-          <Tab label="Income" />
-          <Tab label="Expenses" />
-          <Tab label="Savings" />
-          <Tab label="Credit Cards" />
-          <Tab label="Budget vs Actual" />
-          <Tab label="Advanced Charts" />
-        </Tabs>
+      <Paper elevation={1} sx={{ p: { xs: 1.5, sm: 2 } }}>
+        {isMobile ? (
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', pb: 1.5 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Chart Type</InputLabel>
+              <Select
+                value={activeTab}
+                onChange={(e) => setActiveTab(Number(e.target.value))}
+                sx={{
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  '& .MuiSelect-select': {
+                    py: 1.5,
+                  },
+                }}
+              >
+                <MenuItem value={0}>Income</MenuItem>
+                <MenuItem value={1}>Expenses</MenuItem>
+                <MenuItem value={2}>Savings</MenuItem>
+                <MenuItem value={3}>Credit Cards</MenuItem>
+                <MenuItem value={4}>Budget vs Actual</MenuItem>
+                <MenuItem value={5}>Advanced Charts</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        ) : (
+          <Tabs 
+            value={activeTab} 
+            onChange={(_, v) => setActiveTab(v)}
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              '& .MuiTab-root': {
+                minHeight: 72,
+                fontSize: '0.875rem',
+                px: 2,
+                minWidth: 120,
+              },
+            }}
+          >
+            <Tab label="Income" />
+            <Tab label="Expenses" />
+            <Tab label="Savings" />
+            <Tab label="Credit Cards" />
+            <Tab label="Budget vs Actual" />
+            <Tab label="Advanced Charts" />
+          </Tabs>
+        )}
       </Paper>
 
       {activeTab === 0 && (
         <Suspense fallback={<ChartLoader />}>
-          <Stack spacing={3}>
+          <Stack spacing={{ xs: 2, sm: 3 }}>
             <IncomeTrendsChart transactions={filteredIncome} />
             <IncomeVsExpenseChart incomeTransactions={filteredIncome} expenseTransactions={filteredExpenses} />
           </Stack>
@@ -410,7 +540,7 @@ export const Analytics = memo(function Analytics() {
 
       {activeTab === 1 && (
         <Suspense fallback={<ChartLoader />}>
-          <Stack spacing={3}>
+          <Stack spacing={{ xs: 2, sm: 3 }}>
             <ExpenseBreakdownChart transactions={filteredExpenses} />
             <SpendingTrendsChart transactions={filteredExpenses} />
             {(() => {
@@ -468,7 +598,7 @@ export const Analytics = memo(function Analytics() {
 
       {activeTab === 2 && (
         <Suspense fallback={<ChartLoader />}>
-          <Stack spacing={3}>
+          <Stack spacing={{ xs: 2, sm: 3 }}>
             <SavingsProgressChart transactions={filteredSavings} />
             <InvestmentPerformanceChart transactions={filteredSavings} />
             <SavingsRateChart incomeTransactions={filteredIncome} savingsTransactions={filteredSavings} />
@@ -478,7 +608,7 @@ export const Analytics = memo(function Analytics() {
 
       {activeTab === 3 && (
         <Suspense fallback={<ChartLoader />}>
-          <Stack spacing={3}>
+          <Stack spacing={{ xs: 2, sm: 3 }}>
             <CreditCardAnalysisChart accounts={creditCards} transactions={filteredExpenses} />
           </Stack>
         </Suspense>
@@ -486,7 +616,7 @@ export const Analytics = memo(function Analytics() {
 
       {activeTab === 4 && (
         <Suspense fallback={<ChartLoader />}>
-          <Stack spacing={3}>
+          <Stack spacing={{ xs: 2, sm: 3 }}>
             <BudgetVsActualChart
               incomeTransactions={filteredIncome}
               expenseTransactions={filteredExpenses}
@@ -498,7 +628,7 @@ export const Analytics = memo(function Analytics() {
 
       {activeTab === 5 && (
         <Suspense fallback={<ChartLoader />}>
-          <Stack spacing={3}>
+          <Stack spacing={{ xs: 2, sm: 3 }}>
             {(() => {
               // Income by Category Pie Chart
               const incomeByCategory: Record<string, number> = {};

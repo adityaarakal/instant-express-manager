@@ -20,6 +20,8 @@ import {
   DialogActions,
   Alert,
   AlertTitle,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import RestoreIcon from '@mui/icons-material/Restore';
@@ -76,6 +78,8 @@ const CURRENCIES = [
 export function Settings() {
   const { settings, updateSettings, reset } = useSettingsStore();
   const { showSuccess, showError, showWarning, showInfo } = useToastStore();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [localSettings, setLocalSettings] = useState(settings);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importReplaceMode, setImportReplaceMode] = useState(false);
@@ -346,24 +350,52 @@ export function Settings() {
   const currentBackupInfo = exportBackup();
 
   return (
-    <Stack spacing={3}>
-      <Paper elevation={1} sx={{ p: 4, borderRadius: 3 }}>
-        <Stack spacing={3}>
+    <Stack spacing={{ xs: 2, sm: 3 }}>
+      <Paper elevation={1} sx={{ p: { xs: 2, sm: 3, md: 4 }, borderRadius: 3 }}>
+        <Stack spacing={{ xs: 2, sm: 3 }}>
           <Box>
-            <Typography variant="h5" sx={{ mb: 1 }}>
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                mb: { xs: 0.75, sm: 1 },
+                fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
+                fontWeight: 700,
+              }}
+            >
               Workspace Settings
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               Configure defaults that align with your Planned Expenses spreadsheet.
             </Typography>
           </Box>
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Appearance</Typography>
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Appearance
+            </Typography>
             <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              <Typography 
+                variant="body2" 
+                color="text.secondary" 
+                sx={{ 
+                  mb: { xs: 0.75, sm: 1 },
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                }}
+              >
                 Theme
               </Typography>
               <ThemeModeToggle />
@@ -372,8 +404,16 @@ export function Settings() {
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Currency & Defaults</Typography>
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Currency & Defaults
+            </Typography>
             <FormControl fullWidth>
               <InputLabel>Base Currency</InputLabel>
               <Select
@@ -382,6 +422,14 @@ export function Settings() {
                 onChange={(e) =>
                   setLocalSettings({ ...localSettings, currency: e.target.value })
                 }
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: { xs: '60vh', sm: 'none' },
+                      maxWidth: { xs: '90vw', sm: 'none' },
+                    },
+                  },
+                }}
               >
                 {CURRENCIES.map((currency) => (
                   <MenuItem key={currency.code} value={currency.code}>
@@ -408,8 +456,16 @@ export function Settings() {
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Reminders</Typography>
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Reminders
+            </Typography>
             <FormControlLabel
               control={
                 <Switch
@@ -423,29 +479,54 @@ export function Settings() {
                 />
               }
               label="Enable due date reminders"
+              sx={{
+                '& .MuiFormControlLabel-label': {
+                  fontSize: { xs: '0.875rem', sm: '0.875rem' },
+                },
+              }}
             />
           </Stack>
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Bucket Definitions</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Bucket Definitions
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               Configure bucket names, colors, and default statuses.
             </Typography>
-            <Stack spacing={2}>
+            <Stack spacing={{ xs: 1.5, sm: 2 }}>
               {localSettings.defaultBuckets.map((bucket) => (
-                <Paper key={bucket.id} elevation={0} sx={{ p: 2, bgcolor: 'action.hover' }}>
-                  <Stack spacing={2}>
-                    <Stack direction="row" spacing={2} alignItems="center">
+                <Paper key={bucket.id} elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, bgcolor: 'action.hover' }}>
+                  <Stack spacing={{ xs: 1.5, sm: 2 }}>
+                    <Stack 
+                      direction={{ xs: 'column', sm: 'row' }} 
+                      spacing={{ xs: 1.5, sm: 2 }} 
+                      alignItems={{ xs: 'stretch', sm: 'center' }}
+                    >
                       <Box
                         sx={{
-                          width: 24,
-                          height: 24,
+                          width: { xs: 20, sm: 24 },
+                          height: { xs: 20, sm: 24 },
                           borderRadius: '50%',
                           bgcolor: bucket.color,
                           border: 1,
                           borderColor: 'divider',
+                          flexShrink: 0,
+                          alignSelf: { xs: 'flex-start', sm: 'center' },
                         }}
                       />
                       <TextField
@@ -455,7 +536,13 @@ export function Settings() {
                         size="small"
                         sx={{ flex: 1 }}
                       />
-                      <FormControl size="small" sx={{ minWidth: 120 }}>
+                      <FormControl 
+                        size="small" 
+                        sx={{ 
+                          minWidth: { xs: '100%', sm: 120 },
+                          width: { xs: '100%', sm: 'auto' },
+                        }}
+                      >
                         <InputLabel>Default Status</InputLabel>
                         <Select
                           value={localSettings.defaultStatusByBucket[bucket.id] ?? bucket.defaultStatus}
@@ -466,6 +553,14 @@ export function Settings() {
                               e.target.value as 'pending' | 'paid',
                             )
                           }
+                          MenuProps={{
+                            PaperProps: {
+                              sx: {
+                                maxHeight: { xs: '60vh', sm: 'none' },
+                                maxWidth: { xs: '90vw', sm: 'none' },
+                              },
+                            },
+                          }}
                         >
                           <MenuItem value="pending">Pending</MenuItem>
                           <MenuItem value="paid">Paid</MenuItem>
@@ -480,9 +575,23 @@ export function Settings() {
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Export History</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Export History
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               Track when you export transactions or backups.
             </Typography>
             <ExportHistory />
@@ -490,9 +599,23 @@ export function Settings() {
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Scheduled Exports</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Scheduled Exports
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               Automatically export transactions on a schedule. Exports run when the app is open.
             </Typography>
             <ScheduledExports />
@@ -500,9 +623,23 @@ export function Settings() {
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Projections Integration</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Projections Integration
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               Import projections from CSV or Excel files to auto-populate inflow totals and track savings targets.
             </Typography>
             <ProjectionsIntegration />
@@ -510,9 +647,23 @@ export function Settings() {
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Browser Notifications</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Browser Notifications
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               Configure browser notifications for due date reminders and summaries.
             </Typography>
             <NotificationSettings />
@@ -520,15 +671,44 @@ export function Settings() {
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">#REF! Error Remediation</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              #REF! Error Remediation
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               Fix incomplete remaining cash calculations for months affected by #REF! errors.
               This tool recalculates remaining cash from available transaction data.
             </Typography>
-            <Alert severity="info" sx={{ mb: 2 }}>
+            <Alert 
+              severity="info" 
+              sx={{ 
+                mb: { xs: 1.5, sm: 2 },
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                '& .MuiAlertTitle-root': {
+                  fontSize: { xs: '0.9375rem', sm: '1rem' },
+                  fontWeight: 600,
+                },
+              }}
+            >
               <AlertTitle>About #REF! Errors</AlertTitle>
-              <Typography variant="body2">
+              <Typography 
+                variant="body2"
+                sx={{
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                }}
+              >
                 Some months may have null or incorrect remaining cash values due to data migration issues.
                 This tool can automatically recalculate and fix these values.
               </Typography>
@@ -538,26 +718,59 @@ export function Settings() {
               startIcon={<SyncIcon />}
               onClick={() => setRefErrorDialogOpen(true)}
               fullWidth
+              sx={{
+                minHeight: { xs: 44, sm: 40 },
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                px: { xs: 1.5, sm: 2 },
+              }}
             >
               Fix #REF! Errors
             </Button>
-            <Typography variant="caption" color="text.secondary">
+            <Typography 
+              variant="caption" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+              }}
+            >
               Scan for and fix remaining cash calculation errors in your data.
             </Typography>
           </Stack>
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Data Health</Typography>
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Data Health
+            </Typography>
             <DataHealthCheck />
           </Stack>
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Security</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Security
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               Check security status including XSS protection, data sanitization, and secure context.
             </Typography>
             <SecurityCheck />
@@ -565,9 +778,23 @@ export function Settings() {
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Accessibility</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Accessibility
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               Check accessibility compliance including color contrast ratios and WCAG standards.
             </Typography>
             <AccessibilityCheck />
@@ -575,14 +802,43 @@ export function Settings() {
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Performance Monitoring</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Performance Monitoring
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               View performance metrics and operation timings. Monitoring is enabled automatically in production.
             </Typography>
-            <Alert severity="info" sx={{ mb: 2 }}>
+            <Alert 
+              severity="info" 
+              sx={{ 
+                mb: { xs: 1.5, sm: 2 },
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                '& .MuiAlertTitle-root': {
+                  fontSize: { xs: '0.9375rem', sm: '1rem' },
+                  fontWeight: 600,
+                },
+              }}
+            >
               <AlertTitle>Performance Metrics</AlertTitle>
-              <Typography variant="body2">
+              <Typography 
+                variant="body2"
+                sx={{
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                }}
+              >
                 Metrics are tracked locally and not sent to any server. This helps identify slow operations.
               </Typography>
             </Alert>
@@ -602,6 +858,11 @@ export function Settings() {
                 setPerformanceMetricsDialogOpen(true);
               }}
               fullWidth
+              sx={{
+                minHeight: { xs: 44, sm: 40 },
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                px: { xs: 1.5, sm: 2 },
+              }}
             >
               View Performance Metrics
             </Button>
@@ -616,17 +877,42 @@ export function Settings() {
                 />
               }
               label="Enable Performance Monitoring"
+              sx={{
+                '& .MuiFormControlLabel-label': {
+                  fontSize: { xs: '0.875rem', sm: '0.875rem' },
+                },
+              }}
             />
-            <Typography variant="caption" color="text.secondary">
+            <Typography 
+              variant="caption" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+              }}
+            >
               When enabled, performance metrics are stored locally and can be viewed above.
             </Typography>
           </Stack>
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Storage Usage</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Storage Usage
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               Monitor IndexedDB storage quota and usage. Warnings will appear when storage is getting full.
             </Typography>
             <StorageMonitoring />
@@ -634,22 +920,67 @@ export function Settings() {
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Storage Cleanup</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Storage Cleanup
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               Clean up old data to free up storage space and improve app performance. Configure cleanup options to automatically manage your data.
             </Typography>
             {storageStats && (
-              <Alert severity="info" sx={{ mb: 2 }}>
+              <Alert 
+                severity="info" 
+                sx={{ 
+                  mb: { xs: 1.5, sm: 2 },
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  '& .MuiAlertTitle-root': {
+                    fontSize: { xs: '0.9375rem', sm: '1rem' },
+                    fontWeight: 600,
+                  },
+                }}
+              >
                 <AlertTitle>Current Storage Statistics</AlertTitle>
-                <Typography variant="body2">
+                <Typography 
+                  variant="body2"
+                  sx={{
+                    fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                    wordBreak: 'break-word',
+                  }}
+                >
                   Transactions: {storageStats.transactions} | EMIs: {storageStats.emis} | Recurring Templates: {storageStats.recurringTemplates} | Undo Items: {storageStats.undoItems} | Export History: {storageStats.exportHistoryItems}
                 </Typography>
               </Alert>
             )}
-            <Alert severity="warning" sx={{ mb: 2 }}>
+            <Alert 
+              severity="warning" 
+              sx={{ 
+                mb: { xs: 1.5, sm: 2 },
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                '& .MuiAlertTitle-root': {
+                  fontSize: { xs: '0.9375rem', sm: '1rem' },
+                  fontWeight: 600,
+                },
+              }}
+            >
               <AlertTitle>Warning</AlertTitle>
-              <Typography variant="body2">
+              <Typography 
+                variant="body2"
+                sx={{
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                }}
+              >
                 Storage cleanup is irreversible. Make sure to export a backup before cleaning up data. Deleted data cannot be recovered.
               </Typography>
             </Alert>
@@ -658,24 +989,64 @@ export function Settings() {
               startIcon={<DeleteSweepIcon />}
               onClick={() => setCleanupDialogOpen(true)}
               fullWidth
+              sx={{
+                minHeight: { xs: 44, sm: 40 },
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                px: { xs: 1.5, sm: 2 },
+              }}
             >
               Configure Storage Cleanup
             </Button>
-            <Typography variant="caption" color="text.secondary">
+            <Typography 
+              variant="caption" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+              }}
+            >
               Configure and run storage cleanup to remove old data and optimize storage usage.
             </Typography>
           </Stack>
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Error Tracking</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Error Tracking
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               View error logs and track application errors. Errors are stored locally and never sent to external servers unless configured.
             </Typography>
-            <Alert severity="info" sx={{ mb: 2 }}>
+            <Alert 
+              severity="info" 
+              sx={{ 
+                mb: { xs: 1.5, sm: 2 },
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                '& .MuiAlertTitle-root': {
+                  fontSize: { xs: '0.9375rem', sm: '1rem' },
+                  fontWeight: 600,
+                },
+              }}
+            >
               <AlertTitle>Privacy First</AlertTitle>
-              <Typography variant="body2">
+              <Typography 
+                variant="body2"
+                sx={{
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                }}
+              >
                 All errors are stored locally in your browser. No error data is sent to external services
                 unless you explicitly configure an external service (e.g., Sentry). Personal data is automatically
                 redacted from error logs.
@@ -686,24 +1057,64 @@ export function Settings() {
               startIcon={<BugReportIcon />}
               onClick={() => setErrorTrackingDialogOpen(true)}
               fullWidth
+              sx={{
+                minHeight: { xs: 44, sm: 40 },
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                px: { xs: 1.5, sm: 2 },
+              }}
             >
               View Error Logs
             </Button>
-            <Typography variant="caption" color="text.secondary">
+            <Typography 
+              variant="caption" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+              }}
+            >
               View stored error logs and clear them if needed. Errors help identify and fix issues.
             </Typography>
           </Stack>
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Analytics</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Analytics
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               Optional privacy-friendly analytics to understand how the app is used. Analytics are disabled by default and only enabled when you explicitly configure them.
             </Typography>
-            <Alert severity="info" sx={{ mb: 2 }}>
+            <Alert 
+              severity="info" 
+              sx={{ 
+                mb: { xs: 1.5, sm: 2 },
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                '& .MuiAlertTitle-root': {
+                  fontSize: { xs: '0.9375rem', sm: '1rem' },
+                  fontWeight: 600,
+                },
+              }}
+            >
               <AlertTitle>Privacy First</AlertTitle>
-              <Typography variant="body2">
+              <Typography 
+                variant="body2"
+                sx={{
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                }}
+              >
                 Analytics are <strong>disabled by default</strong>. No data is tracked or sent to external services
                 unless you explicitly enable and configure analytics. We recommend Plausible for privacy-friendly analytics
                 (GDPR compliant, no cookies, open-source).
@@ -774,6 +1185,14 @@ export function Settings() {
                   setPlausibleDomain('');
                   setGaMeasurementId('');
                 }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: { xs: '60vh', sm: 'none' },
+                      maxWidth: { xs: '90vw', sm: 'none' },
+                    },
+                  },
+                }}
               >
                 <MenuItem value="">None (Disabled)</MenuItem>
                 <MenuItem value="plausible">Plausible (Privacy-friendly, recommended)</MenuItem>
@@ -810,7 +1229,13 @@ export function Settings() {
                 </Typography>
               </Alert>
             )}
-            <Typography variant="caption" color="text.secondary">
+            <Typography 
+              variant="caption" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+              }}
+            >
               {analyticsProvider === 'plausible'
                 ? 'Plausible is a privacy-friendly analytics tool that is GDPR compliant, does not use cookies, and is open-source.'
                 : analyticsProvider === 'google-analytics'
@@ -821,14 +1246,43 @@ export function Settings() {
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Balance Sync</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Balance Sync
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               Sync account balances with existing transactions. This is useful if you have old data created before automatic balance updates were implemented.
             </Typography>
-            <Alert severity="info" sx={{ mb: 2 }}>
+            <Alert 
+              severity="info" 
+              sx={{ 
+                mb: { xs: 1.5, sm: 2 },
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                '& .MuiAlertTitle-root': {
+                  fontSize: { xs: '0.9375rem', sm: '1rem' },
+                  fontWeight: 600,
+                },
+              }}
+            >
               <AlertTitle>How it works</AlertTitle>
-              <Typography variant="body2">
+              <Typography 
+                variant="body2"
+                sx={{
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                }}
+              >
                 This tool will recalculate all account balances based on transactions with "Received", "Paid", or "Completed" status.
                 Your current balance will be treated as the base, and transaction effects will be applied on top.
               </Typography>
@@ -839,6 +1293,11 @@ export function Settings() {
               onClick={handleSyncBalances}
               disabled={isSyncing}
               fullWidth
+              sx={{
+                minHeight: { xs: 44, sm: 40 },
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                px: { xs: 1.5, sm: 2 },
+              }}
             >
               {isSyncing ? 'Syncing...' : 'Sync Account Balances'}
             </Button>
@@ -846,15 +1305,43 @@ export function Settings() {
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Clear All Data</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Clear All Data
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               Permanently delete all your data and reset the application to a clean state.
               This action cannot be undone. Make sure to export a backup first if you want to keep your data.
             </Typography>
-            <Alert severity="error">
+            <Alert 
+              severity="error"
+              sx={{
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                '& .MuiAlertTitle-root': {
+                  fontSize: { xs: '0.9375rem', sm: '1rem' },
+                  fontWeight: 600,
+                },
+              }}
+            >
               <AlertTitle>Warning: This action is irreversible</AlertTitle>
-              <Typography variant="body2">
+              <Typography 
+                variant="body2"
+                sx={{
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                }}
+              >
                 This will delete all banks, accounts, transactions, EMIs, recurring items, planner data, and settings.
                 The app will automatically reload after clearing all data.
               </Typography>
@@ -865,6 +1352,11 @@ export function Settings() {
               startIcon={<DeleteForeverIcon />}
               onClick={handleClearDataDialogOpen}
               fullWidth
+              sx={{
+                minHeight: { xs: 44, sm: 40 },
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                px: { xs: 1.5, sm: 2 },
+              }}
             >
               Clear All Data
             </Button>
@@ -872,32 +1364,83 @@ export function Settings() {
 
           <Divider />
 
-          <Stack spacing={2}>
-            <Typography variant="h6">Data Backup & Restore</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Data Backup & Restore
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               Export all your data to a backup file or import from a previous backup.
             </Typography>
 
-            <Stack spacing={2}>
-              <Paper elevation={0} sx={{ p: 2, bgcolor: 'action.hover' }}>
-                <Stack spacing={2}>
+            <Stack spacing={{ xs: 1.5, sm: 2 }}>
+              <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, bgcolor: 'action.hover' }}>
+                <Stack spacing={{ xs: 1.5, sm: 2 }}>
                   <Box>
-                    <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                    <Typography 
+                      variant="subtitle2" 
+                      sx={{ 
+                        mb: { xs: 0.75, sm: 1 },
+                        fontSize: { xs: '0.9375rem', sm: '1rem' },
+                        fontWeight: 600,
+                      }}
+                    >
                       Current Backup Info
                     </Typography>
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <Chip label={`Version ${currentBackupInfo.version}`} size="small" />
-                      <Typography variant="caption" color="text.secondary">
+                    <Stack 
+                      direction={{ xs: 'column', sm: 'row' }} 
+                      spacing={{ xs: 1, sm: 2 }} 
+                      alignItems={{ xs: 'flex-start', sm: 'center' }}
+                      flexWrap="wrap"
+                    >
+                      <Chip 
+                        label={`Version ${currentBackupInfo.version}`} 
+                        size="small"
+                        sx={{
+                          fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                          height: { xs: 24, sm: 28 },
+                          '& .MuiChip-label': {
+                            px: { xs: 0.75, sm: 1 },
+                          },
+                        }}
+                      />
+                      <Typography 
+                        variant="caption" 
+                        color="text.secondary"
+                        sx={{
+                          fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                          wordBreak: 'break-word',
+                        }}
+                      >
                         Last backup: {new Date(currentBackupInfo.timestamp).toLocaleString()}
                       </Typography>
                     </Stack>
                   </Box>
-                  <Stack direction="row" spacing={2}>
+                  <Stack 
+                    direction={{ xs: 'column', sm: 'row' }} 
+                    spacing={{ xs: 1.5, sm: 2 }}
+                  >
                     <Button
                       variant="outlined"
                       startIcon={<DownloadIcon />}
                       onClick={handleExportBackup}
                       fullWidth
+                      sx={{
+                        minHeight: { xs: 44, sm: 40 },
+                        fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                        px: { xs: 1.5, sm: 2 },
+                      }}
                     >
                       Export Backup
                     </Button>
@@ -906,6 +1449,11 @@ export function Settings() {
                       startIcon={<UploadIcon />}
                       onClick={() => fileInputRef.current?.click()}
                       fullWidth
+                      sx={{
+                        minHeight: { xs: 44, sm: 40 },
+                        fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                        px: { xs: 1.5, sm: 2 },
+                      }}
                     >
                       Import Backup
                     </Button>
@@ -924,12 +1472,22 @@ export function Settings() {
 
           <Divider />
 
-          <Stack direction="row" spacing={2} justifyContent="flex-end">
+          <Stack 
+            direction={{ xs: 'column-reverse', sm: 'row' }} 
+            spacing={{ xs: 1.5, sm: 2 }} 
+            justifyContent="flex-end"
+          >
             <Button
               variant="outlined"
               startIcon={<RestoreIcon />}
               onClick={handleReset}
               disabled={!hasChanges}
+              fullWidth={isMobile}
+              sx={{
+                minHeight: { xs: 44, sm: 40 },
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                px: { xs: 1.5, sm: 2 },
+              }}
             >
               Reset to Defaults
             </Button>
@@ -938,6 +1496,12 @@ export function Settings() {
               startIcon={<SaveIcon />}
               onClick={handleSave}
               disabled={!hasChanges}
+              fullWidth={isMobile}
+              sx={{
+                minHeight: { xs: 44, sm: 40 },
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                px: { xs: 1.5, sm: 2 },
+              }}
             >
               Save Changes
             </Button>
@@ -945,36 +1509,108 @@ export function Settings() {
           
           <Divider />
           
-          <Stack spacing={2} alignItems="center">
-            <Typography variant="body2" color="text.secondary">
+          <Stack spacing={{ xs: 1, sm: 2 }} alignItems="center">
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
               Version: {appVersion}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
+            <Typography 
+              variant="caption" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+              }}
+            >
               Instant Express Manager
             </Typography>
           </Stack>
         </Stack>
       </Paper>
 
-      <Dialog open={importDialogOpen} onClose={handleImportCancel} maxWidth="sm" fullWidth>
-        <DialogTitle>Import Backup</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2}>
+      <Dialog 
+        open={importDialogOpen} 
+        onClose={handleImportCancel} 
+        maxWidth="sm" 
+        fullWidth
+        fullScreen={isMobile}
+        PaperProps={{
+          sx: {
+            m: { xs: 0, sm: 2 },
+            maxHeight: { xs: '100vh', sm: '90vh' },
+            width: { xs: '100%', sm: 'auto' },
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            fontSize: { xs: '1.125rem', sm: '1.25rem' },
+            fontWeight: 700,
+            pb: { xs: 1, sm: 2 },
+          }}
+        >
+          Import Backup
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 },
+          }}
+        >
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
             {backupInfo && (
-              <Alert severity="info">
+              <Alert 
+                severity="info"
+                sx={{
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  '& .MuiAlertTitle-root': {
+                    fontSize: { xs: '0.9375rem', sm: '1rem' },
+                    fontWeight: 600,
+                  },
+                }}
+              >
                 <AlertTitle>Backup Information</AlertTitle>
-                <Typography variant="body2">
+                <Typography 
+                  variant="body2"
+                  sx={{
+                    fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                  }}
+                >
                   Version: {backupInfo.version}
                 </Typography>
-                <Typography variant="body2">
+                <Typography 
+                  variant="body2"
+                  sx={{
+                    fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                  }}
+                >
                   Created: {new Date(backupInfo.timestamp).toLocaleString()}
                 </Typography>
               </Alert>
             )}
 
-            <Alert severity="warning">
+            <Alert 
+              severity="warning"
+              sx={{
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                '& .MuiAlertTitle-root': {
+                  fontSize: { xs: '0.9375rem', sm: '1rem' },
+                  fontWeight: 600,
+                },
+              }}
+            >
               <AlertTitle>Import Options</AlertTitle>
-              <Typography variant="body2" sx={{ mb: 2 }}>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  mb: { xs: 1.5, sm: 2 },
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                }}
+              >
                 Choose how to import the backup:
               </Typography>
               <FormControlLabel
@@ -985,8 +1621,21 @@ export function Settings() {
                   />
                 }
                 label="Replace all existing data"
+                sx={{
+                  '& .MuiFormControlLabel-label': {
+                    fontSize: { xs: '0.875rem', sm: '0.875rem' },
+                  },
+                }}
               />
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+              <Typography 
+                variant="caption" 
+                color="text.secondary" 
+                sx={{ 
+                  mt: { xs: 0.75, sm: 1 }, 
+                  display: 'block',
+                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                }}
+              >
                 {importReplaceMode
                   ? '⚠️ This will delete all current data and replace it with the backup.'
                   : 'This will merge backup data with existing records (duplicates by ID will be skipped).'}
@@ -994,63 +1643,235 @@ export function Settings() {
             </Alert>
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleImportCancel}>Cancel</Button>
+        <DialogActions
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 },
+            gap: { xs: 1, sm: 1.5 },
+            flexDirection: { xs: 'column-reverse', sm: 'row' },
+          }}
+        >
+          <Button 
+            onClick={handleImportCancel}
+            fullWidth={isMobile}
+            sx={{
+              minHeight: { xs: 44, sm: 40 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              px: { xs: 1.5, sm: 2 },
+            }}
+          >
+            Cancel
+          </Button>
           <Button
             onClick={handleImportConfirm}
             variant="contained"
             color={importReplaceMode ? 'error' : 'primary'}
+            fullWidth={isMobile}
+            sx={{
+              minHeight: { xs: 44, sm: 40 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              px: { xs: 1.5, sm: 2 },
+            }}
           >
             {importReplaceMode ? 'Replace All Data' : 'Import & Merge'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={syncDialogOpen} onClose={handleSyncDialogClose} maxWidth="md" fullWidth>
-        <DialogTitle>Balance Sync Results</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2}>
+      <Dialog 
+        open={syncDialogOpen} 
+        onClose={handleSyncDialogClose} 
+        maxWidth="md" 
+        fullWidth
+        fullScreen={isMobile}
+        PaperProps={{
+          sx: {
+            m: { xs: 0, sm: 2 },
+            maxHeight: { xs: '100vh', sm: '90vh' },
+            width: { xs: '100%', sm: 'auto' },
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            fontSize: { xs: '1.125rem', sm: '1.25rem' },
+            fontWeight: 700,
+            pb: { xs: 1, sm: 2 },
+          }}
+        >
+          Balance Sync Results
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 },
+          }}
+        >
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
             {syncResults.length === 0 ? (
-              <Typography>No accounts to sync.</Typography>
+              <Typography
+                sx={{
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                }}
+              >
+                No accounts to sync.
+              </Typography>
             ) : (
               <>
-                <Typography variant="body2" color="text.secondary">
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary"
+                  sx={{
+                    fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                  }}
+                >
                   {syncResults.filter((r) => r.updated).length} account(s) updated,{' '}
                   {syncResults.filter((r) => !r.updated).length} account(s) already in sync.
                 </Typography>
-                <TableContainer>
-                  <Table size="small">
+                <TableContainer
+                  sx={{
+                    overflowX: 'auto',
+                    maxWidth: '100%',
+                  }}
+                >
+                  <Table size="small" sx={{ minWidth: { xs: 500, sm: 600 } }}>
                     <TableHead>
                       <TableRow>
-                        <TableCell>Account</TableCell>
-                        <TableCell align="right">Previous Balance</TableCell>
-                        <TableCell align="right">New Balance</TableCell>
-                        <TableCell align="right">Difference</TableCell>
-                        <TableCell align="center">Status</TableCell>
+                        <TableCell
+                          sx={{
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            fontWeight: 600,
+                            padding: { xs: '8px 4px', sm: '12px' },
+                          }}
+                        >
+                          Account
+                        </TableCell>
+                        <TableCell 
+                          align="right"
+                          sx={{
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            fontWeight: 600,
+                            padding: { xs: '8px 4px', sm: '12px' },
+                          }}
+                        >
+                          Previous Balance
+                        </TableCell>
+                        <TableCell 
+                          align="right"
+                          sx={{
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            fontWeight: 600,
+                            padding: { xs: '8px 4px', sm: '12px' },
+                          }}
+                        >
+                          New Balance
+                        </TableCell>
+                        <TableCell 
+                          align="right"
+                          sx={{
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            fontWeight: 600,
+                            padding: { xs: '8px 4px', sm: '12px' },
+                          }}
+                        >
+                          Difference
+                        </TableCell>
+                        <TableCell 
+                          align="center"
+                          sx={{
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            fontWeight: 600,
+                            padding: { xs: '8px 4px', sm: '12px' },
+                          }}
+                        >
+                          Status
+                        </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {syncResults.map((result) => (
                         <TableRow key={result.accountId}>
-                          <TableCell>{result.accountName}</TableCell>
-                          <TableCell align="right">{formatCurrency(result.previousBalance)}</TableCell>
-                          <TableCell align="right">{formatCurrency(result.calculatedBalance)}</TableCell>
-                          <TableCell align="right">
+                          <TableCell
+                            sx={{
+                              padding: { xs: '8px 4px', sm: '12px' },
+                              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                              wordBreak: 'break-word',
+                            }}
+                          >
+                            {result.accountName}
+                          </TableCell>
+                          <TableCell 
+                            align="right"
+                            sx={{
+                              padding: { xs: '8px 4px', sm: '12px' },
+                              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {formatCurrency(result.previousBalance)}
+                          </TableCell>
+                          <TableCell 
+                            align="right"
+                            sx={{
+                              padding: { xs: '8px 4px', sm: '12px' },
+                              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {formatCurrency(result.calculatedBalance)}
+                          </TableCell>
+                          <TableCell 
+                            align="right"
+                            sx={{
+                              padding: { xs: '8px 4px', sm: '12px' },
+                              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            }}
+                          >
                             {result.balanceDifference !== 0 && (
                               <Typography
                                 variant="body2"
                                 color={result.balanceDifference > 0 ? 'success.main' : 'error.main'}
+                                sx={{
+                                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                                  whiteSpace: 'nowrap',
+                                }}
                               >
                                 {result.balanceDifference > 0 ? '+' : ''}
                                 {formatCurrency(result.balanceDifference)}
                               </Typography>
                             )}
                           </TableCell>
-                          <TableCell align="center">
+                          <TableCell 
+                            align="center"
+                            sx={{
+                              padding: { xs: '8px 4px', sm: '12px' },
+                            }}
+                          >
                             {result.updated ? (
-                              <Chip label="Updated" color="success" size="small" />
+                              <Chip 
+                                label="Updated" 
+                                color="success" 
+                                size="small"
+                                sx={{
+                                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                                  height: { xs: 24, sm: 28 },
+                                  '& .MuiChip-label': {
+                                    px: { xs: 0.75, sm: 1 },
+                                  },
+                                }}
+                              />
                             ) : (
-                              <Chip label="In Sync" size="small" />
+                              <Chip 
+                                label="In Sync" 
+                                size="small"
+                                sx={{
+                                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                                  height: { xs: 24, sm: 28 },
+                                  '& .MuiChip-label': {
+                                    px: { xs: 0.75, sm: 1 },
+                                  },
+                                }}
+                              />
                             )}
                           </TableCell>
                         </TableRow>
@@ -1062,23 +1883,85 @@ export function Settings() {
             )}
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleSyncDialogClose} variant="contained">
+        <DialogActions
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 },
+            gap: { xs: 1, sm: 1.5 },
+          }}
+        >
+          <Button 
+            onClick={handleSyncDialogClose} 
+            variant="contained"
+            fullWidth={isMobile}
+            sx={{
+              minHeight: { xs: 44, sm: 40 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              px: { xs: 1.5, sm: 2 },
+            }}
+          >
             Close
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={clearDataDialogOpen} onClose={handleClearDataDialogClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Clear All Data</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2}>
-            <Alert severity="error">
+      <Dialog 
+        open={clearDataDialogOpen} 
+        onClose={handleClearDataDialogClose} 
+        maxWidth="sm" 
+        fullWidth
+        fullScreen={isMobile}
+        PaperProps={{
+          sx: {
+            m: { xs: 0, sm: 2 },
+            maxHeight: { xs: '100vh', sm: '90vh' },
+            width: { xs: '100%', sm: 'auto' },
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            fontSize: { xs: '1.125rem', sm: '1.25rem' },
+            fontWeight: 700,
+            pb: { xs: 1, sm: 2 },
+          }}
+        >
+          Clear All Data
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 },
+          }}
+        >
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Alert 
+              severity="error"
+              sx={{
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                '& .MuiAlertTitle-root': {
+                  fontSize: { xs: '0.9375rem', sm: '1rem' },
+                  fontWeight: 600,
+                },
+              }}
+            >
               <AlertTitle>⚠️ This action cannot be undone!</AlertTitle>
-              <Typography variant="body2">
+              <Typography 
+                variant="body2"
+                sx={{
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                }}
+              >
                 This will permanently delete ALL your data including:
               </Typography>
-              <Box component="ul" sx={{ pl: 3, mt: 1 }}>
+              <Box 
+                component="ul" 
+                sx={{ 
+                  pl: { xs: 2, sm: 3 }, 
+                  mt: { xs: 0.75, sm: 1 },
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                }}
+              >
                 <li>All banks and bank accounts</li>
                 <li>All transactions (income, expense, savings/investment, transfers)</li>
                 <li>All EMIs (expense and savings/investment)</li>
@@ -1087,20 +1970,57 @@ export function Settings() {
                 <li>All settings (will reset to defaults)</li>
                 <li>All export history and undo data</li>
               </Box>
-              <Typography variant="body2" sx={{ mt: 2, fontWeight: 'bold' }}>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  mt: { xs: 1.5, sm: 2 }, 
+                  fontWeight: 'bold',
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                }}
+              >
                 The application will automatically reload after clearing all data.
               </Typography>
             </Alert>
-            <Alert severity="warning">
+            <Alert 
+              severity="warning"
+              sx={{
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                '& .MuiAlertTitle-root': {
+                  fontSize: { xs: '0.9375rem', sm: '1rem' },
+                  fontWeight: 600,
+                },
+              }}
+            >
               <AlertTitle>Recommendation</AlertTitle>
-              <Typography variant="body2">
+              <Typography 
+                variant="body2"
+                sx={{
+                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                }}
+              >
                 Make sure to export a backup before proceeding if you want to keep your data.
               </Typography>
             </Alert>
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClearDataDialogClose} disabled={isClearing}>
+        <DialogActions
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 },
+            gap: { xs: 1, sm: 1.5 },
+            flexDirection: { xs: 'column-reverse', sm: 'row' },
+          }}
+        >
+          <Button 
+            onClick={handleClearDataDialogClose} 
+            disabled={isClearing}
+            fullWidth={isMobile}
+            sx={{
+              minHeight: { xs: 44, sm: 40 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              px: { xs: 1.5, sm: 2 },
+            }}
+          >
             Cancel
           </Button>
           <Button
@@ -1109,6 +2029,12 @@ export function Settings() {
             color="error"
             disabled={isClearing}
             startIcon={<DeleteForeverIcon />}
+            fullWidth={isMobile}
+            sx={{
+              minHeight: { xs: 44, sm: 40 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              px: { xs: 1.5, sm: 2 },
+            }}
           >
             {isClearing ? 'Clearing...' : 'Yes, Clear All Data'}
           </Button>

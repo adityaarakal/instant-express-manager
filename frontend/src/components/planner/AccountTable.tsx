@@ -17,6 +17,8 @@ import {
   Menu,
   MenuItem,
   Chip,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import AddIcon from '@mui/icons-material/Add';
@@ -88,6 +90,8 @@ const getOriginalBucketAmount = (
 
 export const AccountTable = memo(function AccountTable({ month }: AccountTableProps) {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const expenseTransactions = useExpenseTransactionsStore((state) => state.transactions);
   const { hasOverride, addOverride, removeOverride, clearMonth } = useDueDateOverridesStore();
   const [bulkMenuAnchor, setBulkMenuAnchor] = useState<HTMLElement | null>(null);
@@ -179,22 +183,37 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
   }
 
   return (
-    <TableContainer component={Paper} elevation={1} sx={{ borderRadius: 2 }}>
+    <TableContainer 
+      component={Paper} 
+      elevation={1} 
+      sx={{ 
+        borderRadius: 2,
+        overflowX: 'auto',
+        maxWidth: '100%',
+      }}
+    >
       {(overrideStats.totalZeroed > 0 || overrideStats.totalOverridden > 0) && (
         <Box
           sx={{
-            p: 1.5,
+            p: { xs: 1, sm: 1.5 },
             borderBottom: 1,
             borderColor: 'divider',
             display: 'flex',
-            alignItems: 'center',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'flex-start', sm: 'center' },
             justifyContent: 'space-between',
             flexWrap: 'wrap',
-            gap: 1,
+            gap: { xs: 1, sm: 1 },
           }}
           className="no-print"
         >
-          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+          <Stack 
+            direction="row" 
+            spacing={{ xs: 0.5, sm: 1 }} 
+            alignItems="center" 
+            flexWrap="wrap"
+            gap={{ xs: 0.5, sm: 0 }}
+          >
             {overrideStats.totalZeroed > 0 && (
               <Chip
                 icon={<WarningIcon />}
@@ -202,6 +221,13 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
                 size="small"
                 color="warning"
                 variant="outlined"
+                sx={{
+                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                  height: { xs: 24, sm: 28 },
+                  '& .MuiChip-label': {
+                    px: { xs: 0.75, sm: 1 },
+                  },
+                }}
               />
             )}
             {overrideStats.totalOverridden > 0 && (
@@ -211,16 +237,36 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
                 size="small"
                 color="success"
                 variant="outlined"
+                sx={{
+                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                  height: { xs: 24, sm: 28 },
+                  '& .MuiChip-label': {
+                    px: { xs: 0.75, sm: 1 },
+                  },
+                }}
               />
             )}
           </Stack>
-          <Stack direction="row" spacing={1}>
+          <Stack 
+            direction="row" 
+            spacing={{ xs: 0.5, sm: 1 }}
+            sx={{
+              width: { xs: '100%', sm: 'auto' },
+              justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+            }}
+          >
             {overrideStats.totalZeroed > 0 && (
               <Button
                 size="small"
                 variant="outlined"
                 startIcon={<RestoreIcon />}
                 onClick={handleBulkOverrideAll}
+                sx={{
+                  minHeight: { xs: 40, sm: 36 },
+                  fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                  px: { xs: 1, sm: 1.5 },
+                  whiteSpace: { xs: 'nowrap', sm: 'nowrap' },
+                }}
               >
                 Override All Zeroed
               </Button>
@@ -231,13 +277,23 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
                   size="small"
                   onClick={(e) => setBulkMenuAnchor(e.currentTarget)}
                   aria-label="bulk override options"
+                  sx={{
+                    minWidth: { xs: 40, sm: 40 },
+                    minHeight: { xs: 40, sm: 40 },
+                    p: { xs: 0.5, sm: 0.75 },
+                  }}
                 >
-                  <MoreVertIcon />
+                  <MoreVertIcon fontSize="small" />
                 </IconButton>
                 <Menu
                   anchorEl={bulkMenuAnchor}
                   open={Boolean(bulkMenuAnchor)}
                   onClose={() => setBulkMenuAnchor(null)}
+                  PaperProps={{
+                    sx: {
+                      maxWidth: { xs: '90vw', sm: 'none' },
+                    },
+                  }}
                 >
                   <MenuItem onClick={handleClearAllOverrides}>
                     <ClearAllIcon sx={{ mr: 1 }} fontSize="small" />
@@ -249,31 +305,70 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
           </Stack>
         </Box>
       )}
-      <Table size="small" stickyHeader>
+      <Table 
+        size="small" 
+        stickyHeader
+        sx={{
+          '& .MuiTableCell-root': {
+            padding: { xs: '8px 4px', sm: '16px' },
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+            whiteSpace: { xs: 'nowrap', sm: 'normal' },
+          },
+          '& .MuiTableHead-root .MuiTableCell-root': {
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+            fontWeight: 600,
+            padding: { xs: '12px 4px', sm: '16px' },
+          },
+        }}
+      >
         <TableHead>
           <TableRow>
             <TableCell>
-              <Typography variant="subtitle2" fontWeight="bold">
+              <Typography 
+                variant="subtitle2" 
+                fontWeight="bold"
+                sx={{
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                }}
+              >
                 Account
               </Typography>
             </TableCell>
             <TableCell align="right">
               <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="flex-end">
-                <Typography variant="subtitle2" fontWeight="bold">
+                <Typography 
+                  variant="subtitle2" 
+                  fontWeight="bold"
+                  sx={{
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  }}
+                >
                   Remaining
                 </Typography>
                 <Tooltip title="Calculated as: Inflow - Fixed Balance - Savings Transfer + Manual Adjustments">
-                  <InfoIcon fontSize="small" sx={{ color: 'text.secondary', fontSize: 16 }} />
+                  <InfoIcon fontSize="small" sx={{ color: 'text.secondary', fontSize: { xs: 14, sm: 16 } }} />
                 </Tooltip>
               </Stack>
             </TableCell>
             <TableCell align="right">
-              <Typography variant="subtitle2" fontWeight="bold">
+              <Typography 
+                variant="subtitle2" 
+                fontWeight="bold"
+                sx={{
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                }}
+              >
                 Fixed
               </Typography>
             </TableCell>
             <TableCell align="right">
-              <Typography variant="subtitle2" fontWeight="bold">
+              <Typography 
+                variant="subtitle2" 
+                fontWeight="bold"
+                sx={{
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                }}
+              >
                 Savings
               </Typography>
             </TableCell>
@@ -282,14 +377,23 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
                 <Typography
                   variant="subtitle2"
                   fontWeight="bold"
-                  sx={{ color: bucket.color }}
+                  sx={{ 
+                    color: bucket.color,
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  }}
                 >
                   {bucket.name}
                 </Typography>
               </TableCell>
             ))}
             <TableCell align="center">
-              <Typography variant="subtitle2" fontWeight="bold">
+              <Typography 
+                variant="subtitle2" 
+                fontWeight="bold"
+                sx={{
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                }}
+              >
                 Actions
               </Typography>
             </TableCell>
@@ -299,11 +403,25 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
           {month.accounts.map((account) => (
             <TableRow key={account.id} hover>
               <TableCell>
-                <Typography variant="body2" fontWeight="medium">
+                <Typography 
+                  variant="body2" 
+                  fontWeight="medium"
+                  sx={{
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    wordBreak: 'break-word',
+                  }}
+                >
                   {account.accountName}
                 </Typography>
                 {account.notes && (
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography 
+                    variant="caption" 
+                    color="text.secondary"
+                    sx={{
+                      fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                      wordBreak: 'break-word',
+                    }}
+                  >
                     {account.notes}
                   </Typography>
                 )}
@@ -352,7 +470,14 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
               </TableCell>
               <TableCell align="right">
                 <Stack spacing={0.5} alignItems="flex-end">
-                  <Typography variant="body2">{formatCurrency(account.fixedBalance)}</Typography>
+                  <Typography 
+                    variant="body2"
+                    sx={{
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    }}
+                  >
+                    {formatCurrency(account.fixedBalance)}
+                  </Typography>
                   {(() => {
                     // Get previous month for comparison
                     const [year, monthNum] = month.id.split('-');
@@ -389,7 +514,14 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
                 </Stack>
               </TableCell>
               <TableCell align="right">
-                <Typography variant="body2">{formatCurrency(account.savingsTransfer)}</Typography>
+                <Typography 
+                  variant="body2"
+                  sx={{
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  }}
+                >
+                  {formatCurrency(account.savingsTransfer)}
+                </Typography>
               </TableCell>
               {buckets.map((bucket) => {
                 const bucketAmount = account.bucketAmounts[bucket.id];
@@ -477,11 +609,17 @@ export const AccountTable = memo(function AccountTable({ month }: AccountTablePr
                   variant="outlined"
                   startIcon={<AddIcon />}
                   onClick={() => {
-                    navigate('/transactions');
+                    navigate(`/transactions?tab=expense&account=${account.id}&month=${month.id}`);
                   }}
                   className="no-print"
+                  sx={{
+                    minHeight: { xs: 40, sm: 36 },
+                    fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                    px: { xs: 1, sm: 1.5 },
+                    whiteSpace: 'nowrap',
+                  }}
                 >
-                  Add Transaction
+                  {isMobile ? 'Add' : 'Add Transaction'}
                 </Button>
               </TableCell>
             </TableRow>
