@@ -41,13 +41,13 @@ Implement toggle between table and card views for all tables in the application.
 - [x] Test toggle functionality
 - Status: Complete
 
-### Phase 5: Banks Page
-- [ ] Create BankCard component
-- [ ] Add view toggle button
-- [ ] Implement card view rendering
-- [ ] Update table rendering to respect view toggle
-- [ ] Test toggle functionality
-- Status: Pending
+### Phase 5: Banks Page ✅ COMPLETE
+- [x] Create BankCard component
+- [x] Add view toggle button
+- [x] Implement card view rendering
+- [x] Update table rendering to respect view toggle
+- [x] Test toggle functionality
+- Status: Complete
 
 ### Phase 6: Bank Accounts Page
 - [ ] Create BankAccountCard component
