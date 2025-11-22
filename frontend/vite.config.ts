@@ -145,9 +145,8 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(version),
   },
-  // GitHub Pages deployment - uncomment and set to your repository name
-  // base: process.env.NODE_ENV === 'production' ? '/instant-express-manager/' : '/',
-  base: '/', // For root domain or custom domain, use '/' instead
+  // GitHub Pages deployment - set base path based on environment
+  base: process.env.NODE_ENV === 'production' ? '/instant-express-manager/' : '/',
   plugins: [
     injectVersionMeta(),
     bundleSizeAnalyzer(),
