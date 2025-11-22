@@ -147,7 +147,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             color: 'inherit',
           }}
         >
-          Planned Expenses
+          Instant Expense Manager
         </Typography>
       </Toolbar>
       <Divider sx={{ flexShrink: 0 }} />
@@ -304,7 +304,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 color: 'inherit',
               }}
             >
-              Planned Expenses
+              Instant Expense Manager
             </Typography>
           </Stack>
           <Stack 
