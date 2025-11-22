@@ -205,17 +205,27 @@ export function Banks() {
   };
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={{ xs: 2, sm: 3 }}>
       <Box 
         sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: { xs: 'flex-start', sm: 'center' },
           flexDirection: { xs: 'column', sm: 'row' },
-          gap: 2,
+          gap: { xs: 1.5, sm: 2 },
+          mb: { xs: 1, sm: 0 },
         }}
       >
-        <Typography variant="h4" sx={{ flexShrink: 0 }}>Banks</Typography>
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            flexShrink: 0,
+            fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+            fontWeight: 700,
+          }}
+        >
+          Banks
+        </Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -223,16 +233,22 @@ export function Banks() {
           aria-label="Add new bank"
           fullWidth={isMobile}
           size={isMobile ? 'medium' : 'large'}
-          sx={{ flexShrink: 0 }}
+          sx={{ 
+            flexShrink: 0,
+            minHeight: { xs: 44, sm: 48 },
+            fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+            whiteSpace: 'nowrap',
+            px: { xs: 1.5, sm: 2 },
+          }}
         >
           Add Bank
         </Button>
       </Box>
 
-      <Paper sx={{ p: 2 }}>
+      <Paper sx={{ p: { xs: 1.5, sm: 2 } }}>
         <Stack 
           direction={{ xs: 'column', sm: 'row' }} 
-          spacing={2}
+          spacing={{ xs: 1.5, sm: 2 }}
           alignItems={{ xs: 'stretch', sm: 'center' }}
         >
           <TextField
@@ -245,12 +261,26 @@ export function Banks() {
             }}
             sx={{ flex: 1 }}
           />
-          <FormControl size="small" sx={{ minWidth: 150 }}>
+          <FormControl 
+            size="small" 
+            sx={{ 
+              minWidth: { xs: '100%', sm: 150 },
+              width: { xs: '100%', sm: 'auto' },
+            }}
+          >
             <InputLabel>Type</InputLabel>
             <Select
               value={filterType}
               label="Type"
               onChange={(e) => setFilterType(e.target.value as Bank['type'] | 'All')}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    maxHeight: { xs: '60vh', sm: 'none' },
+                    maxWidth: { xs: '90vw', sm: 'none' },
+                  },
+                },
+              }}
             >
               <MenuItem value="All">All Types</MenuItem>
               <MenuItem value="Bank">Bank</MenuItem>
@@ -265,6 +295,13 @@ export function Banks() {
               startIcon={<ClearIcon />}
               variant="outlined"
               color="inherit"
+              sx={{
+                minHeight: { xs: 40, sm: 36 },
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                px: { xs: 1.5, sm: 2 },
+                whiteSpace: 'nowrap',
+                width: { xs: '100%', sm: 'auto' },
+              }}
             >
               Clear
             </Button>
@@ -273,7 +310,15 @@ export function Banks() {
         
         {/* Filter Chips */}
         {hasActiveFilters && (
-          <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: 'wrap', gap: 1 }}>
+          <Stack 
+            direction="row" 
+            spacing={{ xs: 0.5, sm: 1 }} 
+            sx={{ 
+              mt: { xs: 1.5, sm: 2 }, 
+              flexWrap: 'wrap', 
+              gap: { xs: 0.5, sm: 1 } 
+            }}
+          >
             {searchTerm && (
               <Chip
                 label={`Search: ${searchTerm}`}
@@ -281,6 +326,16 @@ export function Banks() {
                 size="small"
                 variant="outlined"
                 color="primary"
+                sx={{
+                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                  height: { xs: 24, sm: 28 },
+                  '& .MuiChip-label': {
+                    px: { xs: 0.75, sm: 1 },
+                    maxWidth: { xs: 150, sm: 'none' },
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  },
+                }}
               />
             )}
             {filterType !== 'All' && (
@@ -290,6 +345,13 @@ export function Banks() {
                 size="small"
                 variant="outlined"
                 color="primary"
+                sx={{
+                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                  height: { xs: 24, sm: 28 },
+                  '& .MuiChip-label': {
+                    px: { xs: 0.75, sm: 1 },
+                  },
+                }}
               />
             )}
           </Stack>
@@ -300,18 +362,26 @@ export function Banks() {
         component={Paper}
         sx={{
           overflowX: 'auto',
+          maxWidth: '100%',
           '& .MuiTableCell-root': {
             whiteSpace: 'nowrap',
-            minWidth: 100,
+            minWidth: { xs: 80, sm: 100 },
+            padding: { xs: '8px 4px', sm: '16px' },
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
           },
           '& .MuiTableRow-root:has(.MuiTableCell-root[colspan])': {
             '& .MuiTableCell-root': {
               whiteSpace: 'normal',
             },
           },
+          '& .MuiTableHead-root .MuiTableCell-root': {
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+            fontWeight: 600,
+            padding: { xs: '12px 4px', sm: '16px' },
+          },
         }}
       >
-        <Table aria-label="Banks table" sx={{ minWidth: 650 }}>
+        <Table aria-label="Banks table" sx={{ minWidth: { xs: 500, sm: 650 } }}>
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
@@ -366,27 +436,43 @@ export function Banks() {
                   <TableCell>{bank.country || '—'}</TableCell>
                   <TableCell>{bank.notes || '—'}</TableCell>
                   <TableCell align="right">
-                    <IconButton 
-                      size="small" 
-                      onClick={() => handleOpenDialog(bank)} 
-                      disabled={deletingId !== null}
-                      aria-label={`Edit bank ${bank.name}`}
+                    <Stack 
+                      direction="row" 
+                      spacing={{ xs: 0.5, sm: 1 }} 
+                      justifyContent="flex-end"
                     >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton 
-                      size="small" 
-                      onClick={() => handleDeleteClick(bank.id)} 
-                      color="error"
-                      disabled={deletingId !== null}
-                      aria-label={`Delete bank ${bank.name}`}
-                    >
-                      {deletingId === bank.id ? (
-                        <CircularProgress size={16} aria-label="Deleting" />
-                      ) : (
-                        <DeleteIcon fontSize="small" />
-                      )}
-                    </IconButton>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleOpenDialog(bank)} 
+                        disabled={deletingId !== null}
+                        aria-label={`Edit bank ${bank.name}`}
+                        sx={{
+                          minWidth: { xs: 40, sm: 48 },
+                          minHeight: { xs: 40, sm: 48 },
+                          p: { xs: 0.5, sm: 1 },
+                        }}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleDeleteClick(bank.id)} 
+                        color="error"
+                        disabled={deletingId !== null}
+                        aria-label={`Delete bank ${bank.name}`}
+                        sx={{
+                          minWidth: { xs: 40, sm: 48 },
+                          minHeight: { xs: 40, sm: 48 },
+                          p: { xs: 0.5, sm: 1 },
+                        }}
+                      >
+                        {deletingId === bank.id ? (
+                          <CircularProgress size={16} aria-label="Deleting" />
+                        ) : (
+                          <DeleteIcon fontSize="small" />
+                        )}
+                      </IconButton>
+                    </Stack>
                   </TableCell>
                 </TableRow>
               ))
@@ -400,15 +486,37 @@ export function Banks() {
         onClose={handleCloseDialog} 
         maxWidth="sm" 
         fullWidth
+        fullScreen={isMobile}
+        PaperProps={{
+          sx: {
+            m: { xs: 0, sm: 2 },
+            maxHeight: { xs: '100vh', sm: '90vh' },
+            width: { xs: '100%', sm: 'auto' },
+          },
+        }}
         aria-labelledby="bank-dialog-title"
         aria-describedby="bank-dialog-description"
       >
-        <DialogTitle id="bank-dialog-title">{editingBank ? 'Edit Bank' : 'Add Bank'}</DialogTitle>
-        <DialogContent>
+        <DialogTitle 
+          id="bank-dialog-title"
+          sx={{
+            fontSize: { xs: '1.125rem', sm: '1.25rem' },
+            fontWeight: 700,
+            pb: { xs: 1, sm: 2 },
+          }}
+        >
+          {editingBank ? 'Edit Bank' : 'Add Bank'}
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 },
+          }}
+        >
           <div id="bank-dialog-description" className="sr-only">
             {editingBank ? `Edit details for ${editingBank.name}` : 'Enter details for a new bank'}
           </div>
-          <Stack spacing={2} sx={{ mt: 1 }}>
+          <Stack spacing={{ xs: 1.5, sm: 2 }} sx={{ mt: { xs: 0, sm: 1 } }}>
             <TextField
               label="Bank Name"
               value={formData.name}
@@ -424,6 +532,14 @@ export function Banks() {
                 value={formData.type}
                 label="Type"
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as Bank['type'] })}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: { xs: '60vh', sm: 'none' },
+                      maxWidth: { xs: '90vw', sm: 'none' },
+                    },
+                  },
+                }}
               >
                 <MenuItem value="Bank">Bank</MenuItem>
                 <MenuItem value="CreditCard">Credit Card</MenuItem>
@@ -446,13 +562,37 @@ export function Banks() {
             />
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} disabled={isSaving}>Cancel</Button>
+        <DialogActions
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: { xs: 2, sm: 3 },
+            gap: { xs: 1, sm: 1.5 },
+            flexDirection: { xs: 'column-reverse', sm: 'row' },
+          }}
+        >
+          <Button 
+            onClick={handleCloseDialog} 
+            disabled={isSaving}
+            fullWidth={isMobile}
+            sx={{
+              minHeight: { xs: 44, sm: 40 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              px: { xs: 1.5, sm: 2 },
+            }}
+          >
+            Cancel
+          </Button>
           <ButtonWithLoading
             onClick={handleSave}
             variant="contained"
             disabled={!formData.name.trim()}
             loading={isSaving}
+            fullWidth={isMobile}
+            sx={{
+              minHeight: { xs: 44, sm: 40 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              px: { xs: 1.5, sm: 2 },
+            }}
           >
             {editingBank ? 'Update' : 'Create'}
           </ButtonWithLoading>
