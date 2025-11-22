@@ -761,17 +761,28 @@ export function Transactions() {
           justifyContent: 'space-between', 
           alignItems: { xs: 'flex-start', sm: 'center' },
           flexDirection: { xs: 'column', sm: 'row' },
-          gap: 2,
+          gap: { xs: 1.5, sm: 2 },
+          mb: { xs: 1, sm: 0 },
         }}
       >
-        <Typography variant="h4" sx={{ flexShrink: 0 }}>Transactions</Typography>
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            flexShrink: 0,
+            fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+            fontWeight: 700,
+          }}
+        >
+          Transactions
+        </Typography>
         <Stack 
           direction={{ xs: 'column', sm: 'row' }} 
-          spacing={2}
+          spacing={{ xs: 1, sm: 1.5, md: 2 }}
           sx={{ 
             width: { xs: '100%', sm: 'auto' },
             alignItems: { xs: 'stretch', sm: 'center' },
-            flexShrink: 0
+            flexShrink: 0,
+            flexWrap: { sm: 'wrap', md: 'nowrap' },
           }}
         >
               {selectedIds.size > 0 && activeTab !== 'transfers' && (() => {
@@ -784,6 +795,13 @@ export function Transactions() {
                       loading={isBulkOperating}
                       disabled={isBulkOperating}
                       onClick={() => setBulkEditDialogOpen(true)}
+                      size={isMobile ? 'medium' : 'large'}
+                      sx={{
+                        minHeight: { xs: 44, sm: 48 },
+                        fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                        whiteSpace: { xs: 'nowrap', sm: 'nowrap' },
+                        px: { xs: 1.5, sm: 2 },
+                      }}
                     >
                       Edit ({selectedIds.size})
                     </ButtonWithLoading>
@@ -802,8 +820,18 @@ export function Transactions() {
                             handleBulkStatusUpdate('Completed');
                           }
                         }}
+                        size={isMobile ? 'medium' : 'large'}
+                        sx={{
+                          minHeight: { xs: 44, sm: 48 },
+                          fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                          whiteSpace: { xs: 'nowrap', sm: 'nowrap' },
+                          px: { xs: 1.5, sm: 2 },
+                        }}
                       >
-                        Mark as {activeTab === 'income' ? 'Received' : activeTab === 'expense' ? 'Paid' : 'Completed'} ({selectedIds.size})
+                        {isMobile 
+                          ? `${activeTab === 'income' ? 'Received' : activeTab === 'expense' ? 'Paid' : 'Completed'} (${selectedIds.size})`
+                          : `Mark as ${activeTab === 'income' ? 'Received' : activeTab === 'expense' ? 'Paid' : 'Completed'} (${selectedIds.size})`
+                        }
                       </ButtonWithLoading>
                     )}
                     {showPending && (
@@ -815,8 +843,15 @@ export function Transactions() {
                         onClick={() => {
                           handleBulkStatusUpdate('Pending');
                         }}
+                        size={isMobile ? 'medium' : 'large'}
+                        sx={{
+                          minHeight: { xs: 44, sm: 48 },
+                          fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                          whiteSpace: { xs: 'nowrap', sm: 'nowrap' },
+                          px: { xs: 1.5, sm: 2 },
+                        }}
                       >
-                        Mark as Pending ({selectedIds.size})
+                        Pending ({selectedIds.size})
                       </ButtonWithLoading>
                     )}
                     <ButtonWithLoading
@@ -825,6 +860,13 @@ export function Transactions() {
                       loading={isBulkOperating}
                       disabled={isBulkOperating}
                       onClick={handleBulkDeleteClick}
+                      size={isMobile ? 'medium' : 'large'}
+                      sx={{
+                        minHeight: { xs: 44, sm: 48 },
+                        fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                        whiteSpace: { xs: 'nowrap', sm: 'nowrap' },
+                        px: { xs: 1.5, sm: 2 },
+                      }}
                     >
                       Delete ({selectedIds.size})
                     </ButtonWithLoading>
@@ -843,10 +885,20 @@ export function Transactions() {
               aria-expanded={Boolean(exportMenuAnchor)}
               fullWidth={isMobile}
               size={isMobile ? 'medium' : 'large'}
+              sx={{
+                minHeight: { xs: 44, sm: 48 },
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                whiteSpace: { xs: 'nowrap', sm: 'nowrap' },
+                px: { xs: 1.5, sm: 2 },
+              }}
             >
-              {selectedIds.size > 0 
-                ? `Export Selected (${selectedIds.size})`
-                : `Export${filteredAndSortedTransactions.length > 0 ? ` (${filteredAndSortedTransactions.length})` : ''}`
+              {isMobile
+                ? selectedIds.size > 0 
+                  ? `Export (${selectedIds.size})`
+                  : `Export${filteredAndSortedTransactions.length > 0 ? ` (${filteredAndSortedTransactions.length})` : ''}`
+                : selectedIds.size > 0 
+                  ? `Export Selected (${selectedIds.size})`
+                  : `Export${filteredAndSortedTransactions.length > 0 ? ` (${filteredAndSortedTransactions.length})` : ''}`
               }
             </Button>
             <Menu
@@ -898,8 +950,14 @@ export function Transactions() {
               aria-label={accounts.length === 0 ? 'Add transfer (requires at least one bank account)' : 'Add new transfer'}
               fullWidth={isMobile}
               size={isMobile ? 'medium' : 'large'}
+              sx={{
+                minHeight: { xs: 44, sm: 48 },
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                whiteSpace: 'nowrap',
+                px: { xs: 1.5, sm: 2 },
+              }}
             >
-              Add Transfer
+              {isMobile ? 'Add' : 'Add Transfer'}
             </Button>
           ) : (
             <Button
@@ -911,8 +969,14 @@ export function Transactions() {
               aria-label={accounts.length === 0 ? 'Add transaction (requires at least one bank account)' : 'Add new transaction'}
               fullWidth={isMobile}
               size={isMobile ? 'medium' : 'large'}
+              sx={{
+                minHeight: { xs: 44, sm: 48 },
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                whiteSpace: 'nowrap',
+                px: { xs: 1.5, sm: 2 },
+              }}
             >
-              Add Transaction
+              {isMobile ? 'Add' : 'Add Transaction'}
             </Button>
           )}
         </Stack>
@@ -928,28 +992,46 @@ export function Transactions() {
             setSelectedIds(new Set());
           }}
           aria-label="Transaction type tabs"
+          variant={isMobile ? 'scrollable' : 'standard'}
+          scrollButtons={isMobile ? 'auto' : false}
+          sx={{
+            '& .MuiTab-root': {
+              minHeight: { xs: 48, sm: 72 },
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              px: { xs: 1.5, sm: 3 },
+              minWidth: { xs: 'auto', sm: 160 },
+            },
+          }}
         >
           <Tab label="Income" value="income" aria-controls="income-tabpanel" />
           <Tab label="Expense" value="expense" aria-controls="expense-tabpanel" />
-          <Tab label="Savings/Investment" value="savings" aria-controls="savings-tabpanel" />
+          <Tab label={isMobile ? 'Savings' : 'Savings/Investment'} value="savings" aria-controls="savings-tabpanel" />
           <Tab label="Transfers" value="transfers" aria-controls="transfers-tabpanel" />
         </Tabs>
 
         <TableContainer
           sx={{
             overflowX: 'auto',
+            maxWidth: '100%',
             '& .MuiTableCell-root': {
               whiteSpace: 'nowrap',
-              minWidth: 100,
+              minWidth: { xs: 80, sm: 100 },
+              padding: { xs: '8px 4px', sm: '16px' },
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
             },
             '& .MuiTableRow-root:has(.MuiTableCell-root[colspan])': {
               '& .MuiTableCell-root': {
                 whiteSpace: 'normal',
               },
             },
+            '& .MuiTableHead-root .MuiTableCell-root': {
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              fontWeight: 600,
+              padding: { xs: '12px 4px', sm: '16px' },
+            },
           }}
         >
-          <Table aria-label={`${activeTab} transactions table`} sx={{ minWidth: 900 }}>
+          <Table aria-label={`${activeTab} transactions table`} sx={{ minWidth: { xs: 600, sm: 900 } }}>
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">
@@ -957,6 +1039,11 @@ export function Transactions() {
                     size="small" 
                     onClick={handleSelectAll}
                     aria-label="Select all transactions on this page"
+                    sx={{
+                      minWidth: { xs: 40, sm: 48 },
+                      minHeight: { xs: 40, sm: 48 },
+                      p: { xs: 0.5, sm: 1 },
+                    }}
                   >
                     {selectedIds.size === paginatedTransactions.length && paginatedTransactions.length > 0 ? (
                       <CheckBoxIcon fontSize="small" />
@@ -1097,6 +1184,11 @@ export function Transactions() {
                               size="small"
                               onClick={() => handleSelectTransaction(transaction.id)}
                               aria-label={`Select transaction ${transaction.description || transaction.id}`}
+                              sx={{
+                                minWidth: { xs: 40, sm: 48 },
+                                minHeight: { xs: 40, sm: 48 },
+                                p: { xs: 0.5, sm: 1 },
+                              }}
                             >
                               {selectedIds.has(transaction.id) ? (
                                 <CheckBoxIcon fontSize="small" />
@@ -1115,30 +1207,49 @@ export function Transactions() {
                               label={transaction.status}
                               size="small"
                               color={transaction.status === 'Received' ? 'success' : 'warning'}
+                              sx={{
+                                fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                                height: { xs: 24, sm: 28 },
+                                '& .MuiChip-label': {
+                                  px: { xs: 0.75, sm: 1 },
+                                },
+                              }}
                             />
                           </TableCell>
                           <TableCell align="right">
-                            <IconButton 
-                              size="small" 
-                              onClick={() => handleOpenDialog(transaction.id)}
-                              disabled={isBulkOperating || deletingIds.has(transaction.id)}
-                              aria-label={`Edit transaction ${transaction.description || transaction.id}`}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                            <IconButton 
-                              size="small" 
-                              onClick={() => handleDeleteClick(transaction.id, 'income')} 
-                              color="error"
-                              disabled={isBulkOperating || deletingIds.has(transaction.id)}
-                              aria-label={`Delete transaction ${transaction.description || transaction.id}`}
-                            >
-                              {deletingIds.has(transaction.id) ? (
-                                <CircularProgress size={16} aria-label="Deleting" />
-                              ) : (
-                                <DeleteIcon fontSize="small" />
-                              )}
-                            </IconButton>
+                            <Stack direction="row" spacing={{ xs: 0.5, sm: 1 }} justifyContent="flex-end">
+                              <IconButton 
+                                size="small" 
+                                onClick={() => handleOpenDialog(transaction.id)}
+                                disabled={isBulkOperating || deletingIds.has(transaction.id)}
+                                aria-label={`Edit transaction ${transaction.description || transaction.id}`}
+                                sx={{
+                                  minWidth: { xs: 40, sm: 48 },
+                                  minHeight: { xs: 40, sm: 48 },
+                                  p: { xs: 0.5, sm: 1 },
+                                }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton 
+                                size="small" 
+                                onClick={() => handleDeleteClick(transaction.id, 'income')} 
+                                color="error"
+                                disabled={isBulkOperating || deletingIds.has(transaction.id)}
+                                aria-label={`Delete transaction ${transaction.description || transaction.id}`}
+                                sx={{
+                                  minWidth: { xs: 40, sm: 48 },
+                                  minHeight: { xs: 40, sm: 48 },
+                                  p: { xs: 0.5, sm: 1 },
+                                }}
+                              >
+                                {deletingIds.has(transaction.id) ? (
+                                  <CircularProgress size={16} aria-label="Deleting" />
+                                ) : (
+                                  <DeleteIcon fontSize="small" />
+                                )}
+                              </IconButton>
+                            </Stack>
                           </TableCell>
                         </TableRow>
                       ))
@@ -1251,6 +1362,11 @@ export function Transactions() {
                               size="small"
                               onClick={() => handleSelectTransaction(transaction.id)}
                               aria-label={`Select transaction ${transaction.description || transaction.id}`}
+                              sx={{
+                                minWidth: { xs: 40, sm: 48 },
+                                minHeight: { xs: 40, sm: 48 },
+                                p: { xs: 0.5, sm: 1 },
+                              }}
                             >
                               {selectedIds.has(transaction.id) ? (
                                 <CheckBoxIcon fontSize="small" />
@@ -1270,6 +1386,13 @@ export function Transactions() {
                               label={transaction.status}
                               size="small"
                               color={transaction.status === 'Paid' ? 'success' : 'warning'}
+                              sx={{
+                                fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                                height: { xs: 24, sm: 28 },
+                                '& .MuiChip-label': {
+                                  px: { xs: 0.75, sm: 1 },
+                                },
+                              }}
                             />
                           </TableCell>
                           <TableCell align="right">
@@ -1425,6 +1548,13 @@ export function Transactions() {
                               label={transaction.status}
                               size="small"
                               color={transaction.status === 'Completed' ? 'success' : 'warning'}
+                              sx={{
+                                fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                                height: { xs: 24, sm: 28 },
+                                '& .MuiChip-label': {
+                                  px: { xs: 0.75, sm: 1 },
+                                },
+                              }}
                             />
                           </TableCell>
                           <TableCell align="right">
@@ -1588,30 +1718,49 @@ export function Transactions() {
                               label={transfer.status}
                               size="small"
                               color={transfer.status === 'Completed' ? 'success' : 'warning'}
+                              sx={{
+                                fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                                height: { xs: 24, sm: 28 },
+                                '& .MuiChip-label': {
+                                  px: { xs: 0.75, sm: 1 },
+                                },
+                              }}
                             />
                           </TableCell>
                           <TableCell align="right">
-                            <IconButton 
-                              size="small" 
-                              onClick={() => handleOpenTransferDialog(transfer.id)}
-                              disabled={isBulkOperating || deletingIds.has(transfer.id)}
-                              aria-label={`Edit transfer ${transfer.description || transfer.id}`}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                            <IconButton 
-                              size="small" 
-                              onClick={() => handleDeleteClick(transfer.id, 'transfers')} 
-                              color="error"
-                              disabled={isBulkOperating || deletingIds.has(transfer.id)}
-                              aria-label={`Delete transfer ${transfer.description || transfer.id}`}
-                            >
-                              {deletingIds.has(transfer.id) ? (
-                                <CircularProgress size={16} aria-label="Deleting" />
-                              ) : (
-                                <DeleteIcon fontSize="small" />
-                              )}
-                            </IconButton>
+                            <Stack direction="row" spacing={{ xs: 0.5, sm: 1 }} justifyContent="flex-end">
+                              <IconButton 
+                                size="small" 
+                                onClick={() => handleOpenTransferDialog(transfer.id)}
+                                disabled={isBulkOperating || deletingIds.has(transfer.id)}
+                                aria-label={`Edit transfer ${transfer.description || transfer.id}`}
+                                sx={{
+                                  minWidth: { xs: 40, sm: 48 },
+                                  minHeight: { xs: 40, sm: 48 },
+                                  p: { xs: 0.5, sm: 1 },
+                                }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton 
+                                size="small" 
+                                onClick={() => handleDeleteClick(transfer.id, 'transfers')} 
+                                color="error"
+                                disabled={isBulkOperating || deletingIds.has(transfer.id)}
+                                aria-label={`Delete transfer ${transfer.description || transfer.id}`}
+                                sx={{
+                                  minWidth: { xs: 40, sm: 48 },
+                                  minHeight: { xs: 40, sm: 48 },
+                                  p: { xs: 0.5, sm: 1 },
+                                }}
+                              >
+                                {deletingIds.has(transfer.id) ? (
+                                  <CircularProgress size={16} aria-label="Deleting" />
+                                ) : (
+                                  <DeleteIcon fontSize="small" />
+                                )}
+                              </IconButton>
+                            </Stack>
                           </TableCell>
                         </TableRow>
                       ))
@@ -1639,6 +1788,24 @@ export function Transactions() {
             sx={{
               '& .MuiTablePagination-toolbar': {
                 flexWrap: isMobile ? 'wrap' : 'nowrap',
+                gap: { xs: 1, sm: 0 },
+                px: { xs: 1, sm: 2 },
+              },
+              '& .MuiTablePagination-selectLabel': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                mr: { xs: 0.5, sm: 1 },
+              },
+              '& .MuiTablePagination-displayedRows': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              },
+              '& .MuiTablePagination-select': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                minHeight: { xs: 36, sm: 40 },
+              },
+              '& .MuiIconButton-root': {
+                minWidth: { xs: 40, sm: 48 },
+                minHeight: { xs: 40, sm: 48 },
+                p: { xs: 0.5, sm: 1 },
               },
             }}
           />

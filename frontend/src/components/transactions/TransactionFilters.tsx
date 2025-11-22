@@ -308,7 +308,12 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+      <Stack 
+        direction={{ xs: 'column', sm: 'row' }} 
+        spacing={{ xs: 1, sm: 1.5, md: 2 }} 
+        alignItems={{ xs: 'stretch', sm: 'center' }}
+        sx={{ mb: 2 }}
+      >
         <Autocomplete
           freeSolo
           options={searchHistory.map((entry) => entry.searchTerm)}
@@ -323,7 +328,11 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
             }
           }}
           size="small"
-          sx={{ flex: 1 }}
+          sx={{ 
+            flex: 1,
+            minWidth: 0,
+            width: { xs: '100%', sm: 'auto' },
+          }}
           renderInput={(params) => (
             <TextField
               {...params}
@@ -338,59 +347,100 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
             />
           )}
         />
-        <Tooltip title="Advanced Search">
-          <Button
-            variant="outlined"
-            startIcon={<SearchIcon />}
-            onClick={() => setAdvancedSearchDialogOpen(true)}
-            size="small"
-          >
-            Advanced
-          </Button>
-        </Tooltip>
-        <Tooltip title="Saved Filters">
-          <Button
-            variant={savedFiltersMenuAnchor ? 'contained' : 'outlined'}
-            startIcon={<BookmarkIcon />}
-            onClick={(e) => setSavedFiltersMenuAnchor(e.currentTarget)}
-            disabled={savedFiltersForType.length === 0}
-            size="small"
-          >
-            Saved ({savedFiltersForType.length})
-          </Button>
-        </Tooltip>
-        {activeFilterCount > 0 && (
-          <Tooltip title="Save Current Filters">
+        <Stack 
+          direction="row" 
+          spacing={{ xs: 0.75, sm: 1, md: 1.5 }}
+          sx={{ 
+            flexWrap: { xs: 'wrap', sm: 'nowrap' },
+            gap: { xs: 0.75, sm: 0 },
+            width: { xs: '100%', sm: 'auto' },
+          }}
+        >
+          <Tooltip title="Advanced Search">
             <Button
-              size="small"
-              onClick={() => setSaveFilterDialogOpen(true)}
-              startIcon={<SaveIcon />}
               variant="outlined"
-              color="primary"
+              startIcon={<SearchIcon />}
+              onClick={() => setAdvancedSearchDialogOpen(true)}
+              size="small"
+              sx={{
+                minHeight: { xs: 40, sm: 44 },
+                fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                px: { xs: 1, sm: 1.5 },
+                whiteSpace: 'nowrap',
+              }}
             >
-              Save
+              Advanced
             </Button>
           </Tooltip>
-        )}
-        <Button
-          variant={filtersExpanded ? 'contained' : 'outlined'}
-          startIcon={<FilterListIcon />}
-          onClick={() => setFiltersExpanded(!filtersExpanded)}
-          endIcon={activeFilterCount > 0 ? <Chip label={activeFilterCount} size="small" /> : undefined}
-        >
-          Filters
-        </Button>
-        {activeFilterCount > 0 && (
+          <Tooltip title="Saved Filters">
+            <Button
+              variant={savedFiltersMenuAnchor ? 'contained' : 'outlined'}
+              startIcon={<BookmarkIcon />}
+              onClick={(e) => setSavedFiltersMenuAnchor(e.currentTarget)}
+              disabled={savedFiltersForType.length === 0}
+              size="small"
+              sx={{
+                minHeight: { xs: 40, sm: 44 },
+                fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                px: { xs: 1, sm: 1.5 },
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Saved ({savedFiltersForType.length})
+            </Button>
+          </Tooltip>
+          {activeFilterCount > 0 && (
+            <Tooltip title="Save Current Filters">
+              <Button
+                size="small"
+                onClick={() => setSaveFilterDialogOpen(true)}
+                startIcon={<SaveIcon />}
+                variant="outlined"
+                color="primary"
+                sx={{
+                  minHeight: { xs: 40, sm: 44 },
+                  fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                  px: { xs: 1, sm: 1.5 },
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Save
+              </Button>
+            </Tooltip>
+          )}
           <Button
+            variant={filtersExpanded ? 'contained' : 'outlined'}
+            startIcon={<FilterListIcon />}
+            onClick={() => setFiltersExpanded(!filtersExpanded)}
+            endIcon={activeFilterCount > 0 ? <Chip label={activeFilterCount} size="small" sx={{ height: 20, fontSize: '0.6875rem' }} /> : undefined}
             size="small"
-            onClick={handleClearFilters}
-            startIcon={<ClearIcon />}
-            variant="outlined"
-            color="inherit"
+            sx={{
+              minHeight: { xs: 40, sm: 44 },
+              fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+              px: { xs: 1, sm: 1.5 },
+              whiteSpace: 'nowrap',
+            }}
           >
-            Clear All
+            Filters
           </Button>
-        )}
+          {activeFilterCount > 0 && (
+            <Button
+              size="small"
+              onClick={handleClearFilters}
+              startIcon={<ClearIcon />}
+              variant="outlined"
+              color="inherit"
+              sx={{
+                minHeight: { xs: 40, sm: 44 },
+                fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                px: { xs: 1, sm: 1.5 },
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Clear All
+            </Button>
+          )}
+        </Stack>
       </Stack>
       
       {/* Advanced Search Dialog */}
@@ -496,7 +546,15 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
 
       {/* Filter Chips */}
       {activeFilters.length > 0 && (
-        <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+        <Stack 
+          direction="row" 
+          spacing={{ xs: 0.5, sm: 1 }} 
+          sx={{ 
+            mb: 2, 
+            flexWrap: 'wrap', 
+            gap: { xs: 0.5, sm: 1 },
+          }}
+        >
           {activeFilters.map((filter) => (
             <Chip
               key={filter.key}
@@ -505,6 +563,19 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
               size="small"
               variant="outlined"
               color="primary"
+              sx={{
+                fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                height: { xs: 24, sm: 28 },
+                '& .MuiChip-label': {
+                  px: { xs: 0.75, sm: 1 },
+                  maxWidth: { xs: 150, sm: 'none' },
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                },
+                '& .MuiChip-deleteIcon': {
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                },
+              }}
             />
           ))}
         </Stack>
@@ -513,14 +584,24 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
       {filtersExpanded && (
         <Box
           sx={{
-            p: 2,
+            p: { xs: 1.5, sm: 2 },
             border: 1,
             borderColor: 'divider',
             borderRadius: 2,
             bgcolor: 'background.paper',
           }}
         >
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            spacing={{ xs: 1.5, sm: 2 }}
+            sx={{
+              '& .MuiTextField-root, & .MuiFormControl-root': {
+                width: { xs: '100%', sm: 'auto' },
+                minWidth: { xs: '100%', sm: 150 },
+                maxWidth: { xs: '100%', sm: 200 },
+              },
+            }}
+          >
             <TextField
               label="Date From"
               type="date"
@@ -528,7 +609,7 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
               onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
               size="small"
               InputLabelProps={{ shrink: true }}
-              sx={{ minWidth: 150 }}
+              fullWidth={false}
             />
             <TextField
               label="Date To"
@@ -537,14 +618,22 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
               onChange={(e) => handleFilterChange('dateTo', e.target.value)}
               size="small"
               InputLabelProps={{ shrink: true }}
-              sx={{ minWidth: 150 }}
+              fullWidth={false}
             />
-            <FormControl size="small" sx={{ minWidth: 150 }}>
+            <FormControl size="small" fullWidth={false}>
               <InputLabel>Account</InputLabel>
               <Select
                 value={filters.accountId}
                 label="Account"
                 onChange={(e) => handleFilterChange('accountId', e.target.value)}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: { xs: '60vh', sm: 'none' },
+                      maxWidth: { xs: '90vw', sm: 'none' },
+                    },
+                  },
+                }}
               >
                 <MenuItem value="">All Accounts</MenuItem>
                 {accounts.map((account) => (
@@ -555,12 +644,20 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
               </Select>
             </FormControl>
             {type === 'income' && (
-              <FormControl size="small" sx={{ minWidth: 150 }}>
+              <FormControl size="small" fullWidth={false}>
                 <InputLabel>Category</InputLabel>
                 <Select
                   value={filters.category}
                   label="Category"
                   onChange={(e) => handleFilterChange('category', e.target.value)}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        maxHeight: { xs: '60vh', sm: 'none' },
+                        maxWidth: { xs: '90vw', sm: 'none' },
+                      },
+                    },
+                  }}
                 >
                   <MenuItem value="">All Categories</MenuItem>
                   {incomeCategories.map((cat) => (
@@ -572,12 +669,20 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
               </FormControl>
             )}
             {type === 'expense' && (
-              <FormControl size="small" sx={{ minWidth: 150 }}>
+              <FormControl size="small" fullWidth={false}>
                 <InputLabel>Category</InputLabel>
                 <Select
                   value={filters.category}
                   label="Category"
                   onChange={(e) => handleFilterChange('category', e.target.value)}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        maxHeight: { xs: '60vh', sm: 'none' },
+                        maxWidth: { xs: '90vw', sm: 'none' },
+                      },
+                    },
+                  }}
                 >
                   <MenuItem value="">All Categories</MenuItem>
                   {expenseCategories.map((cat) => (
@@ -589,12 +694,20 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
               </FormControl>
             )}
             {type === 'savings' && (
-              <FormControl size="small" sx={{ minWidth: 150 }}>
+              <FormControl size="small" fullWidth={false}>
                 <InputLabel>Type</InputLabel>
                 <Select
                   value={filters.category}
                   label="Type"
                   onChange={(e) => handleFilterChange('category', e.target.value)}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        maxHeight: { xs: '60vh', sm: 'none' },
+                        maxWidth: { xs: '90vw', sm: 'none' },
+                      },
+                    },
+                  }}
                 >
                   <MenuItem value="">All Types</MenuItem>
                   {savingsTypes.map((type) => (
@@ -606,12 +719,20 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
               </FormControl>
             )}
             {type === 'transfers' && (
-              <FormControl size="small" sx={{ minWidth: 150 }}>
+              <FormControl size="small" fullWidth={false}>
                 <InputLabel>Category</InputLabel>
                 <Select
                   value={filters.category}
                   label="Category"
                   onChange={(e) => handleFilterChange('category', e.target.value)}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        maxHeight: { xs: '60vh', sm: 'none' },
+                        maxWidth: { xs: '90vw', sm: 'none' },
+                      },
+                    },
+                  }}
                 >
                   <MenuItem value="">All Categories</MenuItem>
                   {transferCategories.map((transferCategory) => (
@@ -626,12 +747,20 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
                 </Select>
               </FormControl>
             )}
-            <FormControl size="small" sx={{ minWidth: 120 }}>
+            <FormControl size="small" fullWidth={false} sx={{ minWidth: { xs: '100%', sm: 120 } }}>
               <InputLabel>Status</InputLabel>
               <Select
                 value={filters.status}
                 label="Status"
                 onChange={(e) => handleFilterChange('status', e.target.value)}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: { xs: '60vh', sm: 'none' },
+                      maxWidth: { xs: '90vw', sm: 'none' },
+                    },
+                  },
+                }}
               >
                 <MenuItem value="">All Status</MenuItem>
                 {type === 'income' && (
