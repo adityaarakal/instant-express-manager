@@ -18,6 +18,7 @@ type BankAccountsState = {
   // CRUD operations
   createAccount: (account: Omit<BankAccount, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateAccount: (id: string, updates: Partial<Omit<BankAccount, 'id' | 'createdAt' | 'initialBalance'>>) => void;
+  fixInitialBalance: (id: string, newInitialBalance: number) => void; // Special method to fix initialBalance after migration
   deleteAccount: (id: string) => void;
   getAccount: (id: string) => BankAccount | undefined;
   getAccountsByBank: (bankId: string) => BankAccount[];
@@ -212,6 +213,26 @@ export const useBankAccountsStore = create<BankAccountsState>()(
             };
           });
         },
+        fixInitialBalance: (id, newInitialBalance) => {
+          // Special method to fix initialBalance after migration
+          // This should only be used by data integrity checks
+          set((state) => {
+            const account = state.accounts.find((a) => a.id === id);
+            if (!account) return state;
+
+            return {
+              accounts: state.accounts.map((account) =>
+                account.id === id
+                  ? {
+                      ...account,
+                      initialBalance: newInitialBalance,
+                      updatedAt: new Date().toISOString(),
+                    }
+                  : account
+              ),
+            };
+          });
+        },
         getTotalTransactionsCount: (accountId) => {
           const incomeCount = useIncomeTransactionsStore.getState().getTransactionsByAccount(accountId).length;
           const expenseCount = useExpenseTransactionsStore.getState().getTransactionsByAccount(accountId).length;
@@ -279,13 +300,16 @@ export const useBankAccountsStore = create<BankAccountsState>()(
         version: 2,
         migrate: (persistedState: unknown, version: number) => {
           // Migration from version 1 to 2: Add initialBalance to existing accounts
+          // Note: This migration sets initialBalance = currentBalance as a best guess.
+          // The data integrity check will recalculate balances correctly after migration.
           if (version < 2 && persistedState && typeof persistedState === 'object') {
             const state = persistedState as { state?: { accounts?: Array<Partial<BankAccount> & { currentBalance?: number }> } };
             if (state.state?.accounts) {
               const migratedAccounts = state.state.accounts.map((account) => ({
                 ...account,
                 // Set initialBalance to currentBalance for existing accounts
-                // This preserves their opening balance
+                // This is a best guess - the data integrity check will recalculate correctly
+                // For accounts with transactions, the auto-fix will adjust balances
                 initialBalance: account.initialBalance ?? account.currentBalance ?? 0,
               }));
               return {

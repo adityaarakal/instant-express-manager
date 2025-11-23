@@ -12,6 +12,11 @@ import { validateDataIntegrity } from '../utils/dataMigration';
 import { findOrphanedData, cleanupOrphanedData } from '../utils/orphanedDataCleanup';
 import { validateAllAccountBalances, recalculateAllAccountBalances } from '../utils/balanceRecalculation';
 import { useToastStore } from '../store/useToastStore';
+import { useBankAccountsStore } from '../store/useBankAccountsStore';
+import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore';
+import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
+import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
+import { useTransferTransactionsStore } from '../store/useTransferTransactionsStore';
 
 /**
  * Hook to automatically check and fix data integrity issues.
@@ -109,8 +114,53 @@ export function useDataIntegrity(autoFix: boolean = false) {
 
         // Auto-fix balance discrepancies if enabled
         if (autoFix) {
+          // First, fix initialBalance for accounts where it was incorrectly set during migration
+          // For accounts with transactions, initialBalance should be: currentBalance - transactionEffects
+          const accounts = useBankAccountsStore.getState().accounts;
+          const incomeTransactions = useIncomeTransactionsStore.getState().transactions;
+          const expenseTransactions = useExpenseTransactionsStore.getState().transactions;
+          const savingsTransactions = useSavingsInvestmentTransactionsStore.getState().transactions;
+          const transferTransactions = useTransferTransactionsStore.getState().transfers;
+          
+          let fixedInitialBalances = 0;
+          accounts.forEach((account) => {
+            // Calculate transaction effects for this account
+            const incomeReceived = incomeTransactions
+              .filter(t => t.accountId === account.id && t.status === 'Received')
+              .reduce((sum, t) => sum + t.amount, 0);
+            const expensesPaid = expenseTransactions
+              .filter(t => t.accountId === account.id && t.status === 'Paid')
+              .reduce((sum, t) => sum + t.amount, 0);
+            const savingsCompleted = savingsTransactions
+              .filter(t => t.accountId === account.id && t.status === 'Completed')
+              .reduce((sum, t) => sum + t.amount, 0);
+            const transfersSent = transferTransactions
+              .filter(t => t.fromAccountId === account.id && t.status === 'Completed')
+              .reduce((sum, t) => sum + t.amount, 0);
+            const transfersReceived = transferTransactions
+              .filter(t => t.toAccountId === account.id && t.status === 'Completed')
+              .reduce((sum, t) => sum + t.amount, 0);
+            
+            const transactionEffects = incomeReceived - expensesPaid - savingsCompleted - transfersSent + transfersReceived;
+            
+            // Calculate what initialBalance should be: currentBalance - transactionEffects
+            const correctInitialBalance = account.currentBalance - transactionEffects;
+            
+            // If initialBalance is wrong (difference > 0.01), fix it
+            if (Math.abs(account.initialBalance - correctInitialBalance) > 0.01) {
+              useBankAccountsStore.getState().fixInitialBalance(account.id, correctInitialBalance);
+              fixedInitialBalances++;
+            }
+          });
+          
+          // Now recalculate all balances with correct initialBalance
           recalculateAllAccountBalances();
-          showSuccess(`Recalculated balances for all accounts`);
+          
+          if (fixedInitialBalances > 0) {
+            showSuccess(`Fixed ${fixedInitialBalances} account(s) initialBalance and recalculated all balances`);
+          } else {
+            showSuccess(`Recalculated balances for all accounts`);
+          }
         }
       }
 
