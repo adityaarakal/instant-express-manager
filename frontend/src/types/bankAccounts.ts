@@ -8,6 +8,7 @@ export interface BankAccount {
   accountType: 'Savings' | 'Current' | 'CreditCard' | 'Wallet';
   accountNumber?: string;
   currentBalance: number;
+  initialBalance: number; // Opening balance when account was created - never changes
   creditLimit?: number; // for credit cards
   outstandingBalance?: number; // for credit cards
   statementDate?: string; // ISO date string

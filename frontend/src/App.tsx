@@ -33,7 +33,8 @@ function App() {
   useNotifications();
   
   // Initialize data integrity checks (runs in development mode)
-  useDataIntegrity(false); // Set to true to auto-fix issues
+  // Auto-fix enabled to automatically recalculate balances after initialBalance migration
+  useDataIntegrity(process.env.NODE_ENV === 'development'); // Auto-fix in development mode
 
   return (
     <ThemeProvider theme={theme}>
