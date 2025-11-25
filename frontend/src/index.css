@@ -176,6 +176,96 @@ a:focus-visible,
   .MuiTableContainer-root {
     -webkit-overflow-scrolling: touch;
   }
+
+  /* Enhanced touch feedback for better mobile UX */
+  button:active,
+  .MuiIconButton-root:active,
+  .MuiListItemButton-root:active,
+  .MuiChip-clickable:active,
+  a:active,
+  [role="button"]:active {
+    opacity: 0.7;
+    transform: scale(0.98);
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  /* Better spacing for mobile forms */
+  .MuiTextField-root {
+    margin-bottom: 16px;
+  }
+
+  .MuiFormControl-root {
+    margin-bottom: 16px;
+  }
+
+  /* Improved card spacing on mobile */
+  .MuiCard-root {
+    margin-bottom: 16px;
+  }
+
+  /* Better list item spacing */
+  .MuiListItem-root {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  /* Enhanced button spacing on mobile */
+  .MuiButton-root {
+    margin: 4px;
+  }
+
+  /* Better dialog spacing on mobile */
+  .MuiDialog-paper {
+    margin: 16px;
+    max-height: calc(100% - 32px);
+  }
+
+  /* Improved bottom navigation spacing */
+  .MuiBottomNavigation-root {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  /* Swipe gesture visual feedback */
+  .swipeable-card {
+    transition: transform 0.3s ease-out;
+  }
+
+  .swipeable-card.swiping {
+    transition: none;
+  }
+
+  /* Prevent text selection during swipe */
+  .swipeable-card,
+  .swipeable-item {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* Better scroll behavior on mobile */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Improved focus states for touch devices */
+  button:focus-visible,
+  .MuiIconButton-root:focus-visible,
+  a:focus-visible {
+    outline: 2px solid #0ea5e9;
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+
+  /* Better tap highlight */
+  button,
+  a,
+  .MuiIconButton-root,
+  .MuiListItemButton-root {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
   
   /* Prevent horizontal scroll on mobile */
   body {
