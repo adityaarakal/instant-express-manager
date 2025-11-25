@@ -34,6 +34,7 @@ import { ThemeModeToggle } from './ThemeModeToggle';
 import { KeyboardShortcutsHelp } from '../common/KeyboardShortcutsHelp';
 import { SaveStatusIndicator } from '../common/SaveStatusIndicator';
 import { UndoRedoToolbar } from '../common/UndoRedoToolbar';
+import { BottomNavigation } from './BottomNavigation';
 
 type AppLayoutProps = {
   children: ReactNode;
@@ -438,7 +439,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           maxWidth: '100%',
           mt: { xs: 7, sm: 8 },
           px: { xs: 1, sm: 2, md: 3, lg: 4 },
-          pb: { xs: 4, sm: 6, md: 8 },
+          pb: { xs: 10, sm: 6, md: 8 }, // Extra padding on mobile for bottom navigation
           minHeight: '100vh',
           overflowX: 'hidden',
           overflowY: !isDesktop && mobileOpen ? 'hidden' : 'auto',
@@ -462,6 +463,9 @@ export function AppLayout({ children }: AppLayoutProps) {
           {children}
         </Container>
       </Box>
+      
+      {/* Bottom Navigation for Mobile */}
+      <BottomNavigation />
     </Box>
   );
 }
