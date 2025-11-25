@@ -97,21 +97,33 @@ export interface FilterState {
   dateTo: string;
   /** Selected account ID filter */
   accountId: string;
+  /** Selected account type filter (Savings, Current, CreditCard, Wallet) */
+  accountType: string;
   /** Selected category/type filter */
   category: string;
+  /** Selected bucket filter (for expense transactions) */
+  bucket: string;
   /** Selected status filter */
   status: string;
+  /** Minimum amount filter */
+  minAmount: string;
+  /** Maximum amount filter */
+  maxAmount: string;
   /** Search term for full-text search */
   searchTerm: string;
 }
 
 /** Default empty filter state */
-const defaultFilters: FilterState = {
+export const defaultFilters: FilterState = {
   dateFrom: '',
   dateTo: '',
   accountId: '',
+  accountType: '',
   category: '',
+  bucket: '',
   status: '',
+  minAmount: '',
+  maxAmount: '',
   searchTerm: '',
 };
 
@@ -177,8 +189,12 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
     if (filters.dateFrom) count++;
     if (filters.dateTo) count++;
     if (filters.accountId) count++;
+    if (filters.accountType) count++;
     if (filters.category) count++;
+    if (filters.bucket) count++;
     if (filters.status) count++;
+    if (filters.minAmount) count++;
+    if (filters.maxAmount) count++;
     if (filters.searchTerm) count++;
     return count;
   }, [filters]);
@@ -196,12 +212,24 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
       const account = accounts.find((a) => a.id === filters.accountId);
       active.push({ key: 'accountId', label: 'Account', value: account?.name || filters.accountId });
     }
+    if (filters.accountType) {
+      active.push({ key: 'accountType', label: 'Account Type', value: filters.accountType });
+    }
     if (filters.category) {
       const categoryLabel = type === 'savings' ? 'Type' : type === 'transfers' ? 'Category' : 'Category';
       active.push({ key: 'category', label: categoryLabel, value: filters.category });
     }
+    if (filters.bucket) {
+      active.push({ key: 'bucket', label: 'Bucket', value: filters.bucket });
+    }
     if (filters.status) {
       active.push({ key: 'status', label: 'Status', value: filters.status });
+    }
+    if (filters.minAmount) {
+      active.push({ key: 'minAmount', label: 'Min Amount', value: `₹${filters.minAmount}` });
+    }
+    if (filters.maxAmount) {
+      active.push({ key: 'maxAmount', label: 'Max Amount', value: `₹${filters.maxAmount}` });
     }
     if (filters.searchTerm) {
       active.push({ key: 'searchTerm', label: 'Search', value: filters.searchTerm });
@@ -643,6 +671,28 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
                 ))}
               </Select>
             </FormControl>
+            <FormControl size="small" fullWidth={false}>
+              <InputLabel>Account Type</InputLabel>
+              <Select
+                value={filters.accountType}
+                label="Account Type"
+                onChange={(e) => handleFilterChange('accountType', e.target.value)}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: { xs: '60vh', sm: 'none' },
+                      maxWidth: { xs: '90vw', sm: 'none' },
+                    },
+                  },
+                }}
+              >
+                <MenuItem value="">All Types</MenuItem>
+                <MenuItem value="Savings">Savings</MenuItem>
+                <MenuItem value="Current">Current</MenuItem>
+                <MenuItem value="CreditCard">Credit Card</MenuItem>
+                <MenuItem value="Wallet">Wallet</MenuItem>
+              </Select>
+            </FormControl>
             {type === 'income' && (
               <FormControl size="small" fullWidth={false}>
                 <InputLabel>Category</InputLabel>
@@ -669,29 +719,55 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
               </FormControl>
             )}
             {type === 'expense' && (
-              <FormControl size="small" fullWidth={false}>
-                <InputLabel>Category</InputLabel>
-                <Select
-                  value={filters.category}
-                  label="Category"
-                  onChange={(e) => handleFilterChange('category', e.target.value)}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: {
-                        maxHeight: { xs: '60vh', sm: 'none' },
-                        maxWidth: { xs: '90vw', sm: 'none' },
+              <>
+                <FormControl size="small" fullWidth={false}>
+                  <InputLabel>Category</InputLabel>
+                  <Select
+                    value={filters.category}
+                    label="Category"
+                    onChange={(e) => handleFilterChange('category', e.target.value)}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          maxHeight: { xs: '60vh', sm: 'none' },
+                          maxWidth: { xs: '90vw', sm: 'none' },
+                        },
                       },
-                    },
-                  }}
-                >
-                  <MenuItem value="">All Categories</MenuItem>
-                  {expenseCategories.map((cat) => (
-                    <MenuItem key={cat} value={cat}>
-                      {cat}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                    }}
+                  >
+                    <MenuItem value="">All Categories</MenuItem>
+                    {expenseCategories.map((cat) => (
+                      <MenuItem key={cat} value={cat}>
+                        {cat}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl size="small" fullWidth={false}>
+                  <InputLabel>Bucket</InputLabel>
+                  <Select
+                    value={filters.bucket}
+                    label="Bucket"
+                    onChange={(e) => handleFilterChange('bucket', e.target.value)}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          maxHeight: { xs: '60vh', sm: 'none' },
+                          maxWidth: { xs: '90vw', sm: 'none' },
+                        },
+                      },
+                    }}
+                  >
+                    <MenuItem value="">All Buckets</MenuItem>
+                    <MenuItem value="Fixed">Fixed</MenuItem>
+                    <MenuItem value="Variable">Variable</MenuItem>
+                    <MenuItem value="Savings">Savings</MenuItem>
+                    <MenuItem value="Investment">Investment</MenuItem>
+                    <MenuItem value="Emergency">Emergency</MenuItem>
+                    <MenuItem value="Other">Other</MenuItem>
+                  </Select>
+                </FormControl>
+              </>
             )}
             {type === 'savings' && (
               <FormControl size="small" fullWidth={false}>
@@ -789,6 +865,30 @@ export const TransactionFilters = forwardRef<HTMLInputElement, TransactionFilter
                 )}
               </Select>
             </FormControl>
+            <TextField
+              label="Min Amount"
+              type="number"
+              value={filters.minAmount}
+              onChange={(e) => handleFilterChange('minAmount', e.target.value)}
+              size="small"
+              InputLabelProps={{ shrink: true }}
+              inputProps={{ min: 0, step: 0.01 }}
+              fullWidth={false}
+              sx={{ minWidth: { xs: '100%', sm: 120 } }}
+              placeholder="0.00"
+            />
+            <TextField
+              label="Max Amount"
+              type="number"
+              value={filters.maxAmount}
+              onChange={(e) => handleFilterChange('maxAmount', e.target.value)}
+              size="small"
+              InputLabelProps={{ shrink: true }}
+              inputProps={{ min: 0, step: 0.01 }}
+              fullWidth={false}
+              sx={{ minWidth: { xs: '100%', sm: 120 } }}
+              placeholder="No limit"
+            />
           </Stack>
         </Box>
       )}

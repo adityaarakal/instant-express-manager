@@ -19,7 +19,7 @@
  * ```
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -93,8 +93,12 @@ export function AdvancedSearchDialog({
       dateFrom: '',
       dateTo: '',
       accountId: '',
+      accountType: '',
       category: '',
+      bucket: '',
       status: '',
+      minAmount: '',
+      maxAmount: '',
       searchTerm: '',
     };
     setFilters(clearedFilters);
@@ -129,7 +133,20 @@ export function AdvancedSearchDialog({
     }
   };
 
-  const activeFilterCount = Object.values(filters).filter((v) => v !== '').length;
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.dateFrom) count++;
+    if (filters.dateTo) count++;
+    if (filters.accountId) count++;
+    if (filters.accountType) count++;
+    if (filters.category) count++;
+    if (filters.bucket) count++;
+    if (filters.status) count++;
+    if (filters.minAmount) count++;
+    if (filters.maxAmount) count++;
+    if (filters.searchTerm) count++;
+    return count;
+  }, [filters]);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -207,6 +224,21 @@ export function AdvancedSearchDialog({
           </FormControl>
 
           <FormControl fullWidth>
+            <InputLabel>Account Type</InputLabel>
+            <Select
+              value={filters.accountType}
+              onChange={(e) => handleFilterChange('accountType', e.target.value)}
+              label="Account Type"
+            >
+              <MenuItem value="">All Account Types</MenuItem>
+              <MenuItem value="Savings">Savings</MenuItem>
+              <MenuItem value="Current">Current</MenuItem>
+              <MenuItem value="CreditCard">Credit Card</MenuItem>
+              <MenuItem value="Wallet">Wallet</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth>
             <InputLabel>{type === 'savings' ? 'Type' : 'Category'}</InputLabel>
             <Select
               value={filters.category}
@@ -221,6 +253,25 @@ export function AdvancedSearchDialog({
               ))}
             </Select>
           </FormControl>
+
+          {type === 'expense' && (
+            <FormControl fullWidth>
+              <InputLabel>Bucket</InputLabel>
+              <Select
+                value={filters.bucket}
+                onChange={(e) => handleFilterChange('bucket', e.target.value)}
+                label="Bucket"
+              >
+                <MenuItem value="">All Buckets</MenuItem>
+                <MenuItem value="Fixed">Fixed</MenuItem>
+                <MenuItem value="Variable">Variable</MenuItem>
+                <MenuItem value="Savings">Savings</MenuItem>
+                <MenuItem value="Investment">Investment</MenuItem>
+                <MenuItem value="Emergency">Emergency</MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
+              </Select>
+            </FormControl>
+          )}
 
           <FormControl fullWidth>
             <InputLabel>Status</InputLabel>
@@ -237,6 +288,29 @@ export function AdvancedSearchDialog({
               ))}
             </Select>
           </FormControl>
+
+          <Stack direction="row" spacing={2}>
+            <TextField
+              label="Min Amount"
+              type="number"
+              value={filters.minAmount}
+              onChange={(e) => handleFilterChange('minAmount', e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              inputProps={{ min: 0, step: 0.01 }}
+              fullWidth
+              placeholder="0.00"
+            />
+            <TextField
+              label="Max Amount"
+              type="number"
+              value={filters.maxAmount}
+              onChange={(e) => handleFilterChange('maxAmount', e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              inputProps={{ min: 0, step: 0.01 }}
+              fullWidth
+              placeholder="No limit"
+            />
+          </Stack>
 
           {activeFilterCount > 0 && (
             <Box>
@@ -265,6 +339,13 @@ export function AdvancedSearchDialog({
                     onDelete={() => handleFilterChange('accountId', '')}
                   />
                 )}
+                {filters.accountType && (
+                  <Chip
+                    label={`Account Type: ${filters.accountType}`}
+                    size="small"
+                    onDelete={() => handleFilterChange('accountType', '')}
+                  />
+                )}
                 {filters.category && (
                   <Chip
                     label={`${type === 'savings' ? 'Type' : 'Category'}: ${filters.category}`}
@@ -272,11 +353,32 @@ export function AdvancedSearchDialog({
                     onDelete={() => handleFilterChange('category', '')}
                   />
                 )}
+                {filters.bucket && (
+                  <Chip
+                    label={`Bucket: ${filters.bucket}`}
+                    size="small"
+                    onDelete={() => handleFilterChange('bucket', '')}
+                  />
+                )}
                 {filters.status && (
                   <Chip
                     label={`Status: ${filters.status}`}
                     size="small"
                     onDelete={() => handleFilterChange('status', '')}
+                  />
+                )}
+                {filters.minAmount && (
+                  <Chip
+                    label={`Min: ₹${filters.minAmount}`}
+                    size="small"
+                    onDelete={() => handleFilterChange('minAmount', '')}
+                  />
+                )}
+                {filters.maxAmount && (
+                  <Chip
+                    label={`Max: ₹${filters.maxAmount}`}
+                    size="small"
+                    onDelete={() => handleFilterChange('maxAmount', '')}
                   />
                 )}
                 {filters.searchTerm && (
