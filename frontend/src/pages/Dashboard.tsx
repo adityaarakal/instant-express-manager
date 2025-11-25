@@ -1,4 +1,4 @@
-import { useMemo, memo, lazy, Suspense, useState, useEffect } from 'react';
+import { useMemo, memo, lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { Stack, Box, CircularProgress, Paper, Typography, FormControl, InputLabel, Select, MenuItem, Divider, Button, IconButton } from '@mui/material';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import SavingsIcon from '@mui/icons-material/Savings';
@@ -8,6 +8,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import PrintIcon from '@mui/icons-material/Print';
 import SettingsIcon from '@mui/icons-material/Settings';
+import DescriptionIcon from '@mui/icons-material/Description';
 import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore';
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
@@ -17,6 +18,8 @@ import { SummaryCard } from '../components/dashboard/SummaryCard';
 import { DueSoonReminders } from '../components/dashboard/DueSoonReminders';
 import { WidgetSettings } from '../components/dashboard/WidgetSettings';
 import { useDashboardWidgetsStore } from '../store/useDashboardWidgetsStore';
+import { PrintPreview } from '../components/common/PrintPreview';
+import { PrintSummaryReports } from '../components/common/PrintSummaryReports';
 
 // Lazy load chart components for better performance
 const SavingsTrendChart = lazy(() =>
@@ -50,6 +53,9 @@ export const Dashboard = memo(function Dashboard() {
   const accounts = useBankAccountsStore((state) => state.accounts);
   const { getEnabledWidgets, initializeWidgets } = useDashboardWidgetsStore();
   const [widgetSettingsOpen, setWidgetSettingsOpen] = useState(false);
+  const [printPreviewOpen, setPrintPreviewOpen] = useState(false);
+  const [printReportsOpen, setPrintReportsOpen] = useState(false);
+  const printContentRef = useRef<HTMLDivElement>(null);
   
   // Initialize widgets on mount
   useEffect(() => {
@@ -109,6 +115,14 @@ export const Dashboard = memo(function Dashboard() {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handlePrintPreview = () => {
+    setPrintPreviewOpen(true);
+  };
+
+  const handlePrintReports = () => {
+    setPrintReportsOpen(true);
   };
 
   const metrics = useMemo(() => {
@@ -192,6 +206,32 @@ export const Dashboard = memo(function Dashboard() {
           >
             <SettingsIcon fontSize="small" />
           </IconButton>
+          <Button
+            variant="outlined"
+            startIcon={<DescriptionIcon />}
+            onClick={handlePrintReports}
+            size="medium"
+            aria-label="Print summary reports"
+            sx={{
+              minHeight: 44,
+              flex: { xs: 1, sm: 'none' },
+            }}
+          >
+            Reports
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<PrintIcon />}
+            onClick={handlePrintPreview}
+            size="medium"
+            aria-label="Print preview"
+            sx={{
+              minHeight: 44,
+              flex: { xs: 1, sm: 'none' },
+            }}
+          >
+            Preview
+          </Button>
           <Button
             variant="outlined"
             startIcon={<PrintIcon />}
@@ -525,6 +565,118 @@ export const Dashboard = memo(function Dashboard() {
       </Box>
       
       <WidgetSettings open={widgetSettingsOpen} onClose={() => setWidgetSettingsOpen(false)} />
+
+      {/* Print Preview Dialog */}
+      <PrintPreview
+        open={printPreviewOpen}
+        onClose={() => setPrintPreviewOpen(false)}
+        title={`Print Preview - Dashboard - ${formatMonthDate(selectedMonthId)}`}
+      >
+        <div ref={printContentRef}>
+          <div className="print-header">
+            <Typography variant="h4" component="h1">
+              Financial Dashboard
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Month: {formatMonthDate(selectedMonthId)}
+            </Typography>
+            <Typography variant="caption" className="print-metadata">
+              Generated on {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString()}
+            </Typography>
+          </div>
+          {/* Dashboard content will be printed as-is */}
+          <div className="print-only" style={{ display: 'block' }}>
+            <Stack spacing={2} sx={{ mt: 2 }}>
+              <Paper elevation={1} sx={{ p: 2 }}>
+                <Typography variant="h6" sx={{ mb: 2 }}>Financial Overview</Typography>
+                <Stack direction="row" spacing={2} flexWrap="wrap">
+                  <Box sx={{ flex: '1 1 200px' }}>
+                    <Typography variant="body2" color="text.secondary">Total Income</Typography>
+                    <Typography variant="h6" color="success.main">{new Intl.NumberFormat('en-IN', {
+                      style: 'currency',
+                      currency: 'INR',
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(metrics.totalIncome)}</Typography>
+                  </Box>
+                  <Box sx={{ flex: '1 1 200px' }}>
+                    <Typography variant="body2" color="text.secondary">Total Expenses</Typography>
+                    <Typography variant="h6" color="error.main">{new Intl.NumberFormat('en-IN', {
+                      style: 'currency',
+                      currency: 'INR',
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(metrics.totalExpenses)}</Typography>
+                  </Box>
+                  <Box sx={{ flex: '1 1 200px' }}>
+                    <Typography variant="body2" color="text.secondary">Total Savings</Typography>
+                    <Typography variant="h6" color="success.main">{new Intl.NumberFormat('en-IN', {
+                      style: 'currency',
+                      currency: 'INR',
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(metrics.totalSavings)}</Typography>
+                  </Box>
+                  <Box sx={{ flex: '1 1 200px' }}>
+                    <Typography variant="body2" color="text.secondary">Net Savings</Typography>
+                    <Typography variant="h6" color={(metrics.monthlyIncome - metrics.monthlyExpenses - metrics.monthlySavings) >= 0 ? 'success.main' : 'error.main'}>
+                      {new Intl.NumberFormat('en-IN', {
+                        style: 'currency',
+                        currency: 'INR',
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }).format(metrics.monthlyIncome - metrics.monthlyExpenses - metrics.monthlySavings)}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Paper>
+              <Paper elevation={1} sx={{ p: 2 }}>
+                <Typography variant="h6" sx={{ mb: 2 }}>Account Balances</Typography>
+                <Typography variant="body1">
+                  Total Available Balance: <strong>{new Intl.NumberFormat('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }).format(bankBalanceMetrics.totalBalance)}</strong>
+                </Typography>
+                {bankBalanceMetrics.totalOutstanding > 0 && (
+                  <>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      Credit Card Outstanding: {new Intl.NumberFormat('en-IN', {
+                        style: 'currency',
+                        currency: 'INR',
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }).format(bankBalanceMetrics.totalOutstanding)}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Total Credit Limit: {new Intl.NumberFormat('en-IN', {
+                        style: 'currency',
+                        currency: 'INR',
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }).format(bankBalanceMetrics.totalCreditLimit)}
+                    </Typography>
+                  </>
+                )}
+              </Paper>
+            </Stack>
+          </div>
+          <div className="print-footer">
+            <Typography variant="caption">
+              Instant Express Manager - Dashboard Report
+            </Typography>
+          </div>
+        </div>
+      </PrintPreview>
+
+      {/* Print Summary Reports Dialog */}
+      <PrintSummaryReports
+        open={printReportsOpen}
+        onClose={() => setPrintReportsOpen(false)}
+        selectedMonthId={selectedMonthId}
+      />
     </Stack>
   );
 });
