@@ -39,6 +39,7 @@ import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStor
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useTransferTransactionsStore } from '../store/useTransferTransactionsStore';
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
+import type { BankAccount } from '../types/bankAccounts';
 import { useToastStore } from '../store/useToastStore';
 import { getUserFriendlyError } from '../utils/errorHandling';
 import { captureException, ErrorSeverity } from '../utils/errorTracking';
@@ -48,7 +49,7 @@ import { TableSkeleton } from '../components/common/TableSkeleton';
 import { ButtonWithLoading } from '../components/common/ButtonWithLoading';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { EmptyState } from '../components/common/EmptyState';
-import { TransactionFilters, type FilterState } from '../components/transactions/TransactionFilters';
+import { TransactionFilters, type FilterState, defaultFilters } from '../components/transactions/TransactionFilters';
 import { TransactionCard } from '../components/transactions/TransactionCard';
 import { ViewToggle } from '../components/common/ViewToggle';
 import { useViewMode } from '../hooks/useViewMode';
@@ -149,8 +150,12 @@ export function Transactions() {
     dateFrom: '',
     dateTo: '',
     accountId: '',
+    accountType: '',
     category: '',
+    bucket: '',
     status: '',
+    minAmount: '',
+    maxAmount: '',
     searchTerm: '',
   });
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -196,6 +201,12 @@ export function Transactions() {
     return map;
   }, [accounts]);
 
+  const accountsByIdMap = useMemo(() => {
+    const map = new Map<string, BankAccount>();
+    accounts.forEach((acc) => map.set(acc.id, acc));
+    return map;
+  }, [accounts]);
+
   // Filter transactions based on current filters
   const filteredAndSortedTransactions = useMemo(() => {
     let transactions: Array<IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction | TransferTransaction> = [];
@@ -229,12 +240,44 @@ export function Transactions() {
         }
       }
 
+      // Account Type filter
+      if (filters.accountType) {
+        if (activeTab === 'transfers') {
+          const transfer = t as TransferTransaction;
+          const fromAccount = accountsByIdMap.get(transfer.fromAccountId);
+          const toAccount = accountsByIdMap.get(transfer.toAccountId);
+          if (fromAccount?.accountType !== filters.accountType && toAccount?.accountType !== filters.accountType) {
+            return false;
+          }
+        } else {
+          const transaction = t as IncomeTransaction | ExpenseTransaction | SavingsInvestmentTransaction;
+          const account = accountsByIdMap.get(transaction.accountId);
+          if (account?.accountType !== filters.accountType) return false;
+        }
+      }
+
       // Category filter
       if (filters.category) {
         if (activeTab === 'income' && (t as IncomeTransaction).category !== filters.category) return false;
         if (activeTab === 'expense' && (t as ExpenseTransaction).category !== filters.category) return false;
         if (activeTab === 'savings' && (t as SavingsInvestmentTransaction).type !== filters.category) return false;
         if (activeTab === 'transfers' && (t as TransferTransaction).category !== filters.category) return false;
+      }
+
+      // Bucket filter (for expense transactions only)
+      if (filters.bucket && activeTab === 'expense') {
+        const expense = t as ExpenseTransaction;
+        if (expense.bucket !== filters.bucket) return false;
+      }
+
+      // Amount range filters
+      if (filters.minAmount) {
+        const minAmount = parseFloat(filters.minAmount);
+        if (!isNaN(minAmount) && t.amount < minAmount) return false;
+      }
+      if (filters.maxAmount) {
+        const maxAmount = parseFloat(filters.maxAmount);
+        if (!isNaN(maxAmount) && t.amount > maxAmount) return false;
       }
 
       // Status filter
@@ -321,7 +364,7 @@ export function Transactions() {
 
     // Sort by date (newest first)
     return filtered.sort((a, b) => b.date.localeCompare(a.date));
-  }, [activeTab, incomeTransactions, expenseTransactions, savingsTransactions, transferTransactions, filters, accountsMap]);
+  }, [activeTab, incomeTransactions, expenseTransactions, savingsTransactions, transferTransactions, filters, accountsMap, accountsByIdMap]);
 
   // Pagination
   const paginatedTransactions = useMemo(() => {
@@ -1279,14 +1322,7 @@ export function Transactions() {
                                   {
                                     label: 'Clear Filters',
                                     onClick: () => {
-                                      setFilters({
-                                        dateFrom: '',
-                                        dateTo: '',
-                                        accountId: '',
-                                        category: '',
-                                        status: '',
-                                        searchTerm: '',
-                                      });
+                                      setFilters(defaultFilters);
                                     },
                                     variant: 'outlined' as const,
                                   },
@@ -1457,14 +1493,7 @@ export function Transactions() {
                                   {
                                     label: 'Clear Filters',
                                     onClick: () => {
-                                      setFilters({
-                                        dateFrom: '',
-                                        dateTo: '',
-                                        accountId: '',
-                                        category: '',
-                                        status: '',
-                                        searchTerm: '',
-                                      });
+                                      setFilters(defaultFilters);
                                     },
                                     variant: 'outlined' as const,
                                   },
@@ -1624,14 +1653,7 @@ export function Transactions() {
                                   {
                                     label: 'Clear Filters',
                                     onClick: () => {
-                                      setFilters({
-                                        dateFrom: '',
-                                        dateTo: '',
-                                        accountId: '',
-                                        category: '',
-                                        status: '',
-                                        searchTerm: '',
-                                      });
+                                      setFilters(defaultFilters);
                                     },
                                     variant: 'outlined' as const,
                                   },
@@ -1794,14 +1816,7 @@ export function Transactions() {
                                   {
                                     label: 'Clear Filters',
                                     onClick: () => {
-                                      setFilters({
-                                        dateFrom: '',
-                                        dateTo: '',
-                                        accountId: '',
-                                        category: '',
-                                        status: '',
-                                        searchTerm: '',
-                                      });
+                                      setFilters(defaultFilters);
                                     },
                                     variant: 'outlined' as const,
                                   },
