@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -25,8 +25,6 @@ import {
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import RestoreIcon from '@mui/icons-material/Restore';
-import DownloadIcon from '@mui/icons-material/Download';
-import UploadIcon from '@mui/icons-material/Upload';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useToastStore } from '../store/useToastStore';
@@ -47,8 +45,8 @@ import { RefErrorRemediationDialog } from '../components/common/RefErrorRemediat
 import { ViewToggle } from '../components/common/ViewToggle';
 import { useViewMode } from '../hooks/useViewMode';
 import { BalanceSyncResultCard } from '../components/settings/BalanceSyncResultCard';
+import { BackupManagement } from '../components/settings/BackupManagement';
 import { useOnboardingStore } from '../store/useOnboardingStore';
-import { ProgressIndicator } from '../components/common/ProgressIndicator';
 import {
   enableAnalytics,
   disableAnalytics,
@@ -58,7 +56,6 @@ import {
 import {
   getStorageStatistics,
 } from '../utils/storageCleanup';
-import { downloadBackup, readBackupFile, importBackup, exportBackup } from '../utils/backupService';
 import { syncAccountBalancesFromTransactions, type SyncResult } from '../utils/balanceSync';
 import { clearAllData } from '../utils/clearAllData';
 import { performanceMonitor } from '../utils/performanceMonitoring';
@@ -89,11 +86,6 @@ export function Settings() {
   const { viewMode: syncResultsViewMode, toggleViewMode: toggleSyncResultsViewMode } = useViewMode('balance-sync-results-view-mode');
   const { resetOnboarding } = useOnboardingStore();
   const [localSettings, setLocalSettings] = useState(settings);
-  const [importDialogOpen, setImportDialogOpen] = useState(false);
-  const [importReplaceMode, setImportReplaceMode] = useState(false);
-  const [backupFile, setBackupFile] = useState<File | null>(null);
-  const [backupInfo, setBackupInfo] = useState<{ version: string; timestamp: string } | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [syncDialogOpen, setSyncDialogOpen] = useState(false);
   const [syncResults, setSyncResults] = useState<SyncResult[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -102,10 +94,6 @@ export function Settings() {
   const [performanceMetricsDialogOpen, setPerformanceMetricsDialogOpen] = useState(false);
   const [errorTrackingDialogOpen, setErrorTrackingDialogOpen] = useState(false);
   const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
-  const [importProgress, setImportProgress] = useState<number | undefined>(undefined);
-  const [exportProgress, setExportProgress] = useState<number | undefined>(undefined);
-  const [isImporting, setIsImporting] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
   const [analyticsProvider, setAnalyticsProvider] = useState<'plausible' | 'google-analytics' | null>(null);
   const [plausibleDomain, setPlausibleDomain] = useState('');
   const [gaMeasurementId, setGaMeasurementId] = useState('');
@@ -231,127 +219,6 @@ export function Settings() {
 
   const hasChanges = JSON.stringify(localSettings) !== JSON.stringify(settings);
 
-  const handleExportBackup = async () => {
-    try {
-      setIsExporting(true);
-      setExportProgress(0);
-      
-      // Simulate progress for better UX
-      const progressInterval = setInterval(() => {
-        setExportProgress((prev) => {
-          if (prev === undefined || prev >= 90) return prev;
-          return prev + 10;
-        });
-      }, 100);
-
-      // Perform export
-      downloadBackup();
-      
-      // Complete progress
-      clearInterval(progressInterval);
-      setExportProgress(100);
-      
-      setTimeout(() => {
-        setIsExporting(false);
-        setExportProgress(undefined);
-        showSuccess('Backup exported successfully');
-      }, 500);
-    } catch (error) {
-      setIsExporting(false);
-      setExportProgress(undefined);
-      showError(getUserFriendlyError(error, 'export backup'));
-    }
-  };
-
-  const handleImportFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const backupData = await readBackupFile(file);
-      setBackupFile(file);
-      setBackupInfo({
-        version: backupData.version,
-        timestamp: backupData.timestamp,
-      });
-      setImportDialogOpen(true);
-    } catch (error) {
-      showError(getUserFriendlyError(error, 'read backup file'));
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  };
-
-  const handleImportConfirm = async () => {
-    if (!backupFile) return;
-
-    try {
-      setIsImporting(true);
-      setImportProgress(0);
-      
-      // Simulate progress for better UX
-      const progressInterval = setInterval(() => {
-        setImportProgress((prev) => {
-          if (prev === undefined || prev >= 90) return prev;
-          return prev + 15;
-        });
-      }, 150);
-
-      // Read and import backup
-      const backupData = await readBackupFile(backupFile);
-      setImportProgress(50);
-      
-      const importResult = importBackup(backupData, importReplaceMode);
-      setImportProgress(90);
-      
-      // Complete progress
-      clearInterval(progressInterval);
-      setImportProgress(100);
-      
-      // Show warnings if any
-      if (importResult.warnings && importResult.warnings.length > 0) {
-        importResult.warnings.forEach((warning) => {
-          showWarning(warning);
-        });
-      }
-      
-      // Show success message
-      let successMessage = importReplaceMode
-        ? 'Backup imported successfully. All existing data has been replaced.'
-        : 'Backup imported successfully. Data has been merged with existing records.';
-      
-      if (importResult.migrated) {
-        successMessage += ` Data migrated from version ${importResult.backupVersion} to current version.`;
-      }
-      
-      setTimeout(() => {
-        setIsImporting(false);
-        setImportProgress(undefined);
-        showSuccess(successMessage);
-        setImportDialogOpen(false);
-        setBackupFile(null);
-        setBackupInfo(null);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-      }, 500);
-    } catch (error) {
-      setIsImporting(false);
-      setImportProgress(undefined);
-      showError(getUserFriendlyError(error, 'import backup'));
-    }
-  };
-
-  const handleImportCancel = () => {
-    setImportDialogOpen(false);
-    setBackupFile(null);
-    setBackupInfo(null);
-    setImportReplaceMode(false);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
 
   const handleSyncBalances = () => {
     try {
@@ -406,8 +273,6 @@ export function Settings() {
       maximumFractionDigits: 2,
     }).format(value);
   };
-
-  const currentBackupInfo = exportBackup();
 
   return (
     <Stack spacing={{ xs: 2, sm: 3 }}>
@@ -1472,7 +1337,7 @@ export function Settings() {
                 fontWeight: 600,
               }}
             >
-              Data Backup & Restore
+              Data Backup & Recovery
             </Typography>
             <Typography 
               variant="body2" 
@@ -1481,103 +1346,9 @@ export function Settings() {
                 fontSize: { xs: '0.8125rem', sm: '0.875rem' },
               }}
             >
-              Export all your data to a backup file or import from a previous backup.
+              Create backups, restore from backup history, and configure automatic daily backups.
             </Typography>
-
-            <Stack spacing={{ xs: 1.5, sm: 2 }}>
-              <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, bgcolor: 'action.hover' }}>
-                <Stack spacing={{ xs: 1.5, sm: 2 }}>
-                  <Box>
-                    <Typography 
-                      variant="subtitle2" 
-                      sx={{ 
-                        mb: { xs: 0.75, sm: 1 },
-                        fontSize: { xs: '0.9375rem', sm: '1rem' },
-                        fontWeight: 600,
-                      }}
-                    >
-                      Current Backup Info
-                    </Typography>
-                    <Stack 
-                      direction={{ xs: 'column', sm: 'row' }} 
-                      spacing={{ xs: 1, sm: 2 }} 
-                      alignItems={{ xs: 'flex-start', sm: 'center' }}
-                      flexWrap="wrap"
-                    >
-                      <Chip 
-                        label={`Version ${currentBackupInfo.version}`} 
-                        size="small"
-                        sx={{
-                          fontSize: { xs: '0.6875rem', sm: '0.75rem' },
-                          height: { xs: 24, sm: 28 },
-                          '& .MuiChip-label': {
-                            px: { xs: 0.75, sm: 1 },
-                          },
-                        }}
-                      />
-                      <Typography 
-                        variant="caption" 
-                        color="text.secondary"
-                        sx={{
-                          fontSize: { xs: '0.6875rem', sm: '0.75rem' },
-                          wordBreak: 'break-word',
-                        }}
-                      >
-                        Last backup: {new Date(currentBackupInfo.timestamp).toLocaleString()}
-                      </Typography>
-                    </Stack>
-                  </Box>
-                  <Stack 
-                    direction={{ xs: 'column', sm: 'row' }} 
-                    spacing={{ xs: 1.5, sm: 2 }}
-                  >
-                    {isExporting ? (
-                      <ProgressIndicator
-                        progress={exportProgress}
-                        message="Exporting backup..."
-                        variant="linear"
-                        showPercentage={true}
-                      />
-                    ) : (
-                      <Button
-                        variant="outlined"
-                        startIcon={<DownloadIcon />}
-                        onClick={handleExportBackup}
-                        fullWidth
-                        disabled={isExporting}
-                        sx={{
-                          minHeight: { xs: 44, sm: 40 },
-                          fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-                          px: { xs: 1.5, sm: 2 },
-                        }}
-                      >
-                        Export Backup
-                      </Button>
-                    )}
-                    <Button
-                      variant="outlined"
-                      startIcon={<UploadIcon />}
-                      onClick={() => fileInputRef.current?.click()}
-                      fullWidth
-                      sx={{
-                        minHeight: { xs: 44, sm: 40 },
-                        fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-                        px: { xs: 1.5, sm: 2 },
-                      }}
-                    >
-                      Import Backup
-                    </Button>
-                  </Stack>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".json"
-                    style={{ display: 'none' }}
-                    onChange={handleImportFileSelect}
-                  />
-                </Stack>
-              </Paper>
-            </Stack>
+            <BackupManagement />
           </Stack>
 
           <Divider />
@@ -1641,163 +1412,6 @@ export function Settings() {
           </Stack>
         </Stack>
       </Paper>
-
-      <Dialog 
-        open={importDialogOpen} 
-        onClose={handleImportCancel} 
-        maxWidth="sm" 
-        fullWidth
-        fullScreen={isMobile}
-        PaperProps={{
-          sx: {
-            m: { xs: 0, sm: 2 },
-            maxHeight: { xs: '100vh', sm: '90vh' },
-            width: { xs: '100%', sm: 'auto' },
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{
-            fontSize: { xs: '1.125rem', sm: '1.25rem' },
-            fontWeight: 700,
-            pb: { xs: 1, sm: 2 },
-          }}
-        >
-          Import Backup
-        </DialogTitle>
-        <DialogContent
-          sx={{
-            px: { xs: 2, sm: 3 },
-            pb: { xs: 2, sm: 3 },
-          }}
-        >
-          <Stack spacing={{ xs: 1.5, sm: 2 }}>
-            {backupInfo && (
-              <Alert 
-                severity="info"
-                sx={{
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
-                  '& .MuiAlertTitle-root': {
-                    fontSize: { xs: '0.9375rem', sm: '1rem' },
-                    fontWeight: 600,
-                  },
-                }}
-              >
-                <AlertTitle>Backup Information</AlertTitle>
-                <Typography 
-                  variant="body2"
-                  sx={{
-                    fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-                  }}
-                >
-                  Version: {backupInfo.version}
-                </Typography>
-                <Typography 
-                  variant="body2"
-                  sx={{
-                    fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-                  }}
-                >
-                  Created: {new Date(backupInfo.timestamp).toLocaleString()}
-                </Typography>
-              </Alert>
-            )}
-
-            {isImporting ? (
-              <ProgressIndicator
-                progress={importProgress}
-                message="Importing backup data..."
-                variant="linear"
-                showPercentage={true}
-              />
-            ) : (
-              <Alert 
-                severity="warning"
-                sx={{
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
-                  '& .MuiAlertTitle-root': {
-                    fontSize: { xs: '0.9375rem', sm: '1rem' },
-                    fontWeight: 600,
-                  },
-                }}
-              >
-                <AlertTitle>Import Options</AlertTitle>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    mb: { xs: 1.5, sm: 2 },
-                    fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-                  }}
-                >
-                  Choose how to import the backup:
-                </Typography>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={importReplaceMode}
-                      onChange={(e) => setImportReplaceMode(e.target.checked)}
-                      disabled={isImporting}
-                    />
-                  }
-                  label="Replace all existing data"
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: { xs: '0.875rem', sm: '0.875rem' },
-                    },
-                  }}
-                />
-                <Typography 
-                  variant="caption" 
-                  color="text.secondary" 
-                  sx={{ 
-                    mt: { xs: 0.75, sm: 1 }, 
-                    display: 'block',
-                    fontSize: { xs: '0.6875rem', sm: '0.75rem' },
-                  }}
-                >
-                  {importReplaceMode
-                    ? '⚠️ This will delete all current data and replace it with the backup.'
-                    : 'This will merge backup data with existing records (duplicates by ID will be skipped).'}
-                </Typography>
-              </Alert>
-            )}
-          </Stack>
-        </DialogContent>
-        <DialogActions
-          sx={{
-            px: { xs: 2, sm: 3 },
-            pb: { xs: 2, sm: 3 },
-            gap: { xs: 1, sm: 1.5 },
-            flexDirection: { xs: 'column-reverse', sm: 'row' },
-          }}
-        >
-          <Button 
-            onClick={handleImportCancel}
-            fullWidth={isMobile}
-            sx={{
-              minHeight: { xs: 44, sm: 40 },
-              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-              px: { xs: 1.5, sm: 2 },
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleImportConfirm}
-            variant="contained"
-            color={importReplaceMode ? 'error' : 'primary'}
-            fullWidth={isMobile}
-            disabled={isImporting}
-            sx={{
-              minHeight: { xs: 44, sm: 40 },
-              fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-              px: { xs: 1.5, sm: 2 },
-            }}
-          >
-            {isImporting ? 'Importing...' : (importReplaceMode ? 'Replace All Data' : 'Import & Merge')}
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       <Dialog 
         open={syncDialogOpen} 
