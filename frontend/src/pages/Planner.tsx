@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback, memo, useRef } from 'react';
+import { useState, useMemo, useCallback, memo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Alert,
@@ -32,6 +32,7 @@ import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { EmptyState } from '../components/common/EmptyState';
 import type { AggregatedMonth } from '../types/plannedExpensesAggregated';
 import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
+import { TableSkeleton } from '../components/common/TableSkeleton';
 
 const formatMonthDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -54,6 +55,7 @@ export const Planner = memo(function Planner() {
   const [maxAmount, setMaxAmount] = useState<number | null>(null);
   const [showNegativeOnly, setShowNegativeOnly] = useState<boolean>(false);
   const [printPreviewOpen, setPrintPreviewOpen] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(true);
   const tableRef = useRef<HTMLDivElement>(null);
   const printContentRef = useRef<HTMLDivElement>(null);
 
@@ -85,6 +87,12 @@ export const Planner = memo(function Planner() {
   });
 
   const availableMonths = getAvailableMonths();
+
+  // Simulate initial load (since Zustand with localforage loads synchronously, this is just for UX)
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Auto-select latest/current month if none selected - prioritize latest and future
   useEffect(() => {
@@ -425,7 +433,11 @@ export const Planner = memo(function Planner() {
               {filteredMonth.accounts.length > 0 ? (
                 <>
                   <div ref={tableRef} tabIndex={0} style={{ outline: 'none' }}>
+                    {isLoading ? (
+                    <TableSkeleton rows={5} columns={8} />
+                  ) : (
                     <AccountTable month={filteredMonth} />
+                  )}
                   </div>
                   <TotalsFooter month={activeMonth} totals={totals} />
                 </>
@@ -473,7 +485,11 @@ export const Planner = memo(function Planner() {
               </div>
               {filteredMonth && filteredMonth.accounts.length > 0 && (
                 <>
-                  <AccountTable month={filteredMonth} />
+                  {isLoading ? (
+                    <TableSkeleton rows={5} columns={8} />
+                  ) : (
+                    <AccountTable month={filteredMonth} />
+                  )}
                   <TotalsFooter month={activeMonth} totals={totals} />
                 </>
               )}
