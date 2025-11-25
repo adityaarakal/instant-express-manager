@@ -2,6 +2,37 @@
 
 ## Getting Started
 
+### Installing the App (PWA)
+
+Instant Expense Manager is a Progressive Web App (PWA) that can be installed on your device:
+
+**Mobile (iOS/Android)**:
+- Open the app in your browser
+- Tap the Share button (iOS) or menu (Android)
+- Select "Add to Home Screen"
+- The app will appear on your home screen like a native app
+
+**Desktop (Chrome/Edge)**:
+- Open the app in Chrome or Edge
+- Click the install icon in the address bar
+- Click "Install" when prompted
+- The app will open in its own window
+
+**Benefits of Installing**:
+- Works offline
+- Faster loading
+- App-like experience
+- Automatic updates
+
+### Update Notifications
+
+When a new version is available, you'll see an update notification at the bottom of the screen:
+- **Solid, visible background** for clear readability
+- **"Update" button**: Immediately refreshes to apply the update
+- **"Later" button**: Dismisses the notification
+
+The app automatically checks for updates every 5 minutes. For more details, see [PWA Features Documentation](./PWA_FEATURES.md).
+
 ### First Launch
 
 When you first open the app, you'll see the Dashboard with summary metrics. Start by creating your first bank and bank account to begin managing your finances.

@@ -76,6 +76,13 @@ export function PWAUpdateNotification() {
       open={open}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       onClose={handleClose}
+      sx={{
+        '& .MuiSnackbarContent-root': {
+          backgroundColor: 'transparent',
+          boxShadow: 'none',
+          padding: 0,
+        },
+      }}
     >
       <Alert
         severity="info"
@@ -95,9 +102,26 @@ export function PWAUpdateNotification() {
             </Button>
           </Stack>
         }
-        sx={{ minWidth: '300px' }}
+        sx={{
+          minWidth: { xs: '280px', sm: '300px' },
+          maxWidth: { xs: '90vw', sm: '400px' },
+          backgroundColor: (theme) => theme.palette.mode === 'dark' 
+            ? theme.palette.grey[800] 
+            : theme.palette.background.paper,
+          color: (theme) => theme.palette.text.primary,
+          '& .MuiAlert-icon': {
+            color: (theme) => theme.palette.info.main,
+          },
+          '& .MuiAlert-message': {
+            width: '100%',
+          },
+          boxShadow: (theme) => theme.shadows[8],
+          border: (theme) => `1px solid ${theme.palette.divider}`,
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+        }}
       >
-        <AlertTitle>Update Available</AlertTitle>
+        <AlertTitle sx={{ fontWeight: 600 }}>Update Available</AlertTitle>
         A new version of the app is available. Click Update to refresh.
       </Alert>
     </Snackbar>
