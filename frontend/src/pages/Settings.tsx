@@ -47,6 +47,7 @@ import { RefErrorRemediationDialog } from '../components/common/RefErrorRemediat
 import { ViewToggle } from '../components/common/ViewToggle';
 import { useViewMode } from '../hooks/useViewMode';
 import { BalanceSyncResultCard } from '../components/settings/BalanceSyncResultCard';
+import { useOnboardingStore } from '../store/useOnboardingStore';
 import {
   enableAnalytics,
   disableAnalytics,
@@ -64,6 +65,7 @@ import SyncIcon from '@mui/icons-material/Sync';
 import SpeedIcon from '@mui/icons-material/Speed';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
+import SchoolIcon from '@mui/icons-material/School';
 import TableContainer from '@mui/material/TableContainer';
 import Table from '@mui/material/Table';
 import TableHead from '@mui/material/TableHead';
@@ -84,6 +86,7 @@ export function Settings() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { viewMode: syncResultsViewMode, toggleViewMode: toggleSyncResultsViewMode } = useViewMode('balance-sync-results-view-mode');
+  const { resetOnboarding } = useOnboardingStore();
   const [localSettings, setLocalSettings] = useState(settings);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importReplaceMode, setImportReplaceMode] = useState(false);
@@ -404,6 +407,46 @@ export function Settings() {
               </Typography>
               <ThemeModeToggle />
             </Box>
+          </Stack>
+
+          <Divider />
+
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Typography 
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                fontWeight: 600,
+              }}
+            >
+              Getting Started
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+              }}
+            >
+              Restart the onboarding tour to learn about key features.
+            </Typography>
+            <Button
+              variant="outlined"
+              startIcon={<SchoolIcon />}
+              onClick={() => {
+                resetOnboarding();
+                showSuccess('Onboarding tour will start shortly. Please wait a moment.');
+              }}
+              fullWidth={isMobile}
+              sx={{
+                minHeight: { xs: 44, sm: 48 },
+                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                alignSelf: { xs: 'stretch', sm: 'flex-start' },
+                minWidth: { xs: '100%', sm: 200 },
+              }}
+            >
+              Restart Onboarding Tour
+            </Button>
           </Stack>
 
           <Divider />

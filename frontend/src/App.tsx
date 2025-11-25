@@ -11,6 +11,7 @@ import { useScheduledExports } from './hooks/useScheduledExports';
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useNotifications } from './hooks/useNotifications';
 import { useDataIntegrity } from './hooks/useDataIntegrity';
+import { OnboardingDialog } from './components/onboarding/OnboardingDialog';
 
 function App() {
   const themeSetting = useSettingsStore((state) => state.settings.theme);
@@ -41,6 +42,7 @@ function App() {
       <CssBaseline />
       <ErrorBoundary>
         <AppProviders>
+          <OnboardingDialog />
           <AppLayout>
             <AppRoutes />
           </AppLayout>

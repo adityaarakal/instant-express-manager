@@ -1,6 +1,6 @@
 {
   "name": "instant-express-manager-frontend",
-  "version": "1.0.115",
+  "version": "1.0.116",
   "type": "module",
   "scripts": {
     "dev": "vite",
