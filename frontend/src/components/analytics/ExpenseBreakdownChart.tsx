@@ -1,5 +1,5 @@
 import { useMemo, memo } from 'react';
-import { Paper, Typography, Box, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import {
   PieChart,
   Pie,
@@ -9,11 +9,12 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   ResponsiveContainer,
   type PieLabelRenderProps,
 } from 'recharts';
 import type { ExpenseTransaction } from '../../types/transactions';
+import { ChartWrapper, CustomTooltip, formatCurrencyTooltip } from './ChartWrapper';
 
 interface ExpenseBreakdownChartProps {
   transactions: ExpenseTransaction[];
@@ -56,53 +57,57 @@ export const ExpenseBreakdownChart = memo(function ExpenseBreakdownChart({ trans
 
   return (
     <Stack spacing={3} direction={{ xs: 'column', md: 'row' }}>
-      <Paper elevation={1} sx={{ p: 3, flex: 1 }}>
-        <Typography variant="h6" gutterBottom>
-          Expenses by Category
-        </Typography>
-        <Box sx={{ width: '100%', height: 300, mt: 2 }}>
-          <ResponsiveContainer>
-            <PieChart>
-              <Pie
-                data={categoryData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={(props: PieLabelRenderProps) => {
-                  const { name, percent } = props;
-                  const percentValue = typeof percent === 'number' ? percent * 100 : 0;
-                  return `${name} ${percentValue.toFixed(0)}%`;
-                }}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {categoryData.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value: number) => `₹${value.toLocaleString('en-IN')}`} />
-            </PieChart>
-          </ResponsiveContainer>
-        </Box>
-      </Paper>
+      <ChartWrapper
+        title="Expenses by Category"
+        chartId="expense-category-pie-chart"
+        hasData={categoryData.length > 0}
+        height={350}
+      >
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={categoryData}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              label={(props: PieLabelRenderProps) => {
+                const { name, percent } = props;
+                const percentValue = typeof percent === 'number' ? percent * 100 : 0;
+                return `${name} ${percentValue.toFixed(0)}%`;
+              }}
+              outerRadius={80}
+              fill="#8884d8"
+              dataKey="value"
+            >
+              {categoryData.map((_, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <RechartsTooltip
+              content={<CustomTooltip formatter={(value) => [formatCurrencyTooltip(value), 'Expense']} />}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      </ChartWrapper>
 
-      <Paper elevation={1} sx={{ p: 3, flex: 1 }}>
-        <Typography variant="h6" gutterBottom>
-          Expenses by Bucket
-        </Typography>
-        <Box sx={{ width: '100%', height: 300, mt: 2 }}>
-          <ResponsiveContainer>
-            <BarChart data={bucketData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
-              <YAxis />
-              <Tooltip formatter={(value: number) => `₹${value.toLocaleString('en-IN')}`} />
-              <Bar dataKey="value" fill="#8884d8" name="Expenses" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Box>
-      </Paper>
+      <ChartWrapper
+        title="Expenses by Bucket"
+        chartId="expense-bucket-bar-chart"
+        hasData={bucketData.length > 0}
+        height={350}
+      >
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={bucketData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
+            <YAxis />
+            <RechartsTooltip
+              content={<CustomTooltip formatter={(value) => [formatCurrencyTooltip(value), 'Expense']} />}
+            />
+            <Bar dataKey="value" fill="#8884d8" name="Expenses" />
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartWrapper>
     </Stack>
   );
 });

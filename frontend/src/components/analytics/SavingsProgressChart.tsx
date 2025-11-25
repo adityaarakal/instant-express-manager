@@ -1,5 +1,4 @@
 import { useMemo, memo } from 'react';
-import { Paper, Typography, Box } from '@mui/material';
 import {
   Line,
   AreaChart,
@@ -7,11 +6,12 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   Legend,
   ResponsiveContainer,
 } from 'recharts';
 import type { SavingsInvestmentTransaction } from '../../types/transactions';
+import { ChartWrapper, CustomTooltip, formatCurrencyTooltip } from './ChartWrapper';
 
 interface SavingsProgressChartProps {
   transactions: SavingsInvestmentTransaction[];
@@ -46,42 +46,46 @@ export const SavingsProgressChart = memo(function SavingsProgressChart({ transac
   }, [transactions]);
 
   return (
-    <Paper elevation={1} sx={{ p: 3 }}>
-      <Typography variant="h6" gutterBottom>
-        Savings Progress Over Time
-      </Typography>
-      <Box sx={{ width: '100%', height: 400, mt: 2 }}>
-        <ResponsiveContainer>
-          <AreaChart data={monthlyData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip
-              formatter={(value: number, name: string) => [
-                `₹${value.toLocaleString('en-IN')}`,
-                name === 'amount' ? 'Monthly' : 'Cumulative',
-              ]}
-            />
-            <Legend />
-            <Area
-              type="monotone"
-              dataKey="amount"
-              stackId="1"
-              stroke="#8884d8"
-              fill="#8884d8"
-              name="Monthly Savings"
-            />
-            <Line
-              type="monotone"
-              dataKey="cumulative"
-              stroke="#82ca9d"
-              strokeWidth={2}
-              name="Cumulative Savings"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </Box>
-    </Paper>
+    <ChartWrapper
+      title="Savings Progress Over Time"
+      chartId="savings-progress-chart"
+      hasData={monthlyData.length > 0}
+      height={400}
+    >
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={monthlyData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="month" />
+          <YAxis />
+          <RechartsTooltip
+            content={
+              <CustomTooltip
+                formatter={(value, name) => [
+                  formatCurrencyTooltip(value),
+                  name === 'amount' ? 'Monthly Savings' : 'Cumulative Savings',
+                ]}
+              />
+            }
+          />
+          <Legend />
+          <Area
+            type="monotone"
+            dataKey="amount"
+            stackId="1"
+            stroke="#8884d8"
+            fill="#8884d8"
+            name="Monthly Savings"
+          />
+          <Line
+            type="monotone"
+            dataKey="cumulative"
+            stroke="#82ca9d"
+            strokeWidth={2}
+            name="Cumulative Savings"
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </ChartWrapper>
   );
 });
 

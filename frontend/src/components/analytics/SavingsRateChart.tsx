@@ -4,18 +4,18 @@
  */
 
 import { useMemo, memo } from 'react';
-import { Paper, Typography, Box } from '@mui/material';
 import {
   LineChart,
   Line,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   Legend,
   ResponsiveContainer,
 } from 'recharts';
 import type { IncomeTransaction, SavingsInvestmentTransaction } from '../../types/transactions';
+import { ChartWrapper, CustomTooltip, formatCurrencyTooltip, formatPercentageTooltip } from './ChartWrapper';
 
 interface SavingsRateChartProps {
   incomeTransactions: IncomeTransaction[];
@@ -68,44 +68,36 @@ export const SavingsRateChart = memo(function SavingsRateChart({
       .sort((a, b) => a.month.localeCompare(b.month));
   }, [incomeTransactions, savingsTransactions]);
 
-  if (monthlyData.length === 0) {
-    return (
-      <Paper elevation={1} sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          Savings Rate Tracking
-        </Typography>
-        <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Typography color="text.secondary">No data available for the selected date range</Typography>
-        </Box>
-      </Paper>
-    );
-  }
-
   return (
-    <Paper elevation={1} sx={{ p: 3 }}>
-      <Typography variant="h6" gutterBottom>
-        Savings Rate Over Time
-      </Typography>
-      <Box sx={{ mt: 2 }}>
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={monthlyData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis tickFormatter={(value) => `${value}%`} />
-            <Tooltip formatter={(value: number, name: string) => {
-              if (name === 'rate') return `${value}%`;
-              return new Intl.NumberFormat('en-IN', {
-                style: 'currency',
-                currency: 'INR',
-                maximumFractionDigits: 0,
-              }).format(value);
-            }} />
-            <Legend />
-            <Line type="monotone" dataKey="rate" stroke="#00C49F" strokeWidth={2} name="Savings Rate %" />
-          </LineChart>
-        </ResponsiveContainer>
-      </Box>
-    </Paper>
+    <ChartWrapper
+      title="Savings Rate Over Time"
+      chartId="savings-rate-chart"
+      hasData={monthlyData.length > 0}
+      height={400}
+      emptyMessage="No data available for the selected date range"
+    >
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={monthlyData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="month" />
+          <YAxis tickFormatter={(value) => `${value}%`} />
+          <RechartsTooltip
+            content={
+              <CustomTooltip
+                formatter={(value, name) => {
+                  if (name === 'rate') {
+                    return [formatPercentageTooltip(value), 'Savings Rate'];
+                  }
+                  return [formatCurrencyTooltip(value), name === 'income' ? 'Income' : 'Savings'];
+                }}
+              />
+            }
+          />
+          <Legend />
+          <Line type="monotone" dataKey="rate" stroke="#00C49F" strokeWidth={2} name="Savings Rate %" />
+        </LineChart>
+      </ResponsiveContainer>
+    </ChartWrapper>
   );
 });
 

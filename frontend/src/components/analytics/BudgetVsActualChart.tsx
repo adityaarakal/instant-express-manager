@@ -1,12 +1,11 @@
 import { useMemo, memo } from 'react';
-import { Paper, Typography, Box } from '@mui/material';
 import {
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   Legend,
   ResponsiveContainer,
 } from 'recharts';
@@ -15,6 +14,7 @@ import type {
   ExpenseTransaction,
   SavingsInvestmentTransaction,
 } from '../../types/transactions';
+import { ChartWrapper, CustomTooltip, formatCurrencyTooltip } from './ChartWrapper';
 
 interface BudgetVsActualChartProps {
   incomeTransactions: IncomeTransaction[];
@@ -93,26 +93,35 @@ export const BudgetVsActualChart = memo(function BudgetVsActualChart({
   }, [incomeTransactions, expenseTransactions, savingsTransactions]);
 
   return (
-    <Paper elevation={1} sx={{ p: 3 }}>
-      <Typography variant="h6" gutterBottom>
-        Budget vs Actual - Monthly Comparison
-      </Typography>
-      <Box sx={{ width: '100%', height: 400, mt: 2 }}>
-        <ResponsiveContainer>
-          <BarChart data={monthlyComparison}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" angle={-45} textAnchor="end" height={100} />
-            <YAxis />
-            <Tooltip formatter={(value: number) => `₹${value.toLocaleString('en-IN')}`} />
-            <Legend />
-            <Bar dataKey="income" fill="#82ca9d" name="Income" />
-            <Bar dataKey="expenses" fill="#ff8042" name="Expenses" />
-            <Bar dataKey="savings" fill="#8884d8" name="Savings" />
-            <Bar dataKey="net" fill="#ffc658" name="Net" />
-          </BarChart>
-        </ResponsiveContainer>
-      </Box>
-    </Paper>
+    <ChartWrapper
+      title="Budget vs Actual - Monthly Comparison"
+      chartId="budget-vs-actual-chart"
+      hasData={monthlyComparison.length > 0}
+      height={400}
+    >
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={monthlyComparison}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="month" angle={-45} textAnchor="end" height={100} />
+          <YAxis />
+          <RechartsTooltip
+            content={
+              <CustomTooltip
+                formatter={(value, name) => [
+                  formatCurrencyTooltip(value),
+                  name === 'income' ? 'Income' : name === 'expenses' ? 'Expenses' : name === 'savings' ? 'Savings' : 'Net',
+                ]}
+              />
+            }
+          />
+          <Legend />
+          <Bar dataKey="income" fill="#82ca9d" name="Income" />
+          <Bar dataKey="expenses" fill="#ff8042" name="Expenses" />
+          <Bar dataKey="savings" fill="#8884d8" name="Savings" />
+          <Bar dataKey="net" fill="#ffc658" name="Net" />
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartWrapper>
   );
 });
 

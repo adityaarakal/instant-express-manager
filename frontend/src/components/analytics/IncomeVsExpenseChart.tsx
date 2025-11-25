@@ -4,18 +4,18 @@
  */
 
 import { useMemo, memo } from 'react';
-import { Paper, Typography, Box } from '@mui/material';
 import {
   LineChart,
   Line,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   Legend,
   ResponsiveContainer,
 } from 'recharts';
 import type { IncomeTransaction, ExpenseTransaction } from '../../types/transactions';
+import { ChartWrapper, CustomTooltip, formatCurrencyTooltip } from './ChartWrapper';
 
 interface IncomeVsExpenseChartProps {
   incomeTransactions: IncomeTransaction[];
@@ -68,47 +68,36 @@ export const IncomeVsExpenseChart = memo(function IncomeVsExpenseChart({
       .sort((a, b) => a.month.localeCompare(b.month));
   }, [incomeTransactions, expenseTransactions]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
-
-  if (monthlyData.length === 0) {
-    return (
-      <Paper elevation={1} sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          Income vs Expenses
-        </Typography>
-        <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Typography color="text.secondary">No data available for the selected date range</Typography>
-        </Box>
-      </Paper>
-    );
-  }
-
   return (
-    <Paper elevation={1} sx={{ p: 3 }}>
-      <Typography variant="h6" gutterBottom>
-        Income vs Expenses Comparison
-      </Typography>
-      <Box sx={{ mt: 2 }}>
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={monthlyData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis tickFormatter={formatCurrency} />
-            <Tooltip formatter={(value: number) => formatCurrency(value)} />
-            <Legend />
-            <Line type="monotone" dataKey="income" stroke="#00C49F" strokeWidth={2} name="Income" />
-            <Line type="monotone" dataKey="expenses" stroke="#FF8042" strokeWidth={2} name="Expenses" />
-            <Line type="monotone" dataKey="net" stroke="#0088FE" strokeWidth={2} name="Net" strokeDasharray="5 5" />
-          </LineChart>
-        </ResponsiveContainer>
-      </Box>
-    </Paper>
+    <ChartWrapper
+      title="Income vs Expenses Comparison"
+      chartId="income-vs-expense-chart"
+      hasData={monthlyData.length > 0}
+      height={400}
+      emptyMessage="No data available for the selected date range"
+    >
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={monthlyData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="month" />
+          <YAxis tickFormatter={(value) => formatCurrencyTooltip(value)} />
+          <RechartsTooltip
+            content={
+              <CustomTooltip
+                formatter={(value, name) => [
+                  formatCurrencyTooltip(value),
+                  name === 'income' ? 'Income' : name === 'expenses' ? 'Expenses' : 'Net',
+                ]}
+              />
+            }
+          />
+          <Legend />
+          <Line type="monotone" dataKey="income" stroke="#00C49F" strokeWidth={2} name="Income" />
+          <Line type="monotone" dataKey="expenses" stroke="#FF8042" strokeWidth={2} name="Expenses" />
+          <Line type="monotone" dataKey="net" stroke="#0088FE" strokeWidth={2} name="Net" strokeDasharray="5 5" />
+        </LineChart>
+      </ResponsiveContainer>
+    </ChartWrapper>
   );
 });
 
