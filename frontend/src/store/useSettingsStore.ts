@@ -33,6 +33,8 @@ const createDefaultSettings = (): Settings => ({
       end: '08:00',
     },
   },
+  automaticBackups: false, // Disabled by default
+  backupRetentionDays: 30, // Keep backups for 30 days
 });
 
 const storage = getLocalforageStorage('planner-settings');

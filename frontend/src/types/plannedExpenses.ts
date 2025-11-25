@@ -129,5 +129,7 @@ export interface Settings {
   defaultStatusByBucket: Record<string, AllocationStatus>;
   enableReminders: boolean;
   notifications?: NotificationSettings;
+  automaticBackups?: boolean; // Enable automatic daily backups
+  backupRetentionDays?: number; // Number of days to keep backups (default: 30)
 }
 

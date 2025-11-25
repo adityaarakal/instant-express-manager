@@ -11,6 +11,8 @@ import { useScheduledExports } from './hooks/useScheduledExports';
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useNotifications } from './hooks/useNotifications';
 import { useDataIntegrity } from './hooks/useDataIntegrity';
+import { useAutomaticBackups } from './hooks/useAutomaticBackups';
+import { useBackupCleanup } from './hooks/useBackupCleanup';
 import { OnboardingDialog } from './components/onboarding/OnboardingDialog';
 
 function App() {
@@ -32,6 +34,12 @@ function App() {
   
   // Initialize browser notifications
   useNotifications();
+  
+  // Initialize automatic backups
+  useAutomaticBackups();
+  
+  // Initialize backup cleanup (removes old backups based on retention settings)
+  useBackupCleanup();
   
   // Initialize data integrity checks (runs in development mode)
   // Auto-fix enabled to automatically recalculate balances after initialBalance migration
