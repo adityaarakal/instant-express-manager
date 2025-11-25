@@ -48,6 +48,7 @@ import { ViewToggle } from '../components/common/ViewToggle';
 import { useViewMode } from '../hooks/useViewMode';
 import { BalanceSyncResultCard } from '../components/settings/BalanceSyncResultCard';
 import { useOnboardingStore } from '../store/useOnboardingStore';
+import { ProgressIndicator } from '../components/common/ProgressIndicator';
 import {
   enableAnalytics,
   disableAnalytics,
@@ -101,6 +102,10 @@ export function Settings() {
   const [performanceMetricsDialogOpen, setPerformanceMetricsDialogOpen] = useState(false);
   const [errorTrackingDialogOpen, setErrorTrackingDialogOpen] = useState(false);
   const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
+  const [importProgress, setImportProgress] = useState<number | undefined>(undefined);
+  const [exportProgress, setExportProgress] = useState<number | undefined>(undefined);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [analyticsProvider, setAnalyticsProvider] = useState<'plausible' | 'google-analytics' | null>(null);
   const [plausibleDomain, setPlausibleDomain] = useState('');
   const [gaMeasurementId, setGaMeasurementId] = useState('');
@@ -226,11 +231,34 @@ export function Settings() {
 
   const hasChanges = JSON.stringify(localSettings) !== JSON.stringify(settings);
 
-  const handleExportBackup = () => {
+  const handleExportBackup = async () => {
     try {
+      setIsExporting(true);
+      setExportProgress(0);
+      
+      // Simulate progress for better UX
+      const progressInterval = setInterval(() => {
+        setExportProgress((prev) => {
+          if (prev === undefined || prev >= 90) return prev;
+          return prev + 10;
+        });
+      }, 100);
+
+      // Perform export
       downloadBackup();
-      showSuccess('Backup exported successfully');
+      
+      // Complete progress
+      clearInterval(progressInterval);
+      setExportProgress(100);
+      
+      setTimeout(() => {
+        setIsExporting(false);
+        setExportProgress(undefined);
+        showSuccess('Backup exported successfully');
+      }, 500);
     } catch (error) {
+      setIsExporting(false);
+      setExportProgress(undefined);
       showError(getUserFriendlyError(error, 'export backup'));
     }
   };
@@ -259,8 +287,27 @@ export function Settings() {
     if (!backupFile) return;
 
     try {
+      setIsImporting(true);
+      setImportProgress(0);
+      
+      // Simulate progress for better UX
+      const progressInterval = setInterval(() => {
+        setImportProgress((prev) => {
+          if (prev === undefined || prev >= 90) return prev;
+          return prev + 15;
+        });
+      }, 150);
+
+      // Read and import backup
       const backupData = await readBackupFile(backupFile);
+      setImportProgress(50);
+      
       const importResult = importBackup(backupData, importReplaceMode);
+      setImportProgress(90);
+      
+      // Complete progress
+      clearInterval(progressInterval);
+      setImportProgress(100);
       
       // Show warnings if any
       if (importResult.warnings && importResult.warnings.length > 0) {
@@ -278,14 +325,20 @@ export function Settings() {
         successMessage += ` Data migrated from version ${importResult.backupVersion} to current version.`;
       }
       
-      showSuccess(successMessage);
-      setImportDialogOpen(false);
-      setBackupFile(null);
-      setBackupInfo(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      setTimeout(() => {
+        setIsImporting(false);
+        setImportProgress(undefined);
+        showSuccess(successMessage);
+        setImportDialogOpen(false);
+        setBackupFile(null);
+        setBackupInfo(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }, 500);
     } catch (error) {
+      setIsImporting(false);
+      setImportProgress(undefined);
       showError(getUserFriendlyError(error, 'import backup'));
     }
   };
@@ -1478,19 +1531,29 @@ export function Settings() {
                     direction={{ xs: 'column', sm: 'row' }} 
                     spacing={{ xs: 1.5, sm: 2 }}
                   >
-                    <Button
-                      variant="outlined"
-                      startIcon={<DownloadIcon />}
-                      onClick={handleExportBackup}
-                      fullWidth
-                      sx={{
-                        minHeight: { xs: 44, sm: 40 },
-                        fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-                        px: { xs: 1.5, sm: 2 },
-                      }}
-                    >
-                      Export Backup
-                    </Button>
+                    {isExporting ? (
+                      <ProgressIndicator
+                        progress={exportProgress}
+                        message="Exporting backup..."
+                        variant="linear"
+                        showPercentage={true}
+                      />
+                    ) : (
+                      <Button
+                        variant="outlined"
+                        startIcon={<DownloadIcon />}
+                        onClick={handleExportBackup}
+                        fullWidth
+                        disabled={isExporting}
+                        sx={{
+                          minHeight: { xs: 44, sm: 40 },
+                          fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                          px: { xs: 1.5, sm: 2 },
+                        }}
+                      >
+                        Export Backup
+                      </Button>
+                    )}
                     <Button
                       variant="outlined"
                       startIcon={<UploadIcon />}
@@ -1640,54 +1703,64 @@ export function Settings() {
               </Alert>
             )}
 
-            <Alert 
-              severity="warning"
-              sx={{
-                fontSize: { xs: '0.875rem', sm: '1rem' },
-                '& .MuiAlertTitle-root': {
-                  fontSize: { xs: '0.9375rem', sm: '1rem' },
-                  fontWeight: 600,
-                },
-              }}
-            >
-              <AlertTitle>Import Options</AlertTitle>
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  mb: { xs: 1.5, sm: 2 },
-                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-                }}
-              >
-                Choose how to import the backup:
-              </Typography>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={importReplaceMode}
-                    onChange={(e) => setImportReplaceMode(e.target.checked)}
-                  />
-                }
-                label="Replace all existing data"
+            {isImporting ? (
+              <ProgressIndicator
+                progress={importProgress}
+                message="Importing backup data..."
+                variant="linear"
+                showPercentage={true}
+              />
+            ) : (
+              <Alert 
+                severity="warning"
                 sx={{
-                  '& .MuiFormControlLabel-label': {
-                    fontSize: { xs: '0.875rem', sm: '0.875rem' },
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  '& .MuiAlertTitle-root': {
+                    fontSize: { xs: '0.9375rem', sm: '1rem' },
+                    fontWeight: 600,
                   },
                 }}
-              />
-              <Typography 
-                variant="caption" 
-                color="text.secondary" 
-                sx={{ 
-                  mt: { xs: 0.75, sm: 1 }, 
-                  display: 'block',
-                  fontSize: { xs: '0.6875rem', sm: '0.75rem' },
-                }}
               >
-                {importReplaceMode
-                  ? '⚠️ This will delete all current data and replace it with the backup.'
-                  : 'This will merge backup data with existing records (duplicates by ID will be skipped).'}
-              </Typography>
-            </Alert>
+                <AlertTitle>Import Options</AlertTitle>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    mb: { xs: 1.5, sm: 2 },
+                    fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                  }}
+                >
+                  Choose how to import the backup:
+                </Typography>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={importReplaceMode}
+                      onChange={(e) => setImportReplaceMode(e.target.checked)}
+                      disabled={isImporting}
+                    />
+                  }
+                  label="Replace all existing data"
+                  sx={{
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: { xs: '0.875rem', sm: '0.875rem' },
+                    },
+                  }}
+                />
+                <Typography 
+                  variant="caption" 
+                  color="text.secondary" 
+                  sx={{ 
+                    mt: { xs: 0.75, sm: 1 }, 
+                    display: 'block',
+                    fontSize: { xs: '0.6875rem', sm: '0.75rem' },
+                  }}
+                >
+                  {importReplaceMode
+                    ? '⚠️ This will delete all current data and replace it with the backup.'
+                    : 'This will merge backup data with existing records (duplicates by ID will be skipped).'}
+                </Typography>
+              </Alert>
+            )}
           </Stack>
         </DialogContent>
         <DialogActions
@@ -1714,13 +1787,14 @@ export function Settings() {
             variant="contained"
             color={importReplaceMode ? 'error' : 'primary'}
             fullWidth={isMobile}
+            disabled={isImporting}
             sx={{
               minHeight: { xs: 44, sm: 40 },
               fontSize: { xs: '0.8125rem', sm: '0.875rem' },
               px: { xs: 1.5, sm: 2 },
             }}
           >
-            {importReplaceMode ? 'Replace All Data' : 'Import & Merge'}
+            {isImporting ? 'Importing...' : (importReplaceMode ? 'Replace All Data' : 'Import & Merge')}
           </Button>
         </DialogActions>
       </Dialog>

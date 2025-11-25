@@ -37,6 +37,9 @@ import { useViewMode } from '../hooks/useViewMode';
 import { CreditCardCard } from '../components/creditCards/CreditCardCard';
 import { PaymentHistoryCard } from '../components/creditCards/PaymentHistoryCard';
 import { CreditCardAnalysisChart } from '../components/analytics/CreditCardAnalysisChart';
+import { TableSkeleton } from '../components/common/TableSkeleton';
+import { CardSkeleton } from '../components/common/CardSkeleton';
+import { useState, useEffect } from 'react';
 
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('en-IN', {
@@ -76,6 +79,13 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { viewMode: cardsViewMode, toggleViewMode: toggleCardsViewMode } = useViewMode('credit-cards-view-mode');
   const { viewMode: paymentsViewMode, toggleViewMode: togglePaymentsViewMode } = useViewMode('payment-history-view-mode');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simulate initial load (since Zustand with localforage loads synchronously, this is just for UX)
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   const creditCards = useMemo(
     () => accounts.filter((acc) => acc.accountType === 'CreditCard'),
@@ -460,7 +470,13 @@ export const CreditCardDashboard = memo(function CreditCardDashboard() {
           </Typography>
           <ViewToggle viewMode={cardsViewMode} onToggle={toggleCardsViewMode} aria-label="Toggle between table and card view for credit cards" />
         </Box>
-        {cardsViewMode === 'card' ? (
+        {isLoading ? (
+          cardsViewMode === 'card' ? (
+            <CardSkeleton count={3} showAvatar={false} showActions={true} />
+          ) : (
+            <TableSkeleton rows={5} columns={8} />
+          )
+        ) : cardsViewMode === 'card' ? (
           <Stack spacing={1.5}>
             {cardStats.map((stat) => (
               <CreditCardCard
