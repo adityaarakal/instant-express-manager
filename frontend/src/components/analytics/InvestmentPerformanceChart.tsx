@@ -1,16 +1,17 @@
 import { useMemo, memo } from 'react';
-import { Paper, Typography, Box, Stack, Chip } from '@mui/material';
+import { Stack, Chip } from '@mui/material';
 import {
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   Legend,
   ResponsiveContainer,
 } from 'recharts';
 import type { SavingsInvestmentTransaction } from '../../types/transactions';
+import { ChartWrapper, CustomTooltip, formatCurrencyTooltip } from './ChartWrapper';
 
 interface InvestmentPerformanceChartProps {
   transactions: SavingsInvestmentTransaction[];
@@ -51,30 +52,41 @@ export const InvestmentPerformanceChart = memo(function InvestmentPerformanceCha
   const netValue = totalInvested - totalWithdrawn;
 
   return (
-    <Paper elevation={1} sx={{ p: 3 }}>
-      <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-        <Chip label={`Total Invested: ₹${totalInvested.toLocaleString('en-IN')}`} color="primary" />
-        <Chip label={`Total Withdrawn: ₹${totalWithdrawn.toLocaleString('en-IN')}`} color="warning" />
-        <Chip label={`Net Value: ₹${netValue.toLocaleString('en-IN')}`} color={netValue >= 0 ? 'success' : 'error'} />
+    <Stack spacing={2}>
+      <Stack direction="row" spacing={2} flexWrap="wrap">
+        <Chip label={`Total Invested: ${formatCurrencyTooltip(totalInvested)}`} color="primary" />
+        <Chip label={`Total Withdrawn: ${formatCurrencyTooltip(totalWithdrawn)}`} color="warning" />
+        <Chip label={`Net Value: ${formatCurrencyTooltip(netValue)}`} color={netValue >= 0 ? 'success' : 'error'} />
       </Stack>
-      <Typography variant="h6" gutterBottom>
-        Investment Performance by Destination
-      </Typography>
-      <Box sx={{ width: '100%', height: 400, mt: 2 }}>
-        <ResponsiveContainer>
+      <ChartWrapper
+        title="Investment Performance by Destination"
+        chartId="investment-performance-chart"
+        hasData={destinationData.length > 0}
+        height={400}
+      >
+        <ResponsiveContainer width="100%" height="100%">
           <BarChart data={destinationData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
             <YAxis />
-            <Tooltip formatter={(value: number) => `₹${value.toLocaleString('en-IN')}`} />
+            <RechartsTooltip
+              content={
+                <CustomTooltip
+                  formatter={(value, name) => [
+                    formatCurrencyTooltip(value),
+                    name === 'invested' ? 'Invested' : name === 'withdrawn' ? 'Withdrawn' : 'Net',
+                  ]}
+                />
+              }
+            />
             <Legend />
             <Bar dataKey="invested" fill="#8884d8" name="Invested" />
             <Bar dataKey="withdrawn" fill="#ff8042" name="Withdrawn" />
             <Bar dataKey="net" fill="#82ca9d" name="Net" />
           </BarChart>
         </ResponsiveContainer>
-      </Box>
-    </Paper>
+      </ChartWrapper>
+    </Stack>
   );
 });
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, AlertTitle, Button, Snackbar, Stack } from '@mui/material';
+import { Alert, AlertTitle, Button, Snackbar, Stack, Typography } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
 export function PWAUpdateNotification() {
@@ -86,22 +86,6 @@ export function PWAUpdateNotification() {
     >
       <Alert
         severity="info"
-        action={
-          <Stack direction="row" spacing={1}>
-            <Button color="inherit" size="small" onClick={handleClose}>
-              Later
-            </Button>
-            <Button
-              color="inherit"
-              size="small"
-              onClick={handleUpdate}
-              startIcon={<RefreshIcon />}
-              variant="contained"
-            >
-              Update
-            </Button>
-          </Stack>
-        }
         sx={{
           minWidth: { xs: '280px', sm: '300px' },
           maxWidth: { xs: '90vw', sm: '400px' },
@@ -122,7 +106,25 @@ export function PWAUpdateNotification() {
         }}
       >
         <AlertTitle sx={{ fontWeight: 600 }}>Update Available</AlertTitle>
-        A new version of the app is available. Click Update to refresh.
+        <Stack spacing={2} sx={{ mt: 1 }}>
+          <Typography variant="body2">
+            A new version of the app is available. Click Update to refresh.
+          </Typography>
+          <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
+            <Button color="inherit" size="small" onClick={handleClose}>
+              Later
+            </Button>
+            <Button
+              color="inherit"
+              size="small"
+              onClick={handleUpdate}
+              startIcon={<RefreshIcon />}
+              variant="contained"
+            >
+              Update
+            </Button>
+          </Stack>
+        </Stack>
       </Alert>
     </Snackbar>
   );

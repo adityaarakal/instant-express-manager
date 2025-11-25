@@ -4,18 +4,18 @@
  */
 
 import { useMemo, memo } from 'react';
-import { Paper, Typography, Box } from '@mui/material';
 import {
   LineChart,
   Line,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   Legend,
   ResponsiveContainer,
 } from 'recharts';
 import type { ExpenseTransaction } from '../../types/transactions';
+import { ChartWrapper, CustomTooltip, formatCurrencyTooltip } from './ChartWrapper';
 
 interface SpendingTrendsChartProps {
   transactions: ExpenseTransaction[];
@@ -54,59 +54,41 @@ export const SpendingTrendsChart = memo(function SpendingTrendsChart({ transacti
     });
   }, [transactions]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
-
   const colors = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#ff7300'];
-
-  if (categoryTrends.length === 0) {
-    return (
-      <Paper elevation={1} sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          Spending Trends by Category
-        </Typography>
-        <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Typography color="text.secondary">No data available for the selected date range</Typography>
-        </Box>
-      </Paper>
-    );
-  }
 
   // Get category names (excluding 'month')
   const categories = Object.keys(categoryTrends[0] || {}).filter((key) => key !== 'month');
 
   return (
-    <Paper elevation={1} sx={{ p: 3 }}>
-      <Typography variant="h6" gutterBottom>
-        Spending Trends by Category Over Time
-      </Typography>
-      <Box sx={{ mt: 2 }}>
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={categoryTrends}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis tickFormatter={formatCurrency} />
-            <Tooltip formatter={(value: number) => formatCurrency(value)} />
-            <Legend />
-            {categories.map((category, index) => (
-              <Line
-                key={category}
-                type="monotone"
-                dataKey={category}
-                stroke={colors[index % colors.length]}
-                strokeWidth={2}
-                name={category}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      </Box>
-    </Paper>
+    <ChartWrapper
+      title="Spending Trends by Category Over Time"
+      chartId="spending-trends-chart"
+      hasData={categoryTrends.length > 0}
+      height={400}
+      emptyMessage="No data available for the selected date range"
+    >
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={categoryTrends}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="month" />
+          <YAxis tickFormatter={(value) => formatCurrencyTooltip(value)} />
+          <RechartsTooltip
+            content={<CustomTooltip formatter={(value) => [formatCurrencyTooltip(value), '']} />}
+          />
+          <Legend />
+          {categories.map((category, index) => (
+            <Line
+              key={category}
+              type="monotone"
+              dataKey={category}
+              stroke={colors[index % colors.length]}
+              strokeWidth={2}
+              name={category}
+            />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
+    </ChartWrapper>
   );
 });
 
