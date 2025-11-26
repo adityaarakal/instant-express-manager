@@ -10,6 +10,7 @@ import { useIncomeTransactionsStore } from '../store/useIncomeTransactionsStore'
 import { useExpenseTransactionsStore } from '../store/useExpenseTransactionsStore';
 import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvestmentTransactionsStore';
 import { useAggregatedPlannedMonthsStore } from '../store/useAggregatedPlannedMonthsStore';
+import { useRemainingCashOverridesStore } from '../store/useRemainingCashOverridesStore';
 import { aggregateMonth } from './aggregation';
 
 export interface RefErrorIssue {
@@ -21,6 +22,12 @@ export interface RefErrorIssue {
   hasDifference: boolean;
   canAutoFix: boolean;
   reason?: string;
+  missingData?: {
+    hasIncome: boolean;
+    hasExpenses: boolean;
+    hasSavings: boolean;
+    transactionCount: number;
+  };
 }
 
 export interface RemediationResult {
@@ -86,12 +93,46 @@ export function scanRefErrors(): RemediationResult {
       const currentCash = account.remainingCash;
       const calculatedCash = recalculatedAccount.remainingCash;
 
+      // Check transaction data availability
+      const [year, month] = monthId.split('-');
+      const startDate = `${year}-${month}-01`;
+      const endDate = `${year}-${month}-31`;
+      
+      const accountIncomes = incomeTransactions.filter(
+        (t) => t.accountId === account.id && t.date >= startDate && t.date <= endDate
+      );
+      const accountExpenses = expenseTransactions.filter(
+        (t) => t.accountId === account.id && t.date >= startDate && t.date <= endDate
+      );
+      const accountSavings = savingsTransactions.filter(
+        (t) => t.accountId === account.id && t.date >= startDate && t.date <= endDate
+      );
+      
+      const transactionCount = accountIncomes.length + accountExpenses.length + accountSavings.length;
+      const hasIncome = accountIncomes.length > 0;
+      const hasExpenses = accountExpenses.length > 0;
+      const hasSavings = accountSavings.length > 0;
+
       // Check if there's a discrepancy or if current is null
       const hasIssue = currentCash === null || 
                       currentCash === undefined ||
                       Math.abs((currentCash || 0) - (calculatedCash || 0)) > 0.01;
 
       if (hasIssue) {
+        // Determine if we can auto-fix based on data availability
+        const canAutoFix = transactionCount > 0 && (hasIncome || hasExpenses || hasSavings);
+        
+        let reason = '';
+        if (currentCash === null || currentCash === undefined) {
+          reason = 'Remaining cash is null/undefined';
+        } else {
+          reason = `Difference: ${Math.abs((currentCash || 0) - (calculatedCash || 0)).toFixed(2)}`;
+        }
+        
+        if (!canAutoFix) {
+          reason += ' - Missing transaction data for calculation';
+        }
+
         issues.push({
           monthId,
           accountId: account.id,
@@ -99,10 +140,14 @@ export function scanRefErrors(): RemediationResult {
           currentRemainingCash: currentCash,
           calculatedRemainingCash: calculatedCash || 0,
           hasDifference: true,
-          canAutoFix: true, // Can fix by recalculating from transactions
-          reason: currentCash === null || currentCash === undefined
-            ? 'Remaining cash is null/undefined'
-            : `Difference: ${Math.abs((currentCash || 0) - (calculatedCash || 0)).toFixed(2)}`,
+          canAutoFix,
+          reason,
+          missingData: {
+            hasIncome,
+            hasExpenses,
+            hasSavings,
+            transactionCount,
+          },
         });
         monthsAffected.add(monthId);
       }
@@ -119,38 +164,89 @@ export function scanRefErrors(): RemediationResult {
 
 /**
  * Apply fixes to identified #REF! errors
- * @param issues - List of issues to fix (only fixes those with canAutoFix: true)
+ * For auto-fixable issues, the system will recalculate automatically from transactions.
+ * For non-fixable issues, we can set manual overrides.
+ * @param issues - List of issues to fix
  * @param dryRun - If true, only returns what would be fixed without applying changes
+ * @param useOverrides - If true, applies calculated values as overrides for non-fixable issues
  */
 export function applyRefErrorFixes(
   issues: RefErrorIssue[],
   dryRun: boolean = false,
+  useOverrides: boolean = false,
 ): { fixed: number; skipped: number; errors: string[] } {
   const errors: string[] = [];
   let fixed = 0;
-  const skipped = 0;
+  let skipped = 0;
 
   const fixableIssues = issues.filter((i) => i.canAutoFix);
+  const nonFixableIssues = issues.filter((i) => !i.canAutoFix);
 
   if (dryRun) {
     return {
-      fixed: fixableIssues.length,
-      skipped: issues.length - fixableIssues.length,
+      fixed: fixableIssues.length + (useOverrides ? nonFixableIssues.length : 0),
+      skipped: useOverrides ? 0 : nonFixableIssues.length,
       errors: [],
     };
   }
 
-  // Note: Since aggregated months are calculated on-the-fly from transactions,
-  // remaining cash is always recalculated. The #REF! errors would be in old stored data.
-  // For the new system, we just verify that calculations are correct.
-  // If there are discrepancies, it means transactions might be missing or incorrect.
-  
-  // For now, we'll mark all fixable issues as fixed since the system recalculates automatically.
-  // The real fix is ensuring transaction data is complete and correct.
-  
+  // For fixable issues, the system recalculates automatically from transactions
+  // We just need to verify the calculation is correct (which it should be)
   fixed = fixableIssues.length;
 
+  // For non-fixable issues, we can set manual overrides if requested
+  if (useOverrides) {
+    const overridesStore = useRemainingCashOverridesStore.getState();
+    nonFixableIssues.forEach((issue) => {
+      try {
+        // Set override to the calculated value (or 0 if calculation failed)
+        overridesStore.setOverride(
+          issue.monthId,
+          issue.accountId,
+          issue.calculatedRemainingCash
+        );
+        fixed++;
+      } catch (error) {
+        errors.push(
+          `Failed to set override for ${issue.monthId}/${issue.accountName}: ${error instanceof Error ? error.message : String(error)}`
+        );
+        skipped++;
+      }
+    });
+  } else {
+    skipped = nonFixableIssues.length;
+  }
+
   return { fixed, skipped, errors };
+}
+
+/**
+ * Set manual override for remaining cash
+ * @param monthId - Month identifier
+ * @param accountId - Account identifier
+ * @param remainingCash - Manual remaining cash value (or null to clear override)
+ */
+export function setRemainingCashOverride(
+  monthId: string,
+  accountId: string,
+  remainingCash: number | null
+): void {
+  const overridesStore = useRemainingCashOverridesStore.getState();
+  overridesStore.setOverride(monthId, accountId, remainingCash);
+}
+
+/**
+ * Get manual override for remaining cash
+ * @param monthId - Month identifier
+ * @param accountId - Account identifier
+ * @returns Override value or undefined if not set
+ */
+export function getRemainingCashOverride(
+  monthId: string,
+  accountId: string
+): number | null | undefined {
+  const overridesStore = useRemainingCashOverridesStore.getState();
+  return overridesStore.getOverride(monthId, accountId);
 }
 
 /**

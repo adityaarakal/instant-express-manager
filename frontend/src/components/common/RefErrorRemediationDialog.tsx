@@ -25,11 +25,20 @@ import {
   TableRow,
   Paper,
   Chip,
+  IconButton,
+  TextField,
+  Tooltip,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Cancel';
 import {
   scanRefErrors,
   applyRefErrorFixes,
   getRefErrorSummary,
+  setRemainingCashOverride,
   type RefErrorIssue,
 } from '../../utils/refErrorRemediation';
 import { useToastStore } from '../../store/useToastStore';
@@ -55,6 +64,9 @@ export const RefErrorRemediationDialog = memo(function RefErrorRemediationDialog
   const [isFixing, setIsFixing] = useState(false);
   const [issues, setIssues] = useState<RefErrorIssue[]>([]);
   const [summary, setSummary] = useState<ReturnType<typeof getRefErrorSummary> | null>(null);
+  const [editingIssue, setEditingIssue] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState<string>('');
+  const [applyOverridesForNonFixable, setApplyOverridesForNonFixable] = useState(false);
   const { showSuccess, showError } = useToastStore();
 
   useEffect(() => {
@@ -85,21 +97,16 @@ export const RefErrorRemediationDialog = memo(function RefErrorRemediationDialog
 
     setIsFixing(true);
     try {
-      const fixableIssues = issues.filter((i) => i.canAutoFix);
-      
-      if (fixableIssues.length === 0) {
-        showError('No fixable issues found');
-        setIsFixing(false);
-        return;
-      }
-
-      const result = applyRefErrorFixes(fixableIssues, false);
+      const result = applyRefErrorFixes(issues, false, applyOverridesForNonFixable);
 
       if (result.errors.length > 0) {
         showError(`Fixed ${result.fixed} issues, but encountered ${result.errors.length} errors`);
         console.error('Fix errors:', result.errors);
       } else {
-        showSuccess(`Successfully fixed ${result.fixed} issue${result.fixed !== 1 ? 's' : ''}`);
+        const message = result.fixed > 0
+          ? `Successfully fixed ${result.fixed} issue${result.fixed !== 1 ? 's' : ''}`
+          : 'No issues were fixed';
+        showSuccess(message);
       }
 
       // Re-scan to update the list
@@ -109,6 +116,34 @@ export const RefErrorRemediationDialog = memo(function RefErrorRemediationDialog
     } finally {
       setIsFixing(false);
     }
+  };
+
+  const handleStartEdit = (issue: RefErrorIssue) => {
+    setEditingIssue(`${issue.monthId}-${issue.accountId}`);
+    setEditValue(issue.calculatedRemainingCash.toString());
+  };
+
+  const handleSaveEdit = (issue: RefErrorIssue) => {
+    const value = parseFloat(editValue);
+    if (isNaN(value)) {
+      showError('Invalid value');
+      return;
+    }
+
+    try {
+      setRemainingCashOverride(issue.monthId, issue.accountId, value);
+      showSuccess(`Manual override set for ${issue.accountName} in ${issue.monthId}`);
+      setEditingIssue(null);
+      setEditValue('');
+      handleScan();
+    } catch (error) {
+      showError(`Failed to set override: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingIssue(null);
+    setEditValue('');
   };
 
   const fixableCount = issues.filter((i) => i.canAutoFix).length;
@@ -188,36 +223,103 @@ export const RefErrorRemediationDialog = memo(function RefErrorRemediationDialog
                           <TableCell>Current</TableCell>
                           <TableCell>Calculated</TableCell>
                           <TableCell>Difference</TableCell>
+                          <TableCell>Data Status</TableCell>
                           <TableCell>Status</TableCell>
+                          <TableCell>Actions</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {issues.map((issue, index) => (
-                          <TableRow key={`${issue.monthId}-${issue.accountId}-${index}`}>
-                            <TableCell>{issue.monthId}</TableCell>
-                            <TableCell>{issue.accountName}</TableCell>
-                            <TableCell>
-                              {issue.currentRemainingCash === null || issue.currentRemainingCash === undefined
-                                ? <Typography color="error" variant="body2">NULL</Typography>
-                                : formatCurrency(issue.currentRemainingCash)}
-                            </TableCell>
-                            <TableCell>{formatCurrency(issue.calculatedRemainingCash)}</TableCell>
-                            <TableCell>
-                              {issue.currentRemainingCash !== null && issue.currentRemainingCash !== undefined
-                                ? formatCurrency(
-                                    Math.abs(issue.currentRemainingCash - issue.calculatedRemainingCash),
-                                  )
-                                : formatCurrency(issue.calculatedRemainingCash)}
-                            </TableCell>
-                            <TableCell>
-                              {issue.canAutoFix ? (
-                                <Chip label="Fixable" color="success" size="small" />
-                              ) : (
-                                <Chip label="Review Needed" color="warning" size="small" />
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                        {issues.map((issue, index) => {
+                          const isEditing = editingIssue === `${issue.monthId}-${issue.accountId}`;
+                          const difference = issue.currentRemainingCash !== null && issue.currentRemainingCash !== undefined
+                            ? Math.abs(issue.currentRemainingCash - issue.calculatedRemainingCash)
+                            : issue.calculatedRemainingCash;
+
+                          return (
+                            <TableRow key={`${issue.monthId}-${issue.accountId}-${index}`}>
+                              <TableCell>{issue.monthId}</TableCell>
+                              <TableCell>{issue.accountName}</TableCell>
+                              <TableCell>
+                                {issue.currentRemainingCash === null || issue.currentRemainingCash === undefined
+                                  ? <Typography color="error" variant="body2">NULL</Typography>
+                                  : formatCurrency(issue.currentRemainingCash)}
+                              </TableCell>
+                              <TableCell>
+                                {isEditing ? (
+                                  <TextField
+                                    type="number"
+                                    value={editValue}
+                                    onChange={(e) => setEditValue(e.target.value)}
+                                    size="small"
+                                    sx={{ width: 120 }}
+                                    inputProps={{ step: 0.01 }}
+                                  />
+                                ) : (
+                                  formatCurrency(issue.calculatedRemainingCash)
+                                )}
+                              </TableCell>
+                              <TableCell>{formatCurrency(difference)}</TableCell>
+                              <TableCell>
+                                {issue.missingData && (
+                                  <Tooltip
+                                    title={
+                                      `Transactions: ${issue.missingData.transactionCount} | ` +
+                                      `Income: ${issue.missingData.hasIncome ? 'Yes' : 'No'} | ` +
+                                      `Expenses: ${issue.missingData.hasExpenses ? 'Yes' : 'No'} | ` +
+                                      `Savings: ${issue.missingData.hasSavings ? 'Yes' : 'No'}`
+                                    }
+                                  >
+                                    <Chip
+                                      label={
+                                        issue.missingData.transactionCount > 0
+                                          ? `${issue.missingData.transactionCount} txns`
+                                          : 'No data'
+                                      }
+                                      color={issue.missingData.transactionCount > 0 ? 'info' : 'error'}
+                                      size="small"
+                                    />
+                                  </Tooltip>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {issue.canAutoFix ? (
+                                  <Chip label="Fixable" color="success" size="small" />
+                                ) : (
+                                  <Chip label="Review Needed" color="warning" size="small" />
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {isEditing ? (
+                                  <Stack direction="row" spacing={0.5}>
+                                    <IconButton
+                                      size="small"
+                                      color="primary"
+                                      onClick={() => handleSaveEdit(issue)}
+                                    >
+                                      <SaveIcon fontSize="small" />
+                                    </IconButton>
+                                    <IconButton
+                                      size="small"
+                                      onClick={handleCancelEdit}
+                                    >
+                                      <CancelIcon fontSize="small" />
+                                    </IconButton>
+                                  </Stack>
+                                ) : (
+                                  <Tooltip title="Set manual override">
+                                    <IconButton
+                                      size="small"
+                                      onClick={() => handleStartEdit(issue)}
+                                      disabled={isFixing}
+                                    >
+                                      <EditIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
                       </TableBody>
                     </Table>
                   </TableContainer>
@@ -225,8 +327,24 @@ export const RefErrorRemediationDialog = memo(function RefErrorRemediationDialog
                   {nonFixableCount > 0 && (
                     <Alert severity="warning">
                       <AlertTitle>Non-Fixable Issues</AlertTitle>
-                      {nonFixableCount} issue{nonFixableCount !== 1 ? 's' : ''} require manual review.
-                      These may be due to missing transaction data or other data inconsistencies.
+                      <Stack spacing={1}>
+                        <Typography variant="body2">
+                          {nonFixableCount} issue{nonFixableCount !== 1 ? 's' : ''} require manual review.
+                          These may be due to missing transaction data or other data inconsistencies.
+                        </Typography>
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={applyOverridesForNonFixable}
+                              onChange={(e) => setApplyOverridesForNonFixable(e.target.checked)}
+                            />
+                          }
+                          label="Apply calculated values as overrides for non-fixable issues"
+                        />
+                        <Typography variant="caption" color="text.secondary">
+                          You can also manually edit individual values using the edit icon in the table.
+                        </Typography>
+                      </Stack>
                     </Alert>
                   )}
                 </>
@@ -240,12 +358,12 @@ export const RefErrorRemediationDialog = memo(function RefErrorRemediationDialog
         <Button onClick={handleScan} disabled={isScanning || isFixing}>
           Re-scan
         </Button>
-        {fixableCount > 0 && (
+        {(fixableCount > 0 || (nonFixableCount > 0 && applyOverridesForNonFixable)) && (
           <Button
             onClick={handleFix}
             variant="contained"
             color="primary"
-            disabled={isScanning || isFixing || fixableCount === 0}
+            disabled={isScanning || isFixing || (fixableCount === 0 && !applyOverridesForNonFixable)}
           >
             {isFixing ? (
               <>
@@ -253,7 +371,7 @@ export const RefErrorRemediationDialog = memo(function RefErrorRemediationDialog
                 Fixing...
               </>
             ) : (
-              `Fix ${fixableCount} Issue${fixableCount !== 1 ? 's' : ''}`
+              `Fix ${fixableCount + (applyOverridesForNonFixable ? nonFixableCount : 0)} Issue${(fixableCount + (applyOverridesForNonFixable ? nonFixableCount : 0)) !== 1 ? 's' : ''}`
             )}
           </Button>
         )}
