@@ -17,6 +17,7 @@ import type {
 import { calculateRemainingCash } from './formulas';
 import { DEFAULT_BUCKETS } from '../config/plannedExpenses';
 import { useDueDateOverridesStore } from '../store/useDueDateOverridesStore';
+import { useRemainingCashOverridesStore } from '../store/useRemainingCashOverridesStore';
 import { getTodayDateString, isDueDatePassed } from './datePrecision';
 import { sumCurrency } from './financialPrecision';
 
@@ -113,12 +114,24 @@ export function aggregateMonth(
     // Calculate remaining cash with currency precision
     const accountInflow = sumCurrency(accountIncomes.map((t) => t.amount));
     const fixedBalance = account.currentBalance; // Use current balance as fixed balance
-    const remainingCash = calculateRemainingCash({
-      baseValue: accountInflow,
-      fixedBalances: [fixedBalance || 0],
-      savingsTransfers: savingsTransfer ? [savingsTransfer] : [],
-      manualAdjustments: [],
-    });
+    
+    // Check for manual override first
+    const overrideStore = useRemainingCashOverridesStore.getState();
+    const manualOverride = overrideStore.getOverride(monthId, account.id);
+    
+    let remainingCash: number;
+    if (manualOverride !== undefined) {
+      // Use manual override if set (can be null, which means 0)
+      remainingCash = manualOverride ?? 0;
+    } else {
+      // Calculate from transactions
+      remainingCash = calculateRemainingCash({
+        baseValue: accountInflow,
+        fixedBalances: [fixedBalance || 0],
+        savingsTransfers: savingsTransfer ? [savingsTransfer] : [],
+        manualAdjustments: [],
+      });
+    }
 
     return {
       id: account.id,
