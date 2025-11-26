@@ -28,6 +28,7 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import RepeatIcon from '@mui/icons-material/Repeat';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 import { ThemeModeToggle } from './ThemeModeToggle';
@@ -51,6 +52,7 @@ const navItems = [
   { label: 'Recurring', to: '/recurring', icon: <RepeatIcon fontSize="small" />, end: false as const },
   { label: 'Planner', to: '/planner', icon: <EventNoteOutlinedIcon fontSize="small" />, end: false as const },
   { label: 'Analytics', to: '/analytics', icon: <AnalyticsIcon fontSize="small" />, end: false as const },
+  { label: 'Forecasting', to: '/forecasting', icon: <TrendingUpIcon fontSize="small" />, end: false as const },
   { label: 'Credit Cards', to: '/credit-cards', icon: <CreditCardIcon fontSize="small" />, end: false as const },
   { label: 'Settings', to: '/settings', icon: <SettingsOutlinedIcon fontSize="small" />, end: false as const },
 ] as const;

@@ -12,6 +12,7 @@ const EMIs = lazy(() => import('../pages/EMIs').then((module) => ({ default: mod
 const Recurring = lazy(() => import('../pages/Recurring').then((module) => ({ default: module.Recurring })));
 const Planner = lazy(() => import('../pages/Planner').then((module) => ({ default: module.Planner })));
 const Analytics = lazy(() => import('../pages/Analytics').then((module) => ({ default: module.Analytics })));
+const Forecasting = lazy(() => import('../pages/Forecasting').then((module) => ({ default: module.Forecasting })));
 const CreditCardDashboard = lazy(() =>
   import('../pages/CreditCardDashboard').then((module) => ({ default: module.CreditCardDashboard }))
 );
@@ -63,6 +64,7 @@ export function AppRoutes() {
         <Route path="/recurring" element={<Recurring />} />
         <Route path="/planner" element={<Planner />} />
         <Route path="/analytics" element={<Analytics />} />
+        <Route path="/forecasting" element={<Forecasting />} />
         <Route path="/credit-cards" element={<CreditCardDashboard />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>
