@@ -238,12 +238,14 @@ fi
 echo ""
 
 # ============================================================================
-# STEP 6: MANDATORY E2E TEST SUITE
+# STEP 6: MANDATORY E2E TEST SUITE (TDD APPROACH)
 # ============================================================================
 # Run Playwright E2E test suite
+# TDD RULE: Locked tests are DELIVERED features - they define correctness
+# If tests fail, fix IMPLEMENTATION, NOT the tests
 # NOTE: This check can be modified, but only by adding NEW checks
 # Modifying existing test execution is FORBIDDEN (enforced by lock)
-echo "📋 Step 6/6: Mandatory E2E Test Suite"
+echo "📋 Step 6/6: Mandatory E2E Test Suite (TDD Approach)"
 echo "Running Playwright E2E test suite..."
 
 # MANDATORY: Playwright must be available
@@ -264,16 +266,36 @@ if ! npx playwright --version >/dev/null 2>&1; then
   exit 1
 fi
 
+# TDD RULE: Locked tests are DELIVERED features - they define correctness
+# If tests fail, fix IMPLEMENTATION, NOT the tests
+echo "🚨 TDD RULE: Locked tests are DELIVERED features"
+echo "📋 If tests fail → Fix IMPLEMENTATION, NOT tests"
 # MANDATORY: Run E2E test suite - they must pass
 echo "🚨 MANDATORY CHECK: E2E test suite must pass"
 npm run test:e2e
 TEST_STATUS=$?
 cd ..
 if [ $TEST_STATUS -ne 0 ]; then
+  echo ""
   echo "❌ CRITICAL: E2E test suite failed"
   echo "❌ All E2E tests must pass before commit"
+  echo ""
   echo "🔒 ENFORCEMENT: Commit blocked - Fix failing tests first"
-  echo "📋 REQUIRED: Run 'npm run test:e2e' and fix failing tests"
+  echo "📋 TDD RULE: Locked tests are DELIVERED features"
+  echo "📋 REQUIRED: Fix your IMPLEMENTATION to make tests pass"
+  echo "📋 DO NOT: Modify locked test files"
+  echo ""
+  echo "💡 TDD Approach:"
+  echo "   • Tests define what 'working' means"
+  echo "   • Implementation must conform to tests"
+  echo "   • If tests fail → Fix implementation, NOT tests"
+  echo ""
+  echo "📋 Steps to fix:"
+  echo "   1. Review failing test output above"
+  echo "   2. Fix your implementation to make tests pass"
+  echo "   3. Run 'npm run test:e2e' to verify"
+  echo "   4. Commit only when tests pass"
+  echo ""
   echo "⚠️  This check CANNOT BE BYPASSED - All tests must pass"
   exit 1
 fi

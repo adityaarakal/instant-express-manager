@@ -62,11 +62,13 @@ A comprehensive standalone financial management Progressive Web App (PWA) built 
 
 This repository enforces strict code quality checks that **cannot be bypassed**:
 
-- ✅ **Git Hooks**: Pre-commit validation (ESLint, TypeScript, Build)
+- ✅ **Git Hooks**: Pre-commit validation (ESLint, TypeScript, Build, E2E Tests)
+- ✅ **TDD Approach**: Locked tests are DELIVERED features - fix implementation, NOT tests
 - ✅ **Git Wrapper**: Blocks `--no-verify` bypass attempts
 - ✅ **GitHub Actions**: Server-side enforcement on all PRs
 - ✅ **Branch Protection**: Requires status checks before merge
 - ✅ **Enforcement Lock System**: Checksum-based protection for enforcement files
+- ✅ **Test Lock System**: Prevents modification of locked test files
 - ✅ **TypeScript**: Production code only (test files excluded from compilation)
 
 ### Protection Setup (Required)

@@ -2,12 +2,19 @@
 
 ## ⚠️ CRITICAL RULES FOR AI AGENTS
 
-### Locked Tests - ABSOLUTE PROHIBITION
+### TDD Approach - Test-Driven Development
 
-The following test files are **LOCKED** and **MUST NOT BE MODIFIED**:
+**Locked tests are DELIVERED features - they represent what the end user expects.**
 
-- ✅ `frontend/e2e/modules/banks.spec.ts` - **LOCKED**
-- ✅ `frontend/e2e/modules/bank-accounts.spec.ts` - **LOCKED**
+The following test files are **LOCKED** and represent **delivered features**:
+
+- ✅ `frontend/e2e/modules/banks.spec.ts` - **LOCKED** (Delivered feature)
+- ✅ `frontend/e2e/modules/bank-accounts.spec.ts` - **LOCKED** (Delivered feature)
+
+### The Golden Rule
+
+> **If tests fail → Fix your IMPLEMENTATION**  
+> **If tests fail → DO NOT modify locked tests**
 
 **Any attempt to modify these files will be blocked by pre-commit hooks.**
 
@@ -82,7 +89,42 @@ export async function deleteBank(page: Page, bankName: string): Promise<void> {
 
 ## Workflow for AI Agents
 
-### Scenario 1: User Asks to Modify a Locked Test
+### Scenario 1: Tests Fail After Implementing New Feature
+
+**You MUST:**
+
+1. **DO NOT** modify the locked test file
+2. **Fix your implementation** to make tests pass
+3. **Re-run tests** until they pass
+4. **Commit** only when tests pass
+
+**Example workflow:**
+
+```
+Task: Add new field to form
+→ Implement feature
+→ Run tests: npm run test:e2e
+→ Tests fail
+→ Fix implementation (make field optional or ensure backward compatibility)
+→ Run tests again
+→ Tests pass ✅
+→ Commit
+```
+
+**Example response if tests fail:**
+
+```
+⚠️ Tests are failing after implementing the new feature.
+
+Following TDD approach:
+• Locked tests are DELIVERED features
+• I will fix my IMPLEMENTATION to make tests pass
+• I will NOT modify the locked test files
+
+Fixing implementation now...
+```
+
+### Scenario 2: User Asks to Modify a Locked Test
 
 **You MUST:**
 
@@ -101,7 +143,10 @@ export async function deleteBank(page: Page, bankName: string): Promise<void> {
 ```
 ⚠️ The test file `frontend/e2e/modules/banks.spec.ts` is currently LOCKED.
 
-I cannot modify locked tests directly. To proceed:
+Following TDD approach, locked tests are DELIVERED features and cannot be modified
+without explicit user permission.
+
+To proceed:
 
 1. Unlock the test:
    bash scripts/unlock-test.sh frontend/e2e/modules/banks.spec.ts
@@ -111,6 +156,9 @@ I cannot modify locked tests directly. To proceed:
 
 3. Lock it again after changes:
    bash scripts/lock-test.sh frontend/e2e/modules/banks.spec.ts
+
+Alternatively, I can adjust my implementation to work with the existing test
+if that's acceptable.
 ```
 
 ### Scenario 2: User Asks to Add a New Test
@@ -259,10 +307,14 @@ test('should create account', async ({ page }) => {
 
 ## Summary
 
-- 🔒 **Locked tests**: Cannot modify - blocked by pre-commit hooks
+- 🔒 **Locked tests**: DELIVERED features - cannot modify (blocked by pre-commit hooks)
+- ✅ **TDD Rule**: Tests fail → Fix implementation, NOT tests
 - ✅ **Helpers**: Can modify - ensure backward compatibility
 - ✅ **New tests**: Can create - check lock status first
 - ⚠️ **Unlocking**: Only user can unlock - requires confirmation
 
-**Remember**: Locked tests protect finalized user flows. Respect the lock system.
+**Remember**: 
+- Locked tests are DELIVERED features - they define what "working" means
+- Implementation must conform to tests, not the other way around
+- If tests fail, fix your code to make tests pass
 

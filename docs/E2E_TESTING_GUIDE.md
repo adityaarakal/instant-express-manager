@@ -15,15 +15,23 @@
 
 ## Overview
 
-This project uses **Playwright** for end-to-end (E2E) testing with a focus on **user flows** and **test protection**. The test suite ensures that existing functionality is not broken when new features are added or changes are made.
+This project uses **Playwright** for end-to-end (E2E) testing with a **Test-Driven Development (TDD)** approach. Locked tests represent **delivered features** and serve as the source of truth for what "working" means.
 
 ### Key Principles
 
-- ✅ **User Flow Testing**: Tests focus on complete user journeys, not isolated unit tests
+- ✅ **TDD Approach**: Locked tests are DELIVERED features - they define correctness
 - ✅ **Test Protection**: Finalized tests are locked to prevent accidental modifications
+- ✅ **Implementation Conforms**: Code must make tests pass, not the other way around
+- ✅ **User Flow Testing**: Tests focus on complete user journeys, not isolated unit tests
 - ✅ **Automatic Execution**: Tests run automatically on pre-commit hooks
 - ✅ **Reusable Helpers**: Common test actions are extracted into reusable helper functions
 - ✅ **Smart Test Selection**: Only runs tests for changed modules
+
+### The Golden Rule
+
+> **If tests fail, fix the implementation - NEVER modify locked tests.**
+
+Locked tests are like **delivered products** to end users. You cannot change what was delivered without explicit user permission.
 
 ---
 
@@ -119,28 +127,49 @@ test.describe('Module Name - User Flows', () => {
 
 ## For AI Agents
 
-### ⚠️ CRITICAL: Test Locking System
+### ⚠️ CRITICAL: TDD Rules - Test-Driven Development
 
-**LOCKED TESTS CANNOT BE MODIFIED BY AI AGENTS**
+**LOCKED TESTS ARE DELIVERED FEATURES - THEY DEFINE CORRECTNESS**
 
-The following test files are **LOCKED** and **MUST NOT** be modified:
+The following test files are **LOCKED** and represent **delivered features**:
 
-- `frontend/e2e/modules/banks.spec.ts` - **LOCKED**
-- `frontend/e2e/modules/bank-accounts.spec.ts` - **LOCKED**
+- `frontend/e2e/modules/banks.spec.ts` - **LOCKED** (Delivered feature)
+- `frontend/e2e/modules/bank-accounts.spec.ts` - **LOCKED** (Delivered feature)
+
+### The Golden Rule
+
+> **If tests fail → Fix your implementation**  
+> **If tests fail → DO NOT modify locked tests**
 
 ### What You CAN Do
 
-✅ **Run locked tests**: You can execute locked tests to verify functionality
-✅ **Read locked tests**: You can read locked tests to understand test scenarios
-✅ **Create new tests**: You can create new test files or add tests to unlocked files
-✅ **Modify helpers**: You can modify helper functions in `frontend/e2e/helpers/`
-✅ **Update documentation**: You can update documentation files
+✅ **Run locked tests**: Execute tests to verify functionality
+✅ **Read locked tests**: Understand what "working" means
+✅ **Fix implementation**: When tests fail, fix your code to make tests pass
+✅ **Create new tests**: Add tests to unlocked files
+✅ **Modify helpers**: Update helper functions in `frontend/e2e/helpers/`
+✅ **Update documentation**: Modify helpers**: Update helper functions in `frontend/e2e/helpers/`
+✅ **Update documentation**: Update documentation files
 
 ### What You CANNOT Do
 
-❌ **Modify locked tests**: You cannot change locked test files in any way
+❌ **Modify locked tests**: Cannot change locked test files (even if tests fail)
+❌ **Change test expectations**: Cannot alter tests to match broken implementation
 ❌ **Unlock tests**: Only the user can unlock tests (requires confirmation)
-❌ **Bypass lock validation**: Pre-commit hooks will block commits if locked tests are modified
+❌ **Bypass lock validation**: Pre-commit hooks will block commits
+❌ **Skip test failures**: Tests must pass before commit
+
+### TDD Workflow
+
+When implementing new features:
+
+1. **Implement the feature**
+2. **Run tests**: `npm run test:e2e`
+3. **If tests fail:**
+   - ✅ **Fix your implementation** to make tests pass
+   - ❌ **DO NOT** modify locked test files
+4. **Re-run tests** until they pass
+5. **Commit** only when tests pass
 
 ### Lock Validation
 
@@ -149,18 +178,22 @@ The pre-commit hook automatically validates locked tests:
 1. **Checksum Validation**: Each locked test has a stored checksum
 2. **Automatic Detection**: Any modification to a locked test is detected
 3. **Commit Blocking**: Commits are blocked if locked tests are modified
+4. **Test Execution**: Tests must pass before commit
 
 ### If You Need to Modify a Locked Test
 
 **You cannot do this directly.** You must:
 
 1. **Inform the user** that a locked test needs modification
-2. **Wait for user to unlock** the test file:
+2. **Explain why** the test needs to change
+3. **Wait for user to unlock** the test file:
    ```bash
    bash scripts/unlock-test.sh frontend/e2e/modules/banks.spec.ts
    ```
-3. **Make the changes** after the user unlocks it
-4. **Inform the user** to lock it again after changes
+4. **Make the changes** after the user unlocks it
+5. **Inform the user** to lock it again after changes
+
+**Remember**: In most cases, you should fix your implementation instead of modifying tests.
 
 ### Helper Functions
 
