@@ -129,10 +129,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
       
-      - name: Download coverage map
+      - name: Download coverage analysis
         uses: actions/download-artifact@v4
         with:
-          name: coverage-map
+          name: coverage-analysis
           path: .release-coverage/
       
       - name: Update release branch
