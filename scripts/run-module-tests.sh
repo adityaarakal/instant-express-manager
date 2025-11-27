@@ -262,12 +262,13 @@ echo ""
 cd frontend
 
 # Build test file pattern for Playwright
-# Playwright uses file paths, so we need to convert to relative paths
+# Playwright uses file paths relative to testDir (which is now e2e/modules)
+# So we need to convert frontend/e2e/modules/dashboard.spec.ts to just dashboard.spec.ts
 TEST_PATTERNS=""
 for file in $TEST_FILES; do
-  # Convert frontend/e2e/modules/dashboard.spec.ts to e2e/modules/dashboard.spec.ts
-  rel_path=$(echo "$file" | sed 's|^frontend/||')
-  TEST_PATTERNS="$TEST_PATTERNS $rel_path"
+  # Extract just the filename since testDir is now e2e/modules
+  filename=$(basename "$file")
+  TEST_PATTERNS="$TEST_PATTERNS $filename"
 done
 
 # Run tests with Playwright (Chromium only for speed in pre-commit)
