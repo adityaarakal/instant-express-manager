@@ -95,18 +95,30 @@ When implementing new features or tasks:
 4. **THEN** modify the test after unlock
 5. **REMIND** user to lock it again
 
+**⚠️ CRITICAL: You CANNOT unlock files yourself - only the user can do this**
+
 **Example response:**
 ```
 ⚠️ The test file `frontend/e2e/modules/banks.spec.ts` is LOCKED.
 
-To add the new IFSC field test, I need you to unlock it first:
+Following TDD approach, locked tests are DELIVERED features and cannot be modified
+without explicit user permission.
 
-1. Unlock: bash scripts/unlock-test.sh frontend/e2e/modules/banks.spec.ts
-2. I'll add the test for IFSC field
-3. Lock again: bash scripts/lock-test.sh frontend/e2e/modules/banks.spec.ts
+⚠️ IMPORTANT: I cannot unlock files - only you can unlock them.
+
+If you want to add the new IFSC field test, you would need to:
+
+1. Unlock the test (requires your explicit action):
+   bash scripts/unlock-test.sh frontend/e2e/modules/banks.spec.ts
+   (Type 'UNLOCK' when prompted)
+
+2. I'll add the test for IFSC field after you unlock it
+
+3. Lock it again after changes:
+   bash scripts/lock-test.sh frontend/e2e/modules/banks.spec.ts
 
 Alternatively, I can implement the feature to work with the existing test
-(keeping IFSC optional) if that's acceptable.
+(keeping IFSC optional) if that's acceptable (recommended approach).
 ```
 
 ## The TDD Mindset
