@@ -8,6 +8,7 @@ To unlock: bash scripts/unlock-doc.sh docs/BRANCHING_AND_DEPLOYMENT_STRATEGY.md
 -->
 
 
+
 # Branching and Deployment Strategy
 
 ## 🎯 Overview
@@ -230,32 +231,75 @@ For a feature to qualify for release, it must meet **ALL** of the following crit
 
 ### Blocking Mechanism
 
-**After a feature is deployed to release:**
+**⚠️ CRITICAL: After a feature is successfully deployed to release:**
 
-1. **Feature remains available** on release branch (as per successful deployment)
+#### Scenario: Feature Deployed, Then Tests Fail During Development
 
-2. **During development**, if locked tests fail:
-   - ❌ **Block merging code to release**
-   - ❌ **Block deploying new changes** to release
-   - ✅ **Previously deployed feature remains** on release branch
-   - ✅ **Only new changes** need to pass locked tests before progressing to release
+**What Happens:**
 
-3. **Release Merge Blocking Criteria**:
-   - ❌ **Locked tests failing** → Block merge to release
-   - ❌ **Coverage threshold not met** → Block merge to release
-   - ❌ **Tests not passing** → Block merge to release
-   - ✅ **All locked tests passing** → Allow merge to release
-   - ✅ **Coverage thresholds met** → Allow merge to release
+1. **Feature Successfully Deployed**:
+   - Feature meets all criteria (locked tests passing, 100% coverage)
+   - Feature is automatically deployed to release branch
+   - Feature is available to end users on Prod URL
 
-4. **What Gets Blocked**:
-   - New changes to already released features (if locked tests fail)
-   - New features to be released (if locked tests fail or coverage not met)
-   - Any code that doesn't meet release qualification criteria
+2. **During Continued Development**:
+   - Development continues on `main` branch
+   - Changes are made to the feature
+   - **If locked tests start failing** for this feature:
+     - ❌ **BLOCK merging new code to release**
+     - ❌ **BLOCK deploying new changes** to release
+     - ✅ **Previously deployed feature REMAINS available** on release branch
+     - ✅ **Only new changes** need to pass locked tests before progressing to release
 
-5. **What Remains Available**:
-   - Previously successfully deployed features remain on release branch
-   - Features that were deployed when tests were passing remain available
-   - Only new changes are blocked until they meet criteria
+3. **Key Principle**:
+   - **Previously deployed feature stays on release** (as per earlier successful deployment)
+   - **New changes are blocked** until locked tests pass again
+   - **We simply block merging code to release** if locked tests fail
+   - **Block applies to both**: already released features AND new features to be released
+
+#### Release Merge Blocking Criteria
+
+**Merge to release will be BLOCKED if:**
+
+- ❌ **Locked tests are failing** (for already released OR new features)
+- ❌ **Coverage threshold not met** (utils < 100%, services/hooks < 100%)
+- ❌ **Tests not passing** (unit tests or E2E tests failing)
+- ❌ **Any code doesn't meet release qualification criteria**
+
+**Merge to release will be ALLOWED if:**
+
+- ✅ **All locked tests passing** (Playwright tests tested and working)
+- ✅ **Utils have 100% unit test coverage** and all passing
+- ✅ **Services/hooks have 100% test coverage** (unit OR E2E) and all passing
+- ✅ **Everything tested and working** - comprehensive coverage achieved
+- ✅ **Coverage thresholds met** - 100% coverage for all components
+
+#### What Gets Blocked vs. What Remains Available
+
+**What Gets Blocked**:
+- ❌ New changes to already released features (if locked tests fail)
+- ❌ New features to be released (if locked tests fail or coverage not met)
+- ❌ Any code that doesn't meet release qualification criteria
+- ❌ Merging code to release when locked tests fail
+
+**What Remains Available**:
+- ✅ Previously successfully deployed features remain on release branch
+- ✅ Features that were deployed when tests were passing remain available
+- ✅ End users continue to have access to previously deployed features
+- ✅ Only new changes are blocked until they meet criteria
+
+#### Example Scenario
+
+**Timeline**:
+1. **Day 1**: Bank feature deployed to release (all tests passing, 100% coverage)
+2. **Day 5**: Development continues, changes made to bank feature
+3. **Day 5**: Locked tests start failing due to new changes
+4. **Result**:
+   - ✅ Bank feature **remains available** on release branch (from Day 1 deployment)
+   - ❌ **New changes blocked** from merging to release
+   - ❌ **Cannot deploy new code** to release until tests pass
+   - ✅ End users **still have access** to the bank feature (as deployed on Day 1)
+   - ✅ Once tests pass again → new changes can merge to release
 
 ---
 
