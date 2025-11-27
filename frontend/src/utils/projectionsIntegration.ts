@@ -18,6 +18,7 @@ import {
   cleanProjectionsImport,
   type ProjectionsImportValidationResult,
 } from './projectionsImportValidation';
+import { isTransactionInMonth } from './transactionFiltering';
 
 /**
  * Expected CSV/Excel structure:
@@ -299,7 +300,7 @@ export function autoPopulateInflowFromProjections(monthId: string): void {
   const endDate = new Date(year, month, 0).toISOString().split('T')[0];
 
   const existingIncomes = transactions.filter(
-    (t) => t.date >= startDate && t.date <= endDate
+    (t) => isTransactionInMonth(t, startDate, endDate)
   );
 
   // Check for existing auto-populated transaction
@@ -387,7 +388,7 @@ export function getSavingsProgress(monthId: string): {
   const endDate = new Date(year, month, 0).toISOString().split('T')[0];
 
   const monthSavings = transactions.filter(
-    (t) => t.date >= startDate && t.date <= endDate && t.status === 'Completed'
+    (t) => isTransactionInMonth(t, startDate, endDate) && t.status === 'Completed'
   );
 
   const actual = monthSavings.reduce((sum, t) => sum + t.amount, 0);

@@ -31,6 +31,7 @@ import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvest
 import { useBankAccountsStore } from '../store/useBankAccountsStore';
 import { exportAnalyticsToExcel } from '../utils/excelExport';
 import { EmptyState } from '../components/common/EmptyState';
+import { isTransactionInMonth } from '../utils/transactionFiltering';
 
 // Lazy load chart components for better performance
 const IncomeTrendsChart = lazy(() =>
@@ -146,17 +147,17 @@ export const Analytics = memo(function Analytics() {
   };
 
   const filteredIncome = useMemo(
-    () => incomeTransactions.filter((t) => t.date >= start && t.date <= end),
+    () => incomeTransactions.filter((t) => isTransactionInMonth(t, start, end)),
     [incomeTransactions, start, end],
   );
 
   const filteredExpenses = useMemo(
-    () => expenseTransactions.filter((t) => t.date >= start && t.date <= end),
+    () => expenseTransactions.filter((t) => isTransactionInMonth(t, start, end)),
     [expenseTransactions, start, end],
   );
 
   const filteredSavings = useMemo(
-    () => savingsTransactions.filter((t) => t.date >= start && t.date <= end),
+    () => savingsTransactions.filter((t) => isTransactionInMonth(t, start, end)),
     [savingsTransactions, start, end],
   );
 

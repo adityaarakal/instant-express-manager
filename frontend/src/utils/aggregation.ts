@@ -20,6 +20,7 @@ import { useDueDateOverridesStore } from '../store/useDueDateOverridesStore';
 import { useRemainingCashOverridesStore } from '../store/useRemainingCashOverridesStore';
 import { getTodayDateString, isDueDatePassed } from './datePrecision';
 import { sumCurrency } from './financialPrecision';
+import { isTransactionInMonth, getTransactionMonthId } from './transactionFiltering';
 
 /**
  * Aggregate transactions into a monthly view
@@ -48,14 +49,16 @@ export function aggregateMonth(
   const endDate = `${year}-${month}-31`;
 
   // Filter transactions for this month
+  // For expenses: use dueDate if available, otherwise use date
+  // For income and savings: always use date
   const monthIncomes = incomeTransactions.filter(
-    (t) => t.date >= startDate && t.date <= endDate
+    (t) => isTransactionInMonth(t, startDate, endDate)
   );
   const monthExpenses = expenseTransactions.filter(
-    (t) => t.date >= startDate && t.date <= endDate
+    (t) => isTransactionInMonth(t, startDate, endDate)
   );
   const monthSavings = savingsTransactions.filter(
-    (t) => t.date >= startDate && t.date <= endDate
+    (t) => isTransactionInMonth(t, startDate, endDate)
   );
 
   // Calculate total inflow with currency precision
@@ -189,7 +192,7 @@ export function calculateAggregatedBucketTotals(
   const endDate = `${year}-${monthNum}-31`;
 
   const monthExpenses = expenseTransactions.filter(
-    (t) => t.date >= startDate && t.date <= endDate
+    (t) => isTransactionInMonth(t, startDate, endDate)
   );
 
   const pending: Record<string, number> = {};
@@ -232,8 +235,7 @@ export function getAvailableMonths(
   const monthSet = new Set<string>();
 
   [...incomeTransactions, ...expenseTransactions, ...savingsTransactions].forEach((t) => {
-    const date = new Date(t.date);
-    const monthId = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const monthId = getTransactionMonthId(t);
     monthSet.add(monthId);
   });
 
