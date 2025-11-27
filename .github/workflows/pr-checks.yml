@@ -38,13 +38,13 @@ jobs:
       # ============================================================================
       # STEP 1: LINTING VALIDATION
       # ============================================================================
-      - name: 📋 Step 1/6 - ESLint Validation
+      - name: 📋 Step 1/5 - ESLint Validation
         working-directory: ./frontend
         run: |
           echo "🚨 STRICT COMPLIANCE CHECK - ZERO TOLERANCE POLICY"
           echo "⚠️  NO BYPASSING METHODS ALLOWED - ALL CHECKS MUST PASS"
           echo ""
-          echo "📋 Step 1/6: Linting Validation"
+          echo "📋 Step 1/5: Linting Validation"
           echo "Running ESLint validation (excluding test files)..."
           # Run lint on production code only (exclude test files and __tests__ directories)
           npx eslint 'src/**/*.{ts,tsx}' \
@@ -66,11 +66,11 @@ jobs:
       # ============================================================================
       # STEP 2: TYPE CHECKING
       # ============================================================================
-      - name: 📋 Step 2/6 - TypeScript Type Checking
+      - name: 📋 Step 2/5 - TypeScript Type Checking
         working-directory: ./frontend
         run: |
           echo ""
-          echo "📋 Step 2/6: Type Checking"
+          echo "📋 Step 2/5: Type Checking"
           echo "Running TypeScript compilation check..."
           npx tsc --noEmit
           if [ $? -ne 0 ]; then
@@ -85,11 +85,11 @@ jobs:
       # ============================================================================
       # STEP 3: BUILD VALIDATION
       # ============================================================================
-      - name: 📋 Step 3/6 - Build Validation
+      - name: 📋 Step 3/5 - Build Validation
         working-directory: ./frontend
         run: |
           echo ""
-          echo "📋 Step 3/6: Build Validation"
+          echo "📋 Step 3/5: Build Validation"
           echo "Running production build validation..."
           npm run build
           if [ $? -ne 0 ]; then
@@ -102,64 +102,39 @@ jobs:
           echo "✅ Build validation passed!"
       
       # ============================================================================
-      # STEP 4: MANDATORY MODULE-BASED PLAYWRIGHT TESTS
+      # STEP 4: MANDATORY E2E TEST SUITE
       # ============================================================================
-      - name: 📋 Step 4/6 - Mandatory Module-Based Playwright Tests
-        run: |
-          echo ""
-          echo "📋 Step 4/6: Mandatory Module-Based Playwright Tests"
-          echo "🚨 MANDATORY CHECK: Module tests must pass"
-          echo "📋 REQUIRED: All module tests must pass before PR can be merged"
-          echo ""
-          
-          # Install Playwright browsers
-          cd frontend
-          npx playwright install --with-deps chromium
-          cd ..
-          
-          # Run module-based tests
-          bash scripts/run-module-tests.sh
-          if [ $? -ne 0 ]; then
-            echo "❌ CRITICAL: Playwright tests failed"
-            echo "❌ Module tests must pass before PR can be merged"
-            echo "🔒 ENFORCEMENT: PR blocked - Fix failing tests first"
-            echo "📋 REQUIRED: Run 'bash scripts/run-module-tests.sh' and fix failing tests"
-            echo "⚠️  This check CANNOT BE BYPASSED - All tests must pass"
-            exit 1
-          fi
-          echo "✅ Module-based Playwright tests passed!"
-      
-      # ============================================================================
-      # STEP 5: MANDATORY FULL E2E TEST SUITE
-      # ============================================================================
-      - name: 📋 Step 5/6 - Mandatory Full E2E Test Suite
+      - name: 📋 Step 4/5 - Mandatory E2E Test Suite
         working-directory: ./frontend
         run: |
           echo ""
-          echo "📋 Step 5/6: Mandatory Full E2E Test Suite"
-          echo "🚨 MANDATORY CHECK: Full E2E test suite must pass"
+          echo "📋 Step 4/5: Mandatory E2E Test Suite"
+          echo "🚨 MANDATORY CHECK: E2E test suite must pass"
           echo "📋 REQUIRED: All E2E tests must pass before PR can be merged"
           echo ""
           
-          # Run full E2E test suite
+          # Install Playwright browsers
+          npx playwright install --with-deps chromium
+          
+          # Run E2E test suite
           npm run test:e2e
           if [ $? -ne 0 ]; then
-            echo "❌ CRITICAL: Full E2E test suite failed"
+            echo "❌ CRITICAL: E2E test suite failed"
             echo "❌ All E2E tests must pass before PR can be merged"
             echo "🔒 ENFORCEMENT: PR blocked - Fix failing tests first"
             echo "📋 REQUIRED: Run 'npm run test:e2e' and fix failing tests"
             echo "⚠️  This check CANNOT BE BYPASSED - All tests must pass"
             exit 1
           fi
-          echo "✅ Full E2E test suite passed!"
+          echo "✅ E2E test suite passed!"
       
       # ============================================================================
-      # STEP 6: MANDATORY VERSION BUMP VALIDATION
+      # STEP 5: MANDATORY VERSION BUMP VALIDATION
       # ============================================================================
-      - name: 📋 Step 6/6 - Mandatory Version Bump Validation
+      - name: 📋 Step 5/5 - Mandatory Version Bump Validation
         run: |
           echo ""
-          echo "📋 Step 6/6: Mandatory Version Bump Validation"
+          echo "📋 Step 5/5: Mandatory Version Bump Validation"
           echo "🚨 MANDATORY CHECK: PR cannot be merged without version bump"
           echo "📋 REQUIRED: Incoming branch version must be ahead of base branch version"
           echo ""
@@ -199,7 +174,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '✅ **All Quality Checks Passed!**\n\n- ✅ ESLint validation passed (production code only)\n- ✅ TypeScript type checking passed\n- ✅ Build validation passed\n- ✅ **Mandatory module-based Playwright tests passed**\n- ✅ **Mandatory full E2E test suite passed**\n- ✅ Mandatory version bump validation passed\n\nYour PR is ready for review! 🎉'
+              body: '✅ **All Quality Checks Passed!**\n\n- ✅ ESLint validation passed (production code only)\n- ✅ TypeScript type checking passed\n- ✅ Build validation passed\n- ✅ **Mandatory E2E test suite passed**\n- ✅ Mandatory version bump validation passed\n\nYour PR is ready for review! 🎉'
             })
       
       - name: Comment PR on Failure
@@ -211,6 +186,6 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '❌ **Quality Checks Failed**\n\nPlease fix the following issues:\n- ESLint errors/warnings in production code\n- TypeScript compilation errors\n- Build validation errors\n- **Mandatory module-based Playwright tests** (all tests must pass)\n- **Mandatory full E2E test suite** (all tests must pass)\n- **Mandatory version bump validation** (incoming branch version must be ahead of base branch version)\n\n🔒 **ENFORCEMENT**: PR cannot be merged until all checks pass.\n\n📋 **REQUIRED**: Fix all errors and push again.'
+              body: '❌ **Quality Checks Failed**\n\nPlease fix the following issues:\n- ESLint errors/warnings in production code\n- TypeScript compilation errors\n- Build validation errors\n- **Mandatory E2E test suite** (all tests must pass)\n- **Mandatory version bump validation** (incoming branch version must be ahead of base branch version)\n\n🔒 **ENFORCEMENT**: PR cannot be merged until all checks pass.\n\n📋 **REQUIRED**: Fix all errors and push again.'
             })
 
