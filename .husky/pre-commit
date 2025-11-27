@@ -135,7 +135,7 @@ fi
 # ============================================================================
 # STEP 1: MANDATORY VERSION BUMP VALIDATION
 # ============================================================================
-echo "📋 Step 1/6: Mandatory Version Bump Validation"
+echo "📋 Step 1/7: Mandatory Version Bump Validation"
 echo "🚨 MANDATORY CHECK: Commit cannot proceed without version bump"
 echo "📋 REQUIRED: Branch version must be ahead of main branch version"
 echo ""
@@ -153,7 +153,7 @@ echo ""
 # ============================================================================
 # STEP 2: LINTING VALIDATION
 # ============================================================================
-echo "📋 Step 2/6: Linting Validation"
+echo "📋 Step 2/7: Linting Validation"
 echo "Running ESLint validation (excluding test files)..."
 cd frontend
 # Run lint on production code only (exclude test files and __tests__ directories)
@@ -176,7 +176,7 @@ echo ""
 # ============================================================================
 # NOTE: This check can be modified, but only by adding NEW checks
 # Modifying existing TypeScript check logic is FORBIDDEN (enforced by lock)
-echo "📋 Step 3/6: Type Checking"
+echo "📋 Step 3/7: Type Checking"
 echo "Running TypeScript compilation check..."
 cd frontend
 npx tsc --noEmit
@@ -197,7 +197,7 @@ echo ""
 # ============================================================================
 # NOTE: This check can be modified, but only by adding NEW checks
 # Modifying existing build validation is FORBIDDEN (enforced by lock)
-echo "📋 Step 4/6: Build Validation"
+echo "📋 Step 4/7: Build Validation"
 echo "Running production build validation..."
 cd frontend
 npm run build
@@ -219,7 +219,7 @@ echo ""
 # Validate that locked test files have not been modified
 # NOTE: This check can be modified, but only by adding NEW checks
 # Modifying existing test lock validation is FORBIDDEN (enforced by lock)
-echo "📋 Step 5/6: Test Lock Validation"
+echo "📋 Step 5/7: Test Lock Validation"
 echo "Validating locked test files..."
 if [ -f "scripts/validate-test-locks.sh" ]; then
   bash scripts/validate-test-locks.sh

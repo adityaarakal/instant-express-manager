@@ -15,10 +15,10 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  /* Use list reporter for pre-commit (auto-exits), html reporter for manual runs */
-  reporter: process.env.CI || process.env.PRE_COMMIT 
-    ? [['list'], ['json', { outputFile: 'test-results.json' }]]
-    : 'html',
+  /* Use list reporter by default (auto-exits), html reporter only when HTML_REPORT env is set */
+  reporter: process.env.HTML_REPORT === '1'
+    ? 'html'
+    : [['list'], ['json', { outputFile: 'test-results.json' }]],
   /* Global timeout for each test */
   timeout: 30000,
   /* Expect timeout */
