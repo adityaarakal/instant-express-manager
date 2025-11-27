@@ -308,11 +308,24 @@ npm test
 
 ## 📚 Documentation
 
+### Core Documentation
 - **[User Guide](docs/USER_GUIDE.md)**: Complete user guide with feature walkthroughs
 - **[Developer Guide](docs/DEVELOPER_GUIDE.md)**: Developer documentation and architecture
 - **[Requirements](docs/REQUIREMENTS.md)**: Complete requirements specification
 - **[Architecture](docs/NEW_ARCHITECTURE.md)**: Application architecture documentation
 - **[Entity Relationships](docs/ENTITY_RELATIONSHIPS.md)**: Entity relationship documentation
+
+### Deployment & Branching Strategy
+- **[Branching and Deployment Strategy](docs/BRANCHING_AND_DEPLOYMENT_STRATEGY.md)**: 🚀 **Branch structure, release process, and deployment workflow**
+  - Main branch (UAT/Dev URL) vs Release branch (Production/Prod URL)
+  - Locked tests as source of truth for releases
+  - Future deployment plans (private repo, domain setup)
+
+### Testing & Quality Assurance
+- **[TDD Approach](docs/TDD_APPROACH.md)**: Test-Driven Development principles
+- **[E2E Testing Guide](docs/E2E_TESTING_GUIDE.md)**: Complete Playwright test suite documentation
+- **[Lock Policy](docs/LOCK_POLICY.md)**: File locking mechanism and policies
+- **[AI Agent TDD Rules](docs/AI_AGENT_TDD_RULES.md)**: Rules for AI agents regarding tests
 
 ## 🐛 Troubleshooting
 
