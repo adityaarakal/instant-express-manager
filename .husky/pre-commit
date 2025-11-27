@@ -135,7 +135,7 @@ fi
 # ============================================================================
 # STEP 1: MANDATORY VERSION BUMP VALIDATION
 # ============================================================================
-echo "📋 Step 1/4: Mandatory Version Bump Validation"
+echo "📋 Step 1/6: Mandatory Version Bump Validation"
 echo "🚨 MANDATORY CHECK: Commit cannot proceed without version bump"
 echo "📋 REQUIRED: Branch version must be ahead of main branch version"
 echo ""
@@ -153,7 +153,7 @@ echo ""
 # ============================================================================
 # STEP 2: LINTING VALIDATION
 # ============================================================================
-echo "📋 Step 2/4: Linting Validation"
+echo "📋 Step 2/6: Linting Validation"
 echo "Running ESLint validation (excluding test files)..."
 cd frontend
 # Run lint on production code only (exclude test files and __tests__ directories)
@@ -176,7 +176,7 @@ echo ""
 # ============================================================================
 # NOTE: This check can be modified, but only by adding NEW checks
 # Modifying existing TypeScript check logic is FORBIDDEN (enforced by lock)
-echo "📋 Step 3/4: Type Checking"
+echo "📋 Step 3/6: Type Checking"
 echo "Running TypeScript compilation check..."
 cd frontend
 npx tsc --noEmit
@@ -197,7 +197,7 @@ echo ""
 # ============================================================================
 # NOTE: This check can be modified, but only by adding NEW checks
 # Modifying existing build validation is FORBIDDEN (enforced by lock)
-echo "📋 Step 4/4: Build Validation"
+echo "📋 Step 4/6: Build Validation"
 echo "Running production build validation..."
 cd frontend
 npm run build
@@ -211,6 +211,118 @@ if [ $? -ne 0 ]; then
 fi
 cd ..
 echo "✅ Build validation passed!"
+echo ""
+
+# ============================================================================
+# STEP 5: TEST LOCK VALIDATION (TDD ENFORCEMENT)
+# ============================================================================
+# Validate that locked test files have not been modified
+# TDD RULE: Locked tests are DELIVERED features - they cannot be modified
+# This check CANNOT BE BYPASSED - it is part of TDD enforcement
+# NOTE: This check can be modified, but only by adding NEW checks
+# Modifying existing test lock validation is FORBIDDEN (enforced by lock)
+echo "📋 Step 5/6: Test Lock Validation (TDD Enforcement)"
+echo "🚨 TDD RULE: Locked tests are DELIVERED features (immutable)"
+echo "🚨 BYPASS PROHIBITED: This check cannot be skipped or bypassed"
+echo "Validating locked test files..."
+if [ -f "scripts/validate-test-locks.sh" ]; then
+  bash scripts/validate-test-locks.sh
+  if [ $? -ne 0 ]; then
+    echo ""
+    echo "❌ CRITICAL: Test lock validation failed"
+    echo "❌ Locked test files have been modified"
+    echo ""
+    echo "🔒 ENFORCEMENT: Commit blocked - Locked tests cannot be modified"
+    echo "📋 TDD RULE: Locked tests are DELIVERED features"
+    echo "📋 REQUIRED: Fix your IMPLEMENTATION to make tests pass"
+    echo "📋 DO NOT: Modify locked test files"
+    echo ""
+    echo "⚠️  BYPASS PROHIBITED: This check cannot be skipped"
+    echo "⚠️  Even AI agents cannot bypass this check"
+    echo "⚠️  Only user can unlock tests with explicit permission"
+    echo ""
+    echo "📋 To unlock (requires user permission):"
+    echo "   bash scripts/unlock-test.sh <test-file-path>"
+    exit 1
+  fi
+  echo "✅ Test lock validation passed!"
+else
+  echo "⚠️  Test lock validation script not found - skipping"
+fi
+echo ""
+
+# ============================================================================
+# STEP 6: MANDATORY E2E TEST SUITE (TDD APPROACH)
+# ============================================================================
+# Run Playwright E2E test suite
+# TDD RULE: Locked tests are DELIVERED features - they define correctness
+# If tests fail, fix IMPLEMENTATION, NOT the tests
+# This check CANNOT BE BYPASSED - it is mandatory for TDD enforcement
+# NOTE: This check can be modified, but only by adding NEW checks
+# Modifying existing test execution is FORBIDDEN (enforced by lock)
+echo "📋 Step 6/6: Mandatory E2E Test Suite (TDD Approach)"
+echo "🚨 TDD RULE: Locked tests are DELIVERED features (immutable)"
+echo "🚨 BYPASS PROHIBITED: This check cannot be skipped or bypassed"
+echo "🚨 AI AGENTS: You cannot bypass this check - tests must pass"
+echo "Running Playwright E2E test suite..."
+
+# MANDATORY: Playwright must be available
+if ! command -v npx >/dev/null 2>&1; then
+  echo "❌ CRITICAL: npx not available"
+  echo "❌ ENFORCEMENT: Commit blocked - Playwright tests are MANDATORY"
+  echo "📋 REQUIRED: Install Node.js and npm"
+  exit 1
+fi
+
+# Check Playwright installation
+cd frontend
+if ! npx playwright --version >/dev/null 2>&1; then
+  echo "❌ CRITICAL: Playwright not installed"
+  echo "❌ ENFORCEMENT: Commit blocked - Playwright tests are MANDATORY"
+  echo "📋 REQUIRED: Install Playwright with: cd frontend && npx playwright install"
+  cd ..
+  exit 1
+fi
+
+# TDD RULE: Locked tests are DELIVERED features - they define correctness
+# If tests fail, fix IMPLEMENTATION, NOT the tests
+echo "🚨 TDD RULE: Locked tests are DELIVERED features"
+echo "📋 If tests fail → Fix IMPLEMENTATION, NOT tests"
+# MANDATORY: Run E2E test suite - they must pass
+echo "🚨 MANDATORY CHECK: E2E test suite must pass"
+npm run test:e2e
+TEST_STATUS=$?
+cd ..
+if [ $TEST_STATUS -ne 0 ]; then
+  echo ""
+  echo "❌ CRITICAL: E2E test suite failed"
+  echo "❌ All E2E tests must pass before commit"
+  echo ""
+  echo "🔒 ENFORCEMENT: Commit blocked - Fix failing tests first"
+  echo "📋 TDD RULE: Locked tests are DELIVERED features"
+  echo "📋 REQUIRED: Fix your IMPLEMENTATION to make tests pass"
+  echo "📋 DO NOT: Modify locked test files"
+  echo ""
+  echo "⚠️  BYPASS PROHIBITED: This check cannot be skipped"
+  echo "⚠️  Even AI agents cannot bypass this check"
+  echo "⚠️  Even with --no-verify, server-side checks will block"
+  echo "⚠️  Tests MUST pass - no exceptions"
+  echo ""
+  echo "💡 TDD Approach:"
+  echo "   • Tests define what 'working' means"
+  echo "   • Implementation must conform to tests"
+  echo "   • If tests fail → Fix implementation, NOT tests"
+  echo ""
+  echo "📋 Steps to fix:"
+  echo "   1. Review failing test output above"
+  echo "   2. Fix your implementation to make tests pass"
+  echo "   3. Run 'npm run test:e2e' to verify"
+  echo "   4. Commit only when tests pass"
+  echo ""
+  echo "🚨 MANDATORY: This check CANNOT BE BYPASSED - All tests must pass"
+  exit 1
+fi
+echo "✅ E2E test suite passed!"
 echo ""
 
 # ============================================================================

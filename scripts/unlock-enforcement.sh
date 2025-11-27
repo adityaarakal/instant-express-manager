@@ -1,9 +1,14 @@
 #!/bin/bash
 
 # ============================================================================
-# ENFORCEMENT FILES UNLOCK (REQUIRES EXPLICIT APPROVAL)
+# ENFORCEMENT FILES UNLOCK - REQUIRES EXPLICIT USER PERMISSION
 # ============================================================================
 # This script allows unlocking enforcement files for modification
+# 
+# ⚠️  CRITICAL: This script REQUIRES EXPLICIT USER PERMISSION
+# ⚠️  AI AGENTS: You CANNOT run this script - only the user can unlock
+# ⚠️  LOCKED FILES: Remain locked unless user explicitly unlocks them
+#
 # Requires explicit confirmation and documents the reason
 
 set -e
@@ -13,9 +18,12 @@ LOCK_DIR="$REPO_ROOT/.enforcement-lock"
 LOCK_FILE="$LOCK_DIR/checksums.txt"
 UNLOCK_LOG="$LOCK_DIR/unlock-log.txt"
 
-echo "⚠️  WARNING: ENFORCEMENT FILE UNLOCK PROCEDURE"
+echo "🚨 CRITICAL: ENFORCEMENT FILE UNLOCK PROCEDURE"
 echo ""
-echo "This will unlock enforcement files to allow modifications."
+echo "⚠️  WARNING: This will unlock enforcement files to allow modifications"
+echo "⚠️  This action REQUIRES EXPLICIT USER PERMISSION"
+echo "⚠️  AI agents cannot unlock files - only you can do this"
+echo ""
 echo "This should ONLY be done to ADD NEW CHECKS, not modify existing ones."
 echo ""
 echo "PROTECTED FILES:"

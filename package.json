@@ -1,6 +1,6 @@
 {
   "name": "instant-express-manager",
-  "version": "1.0.127",
+  "version": "1.0.128",
   "description": "React PWA TypeScript application for Expense Manager with localStorage",
   "private": true,
   "workspaces": [
@@ -21,7 +21,19 @@
     "version:patch": "bash scripts/bump-version.sh patch",
     "test:all": "bash scripts/run-all-tests.sh",
     "test:e2e": "cd frontend && npm run test:e2e",
-    "test:e2e:browsers": "cd frontend && npm run test:e2e -- --project=chromium --project=firefox --project=webkit",
+    "test:e2e:all": "cd frontend && npm run test:e2e:all",
+    "test:e2e:browsers": "cd frontend && npm run test:e2e:all",
+    "test:modules": "bash scripts/run-module-tests.sh",
+    "test:modules:all": "bash scripts/run-module-tests.sh --all",
+    "test:demo": "bash scripts/demo-tests.sh",
+    "test:demo:ui": "bash scripts/demo-tests-ui.sh",
+    "test:demo:headed": "bash scripts/demo-tests-headed.sh",
+    "test:demo:html": "bash scripts/demo-tests-html.sh",
+    "test:demo:report": "bash scripts/demo-tests-show-report.sh",
+    "test:tdd": "bash scripts/tdd-check.sh",
+    "test:lock": "bash scripts/lock-test.sh",
+    "test:unlock": "bash scripts/unlock-test.sh",
+    "test:validate-locks": "bash scripts/validate-test-locks.sh",
     "lighthouse": "cd frontend && npm run lighthouse",
     "test:deployment": "bash scripts/test-deployment.sh",
     "pre-deploy": "bash scripts/pre-deployment-check.sh"
