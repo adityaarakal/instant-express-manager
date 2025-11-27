@@ -1,0 +1,146 @@
+name: Release Branch Management
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - release
+  workflow_dispatch:
+    inputs:
+      force_update:
+        description: 'Force update release branch'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  check-qualification:
+    name: Check Release Qualification
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd frontend && npm ci
+      
+      - name: Check release qualification
+        run: npm run release:check
+      
+      - name: Check test coverage
+        run: npm run release:coverage
+        continue-on-error: true
+      
+      - name: Generate coverage map
+        run: npm run release:map
+        continue-on-error: true
+      
+      - name: Upload coverage map
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-map
+          path: .release-coverage/locked-tests-coverage.json
+          if-no-files-found: ignore
+
+  protect-release:
+    name: Protect Release Branch
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.base_ref == 'release'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd frontend && npm ci
+      
+      - name: Install Playwright browsers
+        run: cd frontend && npx playwright install --with-deps chromium
+      
+      - name: Protect release branch
+        run: npm run release:protect
+      
+      - name: Comment PR
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ **Release Branch Protection Failed**\n\nThis PR cannot be merged to the release branch because:\n- Locked tests are failing, OR\n- Coverage thresholds not met, OR\n- Tests are not passing\n\nPlease ensure all release qualification criteria are met before merging.'
+            })
+
+  update-release:
+    name: Update Release Branch
+    runs-on: ubuntu-latest
+    needs: check-qualification
+    if: |
+      github.event_name == 'push' && 
+      github.ref == 'refs/heads/main' &&
+      (needs.check-qualification.result == 'success' || github.event.inputs.force_update == 'true')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd frontend && npm ci
+      
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Download coverage map
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-map
+          path: .release-coverage/
+      
+      - name: Update release branch
+        run: npm run release:manage -- --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Push release branch
+        run: |
+          git push origin release || echo "Release branch already up to date"
+        continue-on-error: true
+

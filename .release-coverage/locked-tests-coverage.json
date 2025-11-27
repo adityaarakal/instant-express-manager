@@ -1,0 +1,19 @@
+{
+  "locked_tests": [
+    "frontend//Users/adityarajnikantarakal/Projects/instant-express-manager/.test-locks/e2e/modules/bank-accounts.spec.ts",
+    "frontend//Users/adityarajnikantarakal/Projects/instant-express-manager/.test-locks/e2e/modules/banks.spec.ts"
+  ],
+  "covered_files": {
+    "components": [],
+    "utils": [],
+    "stores": [],
+    "hooks": [],
+    "services": [],
+    "types": [],
+    "other": [
+      " frontend//Users/adityarajnikantarakal/Projects/instant-express-manager/.test-locks/e2e/modules/bank-accounts.spec.ts\u001b[0m",
+      " frontend//Users/adityarajnikantarakal/Projects/instant-express-manager/.test-locks/e2e/modules/banks.spec.ts\u001b[0m"
+    ]
+  },
+  "generated_at": "2025-11-27T14:41:55.083Z"
+}
