@@ -82,17 +82,47 @@ This script will:
 3. Verify only covered code and its tests are included
 4. Report any unwanted code or test files
 
-## Enforcement
+## 🚨 MANDATORY ENFORCEMENT
+
+### Automatic File Removal
+
+**CRITICAL**: When code is pushed to the release branch, **ALL files not covered by locked E2E tests are AUTOMATICALLY REMOVED**.
+
+The release branch manager (`scripts/manage-release-branch.sh`):
+1. ✅ Analyzes locked E2E test coverage
+2. ✅ Identifies ALL code covered by locked E2E tests
+3. ✅ **MANDATORY REMOVAL**: Removes ALL files not in the coverage list
+4. ✅ **NO EXCEPTIONS**: Not even a single file outside coverage is kept
+5. ✅ Commits the filtered code to release branch
+
+### Verification
 
 The release qualification check (`scripts/check-release-qualification.sh`) includes:
 - ✅ Step 6: Verification that no unwanted code or tests are included
-- ❌ **Blocks release qualification** if unwanted code is detected
+- ❌ **BLOCKS release qualification** if unwanted code is detected
+- ❌ **BLOCKS release branch update** if unwanted code exists
 
-## Summary
+### GitHub Actions Enforcement
+
+The GitHub Actions workflow (`.github/workflows/release-branch.yml`):
+- ✅ Runs `release:manage --force` which **MANDATORY removes** unwanted files
+- ✅ No user confirmation required in CI/CD
+- ✅ Automatic filtering before pushing to release branch
+
+## 📋 Summary
 
 **Total Files Included**: ~14 source files + 3 unit test files + 2 E2E test files + helpers
 
-**Total Files Excluded**: All other code in the repository
+**Total Files Excluded**: **ALL other code in the repository** (automatically removed)
 
-**Principle**: Only code touched by locked E2E tests is included. Everything else is immaterial and excluded.
+**Principle**: Only code touched by locked E2E tests is included. **Everything else is MANDATORY removed - not even a single file outside coverage is kept.**
+
+## 🔒 Enforcement Guarantee
+
+**This is MANDATORY and NON-NEGOTIABLE**:
+- ✅ Scripted: Automatic removal in `manage-release-branch.sh`
+- ✅ Documented: This document and `BRANCHING_AND_DEPLOYMENT_STRATEGY.md`
+- ✅ Verified: `verify-release-branch-content.sh` blocks release if unwanted code found
+- ✅ CI/CD Enforced: GitHub Actions automatically filters before push
+- ✅ **NO BYPASS**: Cannot be bypassed - unwanted files are removed automatically
 

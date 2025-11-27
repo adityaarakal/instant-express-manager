@@ -3,10 +3,22 @@
 # ============================================================================
 # Release Branch Manager
 # ============================================================================
-# Creates or updates the release branch with only code covered by locked tests
+# Creates or updates the release branch with ONLY code covered by locked E2E tests
+#
+# 🚨 CRITICAL: This script MANDATORY removes ALL files not covered by locked E2E tests.
+# 🚨 NO EXCEPTIONS: Not even a single file outside E2E coverage is kept.
 #
 # Usage:
 #   bash scripts/manage-release-branch.sh [--dry-run] [--force]
+#
+# Options:
+#   --dry-run    Run without making changes (shows what would be removed)
+#   --force      Skip confirmation prompts (automatic in CI/CD)
+#
+# MANDATORY BEHAVIOR:
+#   - ALL files not covered by locked E2E tests are AUTOMATICALLY REMOVED
+#   - This cannot be bypassed - it's the core requirement for release branch
+#   - Only E2E-covered code + its tests + essential config files are kept
 #
 # Safety:
 #   - Never modifies main branch
@@ -327,33 +339,56 @@ done <<< "$ALL_FILES"
 log_info "Files to keep: $KEEP_COUNT"
 log_info "Files to remove: $REMOVE_COUNT"
 
+# MANDATORY: Remove ALL files not covered by locked E2E tests
+# This is NON-NEGOTIABLE - release branch MUST only contain E2E-covered code
 if [ "$REMOVE_COUNT" -gt 0 ]; then
-  log_warning "This will remove $REMOVE_COUNT file(s) not covered by locked tests"
+  log_step "MANDATORY FILTERING: Removing $REMOVE_COUNT file(s) not covered by locked E2E tests"
+  log_warning "This is MANDATORY - release branch MUST only contain code covered by locked E2E tests"
+  log_info "Nothing else can be included - not even a single file"
   
   if [ "$FORCE" = false ]; then
     echo ""
-    read -p "Continue with filtering? (y/N): " -n 1 -r
+    log_warning "⚠️  MANDATORY ACTION REQUIRED"
+    log_info "Release branch MUST only contain E2E-covered code"
+    log_info "All other files will be REMOVED"
+    read -p "Continue with mandatory filtering? (y/N): " -n 1 -r
     echo ""
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-      log_info "Aborted by user"
+      log_error "Aborted - but filtering is MANDATORY for release branch"
+      log_error "Release branch cannot contain code not covered by locked E2E tests"
       git checkout "$ORIGINAL_BRANCH" > /dev/null 2>&1 || true
       if [ "$HAS_STASH" = true ]; then
         git stash pop > /dev/null 2>&1 || true
       fi
-      exit 0
+      exit 1
     fi
   fi
   
-  # Remove files not covered by locked tests
-  echo "$FILES_TO_REMOVE" | grep -v '^$' | while IFS= read -r file; do
+  # MANDATORY: Remove files not covered by locked E2E tests
+  # This is NON-NEGOTIABLE - no exceptions
+  # Use a temp file to track removed count (avoid subshell issues)
+  REMOVED_COUNT_FILE="/tmp/removed-count-$$.txt"
+  echo "0" > "$REMOVED_COUNT_FILE"
+  
+  while IFS= read -r file; do
     [ -z "$file" ] && continue
     if [ -f "$file" ]; then
-      log_info "Removing: $file"
+      log_info "🔒 MANDATORY REMOVAL: $file (not covered by locked E2E tests)"
       git rm "$file" > /dev/null 2>&1 || rm -f "$file"
+      CURRENT_COUNT=$(cat "$REMOVED_COUNT_FILE")
+      echo $((CURRENT_COUNT + 1)) > "$REMOVED_COUNT_FILE"
     fi
-  done
+  done <<< "$(echo "$FILES_TO_REMOVE" | grep -v '^$')"
+  
+  REMOVED_COUNT=$(cat "$REMOVED_COUNT_FILE" 2>/dev/null || echo "0")
+  rm -f "$REMOVED_COUNT_FILE"
+  
+  log_success "✅ MANDATORY FILTERING COMPLETE"
+  log_info "Removed $REMOVED_COUNT file(s) not covered by locked E2E tests"
+  log_info "Release branch now contains ONLY code covered by locked E2E tests"
+  log_info "🚨 NO EXCEPTIONS: Not even a single file outside E2E coverage was kept"
 else
-  log_info "No files to remove - all files are covered by locked tests"
+  log_success "✅ No files to remove - all files are covered by locked E2E tests"
 fi
 
 # Step 6: Commit changes

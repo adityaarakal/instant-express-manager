@@ -63,7 +63,9 @@ This document outlines the branching strategy and deployment workflow for the In
 - ✅ **Stores/hooks covered by locked E2E tests** - covered by unit tests OR E2E tests (100% coverage, passing)
 - ✅ **Only what locked E2E tests cover** - nothing beyond E2E test coverage
 - ✅ **Locked E2E test files are the source of truth** - they define what goes into release
-- ✅ **Code NOT covered by locked E2E tests is immaterial** - not included, no test requirements
+- ✅ **Code NOT covered by locked E2E tests is immaterial** - **MANDATORY REMOVED**, not included
+- 🚨 **MANDATORY FILTERING**: All files not covered by locked E2E tests are **AUTOMATICALLY REMOVED** when pushing to release branch
+- 🚨 **NO EXCEPTIONS**: Not even a single file outside E2E coverage is kept in release branch
 
 **Release Qualification Criteria**:
 - ✅ **Playwright locked E2E tests** - flows tested and passing
