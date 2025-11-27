@@ -214,21 +214,35 @@ echo "✅ Build validation passed!"
 echo ""
 
 # ============================================================================
-# STEP 5: TEST LOCK VALIDATION
+# STEP 5: TEST LOCK VALIDATION (TDD ENFORCEMENT)
 # ============================================================================
 # Validate that locked test files have not been modified
+# TDD RULE: Locked tests are DELIVERED features - they cannot be modified
+# This check CANNOT BE BYPASSED - it is part of TDD enforcement
 # NOTE: This check can be modified, but only by adding NEW checks
 # Modifying existing test lock validation is FORBIDDEN (enforced by lock)
-echo "📋 Step 5/6: Test Lock Validation"
+echo "📋 Step 5/6: Test Lock Validation (TDD Enforcement)"
+echo "🚨 TDD RULE: Locked tests are DELIVERED features (immutable)"
+echo "🚨 BYPASS PROHIBITED: This check cannot be skipped or bypassed"
 echo "Validating locked test files..."
 if [ -f "scripts/validate-test-locks.sh" ]; then
   bash scripts/validate-test-locks.sh
   if [ $? -ne 0 ]; then
+    echo ""
     echo "❌ CRITICAL: Test lock validation failed"
     echo "❌ Locked test files have been modified"
+    echo ""
     echo "🔒 ENFORCEMENT: Commit blocked - Locked tests cannot be modified"
-    echo "📋 REQUIRED: Restore locked tests or unlock them first"
-    echo "📋 To unlock: bash scripts/unlock-test.sh <test-file-path>"
+    echo "📋 TDD RULE: Locked tests are DELIVERED features"
+    echo "📋 REQUIRED: Fix your IMPLEMENTATION to make tests pass"
+    echo "📋 DO NOT: Modify locked test files"
+    echo ""
+    echo "⚠️  BYPASS PROHIBITED: This check cannot be skipped"
+    echo "⚠️  Even AI agents cannot bypass this check"
+    echo "⚠️  Only user can unlock tests with explicit permission"
+    echo ""
+    echo "📋 To unlock (requires user permission):"
+    echo "   bash scripts/unlock-test.sh <test-file-path>"
     exit 1
   fi
   echo "✅ Test lock validation passed!"
@@ -243,9 +257,13 @@ echo ""
 # Run Playwright E2E test suite
 # TDD RULE: Locked tests are DELIVERED features - they define correctness
 # If tests fail, fix IMPLEMENTATION, NOT the tests
+# This check CANNOT BE BYPASSED - it is mandatory for TDD enforcement
 # NOTE: This check can be modified, but only by adding NEW checks
 # Modifying existing test execution is FORBIDDEN (enforced by lock)
 echo "📋 Step 6/6: Mandatory E2E Test Suite (TDD Approach)"
+echo "🚨 TDD RULE: Locked tests are DELIVERED features (immutable)"
+echo "🚨 BYPASS PROHIBITED: This check cannot be skipped or bypassed"
+echo "🚨 AI AGENTS: You cannot bypass this check - tests must pass"
 echo "Running Playwright E2E test suite..."
 
 # MANDATORY: Playwright must be available
@@ -285,6 +303,11 @@ if [ $TEST_STATUS -ne 0 ]; then
   echo "📋 REQUIRED: Fix your IMPLEMENTATION to make tests pass"
   echo "📋 DO NOT: Modify locked test files"
   echo ""
+  echo "⚠️  BYPASS PROHIBITED: This check cannot be skipped"
+  echo "⚠️  Even AI agents cannot bypass this check"
+  echo "⚠️  Even with --no-verify, server-side checks will block"
+  echo "⚠️  Tests MUST pass - no exceptions"
+  echo ""
   echo "💡 TDD Approach:"
   echo "   • Tests define what 'working' means"
   echo "   • Implementation must conform to tests"
@@ -296,7 +319,7 @@ if [ $TEST_STATUS -ne 0 ]; then
   echo "   3. Run 'npm run test:e2e' to verify"
   echo "   4. Commit only when tests pass"
   echo ""
-  echo "⚠️  This check CANNOT BE BYPASSED - All tests must pass"
+  echo "🚨 MANDATORY: This check CANNOT BE BYPASSED - All tests must pass"
   exit 1
 fi
 echo "✅ E2E test suite passed!"

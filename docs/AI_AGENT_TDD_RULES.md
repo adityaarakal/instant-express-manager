@@ -133,12 +133,31 @@ The pre-commit hook will:
 2. **Block commits** if tests fail
 3. **Force you** to fix implementation
 
+### ⚠️ BYPASS PROHIBITED
+
+**These checks CANNOT be bypassed:**
+
+- ❌ **--no-verify flag**: Blocked by git wrapper and server-side checks
+- ❌ **Environment variables**: Detected and blocked (HUSKY_SKIP_HOOKS, SKIP_HOOKS, etc.)
+- ❌ **AI agents**: Cannot bypass - tests must pass
+- ❌ **Manual skip**: Server-side GitHub Actions will enforce
+
+**Even if local checks are bypassed, PR workflow will block the merge.**
+
 ### Lock Validation
 
 Lock validation checks:
 - ✅ Test file checksum matches stored checksum
 - ✅ No modifications to locked tests
 - ✅ Tests still pass
+
+### Server-Side Enforcement
+
+GitHub Actions PR workflow:
+- ✅ Runs all TDD checks on every PR
+- ✅ Blocks merge if tests fail
+- ✅ Blocks merge if locked tests are modified
+- ✅ Cannot be bypassed - enforced by GitHub
 
 ## Best Practices
 

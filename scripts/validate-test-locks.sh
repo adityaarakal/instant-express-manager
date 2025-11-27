@@ -1,11 +1,15 @@
 #!/bin/bash
 
 # ============================================================================
-# Test Lock Validation Script
+# Test Lock Validation Script - MANDATORY AND NON-BYPASSABLE
 # ============================================================================
 # Validates that locked test files have not been modified.
 # This script is called automatically during pre-commit to prevent
 # AI agents from modifying locked test files.
+#
+# ⚠️  BYPASS PROHIBITED: This script cannot be skipped or bypassed
+# ⚠️  AI AGENTS: You cannot bypass this check - locked tests cannot be modified
+# ⚠️  TDD RULE: Locked tests are DELIVERED features (immutable)
 #
 # Usage:
 #   bash scripts/validate-test-locks.sh
@@ -71,6 +75,11 @@ while IFS= read -r lock_file; do
     echo -e "${RED}📋 TDD RULE: Locked tests are DELIVERED features${NC}"
     echo -e "${RED}📋 REQUIRED: Fix your IMPLEMENTATION to make tests pass${NC}"
     echo -e "${RED}📋 DO NOT: Modify locked tests to match broken implementation${NC}"
+    echo ""
+    echo -e "${YELLOW}⚠️  BYPASS PROHIBITED: This check cannot be skipped${NC}"
+    echo -e "${YELLOW}⚠️  Even AI agents cannot bypass this check${NC}"
+    echo -e "${YELLOW}⚠️  Even with --no-verify, server-side checks will block${NC}"
+    echo -e "${YELLOW}⚠️  Locked tests MUST remain unchanged - no exceptions${NC}"
     echo ""
     echo -e "${YELLOW}💡 TDD Approach:${NC}"
     echo -e "${YELLOW}   • Tests define what 'working' means${NC}"

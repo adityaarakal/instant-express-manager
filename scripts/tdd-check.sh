@@ -1,12 +1,16 @@
 #!/bin/bash
 
 # ============================================================================
-# TDD Check Script
+# TDD Check Script - MANDATORY AND NON-BYPASSABLE
 # ===========================================================================
 # This script enforces Test-Driven Development approach:
-# - Locked tests are DELIVERED features
+# - Locked tests are DELIVERED features (immutable)
 # - If tests fail, fix IMPLEMENTATION, NOT tests
 # - Tests define what "working" means
+#
+# ⚠️  BYPASS PROHIBITED: This script cannot be skipped or bypassed
+# ⚠️  AI AGENTS: You cannot bypass this check - tests must pass
+# ⚠️  Even with --no-verify, server-side checks will block
 #
 # Usage:
 #   bash scripts/tdd-check.sh
@@ -23,6 +27,9 @@ NC='\033[0m' # No Color
 
 echo -e "${BLUE}🧪 TDD Check: Verifying Test-Driven Development Rules${NC}"
 echo "=========================================="
+echo ""
+echo -e "${YELLOW}🚨 BYPASS PROHIBITED: This check cannot be skipped or bypassed${NC}"
+echo -e "${YELLOW}🚨 AI AGENTS: You cannot bypass this check - tests must pass${NC}"
 echo ""
 
 # Check if we're in the right directory
@@ -69,6 +76,11 @@ if [ $TEST_STATUS -ne 0 ]; then
   echo -e "${RED}📋 REQUIRED: Fix your IMPLEMENTATION to make tests pass${NC}"
   echo -e "${RED}📋 DO NOT: Modify locked test files${NC}"
   echo ""
+  echo -e "${YELLOW}⚠️  BYPASS PROHIBITED: This check cannot be skipped${NC}"
+  echo -e "${YELLOW}⚠️  Even AI agents cannot bypass this check${NC}"
+  echo -e "${YELLOW}⚠️  Even with --no-verify, server-side checks will block${NC}"
+  echo -e "${YELLOW}⚠️  Tests MUST pass - no exceptions${NC}"
+  echo ""
   echo -e "${YELLOW}💡 TDD Approach:${NC}"
   echo -e "${YELLOW}   • Tests define what 'working' means${NC}"
   echo -e "${YELLOW}   • Implementation must conform to tests${NC}"
@@ -80,6 +92,7 @@ if [ $TEST_STATUS -ne 0 ]; then
   echo -e "${BLUE}   3. Run 'npm run test:e2e' to verify${NC}"
   echo -e "${BLUE}   4. Commit only when tests pass${NC}"
   echo ""
+  echo -e "${RED}🚨 MANDATORY: This check CANNOT BE BYPASSED - All tests must pass${NC}"
   exit 1
 fi
 

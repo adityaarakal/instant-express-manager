@@ -68,6 +68,17 @@ The pre-commit hook enforces:
 2. **Tests must pass** - commit blocked if tests fail
 3. **Implementation must conform** to locked tests
 
+### ⚠️ BYPASS PROHIBITED
+
+**These checks CANNOT be bypassed:**
+
+- ❌ **--no-verify flag**: Blocked by git wrapper and server-side checks
+- ❌ **Environment variables**: Detected and blocked
+- ❌ **AI agents**: Cannot bypass - tests must pass
+- ❌ **Manual skip**: Server-side GitHub Actions will enforce
+
+**Even if local checks are bypassed, PR workflow will block the merge.**
+
 ### Error Messages
 
 If you try to modify a locked test:

@@ -159,6 +159,17 @@ The following test files are **LOCKED** and represent **delivered features**:
 ❌ **Bypass lock validation**: Pre-commit hooks will block commits
 ❌ **Skip test failures**: Tests must pass before commit
 
+### ⚠️ BYPASS PROHIBITED
+
+**These checks CANNOT be bypassed:**
+
+- ❌ **--no-verify flag**: Blocked by git wrapper and server-side checks
+- ❌ **Environment variables**: Detected and blocked (HUSKY_SKIP_HOOKS, SKIP_HOOKS, etc.)
+- ❌ **AI agents**: Cannot bypass - tests must pass
+- ❌ **Manual skip**: Server-side GitHub Actions will enforce
+
+**Even if local checks are bypassed, PR workflow will block the merge.**
+
 ### TDD Workflow
 
 When implementing new features:
