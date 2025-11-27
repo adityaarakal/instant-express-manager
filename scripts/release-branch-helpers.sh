@@ -59,7 +59,7 @@ get_locked_tests() {
   fi
   
   find "$LOCK_DIR" -name "*.lock" -type f 2>/dev/null | \
-    sed 's|^\.test-locks/||' | \
+    sed "s|^$LOCK_DIR/||" | \
     sed 's|\.lock$||' | \
     sed 's|^|frontend/|' || echo ""
 }
@@ -95,21 +95,30 @@ run_playwright_tests() {
   fi
   
   # Run tests for each file
-  for test_file in $test_files; do
-    if [ ! -f "$PROJECT_ROOT/$test_file" ]; then
-      log_error "Test file not found: $test_file"
+  while IFS= read -r test_file; do
+    [ -z "$test_file" ] && continue
+    
+    # Clean up path - remove any absolute path prefixes
+    CLEAN_PATH=$(echo "$test_file" | sed "s|^$PROJECT_ROOT/||" | sed "s|^frontend/frontend/|frontend/|")
+    
+    # Check if file exists (try both relative and absolute)
+    if [ ! -f "$PROJECT_ROOT/$CLEAN_PATH" ] && [ ! -f "$CLEAN_PATH" ]; then
+      log_error "Test file not found: $CLEAN_PATH"
       exit_code=1
       continue
     fi
     
-    log_info "Running: $test_file"
-    if npm run test:e2e -- "$test_file" > /dev/null 2>&1; then
-      log_success "Passed: $test_file"
+    # Use relative path from frontend directory
+    RELATIVE_PATH=$(echo "$CLEAN_PATH" | sed 's|^frontend/||')
+    
+    log_info "Running: $RELATIVE_PATH"
+    if npm run test:e2e -- "$RELATIVE_PATH" > /dev/null 2>&1; then
+      log_success "Passed: $RELATIVE_PATH"
     else
-      log_error "Failed: $test_file"
+      log_error "Failed: $RELATIVE_PATH"
       exit_code=1
     fi
-  done
+  done <<< "$test_files"
   
   cd "$PROJECT_ROOT"
   return $exit_code
