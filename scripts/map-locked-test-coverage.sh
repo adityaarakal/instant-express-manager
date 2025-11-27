@@ -3,7 +3,8 @@
 # ============================================================================
 # Locked Test Coverage Mapper
 # ============================================================================
-# Identifies all code covered by locked tests and generates a coverage map
+# Identifies all code covered by locked E2E tests and generates a coverage map
+# Uses analyze-locked-test-coverage.sh to get comprehensive coverage
 #
 # Usage:
 #   bash scripts/map-locked-test-coverage.sh [--output=coverage-map.json]
@@ -38,210 +39,64 @@ done
 check_project_root
 
 echo ""
-log_step "Mapping Locked Test Coverage"
-echo "================================"
+log_step "Mapping Locked E2E Test Coverage"
+echo "====================================="
 echo ""
 
-# Create output directory
-mkdir -p "$(dirname "$OUTPUT_FILE")"
+# Use the comprehensive analysis script
+log_info "Running comprehensive E2E test coverage analysis..."
+ANALYSIS_OUTPUT="$PROJECT_ROOT/.release-coverage/locked-e2e-coverage.json"
 
-# Get locked tests
-LOCKED_TESTS=$(get_locked_tests)
-
-if [ -z "$LOCKED_TESTS" ]; then
-  log_error "No locked tests found"
-  exit 1
-fi
-
-log_info "Found locked tests:"
-LOCKED_COUNT=0
-LOCKED_ARRAY=()
-
-while IFS= read -r test_file; do
-  [ -z "$test_file" ] && continue
-  # Clean up path (remove any absolute path prefixes)
-  CLEAN_PATH=$(echo "$test_file" | sed "s|^$PROJECT_ROOT/||" | sed "s|^frontend/frontend/|frontend/|")
-  log_info "  - $CLEAN_PATH"
-  LOCKED_ARRAY+=("$CLEAN_PATH")
-  ((LOCKED_COUNT++))
-done <<< "$LOCKED_TESTS"
-
-echo ""
-
-# Map tests to code files
-log_step "Mapping tests to source code..."
-
-# Initialize coverage map
-COVERAGE_MAP=$(cat <<EOF
-{
-  "locked_tests": [],
-  "covered_files": {
-    "components": [],
-    "utils": [],
-    "stores": [],
-    "hooks": [],
-    "services": [],
-    "types": [],
-    "other": []
-  },
-  "generated_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-}
-EOF
-)
-
-# Parse each locked test file to identify covered code
-for test_file in "${LOCKED_ARRAY[@]}"; do
-  FULL_PATH="$PROJECT_ROOT/$test_file"
-  
-  if [ ! -f "$FULL_PATH" ]; then
-    log_warning "Test file not found: $test_file"
-    continue
-  fi
-  
-  log_info "Analyzing: $test_file"
-  
-  # Extract test file name without extension
-  TEST_NAME=$(basename "$test_file" .spec.ts)
-  
-  # Map common test patterns to source files
-  # This is a simplified mapping - can be enhanced with AST parsing
-  
-  # Banks test -> banks-related files
-  if [[ "$test_file" == *"banks.spec.ts" ]]; then
-    # Add banks-related files
-    find "$FRONTEND_DIR/src" -type f \( -name "*bank*" -o -name "*Bank*" \) ! -name "*.test.*" ! -name "*.spec.*" 2>/dev/null | \
-      sed "s|^$PROJECT_ROOT/||" | while read -r file; do
-        # Categorize file
-        if [[ "$file" == *"/components/"* ]]; then
-          echo "components:$file"
-        elif [[ "$file" == *"/utils/"* ]]; then
-          echo "utils:$file"
-        elif [[ "$file" == *"/store/"* ]]; then
-          echo "stores:$file"
-        elif [[ "$file" == *"/hooks/"* ]]; then
-          echo "hooks:$file"
-        else
-          echo "other:$file"
-        fi
-      done
-  fi
-  
-  # Bank accounts test -> bank-accounts-related files
-  if [[ "$test_file" == *"bank-accounts.spec.ts" ]]; then
-    # Add bank-accounts-related files
-    find "$FRONTEND_DIR/src" -type f \( -name "*bank*account*" -o -name "*BankAccount*" -o -name "*account*" \) ! -name "*.test.*" ! -name "*.spec.*" 2>/dev/null | \
-      sed "s|^$PROJECT_ROOT/||" | while read -r file; do
-        # Categorize file
-        if [[ "$file" == *"/components/"* ]]; then
-          echo "components:$file"
-        elif [[ "$file" == *"/utils/"* ]]; then
-          echo "utils:$file"
-        elif [[ "$file" == *"/store/"* ]]; then
-          echo "stores:$file"
-        elif [[ "$file" == *"/hooks/"* ]]; then
-          echo "hooks:$file"
-        else
-          echo "other:$file"
-        fi
-      done
-  fi
-done > /tmp/coverage-map-temp.txt
-
-# Build JSON structure using node or jq
-if command -v node > /dev/null 2>&1; then
-  log_step "Building coverage map JSON..."
-  
-  NODE_SCRIPT="
-    const fs = require('fs');
-    const path = require('path');
-    
-    const lockedTests = $(printf '%s\n' "${LOCKED_ARRAY[@]}" | jq -R . | jq -s . 2>/dev/null || echo '[]');
-    const coverageData = {};
-    const categories = ['components', 'utils', 'stores', 'hooks', 'services', 'types', 'other'];
-    
-    categories.forEach(cat => {
-      coverageData[cat] = [];
-    });
-    
-    // Read temp file and categorize
-    try {
-      const tempData = fs.readFileSync('/tmp/coverage-map-temp.txt', 'utf8');
-      const lines = tempData.split('\\n').filter(l => l.trim());
-      const fileSet = new Set();
-      
-      lines.forEach(line => {
-        const [category, file] = line.split(':');
-        if (category && file && !fileSet.has(file)) {
-          fileSet.add(file);
-          if (coverageData[category]) {
-            coverageData[category].push(file);
-          } else {
-            coverageData.other.push(file);
-          }
-        }
-      });
-    } catch (e) {
-      // Temp file might not exist, that's okay
-    }
-    
-    const result = {
-      locked_tests: lockedTests,
-      covered_files: coverageData,
-      generated_at: new Date().toISOString()
-    };
-    
-    console.log(JSON.stringify(result, null, 2));
-  "
-  
-  echo "$NODE_SCRIPT" | node > "$OUTPUT_FILE"
-  
-elif command -v jq > /dev/null 2>&1; then
-  log_step "Building coverage map JSON with jq..."
-  
-  # Build JSON manually with jq
-  {
-    echo '{'
-    echo '  "locked_tests": ['
-    for i in "${!LOCKED_ARRAY[@]}"; do
-      if [ $i -gt 0 ]; then
-        echo ','
-      fi
-      echo -n "    \"${LOCKED_ARRAY[$i]}\""
-    done
-    echo ''
-    echo '  ],'
-    echo '  "covered_files": {'
-    echo '    "components": [],'
-    echo '    "utils": [],'
-    echo '    "stores": [],'
-    echo '    "hooks": [],'
-    echo '    "services": [],'
-    echo '    "types": [],'
-    echo '    "other": []'
-    echo '  },'
-    echo "  \"generated_at\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\""
-    echo '}'
-  } | jq . > "$OUTPUT_FILE"
-  
+if bash "$SCRIPT_DIR/analyze-locked-test-coverage.sh" --output="$ANALYSIS_OUTPUT"; then
+  log_success "Coverage analysis completed"
 else
-  log_error "Neither node nor jq found. Cannot generate JSON."
+  log_error "Coverage analysis failed"
   exit 1
 fi
 
-# Cleanup
-rm -f /tmp/coverage-map-temp.txt
-
-log_success "Coverage map generated: $OUTPUT_FILE"
-
-# Show summary
-TOTAL_FILES=$(jq '[.covered_files | to_entries[] | .value[]] | length' "$OUTPUT_FILE" 2>/dev/null || echo "0")
-
-echo ""
-log_step "Coverage Map Summary"
-echo "======================"
-log_info "Locked tests: $LOCKED_COUNT"
-log_info "Covered files: $TOTAL_FILES"
-echo ""
-log_info "Coverage map saved to: $OUTPUT_FILE"
-echo ""
+# Convert to the format expected by release branch manager
+if [ -f "$ANALYSIS_OUTPUT" ]; then
+  log_step "Converting to release branch format..."
+  
+  if command -v jq > /dev/null 2>&1; then
+    jq '{
+      locked_tests: .locked_tests,
+      covered_files: {
+        pages: .pages,
+        components: .components,
+        stores: .stores,
+        utils: .utils,
+        hooks: .hooks,
+        types: .types,
+        routes: .routes
+      },
+      generated_at: .generated_at
+    }' "$ANALYSIS_OUTPUT" > "$OUTPUT_FILE"
+    
+    log_success "Coverage map generated: $OUTPUT_FILE"
+    
+    # Show summary
+    TOTAL_FILES=$(jq '[.covered_files | to_entries[] | .value[]] | length' "$OUTPUT_FILE" 2>/dev/null || echo "0")
+    LOCKED_COUNT=$(jq '.locked_tests | length' "$OUTPUT_FILE" 2>/dev/null || echo "0")
+    
+    echo ""
+    log_step "Coverage Map Summary"
+    echo "======================"
+    log_info "Locked tests: $LOCKED_COUNT"
+    log_info "Pages: $(jq '.covered_files.pages | length' "$OUTPUT_FILE" 2>/dev/null || echo "0")"
+    log_info "Components: $(jq '.covered_files.components | length' "$OUTPUT_FILE" 2>/dev/null || echo "0")"
+    log_info "Stores: $(jq '.covered_files.stores | length' "$OUTPUT_FILE" 2>/dev/null || echo "0")"
+    log_info "Utils: $(jq '.covered_files.utils | length' "$OUTPUT_FILE" 2>/dev/null || echo "0")"
+    log_info "Hooks: $(jq '.covered_files.hooks | length' "$OUTPUT_FILE" 2>/dev/null || echo "0")"
+    log_info "Types: $(jq '.covered_files.types | length' "$OUTPUT_FILE" 2>/dev/null || echo "0")"
+    log_info "Total files: $TOTAL_FILES"
+    echo ""
+  else
+    log_error "jq not found. Cannot convert coverage format."
+    exit 1
+  fi
+else
+  log_error "Coverage analysis file not found: $ANALYSIS_OUTPUT"
+  exit 1
+fi
 

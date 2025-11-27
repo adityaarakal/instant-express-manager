@@ -55,22 +55,25 @@ This document outlines the branching strategy and deployment workflow for the In
 **Deployment**: Prod URL (production environment)
 
 **What Goes Into Release**:
-- ✅ **Only features with locked Playwright test flows** - flows must be tested and passing
-- ✅ **UI/UX/API/utils/docs/etc** that are **covered by locked tests**
-- ✅ **Everything must be tested and working** - no untested code
-- ✅ **Utils must have unit tests** - 100% coverage and passing
-- ✅ **Services and hooks** - covered by unit tests OR end-to-end tests with 100% coverage and passing
-- ✅ **Only what locked tests cover** - nothing beyond test coverage
-- ✅ **Standard global things** (if any) - but these must also have locked tests
-- ✅ **Locked test files are the source of truth** - they define what goes into release
+- ✅ **Only features with locked Playwright E2E test flows** - flows must be tested and passing
+- ✅ **UI/UX/storage code** that is **covered by locked E2E tests** (analyzed automatically)
+- ✅ **All dependencies** of covered code (recursively analyzed)
+- ✅ **Test files** for covered code
+- ✅ **Utils covered by locked E2E tests** - must have 100% coverage and passing
+- ✅ **Stores/hooks covered by locked E2E tests** - covered by unit tests OR E2E tests (100% coverage, passing)
+- ✅ **Only what locked E2E tests cover** - nothing beyond E2E test coverage
+- ✅ **Locked E2E test files are the source of truth** - they define what goes into release
+- ✅ **Code NOT covered by locked E2E tests is immaterial** - not included, no test requirements
 
 **Release Qualification Criteria**:
-- ✅ **Playwright locked tests** - flows tested and passing
-- ✅ **Unit tests for utils** - 100% coverage and passing
-- ✅ **Unit tests OR E2E tests for services/hooks** - 100% coverage and passing
-- ✅ **All tests passing** - no failures allowed
-- ✅ **100% coverage threshold** - must meet coverage requirements
-- ✅ **Everything tested and working** - comprehensive test coverage
+- ✅ **Playwright locked E2E tests** - flows tested and passing
+- ✅ **Code coverage analysis** - locked E2E tests analyzed to identify covered code
+- ✅ **Unit tests for utils covered by locked E2E tests** - 100% coverage and passing (MANDATORY - cannot bypass)
+- ✅ **Unit tests OR E2E tests for stores/hooks covered by locked E2E tests** - 100% coverage and passing (MANDATORY - cannot bypass)
+- ✅ **Tests passing for covered code** - no failures allowed for E2E-covered code (MANDATORY - cannot bypass)
+- ✅ **100% coverage threshold** - must meet coverage requirements for covered code only
+- ✅ **Code NOT covered by locked E2E tests** - immaterial, no test requirements
+- ❌ **Unit tests are NEVER bypassed** - missing or failing tests for covered code block release qualification
 
 **Characteristics**:
 - 🔒 **Test-driven** - only tested features included
@@ -104,55 +107,76 @@ This document outlines the branching strategy and deployment workflow for the In
 
 For a feature to qualify for release, it must meet **ALL** of the following criteria:
 
-1. **Playwright Locked Tests**:
-   - ✅ Feature has locked Playwright test files
-   - ✅ All locked tests are **passing**
+1. **Playwright Locked E2E Tests**:
+   - ✅ Feature has locked Playwright E2E test files
+   - ✅ All locked E2E tests are **passing**
    - ✅ Flows are **tested and working**
 
-2. **Unit Tests for Utils**:
-   - ✅ All utility functions have unit test files
-   - ✅ **100% code coverage** for utils
-   - ✅ All unit tests are **passing**
+2. **Coverage Analysis**:
+   - ✅ Locked E2E tests are analyzed to identify all code they touch
+   - ✅ Code coverage map is generated (pages, components, stores, utils, hooks, types)
+   - ✅ Only code covered by locked E2E tests is considered
 
-3. **Services and Hooks Testing**:
-   - ✅ Services and hooks covered by **unit tests OR end-to-end tests**
-   - ✅ **100% code coverage** required
-   - ✅ All tests are **passing**
+3. **Unit Tests for Covered Utils** (MANDATORY - Cannot Bypass):
+   - ✅ Utils covered by locked E2E tests **MUST have unit test files**
+   - ✅ **100% code coverage** for covered utils
+   - ✅ All unit tests for covered utils are **passing**
+   - ❌ **Cannot bypass**: Missing or failing unit tests block release qualification
 
-4. **Overall Requirements**:
-   - ✅ **Everything tested and working**
-   - ✅ **All tests passing** (no failures)
-   - ✅ **100% coverage threshold** met
-   - ✅ **Comprehensive test coverage** achieved
+4. **Tests for Covered Stores/Hooks** (MANDATORY - Cannot Bypass):
+   - ✅ Stores/hooks covered by locked E2E tests **MUST have unit tests OR E2E coverage**
+   - ✅ **100% code coverage** required for covered stores/hooks
+   - ✅ All tests for covered stores/hooks are **passing**
+   - ❌ **Cannot bypass**: Missing or failing unit tests block release qualification
+
+5. **Code NOT Covered by Locked E2E Tests**:
+   - ✅ **Immaterial** - not included in release branch
+   - ✅ **No test requirements** - failures are non-blocking
+   - ✅ **Not checked** - only E2E-covered code matters
 
 ### How It Works
 
 1. **Feature Development**:
    - Feature is developed on `main` branch
-   - Playwright tests are written for the feature
-   - Unit tests are written for utils (100% coverage)
-   - Services/hooks are tested (unit OR E2E, 100% coverage)
+   - Playwright E2E tests are written for the feature
+   - E2E tests exercise the complete UI/UX flow
    - All tests are verified and passing
 
 2. **Test Locking**:
-   - Once tests are finalized and passing, they are **locked**:
+   - Once E2E tests are finalized and passing, they are **locked**:
      ```bash
      bash scripts/lock-test.sh frontend/e2e/modules/feature-name.spec.ts
      ```
    - Locked tests represent **delivered features**
    - Locked tests cannot be modified without explicit user permission
 
-3. **Automatic Release Deployment**:
-   - ✅ Feature has locked tests
-   - ✅ All locked tests are passing
-   - ✅ Utils have 100% unit test coverage and passing
-   - ✅ Services/hooks have 100% test coverage and passing
+3. **Coverage Analysis**:
+   - Locked E2E tests are analyzed to identify all code they touch:
+     - Pages (routes)
+     - Components (UI)
+     - Stores (state management)
+     - Utils (utilities)
+     - Hooks (React hooks)
+     - Types (TypeScript types)
+   - Only code covered by locked E2E tests is considered for release
+   - Other code is immaterial and not included in release branch
+
+4. **Test Requirements for Covered Code**:
+   - **Utils covered by locked E2E tests**: Must have 100% unit test coverage and passing
+   - **Stores/hooks covered by locked E2E tests**: Must have unit tests OR be covered by E2E tests (100% coverage, passing)
+   - **Code NOT covered by locked E2E tests**: No test requirements (immaterial for release)
+
+5. **Automatic Release Deployment**:
+   - ✅ Feature has locked E2E tests
+   - ✅ All locked E2E tests are passing
+   - ✅ Code covered by locked E2E tests has required test coverage and passing
    - ✅ **→ Automatically deployed to release branch**
 
-4. **Release Inclusion**:
-   - Only features meeting ALL criteria are eligible for release
-   - All code related to locked tests (UI, API, utils, docs) is included
-   - Nothing beyond what locked tests cover is included
+6. **Release Inclusion**:
+   - Only code covered by locked E2E tests is included in release branch
+   - All dependencies of covered code are included (recursive dependency analysis)
+   - Test files for covered code are included
+   - Nothing beyond what locked E2E tests cover is included
 
 ### Example
 

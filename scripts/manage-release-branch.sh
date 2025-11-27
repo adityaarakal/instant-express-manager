@@ -79,20 +79,20 @@ else
 fi
 echo ""
 
-# Step 2: Generate coverage map
-log_step "Step 2: Generating coverage map..."
-if bash "$SCRIPT_DIR/map-locked-test-coverage.sh"; then
-  log_success "Coverage map generated"
+# Step 2: Analyze locked E2E test coverage
+log_step "Step 2: Analyzing locked E2E test coverage..."
+COVERAGE_FILE="$PROJECT_ROOT/.release-coverage/locked-e2e-coverage.json"
+
+if bash "$SCRIPT_DIR/analyze-locked-test-coverage.sh" --output="$COVERAGE_FILE"; then
+  log_success "E2E test coverage analysis completed"
 else
-  log_error "Failed to generate coverage map"
+  log_error "Failed to analyze E2E test coverage"
   exit 1
 fi
 echo ""
 
-COVERAGE_MAP="$PROJECT_ROOT/.release-coverage/locked-tests-coverage.json"
-
-if [ ! -f "$COVERAGE_MAP" ]; then
-  log_error "Coverage map not found: $COVERAGE_MAP"
+if [ ! -f "$COVERAGE_FILE" ]; then
+  log_error "Coverage file not found: $COVERAGE_FILE"
   exit 1
 fi
 
@@ -172,11 +172,74 @@ else
   }
 fi
 
-# Step 5: Filter code based on coverage map
-log_step "Step 5: Filtering code based on coverage map..."
+# Step 5: Filter code based on E2E test coverage analysis
+log_step "Step 5: Filtering code based on locked E2E test coverage..."
 
-# Get list of files to keep
-FILES_TO_KEEP=$(jq -r '[.covered_files | to_entries[] | .value[]] | .[]' "$COVERAGE_MAP" 2>/dev/null || echo "")
+# Get list of files to keep from coverage analysis
+if command -v jq > /dev/null 2>&1; then
+  # Extract all covered files from the coverage analysis (exclude empty strings)
+  COVERED_PAGES=$(jq -r '.pages[]' "$COVERAGE_FILE" 2>/dev/null | grep -v '^$' || echo "")
+  COVERED_COMPONENTS=$(jq -r '.components[]' "$COVERAGE_FILE" 2>/dev/null | grep -v '^$' || echo "")
+  COVERED_STORES=$(jq -r '.stores[]' "$COVERAGE_FILE" 2>/dev/null | grep -v '^$' || echo "")
+  COVERED_UTILS=$(jq -r '.utils[]' "$COVERAGE_FILE" 2>/dev/null | grep -v '^$' || echo "")
+  COVERED_HOOKS=$(jq -r '.hooks[]' "$COVERAGE_FILE" 2>/dev/null | grep -v '^$' || echo "")
+  COVERED_TYPES=$(jq -r '.types[]' "$COVERAGE_FILE" 2>/dev/null | grep -v '^$' || echo "")
+  
+  # Combine all covered files
+  FILES_TO_KEEP="$COVERED_PAGES"$'\n'"$COVERED_COMPONENTS"$'\n'"$COVERED_STORES"$'\n'"$COVERED_UTILS"$'\n'"$COVERED_HOOKS"$'\n'"$COVERED_TYPES"
+  FILES_TO_KEEP=$(echo "$FILES_TO_KEEP" | grep -v '^$' | sort -u)
+  
+  # Also include test files ONLY for covered code (strict filtering)
+  COVERED_TEST_FILES=""
+  for covered_file in $FILES_TO_KEEP; do
+    [ -z "$covered_file" ] && continue
+    # Only include test files for files explicitly in coverage analysis
+    # Check if this file is in stores, utils, hooks, components, or pages
+    IS_COVERED=false
+    if echo "$COVERED_STORES" | grep -q "^$covered_file$"; then
+      IS_COVERED=true
+    elif echo "$COVERED_UTILS" | grep -q "^$covered_file$"; then
+      IS_COVERED=true
+    elif echo "$COVERED_HOOKS" | grep -q "^$covered_file$"; then
+      IS_COVERED=true
+    elif echo "$COVERED_COMPONENTS" | grep -q "^$covered_file$"; then
+      IS_COVERED=true
+    elif echo "$COVERED_PAGES" | grep -q "^$covered_file$"; then
+      IS_COVERED=true
+    fi
+    
+    # Only add test files for explicitly covered code
+    if [ "$IS_COVERED" = true ]; then
+      # Find corresponding test files in standard locations
+      FILE_DIR=$(dirname "$covered_file")
+      FILE_NAME=$(basename "$covered_file" .tsx | sed 's/\.ts$//')
+      
+      # Check same directory
+      TEST_FILE="${covered_file%.ts}.test.ts"
+      TEST_FILE_TSX="${covered_file%.tsx}.test.tsx"
+      
+      # Check __tests__ subdirectory
+      TEST_FILE_IN_TESTS_DIR="${FILE_DIR}/__tests__/${FILE_NAME}.test.ts"
+      TEST_FILE_IN_TESTS_DIR_TSX="${FILE_DIR}/__tests__/${FILE_NAME}.test.tsx"
+      
+      # Add test files if they exist
+      for test_file in "$TEST_FILE" "$TEST_FILE_TSX" "$TEST_FILE_IN_TESTS_DIR" "$TEST_FILE_IN_TESTS_DIR_TSX"; do
+        if [ -f "$PROJECT_ROOT/$test_file" ]; then
+          COVERED_TEST_FILES="$COVERED_TEST_FILES"$'\n'"$test_file"
+        fi
+      done
+    fi
+  done
+  
+  # Include locked E2E test files
+  LOCKED_TEST_FILES=$(jq -r '.locked_tests[]' "$COVERAGE_FILE" 2>/dev/null || echo "")
+  
+  # Include E2E helper files used by locked tests
+  E2E_HELPER_FILES=$(find "$FRONTEND_DIR/e2e/helpers" -name "*.ts" -type f 2>/dev/null | sed "s|^$PROJECT_ROOT/||" || echo "")
+else
+  log_error "jq not found. Cannot parse coverage file."
+  exit 1
+fi
 
 # Also keep essential files (configs, package files, etc.)
 ESSENTIAL_FILES=(
@@ -187,24 +250,29 @@ ESSENTIAL_FILES=(
   "frontend/vite.config.ts"
   "frontend/tsconfig.json"
   "frontend/tsconfig.node.json"
+  "frontend/index.html"
+  "frontend/public"
   ".gitignore"
   "README.md"
   "docs/BRANCHING_AND_DEPLOYMENT_STRATEGY.md"
   "docs/RELEASE_BRANCH_IMPLEMENTATION_PLAN.md"
+  "docs/RELEASE_BRANCH_USAGE.md"
+  "docs/RELEASE_BRANCH_IMPLEMENTATION_SUMMARY.md"
   ".test-locks"
   "scripts"
   ".github"
+  "frontend/e2e"
 )
-
-# Keep test files
-TEST_FILES=$(find "$FRONTEND_DIR" -type f \( -name "*.test.ts" -o -name "*.test.tsx" -o -name "*.spec.ts" \) 2>/dev/null | sed "s|^$PROJECT_ROOT/||" || echo "")
 
 # Build list of all files to keep
 ALL_FILES_TO_KEEP="$FILES_TO_KEEP"
+ALL_FILES_TO_KEEP="$ALL_FILES_TO_KEEP"$'\n'"$COVERED_TEST_FILES"
+ALL_FILES_TO_KEEP="$ALL_FILES_TO_KEEP"$'\n'"$LOCKED_TEST_FILES"
+ALL_FILES_TO_KEEP="$ALL_FILES_TO_KEEP"$'\n'"$E2E_HELPER_FILES"
+
 for file in "${ESSENTIAL_FILES[@]}"; do
   ALL_FILES_TO_KEEP="$ALL_FILES_TO_KEEP"$'\n'"$file"
 done
-ALL_FILES_TO_KEEP="$ALL_FILES_TO_KEEP"$'\n'"$TEST_FILES"
 
 # Remove duplicates and empty lines
 ALL_FILES_TO_KEEP=$(echo "$ALL_FILES_TO_KEEP" | grep -v '^$' | sort -u)

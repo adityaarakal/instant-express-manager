@@ -102,21 +102,181 @@ else
 fi
 echo ""
 
-# 4. Check unit test coverage for utils
-log_step "Step 4: Checking unit test coverage for utils..."
-UTILS_FILES=$(get_utils_files)
-UTILS_COUNT=$(echo "$UTILS_FILES" | grep -v '^$' | wc -l | tr -d ' ')
+# 4. Analyze locked E2E test coverage
+log_step "Step 4: Analyzing locked E2E test coverage..."
+COVERAGE_FILE="$PROJECT_ROOT/.release-coverage/locked-e2e-coverage.json"
 
-if [ "$UTILS_COUNT" -eq 0 ]; then
-  log_warning "No utils files found"
+if bash "$SCRIPT_DIR/analyze-locked-test-coverage.sh" --output="$COVERAGE_FILE" 2>/dev/null; then
+  log_success "E2E test coverage analysis completed"
+  
+  if [ -f "$COVERAGE_FILE" ] && command -v jq > /dev/null 2>&1; then
+    COVERED_STORES_COUNT=$(jq '.stores | length' "$COVERAGE_FILE" 2>/dev/null || echo "0")
+    COVERED_UTILS_COUNT=$(jq '.utils | length' "$COVERAGE_FILE" 2>/dev/null || echo "0")
+    COVERED_HOOKS_COUNT=$(jq '.hooks | length' "$COVERAGE_FILE" 2>/dev/null || echo "0")
+    
+    log_info "Code covered by locked E2E tests:"
+    log_info "  - Stores: $COVERED_STORES_COUNT"
+    log_info "  - Utils: $COVERED_UTILS_COUNT"
+    log_info "  - Hooks: $COVERED_HOOKS_COUNT"
+  fi
 else
-  log_info "Found $UTILS_COUNT utils file(s)"
+  log_warning "Could not analyze E2E test coverage (non-blocking)"
+fi
+echo ""
+
+# 5. Check unit tests for code covered by locked E2E tests only
+log_step "Step 5: Checking unit tests for code covered by locked E2E tests..."
+COVERAGE_FILE="$PROJECT_ROOT/.release-coverage/locked-e2e-coverage.json"
+
+if [ ! -f "$COVERAGE_FILE" ]; then
+  log_warning "Coverage file not found - running analysis..."
+  bash "$SCRIPT_DIR/analyze-locked-test-coverage.sh" --output="$COVERAGE_FILE" 2>/dev/null || true
+fi
+
+if [ -f "$COVERAGE_FILE" ] && command -v jq > /dev/null 2>&1; then
+  # Get covered stores/utils/hooks
+  COVERED_STORES=$(jq -r '.stores[]' "$COVERAGE_FILE" 2>/dev/null || echo "")
+  COVERED_UTILS=$(jq -r '.utils[]' "$COVERAGE_FILE" 2>/dev/null || echo "")
+  COVERED_HOOKS=$(jq -r '.hooks[]' "$COVERAGE_FILE" 2>/dev/null || echo "")
+  
+  if [ -z "$COVERED_STORES" ] && [ -z "$COVERED_UTILS" ] && [ -z "$COVERED_HOOKS" ]; then
+    log_warning "No code identified as covered by locked E2E tests"
+  else
+    log_info "Code covered by locked E2E tests that needs unit tests:"
+    
+    # Track missing tests (MANDATORY - cannot bypass)
+    # Use a temp file to track missing tests (avoid subshell issues)
+    MISSING_TESTS_FILE="/tmp/missing-tests-$$.txt"
+    > "$MISSING_TESTS_FILE"
+    
+    # Check stores
+    if [ -n "$COVERED_STORES" ]; then
+      while IFS= read -r store; do
+        [ -z "$store" ] && continue
+        # Try multiple possible test file locations
+        STORE_DIR=$(dirname "$store")
+        STORE_NAME=$(basename "$store" .ts)
+        TEST_FILE1="${store%.ts}.test.ts"
+        TEST_FILE2="${STORE_DIR}/__tests__/${STORE_NAME}.test.ts"
+        TEST_FILE3="frontend/src/store/__tests__/${STORE_NAME}.test.ts"
+        
+        if [ -f "$PROJECT_ROOT/$TEST_FILE1" ] || [ -f "$PROJECT_ROOT/$TEST_FILE2" ] || [ -f "$PROJECT_ROOT/$TEST_FILE3" ]; then
+          log_info "  ✓ $store (test exists)"
+        else
+          log_error "  ✗ $store (test MISSING - MANDATORY)"
+          echo "$store" >> "$MISSING_TESTS_FILE"
+        fi
+      done <<< "$COVERED_STORES"
+    fi
+    
+    # Check utils
+    if [ -n "$COVERED_UTILS" ]; then
+      while IFS= read -r util; do
+        [ -z "$util" ] && continue
+        # Try multiple possible test file locations
+        UTIL_DIR=$(dirname "$util")
+        UTIL_NAME=$(basename "$util" .ts)
+        TEST_FILE1="${util%.ts}.test.ts"
+        TEST_FILE2="${UTIL_DIR}/__tests__/${UTIL_NAME}.test.ts"
+        TEST_FILE3="frontend/src/utils/__tests__/${UTIL_NAME}.test.ts"
+        
+        if [ -f "$PROJECT_ROOT/$TEST_FILE1" ] || [ -f "$PROJECT_ROOT/$TEST_FILE2" ] || [ -f "$PROJECT_ROOT/$TEST_FILE3" ]; then
+          log_info "  ✓ $util (test exists)"
+        else
+          log_error "  ✗ $util (test MISSING - MANDATORY)"
+          echo "$util" >> "$MISSING_TESTS_FILE"
+        fi
+      done <<< "$COVERED_UTILS"
+    fi
+    
+    # Check hooks
+    if [ -n "$COVERED_HOOKS" ]; then
+      while IFS= read -r hook; do
+        [ -z "$hook" ] && continue
+        # Try multiple possible test file locations
+        HOOK_DIR=$(dirname "$hook")
+        HOOK_NAME=$(basename "$hook" .tsx | sed 's/\.ts$//')
+        TEST_FILE1="${hook%.tsx}.test.tsx"
+        TEST_FILE2="${hook%.ts}.test.ts"
+        TEST_FILE3="${HOOK_DIR}/__tests__/${HOOK_NAME}.test.ts"
+        TEST_FILE4="frontend/src/hooks/__tests__/${HOOK_NAME}.test.ts"
+        
+        if [ -f "$PROJECT_ROOT/$TEST_FILE1" ] || [ -f "$PROJECT_ROOT/$TEST_FILE2" ] || [ -f "$PROJECT_ROOT/$TEST_FILE3" ] || [ -f "$PROJECT_ROOT/$TEST_FILE4" ]; then
+          log_info "  ✓ $hook (test exists)"
+        else
+          log_error "  ✗ $hook (test MISSING - MANDATORY)"
+          echo "$hook" >> "$MISSING_TESTS_FILE"
+        fi
+      done <<< "$COVERED_HOOKS"
+    fi
+    
+    # FAIL if any tests are missing (MANDATORY - cannot bypass)
+    if [ -s "$MISSING_TESTS_FILE" ]; then
+      MISSING_TESTS=$(cat "$MISSING_TESTS_FILE" | tr '\n' ' ')
+      log_error "=========================================="
+      log_error "MANDATORY UNIT TESTS MISSING"
+      log_error "=========================================="
+      log_error "Cannot bypass: Unit tests are REQUIRED for all code covered by locked E2E tests"
+      log_error "Missing tests for: $MISSING_TESTS"
+      log_error "Create these test files before release qualification"
+      QUALIFIED=false
+      FAILURES+=("Missing unit tests for E2E-covered code: $MISSING_TESTS")
+      rm -f "$MISSING_TESTS_FILE"
+    else
+      rm -f "$MISSING_TESTS_FILE"
+    fi
+    
+    if [ "$DRY_RUN" = false ]; then
+      # Run unit tests - MANDATORY for covered code (cannot bypass)
+      log_info "Running unit tests (MANDATORY for E2E-covered code)..."
+      
+      if ! run_unit_tests_with_coverage; then
+        # Check if failures are in covered code
+        FAILED_TESTS=$(grep -E "FAIL.*test\.ts" /tmp/vitest-coverage.log 2>/dev/null | grep -oE "[^/]+\.test\.ts" | sort -u || echo "")
+        
+        CRITICAL_FAILURE=false
+        ALL_COVERED="$COVERED_STORES"$'\n'"$COVERED_UTILS"$'\n'"$COVERED_HOOKS"
+        FAILED_COVERED_FILES=()
+        
+        for covered_file in $ALL_COVERED; do
+          [ -z "$covered_file" ] && continue
+          COVERED_BASE=$(basename "$covered_file" .ts | sed 's/\.tsx$//')
+          if echo "$FAILED_TESTS" | grep -q "${COVERED_BASE}\.test\.ts"; then
+            log_error "CRITICAL: Unit test FAILED for covered file: $covered_file"
+            CRITICAL_FAILURE=true
+            FAILED_COVERED_FILES+=("$covered_file")
+          fi
+        done
+        
+        if [ "$CRITICAL_FAILURE" = true ]; then
+          log_error "=========================================="
+          log_error "UNIT TESTS FAILED FOR E2E-COVERED CODE"
+          log_error "=========================================="
+          log_error "Cannot bypass: Unit tests MUST pass for all code covered by locked E2E tests"
+          log_error "Failed files: ${FAILED_COVERED_FILES[*]}"
+          log_error "Fix these tests before release qualification"
+          QUALIFIED=false
+          FAILURES+=("Unit tests FAILING for E2E-covered code: ${FAILED_COVERED_FILES[*]}")
+        else
+          log_warning "Some unit tests failed, but not in code covered by locked E2E tests"
+          log_info "These failures are non-blocking for release qualification"
+          log_success "All unit tests for E2E-covered code passed"
+        fi
+      else
+        log_success "All unit tests passed (including E2E-covered code)"
+      fi
+    else
+      log_warning "Skipping unit test execution (dry-run mode)"
+      log_warning "NOTE: Unit tests are MANDATORY for E2E-covered code in real runs"
+    fi
+  fi
+else
+  log_warning "Could not read coverage file or jq not available"
+  log_info "Running all unit tests (cannot filter by coverage)"
   
   if [ "$DRY_RUN" = false ]; then
     if run_unit_tests_with_coverage; then
       log_success "Unit tests passed"
-      # TODO: Parse coverage report and verify 100% for utils
-      log_warning "Coverage threshold check not yet implemented (TODO)"
     else
       log_error "Unit tests failed"
       QUALIFIED=false
@@ -128,28 +288,18 @@ else
 fi
 echo ""
 
-# 5. Check test coverage for services/hooks
-log_step "Step 5: Checking test coverage for services/hooks..."
-SERVICES_HOOKS_FILES=$(get_services_hooks_files)
-SERVICES_COUNT=$(echo "$SERVICES_HOOKS_FILES" | grep -v '^$' | wc -l | tr -d ' ')
-
-if [ "$SERVICES_COUNT" -eq 0 ]; then
-  log_warning "No services/hooks files found"
+# 6. Verify no unwanted code or tests are included
+log_step "Step 6: Verifying no unwanted code or tests are included..."
+if bash "$SCRIPT_DIR/verify-release-branch-content.sh" 2>/dev/null; then
+  log_success "Release branch content verification passed - only E2E-covered code included"
 else
-  log_info "Found $SERVICES_COUNT services/hooks file(s)"
-  
-  if [ "$DRY_RUN" = false ]; then
-    # Services/hooks can be covered by unit tests OR E2E tests
-    # For now, we check if unit tests pass
-    # TODO: Implement coverage check for services/hooks
-    log_warning "Services/hooks coverage check not yet fully implemented (TODO)"
-  else
-    log_warning "Skipping services/hooks check (dry-run mode)"
-  fi
+  log_error "Release branch contains unwanted code or test files"
+  QUALIFIED=false
+  FAILURES+=("Unwanted code or tests detected - release branch must only contain E2E-covered code")
 fi
 echo ""
 
-# 6. Summary
+# 7. Summary
 echo "=========================================="
 log_step "Release Qualification Summary"
 echo ""
