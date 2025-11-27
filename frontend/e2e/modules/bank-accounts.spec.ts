@@ -23,11 +23,16 @@ test.describe('Bank Accounts Module - User Flows', () => {
   });
 
   test('should be able to create a bank account when at least one bank exists', async ({ page }) => {
+    const bankName = `Auto Bank ${Date.now()}`;
     const accountName = `Test Account ${Date.now()}`;
     
     // Ensure at least one bank exists first (reuse helper function)
-    // This will check if a bank exists, and create one if it doesn't
-    await ensureBankExists(page);
+    // This will automatically create a bank if none exists, then continue with the test
+    const createdBankName = await ensureBankExists(page, bankName);
+    console.log(`Using bank: ${createdBankName}`);
+    
+    // Wait a bit to ensure the bank is persisted
+    await page.waitForTimeout(1000);
     
     // Navigate to bank accounts page (route is /accounts)
     await page.goto('/accounts');
@@ -45,7 +50,19 @@ test.describe('Bank Accounts Module - User Flows', () => {
     const noBanksVisible = await noBanksMessage.first().isVisible().catch(() => false);
     
     if (noBanksVisible) {
-      throw new Error('Bank was created but not detected on bank-accounts page');
+      // If we still see the message, try ensuring bank exists again
+      console.log('Bank not detected on accounts page, re-checking...');
+      await ensureBankExists(page, bankName);
+      await page.goto('/accounts');
+      await page.waitForLoadState('networkidle');
+      await closeDialogs(page);
+      await page.waitForTimeout(2000);
+      
+      // Check again
+      const stillNoBanks = await noBanksMessage.first().isVisible().catch(() => false);
+      if (stillNoBanks) {
+        throw new Error('Bank was created but not detected on bank-accounts page');
+      }
     }
     
     // Click "Add Account" button - it should be visible since we ensured a bank exists

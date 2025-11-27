@@ -118,34 +118,93 @@ export async function bankExists(page: Page): Promise<boolean> {
 /**
  * Ensures at least one bank exists, creating one if needed
  * Returns the name of an existing or newly created bank
+ * This function will automatically create a bank if none exists
  */
-export async function ensureBankExists(page: Page): Promise<string> {
-  const exists = await bankExists(page);
+export async function ensureBankExists(page: Page, defaultBankName?: string): Promise<string> {
+  // Navigate to banks page to check
+  await page.goto('/banks');
+  await page.waitForLoadState('networkidle');
+  await closeDialogs(page);
   
-  if (exists) {
-    // Bank exists, get the name of the first bank for reference
-    await page.goto('/banks');
-    await page.waitForLoadState('networkidle');
-    await closeDialogs(page);
+  // Check if empty state is shown (more reliable check)
+  const noBanksState = page.locator('text="No Banks Yet"');
+  const isNoBanksVisible = await noBanksState.isVisible().catch(() => false);
+  
+  if (!isNoBanksVisible) {
+    // Bank exists - try to get the name
+    await page.waitForTimeout(1000); // Wait for page to fully render
     
-    // Try to find a bank name - look for text that's not in buttons
-    // Bank names appear in cards or table cells
-    const bankNameLocator = page.locator('.MuiCard-root, .MuiTableCell-root')
-      .filter({ hasNot: page.locator('button, [role="button"], th') })
-      .first();
+    // Look for bank names in various possible locations
+    const bankNameSelectors = [
+      page.locator('.MuiCard-root').first(),
+      page.locator('.MuiTableCell-root').filter({ hasNot: page.locator('th') }).first(),
+      page.locator('[data-testid*="bank"]').first(),
+    ];
     
-    const bankNameText = await bankNameLocator.textContent().catch(() => null);
-    
-    if (bankNameText && bankNameText.trim().length > 0 && !bankNameText.includes('No Banks')) {
-      return bankNameText.trim().split('\n')[0]; // Get first line if multiple lines
+    for (const selector of bankNameSelectors) {
+      try {
+        const text = await selector.textContent({ timeout: 2000 });
+        if (text && text.trim().length > 0 && !text.includes('No Banks') && !text.includes('Add')) {
+          const bankName = text.trim().split('\n')[0].trim();
+          if (bankName.length > 0) {
+            return bankName;
+          }
+        }
+      } catch {
+        // Continue to next selector
+      }
     }
     
-    // If we can't reliably get the name, that's okay - we know a bank exists
-    // Return a placeholder name since we just need to ensure existence
+    // If we can't get the name but no empty state is shown, bank exists
     return 'Existing Bank';
   }
   
-  // Bank doesn't exist, create one
-  return await createBank(page);
+  // No banks exist - create one using the createBank helper
+  console.log('No banks found. Creating a bank automatically...');
+  const bankName = defaultBankName || `Auto Bank ${Date.now()}`;
+  
+  // Click the "Add Your First Bank" button in the empty state
+  const addFirstBankButton = page.locator('button:has-text("Add Your First Bank"), button:has-text("Add Bank")');
+  await expect(addFirstBankButton.first()).toBeVisible({ timeout: 5000 });
+  await addFirstBankButton.first().click();
+  
+  // Wait for dialog to open
+  await page.waitForTimeout(500);
+  
+  // Verify dialog is open
+  const dialogTitle = page.locator('text=/Add Bank/i');
+  await expect(dialogTitle.first()).toBeVisible({ timeout: 3000 });
+  
+  // Wait for dialog content to be ready
+  await page.waitForTimeout(1000);
+  
+  // Fill in bank name
+  const bankNameInput = page.getByLabel('Bank Name');
+  await expect(bankNameInput).toBeVisible({ timeout: 5000 });
+  await bankNameInput.clear();
+  await bankNameInput.fill(bankName);
+  await expect(bankNameInput).toHaveValue(bankName);
+  
+  // Wait for form validation to enable the button
+  await page.waitForTimeout(500);
+  
+  // Click Create button
+  const createButton = page.locator('button:has-text("Create")');
+  await expect(createButton.first()).toBeVisible({ timeout: 5000 });
+  await expect(createButton.first()).toBeEnabled({ timeout: 5000 });
+  await createButton.first().click();
+  
+  // Wait for dialog to close and bank to be created
+  await page.waitForTimeout(1500);
+  
+  // Verify dialog is closed
+  await expect(dialogTitle.first()).not.toBeVisible({ timeout: 3000 }).catch(() => {});
+  
+  // Verify bank appears in the list
+  await expect(page.locator(`text=${bankName}`).first()).toBeVisible({ timeout: 5000 });
+  
+  console.log(`Bank "${bankName}" created successfully.`);
+  
+  return bankName;
 }
 
