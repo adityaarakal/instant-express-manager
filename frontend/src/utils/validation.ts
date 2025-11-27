@@ -16,6 +16,7 @@ import type {
 } from '../types/recurring';
 import type { Bank } from '../types/banks';
 import { calculateRemainingCash } from './formulas';
+import { isTransactionInMonth } from './transactionFiltering';
 
 export type ValidationResult = {
   isValid: boolean;
@@ -280,9 +281,9 @@ export function calculateAccountRemainingCash(
     const startDate = `${year}-${month}-01`;
     const endDate = `${year}-${month}-31`;
 
-    filteredIncomes = accountIncomes.filter((t) => t.date >= startDate && t.date <= endDate);
-    filteredExpenses = accountExpenses.filter((t) => t.date >= startDate && t.date <= endDate);
-    filteredSavings = accountSavings.filter((t) => t.date >= startDate && t.date <= endDate);
+    filteredIncomes = accountIncomes.filter((t) => isTransactionInMonth(t, startDate, endDate));
+    filteredExpenses = accountExpenses.filter((t) => isTransactionInMonth(t, startDate, endDate));
+    filteredSavings = accountSavings.filter((t) => isTransactionInMonth(t, startDate, endDate));
   }
 
   const totalIncome = filteredIncomes

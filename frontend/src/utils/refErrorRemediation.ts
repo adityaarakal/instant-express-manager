@@ -12,6 +12,7 @@ import { useSavingsInvestmentTransactionsStore } from '../store/useSavingsInvest
 import { useAggregatedPlannedMonthsStore } from '../store/useAggregatedPlannedMonthsStore';
 import { useRemainingCashOverridesStore } from '../store/useRemainingCashOverridesStore';
 import { aggregateMonth } from './aggregation';
+import { isTransactionInMonth } from './transactionFiltering';
 
 export interface RefErrorIssue {
   monthId: string;
@@ -99,13 +100,13 @@ export function scanRefErrors(): RemediationResult {
       const endDate = `${year}-${month}-31`;
       
       const accountIncomes = incomeTransactions.filter(
-        (t) => t.accountId === account.id && t.date >= startDate && t.date <= endDate
+        (t) => t.accountId === account.id && isTransactionInMonth(t, startDate, endDate)
       );
       const accountExpenses = expenseTransactions.filter(
-        (t) => t.accountId === account.id && t.date >= startDate && t.date <= endDate
+        (t) => t.accountId === account.id && isTransactionInMonth(t, startDate, endDate)
       );
       const accountSavings = savingsTransactions.filter(
-        (t) => t.accountId === account.id && t.date >= startDate && t.date <= endDate
+        (t) => t.accountId === account.id && isTransactionInMonth(t, startDate, endDate)
       );
       
       const transactionCount = accountIncomes.length + accountExpenses.length + accountSavings.length;
