@@ -38,6 +38,12 @@ yarn-error.log*
 coverage/
 .nyc_output/
 
+# Playwright test results and reports
+**/test-results/
+**/playwright-report/
+**/test-results.json
+**/.playwright/
+
 # Test output files
 *.pdf
 *.xlsx
@@ -64,3 +70,11 @@ temp/
 # Keep checksums.txt tracked (required for validation)
 !.enforcement-lock/checksums.txt
 !.enforcement-lock/README.md
+
+# Test lock logs (ignore logs, but keep lock files tracked)
+.test-locks/*.log
+.test-locks/lock-log.txt
+.test-locks/unlock-log.txt
+
+# Keep test lock files tracked (required for validation)
+!.test-locks/**/*.lock

@@ -135,7 +135,7 @@ fi
 # ============================================================================
 # STEP 1: MANDATORY VERSION BUMP VALIDATION
 # ============================================================================
-echo "📋 Step 1/4: Mandatory Version Bump Validation"
+echo "📋 Step 1/6: Mandatory Version Bump Validation"
 echo "🚨 MANDATORY CHECK: Commit cannot proceed without version bump"
 echo "📋 REQUIRED: Branch version must be ahead of main branch version"
 echo ""
@@ -153,7 +153,7 @@ echo ""
 # ============================================================================
 # STEP 2: LINTING VALIDATION
 # ============================================================================
-echo "📋 Step 2/4: Linting Validation"
+echo "📋 Step 2/6: Linting Validation"
 echo "Running ESLint validation (excluding test files)..."
 cd frontend
 # Run lint on production code only (exclude test files and __tests__ directories)
@@ -176,7 +176,7 @@ echo ""
 # ============================================================================
 # NOTE: This check can be modified, but only by adding NEW checks
 # Modifying existing TypeScript check logic is FORBIDDEN (enforced by lock)
-echo "📋 Step 3/4: Type Checking"
+echo "📋 Step 3/6: Type Checking"
 echo "Running TypeScript compilation check..."
 cd frontend
 npx tsc --noEmit
@@ -197,7 +197,7 @@ echo ""
 # ============================================================================
 # NOTE: This check can be modified, but only by adding NEW checks
 # Modifying existing build validation is FORBIDDEN (enforced by lock)
-echo "📋 Step 4/4: Build Validation"
+echo "📋 Step 4/6: Build Validation"
 echo "Running production build validation..."
 cd frontend
 npm run build
@@ -211,6 +211,80 @@ if [ $? -ne 0 ]; then
 fi
 cd ..
 echo "✅ Build validation passed!"
+echo ""
+
+# ============================================================================
+# STEP 5: TEST LOCK VALIDATION
+# ============================================================================
+# Validate that locked test files have not been modified
+# NOTE: This check can be modified, but only by adding NEW checks
+# Modifying existing test lock validation is FORBIDDEN (enforced by lock)
+echo "📋 Step 5/6: Test Lock Validation"
+echo "Validating locked test files..."
+if [ -f "scripts/validate-test-locks.sh" ]; then
+  bash scripts/validate-test-locks.sh
+  if [ $? -ne 0 ]; then
+    echo "❌ CRITICAL: Test lock validation failed"
+    echo "❌ Locked test files have been modified"
+    echo "🔒 ENFORCEMENT: Commit blocked - Locked tests cannot be modified"
+    echo "📋 REQUIRED: Restore locked tests or unlock them first"
+    echo "📋 To unlock: bash scripts/unlock-test.sh <test-file-path>"
+    exit 1
+  fi
+  echo "✅ Test lock validation passed!"
+else
+  echo "⚠️  Test lock validation script not found - skipping"
+fi
+echo ""
+
+# ============================================================================
+# STEP 6: MODULE-BASED PLAYWRIGHT TESTS
+# ============================================================================
+# Run Playwright tests for changed modules + global modules
+# NOTE: This check can be modified, but only by adding NEW checks
+# Modifying existing test execution is FORBIDDEN (enforced by lock)
+echo "📋 Step 6/6: Module-Based Playwright Tests"
+echo "Running Playwright tests for changed modules..."
+# MANDATORY: Test runner script must exist
+if [ ! -f "scripts/run-module-tests.sh" ]; then
+  echo "❌ CRITICAL: Test runner script not found: scripts/run-module-tests.sh"
+  echo "❌ ENFORCEMENT: Commit blocked - Test infrastructure is required"
+  echo "📋 REQUIRED: Test runner script must exist"
+  exit 1
+fi
+
+# MANDATORY: Playwright must be available
+if ! command -v npx >/dev/null 2>&1; then
+  echo "❌ CRITICAL: npx not available"
+  echo "❌ ENFORCEMENT: Commit blocked - Playwright tests are MANDATORY"
+  echo "📋 REQUIRED: Install Node.js and npm"
+  exit 1
+fi
+
+# Check Playwright installation
+cd frontend
+if ! npx playwright --version >/dev/null 2>&1; then
+  echo "❌ CRITICAL: Playwright not installed"
+  echo "❌ ENFORCEMENT: Commit blocked - Playwright tests are MANDATORY"
+  echo "📋 REQUIRED: Install Playwright with: cd frontend && npx playwright install"
+  cd ..
+  exit 1
+fi
+cd ..
+
+# MANDATORY: Run tests - they must pass
+echo "🚨 MANDATORY CHECK: Module tests must pass"
+bash scripts/run-module-tests.sh
+TEST_STATUS=$?
+if [ $TEST_STATUS -ne 0 ]; then
+  echo "❌ CRITICAL: Playwright tests failed"
+  echo "❌ Module tests must pass before commit"
+  echo "🔒 ENFORCEMENT: Commit blocked - Fix failing tests first"
+  echo "📋 REQUIRED: Run 'bash scripts/run-module-tests.sh' and fix failing tests"
+  echo "⚠️  This check CANNOT BE BYPASSED - All tests must pass"
+  exit 1
+fi
+echo "✅ Module-based Playwright tests passed!"
 echo ""
 
 # ============================================================================
