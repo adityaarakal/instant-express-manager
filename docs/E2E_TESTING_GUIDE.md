@@ -193,18 +193,24 @@ The pre-commit hook automatically validates locked tests:
 
 ### If You Need to Modify a Locked Test
 
+**⚠️ CRITICAL: You CANNOT unlock files - only the user can do this**
+
 **You cannot do this directly.** You must:
 
 1. **Inform the user** that a locked test needs modification
 2. **Explain why** the test needs to change
-3. **Wait for user to unlock** the test file:
+3. **WAIT for explicit user permission** before proceeding
+4. **Only if user explicitly requests unlock**, wait for user to unlock:
    ```bash
    bash scripts/unlock-test.sh frontend/e2e/modules/banks.spec.ts
    ```
-4. **Make the changes** after the user unlocks it
-5. **Inform the user** to lock it again after changes
+5. **Make the changes** after the user unlocks it
+6. **Inform the user** to lock it again after changes
 
-**Remember**: In most cases, you should fix your implementation instead of modifying tests.
+**⚠️ IMPORTANT**: 
+- **AI agents CANNOT unlock files** - only the user can unlock them
+- **Locked files remain locked** unless user explicitly unlocks them
+- **In most cases, you should fix your implementation** instead of modifying tests
 
 ### Helper Functions
 

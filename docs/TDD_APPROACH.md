@@ -38,10 +38,12 @@ Locked tests are like **delivered products** to end users. You cannot change wha
 
 ### Only with Explicit User Permission
 
+⚠️ **CRITICAL: AI agents CANNOT unlock files - only the user can unlock them**
+
 Tests can ONLY be modified if:
 
 1. **User explicitly requests** to modify a locked test
-2. **User unlocks** the test file:
+2. **User explicitly unlocks** the test file (AI agents cannot do this):
    ```bash
    bash scripts/unlock-test.sh frontend/e2e/modules/banks.spec.ts
    # Type 'UNLOCK' to confirm
@@ -50,6 +52,11 @@ Tests can ONLY be modified if:
    ```bash
    bash scripts/lock-test.sh frontend/e2e/modules/banks.spec.ts
    ```
+
+**⚠️ IMPORTANT**: 
+- **Locked files remain locked** unless user explicitly unlocks them
+- **AI agents cannot unlock files** - they must wait for user permission
+- **Unlocking should be rare** - locked tests are delivered features
 
 ### When User Should Unlock Tests
 

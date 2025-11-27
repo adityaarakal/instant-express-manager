@@ -1,16 +1,22 @@
 #!/bin/bash
 
 # ============================================================================
-# Test File Unlock Script
+# Test File Unlock Script - REQUIRES EXPLICIT USER PERMISSION
 # ============================================================================
 # Unlocks a test file to allow modifications.
-# Only the user should run this script - AI agents cannot unlock tests.
+# 
+# ⚠️  CRITICAL: This script REQUIRES EXPLICIT USER PERMISSION
+# ⚠️  AI AGENTS: You CANNOT run this script - only the user can unlock tests
+# ⚠️  LOCKED FILES: Remain locked unless user explicitly unlocks them
 #
 # Usage:
 #   bash scripts/unlock-test.sh <test-file-path>
 #
 # Example:
-#   bash scripts/unlock-test.sh frontend/e2e/modules/dashboard.spec.ts
+#   bash scripts/unlock-test.sh frontend/e2e/modules/banks.spec.ts
+#
+# ⚠️  WARNING: Once unlocked, test files can be modified by AI agents
+# ⚠️  Remember to lock again after finalizing changes
 # ============================================================================
 
 set -e
@@ -44,17 +50,21 @@ if [ ! -f "$LOCK_FILE" ]; then
   exit 0
 fi
 
-# Confirm unlock
-echo -e "${YELLOW}⚠️  WARNING: You are about to unlock a protected test file${NC}"
-echo -e "${YELLOW}   File: $TEST_FILE${NC}"
+# Confirm unlock - REQUIRES EXPLICIT USER PERMISSION
+echo -e "${RED}🚨 CRITICAL: Unlocking Protected Test File${NC}"
+echo -e "${RED}   File: $TEST_FILE${NC}"
 echo ""
-echo -e "${BLUE}This will allow AI agents to modify this test file.${NC}"
-echo -e "${BLUE}Are you sure you want to proceed? (type 'UNLOCK' to confirm)${NC}"
-read -r CONFIRM
+echo -e "${YELLOW}⚠️  WARNING: This will allow AI agents to modify this test file${NC}"
+echo -e "${YELLOW}⚠️  Locked tests are DELIVERED features - unlocking should be rare${NC}"
+echo ""
+echo -e "${BLUE}This action REQUIRES EXPLICIT USER PERMISSION${NC}"
+echo -e "${BLUE}AI agents cannot unlock files - only you can do this${NC}"
+echo ""
+read -p "Type 'UNLOCK' to confirm (or anything else to cancel): " CONFIRM
 
 if [ "$CONFIRM" != "UNLOCK" ]; then
-  echo -e "${RED}Unlock cancelled${NC}"
-  exit 1
+  echo -e "${GREEN}✅ Unlock cancelled - file remains locked${NC}"
+  exit 0
 fi
 
 # Remove lock file
