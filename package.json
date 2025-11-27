@@ -1,6 +1,6 @@
 {
   "name": "instant-express-manager",
-  "version": "1.0.129",
+  "version": "1.0.130",
   "description": "React PWA TypeScript application for Expense Manager with localStorage",
   "private": true,
   "workspaces": [
@@ -39,7 +39,12 @@
     "doc:validate-locks": "bash scripts/validate-doc-locks.sh",
     "lighthouse": "cd frontend && npm run lighthouse",
     "test:deployment": "bash scripts/test-deployment.sh",
-    "pre-deploy": "bash scripts/pre-deployment-check.sh"
+    "pre-deploy": "bash scripts/pre-deployment-check.sh",
+    "release:check": "bash scripts/check-release-qualification.sh",
+    "release:coverage": "bash scripts/check-test-coverage.sh",
+    "release:map": "bash scripts/map-locked-test-coverage.sh",
+    "release:manage": "bash scripts/manage-release-branch.sh",
+    "release:protect": "bash scripts/protect-release-branch.sh"
   },
   "keywords": [
     "react",
