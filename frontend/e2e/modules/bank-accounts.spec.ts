@@ -1,7 +1,14 @@
 /**
  * E2E test for Bank Accounts module
  * 
+ * LOCK STATUS: LOCKED
+ * 
  * Test: Given at least a bank exists, user should be able to create a bank account
+ * 
+ * This file is protected and cannot be modified by AI agents.
+ * Only the user can unlock and modify this file.
+ * 
+ * To unlock: bash scripts/unlock-test.sh frontend/e2e/modules/bank-accounts.spec.ts
  */
 
 import { test, expect } from '@playwright/test';

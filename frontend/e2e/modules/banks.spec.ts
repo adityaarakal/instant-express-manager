@@ -1,7 +1,14 @@
 /**
  * E2E test for Banks module
  * 
+ * LOCK STATUS: LOCKED
+ * 
  * Test: User should be able to create a bank and see it in the banks list
+ * 
+ * This file is protected and cannot be modified by AI agents.
+ * Only the user can unlock and modify this file.
+ * 
+ * To unlock: bash scripts/unlock-test.sh frontend/e2e/modules/banks.spec.ts
  */
 
 import { test, expect } from '@playwright/test';
