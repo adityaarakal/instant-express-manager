@@ -7,6 +7,7 @@ Only the user can unlock and modify this file.
 To unlock: bash scripts/unlock-doc.sh docs/BRANCHING_AND_DEPLOYMENT_STRATEGY.md
 -->
 
+
 # Branching and Deployment Strategy
 
 ## 🎯 Overview
@@ -53,26 +54,42 @@ This document outlines the branching strategy and deployment workflow for the In
 **Deployment**: Prod URL (production environment)
 
 **What Goes Into Release**:
-- ✅ **Only features with locked Playwright test flows**
+- ✅ **Only features with locked Playwright test flows** - flows must be tested and passing
 - ✅ **UI/UX/API/utils/docs/etc** that are **covered by locked tests**
+- ✅ **Everything must be tested and working** - no untested code
+- ✅ **Utils must have unit tests** - 100% coverage and passing
+- ✅ **Services and hooks** - covered by unit tests OR end-to-end tests with 100% coverage and passing
 - ✅ **Only what locked tests cover** - nothing beyond test coverage
 - ✅ **Standard global things** (if any) - but these must also have locked tests
 - ✅ **Locked test files are the source of truth** - they define what goes into release
+
+**Release Qualification Criteria**:
+- ✅ **Playwright locked tests** - flows tested and passing
+- ✅ **Unit tests for utils** - 100% coverage and passing
+- ✅ **Unit tests OR E2E tests for services/hooks** - 100% coverage and passing
+- ✅ **All tests passing** - no failures allowed
+- ✅ **100% coverage threshold** - must meet coverage requirements
+- ✅ **Everything tested and working** - comprehensive test coverage
 
 **Characteristics**:
 - 🔒 **Test-driven** - only tested features included
 - 🎯 **Focused** - only what's verified by locked tests
 - 🛡️ **Protected** - strict criteria for inclusion
+- ✅ **100% test coverage** - utils, services, hooks fully tested
 - 👥 **End users** - accessible to actual users
 - 🚀 **Deploys to Prod URL** - production environment
+- 🤖 **Automatic deployment** - features deploy automatically when criteria met
 
 **Workflow**:
 1. Features are developed and tested on `main`
 2. Playwright tests are written and **locked** for features
-3. Only features with **locked test files** are considered for release
-4. Release branch is created/updated from `main`
-5. Only code covered by locked tests is included in release
-6. Release branch deploys to Prod URL
+3. Unit tests are written for utils (100% coverage required)
+4. Services and hooks are tested (unit tests OR E2E tests, 100% coverage required)
+5. All tests must pass and meet coverage thresholds
+6. **Automatic deployment**: If feature has locked tests and everything passes → automatically deployed to release
+7. Release branch is created/updated from `main`
+8. Only code covered by locked tests is included in release
+9. Release branch deploys to Prod URL
 
 ---
 
@@ -82,23 +99,57 @@ This document outlines the branching strategy and deployment workflow for the In
 
 **Locked Playwright test files define what goes into the release branch.**
 
+### Release Qualification Requirements
+
+For a feature to qualify for release, it must meet **ALL** of the following criteria:
+
+1. **Playwright Locked Tests**:
+   - ✅ Feature has locked Playwright test files
+   - ✅ All locked tests are **passing**
+   - ✅ Flows are **tested and working**
+
+2. **Unit Tests for Utils**:
+   - ✅ All utility functions have unit test files
+   - ✅ **100% code coverage** for utils
+   - ✅ All unit tests are **passing**
+
+3. **Services and Hooks Testing**:
+   - ✅ Services and hooks covered by **unit tests OR end-to-end tests**
+   - ✅ **100% code coverage** required
+   - ✅ All tests are **passing**
+
+4. **Overall Requirements**:
+   - ✅ **Everything tested and working**
+   - ✅ **All tests passing** (no failures)
+   - ✅ **100% coverage threshold** met
+   - ✅ **Comprehensive test coverage** achieved
+
 ### How It Works
 
 1. **Feature Development**:
    - Feature is developed on `main` branch
    - Playwright tests are written for the feature
-   - Tests are verified and passing
+   - Unit tests are written for utils (100% coverage)
+   - Services/hooks are tested (unit OR E2E, 100% coverage)
+   - All tests are verified and passing
 
 2. **Test Locking**:
-   - Once tests are finalized, they are **locked**:
+   - Once tests are finalized and passing, they are **locked**:
      ```bash
      bash scripts/lock-test.sh frontend/e2e/modules/feature-name.spec.ts
      ```
    - Locked tests represent **delivered features**
    - Locked tests cannot be modified without explicit user permission
 
-3. **Release Inclusion**:
-   - Only features with **locked test files** are eligible for release
+3. **Automatic Release Deployment**:
+   - ✅ Feature has locked tests
+   - ✅ All locked tests are passing
+   - ✅ Utils have 100% unit test coverage and passing
+   - ✅ Services/hooks have 100% test coverage and passing
+   - ✅ **→ Automatically deployed to release branch**
+
+4. **Release Inclusion**:
+   - Only features meeting ALL criteria are eligible for release
    - All code related to locked tests (UI, API, utils, docs) is included
    - Nothing beyond what locked tests cover is included
 
@@ -107,18 +158,32 @@ This document outlines the branching strategy and deployment workflow for the In
 **Scenario**: Bank creation feature
 
 1. Feature developed on `main` → `banks.spec.ts` test created
-2. Test verified and locked → `banks.spec.ts` is now LOCKED
-3. Release branch includes:
-   - ✅ `banks.spec.ts` (locked test)
+2. Utils unit tests written → `bank-utils.test.ts` (100% coverage, passing)
+3. Services/hooks tested → Covered by E2E tests (100% coverage, passing)
+4. All tests verified and passing
+5. Test verified and locked → `banks.spec.ts` is now LOCKED
+6. **Automatic deployment**: All criteria met → automatically deployed to release
+7. Release branch includes:
+   - ✅ `banks.spec.ts` (locked test, passing)
    - ✅ Bank creation UI components
    - ✅ Bank API/state management
-   - ✅ Bank-related utilities
+   - ✅ Bank-related utilities (100% unit test coverage)
+   - ✅ Bank services/hooks (100% test coverage)
    - ✅ Bank documentation
    - ❌ **NOT** any unrelated features or untested code
 
 ---
 
 ## 📋 Release Process
+
+### Automatic Release Deployment
+
+**When a feature qualifies for release** (meets all criteria):
+- ✅ Feature has locked Playwright tests
+- ✅ All locked tests are passing
+- ✅ Utils have 100% unit test coverage and passing
+- ✅ Services/hooks have 100% test coverage and passing
+- ✅ **→ Automatically deployed to release branch**
 
 ### Step-by-Step Release Workflow
 
@@ -129,30 +194,68 @@ This document outlines the branching strategy and deployment workflow for the In
    - Ensure all locked tests are present and valid
    - Verify tests are passing
 
-2. **Create/Update Release Branch**:
+2. **Verify Test Coverage**:
    ```bash
-   git checkout main
-   git pull origin main
-   git checkout -b release  # or git checkout release if exists
-   git merge main
+   npm run test  # Run unit tests
+   npm run test:e2e  # Run E2E tests
    ```
+   - Ensure utils have 100% unit test coverage
+   - Ensure services/hooks have 100% test coverage (unit OR E2E)
+   - Verify all tests are passing
 
-3. **Filter Release Content**:
+3. **Automatic Release Deployment**:
+   - If all criteria met → **automatically deployed to release**
+   - Release branch is created/updated from `main`
+   - Only code meeting criteria is included
+
+4. **Filter Release Content**:
    - Review locked test files
    - Include only code covered by locked tests
+   - Ensure utils have 100% unit test coverage
+   - Ensure services/hooks have 100% test coverage
    - Remove any code not covered by locked tests
    - Ensure standard global things (if any) have locked tests
 
-4. **Verify Release**:
+5. **Verify Release**:
    ```bash
    npm run test:e2e  # Run all tests including locked ones
    npm run test:tdd  # Verify TDD compliance
+   npm run test  # Verify unit test coverage
    ```
 
-5. **Deploy to Production**:
+6. **Deploy to Production**:
    - Push release branch
    - Deploy to Prod URL
    - Monitor for issues
+
+### Blocking Mechanism
+
+**After a feature is deployed to release:**
+
+1. **Feature remains available** on release branch (as per successful deployment)
+
+2. **During development**, if locked tests fail:
+   - ❌ **Block merging code to release**
+   - ❌ **Block deploying new changes** to release
+   - ✅ **Previously deployed feature remains** on release branch
+   - ✅ **Only new changes** need to pass locked tests before progressing to release
+
+3. **Release Merge Blocking Criteria**:
+   - ❌ **Locked tests failing** → Block merge to release
+   - ❌ **Coverage threshold not met** → Block merge to release
+   - ❌ **Tests not passing** → Block merge to release
+   - ✅ **All locked tests passing** → Allow merge to release
+   - ✅ **Coverage thresholds met** → Allow merge to release
+
+4. **What Gets Blocked**:
+   - New changes to already released features (if locked tests fail)
+   - New features to be released (if locked tests fail or coverage not met)
+   - Any code that doesn't meet release qualification criteria
+
+5. **What Remains Available**:
+   - Previously successfully deployed features remain on release branch
+   - Features that were deployed when tests were passing remain available
+   - Only new changes are blocked until they meet criteria
 
 ---
 
@@ -214,10 +317,14 @@ All code merged to `main` must pass:
 Release branch must additionally ensure:
 
 - ✅ **Only locked test features** are included
-- ✅ **All locked tests pass**
+- ✅ **All locked tests pass** - Playwright tests tested and working
+- ✅ **Utils have 100% unit test coverage** - all unit tests passing
+- ✅ **Services/hooks have 100% test coverage** - unit OR E2E tests, all passing
+- ✅ **Everything tested and working** - comprehensive test coverage
 - ✅ **No untested code** beyond locked test coverage
 - ✅ **Standard global things** (if any) have locked tests
 - ✅ **Production-ready** - no debug code or development artifacts
+- ✅ **Coverage thresholds met** - 100% coverage for utils, services, hooks
 
 ---
 
@@ -255,9 +362,12 @@ Release branch must additionally ensure:
 ### 3. Locked Tests = Release Criteria
 
 - **No locked test** = **No release inclusion**
-- **Locked test** = **Release inclusion**
+- **Locked test + passing + coverage** = **Release inclusion**
+- **Locked test + failing** = **Block release merge**
 - Tests define what's **delivered** to users
 - Tests ensure **quality** and **functionality**
+- **100% coverage required** for utils, services, hooks
+- **Automatic deployment** when all criteria met
 
 ### 4. Separation of Concerns
 
@@ -281,10 +391,15 @@ Release branch must additionally ensure:
 ### For Release Branch
 
 1. ✅ Only include features with locked tests
-2. ✅ Verify all locked tests pass
-3. ✅ Review code coverage of locked tests
-4. ✅ Remove untested code
-5. ✅ Ensure production readiness
+2. ✅ Verify all locked tests pass (Playwright tests tested and working)
+3. ✅ Ensure utils have 100% unit test coverage and passing
+4. ✅ Ensure services/hooks have 100% test coverage (unit OR E2E) and passing
+5. ✅ Verify everything is tested and working
+6. ✅ Review code coverage of locked tests
+7. ✅ Remove untested code
+8. ✅ Ensure production readiness
+9. ✅ Block merge if locked tests fail (even for already released features)
+10. ✅ Block merge if coverage thresholds not met
 
 ### For Test Locking
 
@@ -316,14 +431,40 @@ Release branch must additionally ensure:
 └──────────────────────┬──────────────────────────────────────┘
                        │
                        │ Tests Written & Locked
+                       │ Utils: 100% Unit Test Coverage ✓
+                       │ Services/Hooks: 100% Test Coverage ✓
+                       │ All Tests Passing ✓
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│              Release Qualification Check                      │
+│  ✓ Locked Playwright tests passing                          │
+│  ✓ Utils: 100% unit test coverage & passing                │
+│  ✓ Services/Hooks: 100% test coverage & passing            │
+│  ✓ Everything tested and working                            │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                       │ All Criteria Met?
+                       │ YES → Automatic Deployment
+                       │ NO → Block Merge
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    Release Branch                            │
 │                   (Production/Prod URL)                     │
 │  • Only locked test features                                │
 │  • Only code covered by tests                              │
+│  • 100% test coverage (utils, services, hooks)              │
 │  • Production-ready                                         │
 │  • End user accessible                                      │
+│  • Automatic deployment when criteria met                   │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│              Release Merge Blocking                         │
+│                                                              │
+│  If locked tests fail during development:                   │
+│  ❌ Block merge to release                                  │
+│  ✅ Previously deployed feature remains available           │
+│  ✅ Only new changes blocked until tests pass               │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -334,20 +475,47 @@ Release branch must additionally ensure:
 ### ⚠️ Critical Rules
 
 1. **Never merge untested code to release branch**
-2. **Locked tests are mandatory for release inclusion**
-3. **Main branch contains everything; release contains only tested features**
-4. **Release branch is production-ready; main branch is development status**
+2. **Locked tests are mandatory for release inclusion** - must be passing
+3. **100% test coverage required** - utils, services, hooks must have 100% coverage
+4. **Everything must be tested and working** - comprehensive test coverage required
+5. **Automatic deployment** - features deploy automatically when all criteria met
+6. **Block merge if tests fail** - even for already released features, block merge if locked tests fail
+7. **Main branch contains everything; release contains only tested features**
+8. **Release branch is production-ready; main branch is development status**
 
 ### 📋 Checklist for Release
 
 - [ ] All features have locked Playwright tests
-- [ ] All locked tests are passing
+- [ ] All locked tests are **passing** (flows tested and working)
+- [ ] Utils have **unit test files** with **100% coverage** and **passing**
+- [ ] Services and hooks have **100% test coverage** (unit OR E2E) and **passing**
+- [ ] **Everything tested and working** - comprehensive test coverage
 - [ ] Code coverage matches locked tests
+- [ ] **100% coverage threshold** met for all components
 - [ ] No untested code in release branch
 - [ ] Standard global things (if any) have locked tests
 - [ ] Production-ready (no debug code)
 - [ ] Documentation updated
 - [ ] Deployment configuration verified
+
+### 🚫 Release Merge Blocking Criteria
+
+**Merge to release will be BLOCKED if:**
+
+- ❌ **Locked tests are failing** (for already released or new features)
+- ❌ **Coverage threshold not met** (utils < 100%, services/hooks < 100%)
+- ❌ **Tests not passing** (unit tests or E2E tests failing)
+- ❌ **Untested code** beyond locked test coverage
+
+**Merge to release will be ALLOWED if:**
+
+- ✅ **All locked tests passing** (Playwright tests tested and working)
+- ✅ **Utils have 100% unit test coverage** and all passing
+- ✅ **Services/hooks have 100% test coverage** (unit OR E2E) and all passing
+- ✅ **Everything tested and working** - comprehensive coverage achieved
+- ✅ **Coverage thresholds met** - 100% coverage for all components
+
+**Note**: Previously successfully deployed features remain available on release branch. Only new changes are blocked until they meet all criteria.
 
 ---
 
