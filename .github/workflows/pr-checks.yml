@@ -66,11 +66,11 @@ jobs:
       # ============================================================================
       # STEP 2: TYPE CHECKING
       # ============================================================================
-      - name: 📋 Step 2/4 - TypeScript Type Checking
+      - name: 📋 Step 2/5 - TypeScript Type Checking
         working-directory: ./frontend
         run: |
           echo ""
-          echo "📋 Step 2/4: Type Checking"
+          echo "📋 Step 2/5: Type Checking"
           echo "Running TypeScript compilation check..."
           npx tsc --noEmit
           if [ $? -ne 0 ]; then
@@ -85,11 +85,11 @@ jobs:
       # ============================================================================
       # STEP 3: BUILD VALIDATION
       # ============================================================================
-      - name: 📋 Step 3/4 - Build Validation
+      - name: 📋 Step 3/5 - Build Validation
         working-directory: ./frontend
         run: |
           echo ""
-          echo "📋 Step 3/4: Build Validation"
+          echo "📋 Step 3/5: Build Validation"
           echo "Running production build validation..."
           npm run build
           if [ $? -ne 0 ]; then
