@@ -5,6 +5,7 @@ import type {
 } from '../types/transactions';
 import type { BankAccount } from '../types/bankAccounts';
 import { DEFAULT_BUCKETS } from '../config/plannedExpenses';
+import { isTransactionInMonth } from './transactionFiltering';
 
 export interface DashboardMetrics {
   // Overall metrics (all time)
@@ -57,18 +58,20 @@ export const calculateDashboardMetrics = (
   const next30Days = new Date(today);
   next30Days.setDate(today.getDate() + 30);
 
-  // Determine month range for monthly metrics
-  let monthStart: Date | null = null;
-  let monthEnd: Date | null = null;
+  // Determine month range for monthly metrics (as date strings for filtering)
+  let monthStartDate: string | null = null;
+  let monthEndDate: string | null = null;
   if (monthId) {
     const [year, month] = monthId.split('-').map(Number);
-    monthStart = new Date(year, month - 1, 1);
-    monthEnd = new Date(year, month, 0, 23, 59, 59, 999);
+    monthStartDate = `${year}-${String(month).padStart(2, '0')}-01`;
+    monthEndDate = `${year}-${String(month).padStart(2, '0')}-31`;
   } else {
     // Default to current month if no monthId provided
     const now = new Date();
-    monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    monthStartDate = `${year}-${month}-01`;
+    monthEndDate = `${year}-${month}-31`;
   }
 
   // Calculate overall totals and monthly metrics
@@ -76,10 +79,9 @@ export const calculateDashboardMetrics = (
     if (t.status === 'Received') {
       totalIncome += t.amount;
       
-      // Check if transaction is in selected month
-      if (monthStart && monthEnd) {
-        const transactionDate = new Date(t.date);
-        if (transactionDate >= monthStart && transactionDate <= monthEnd) {
+      // Check if transaction is in selected month using effective date
+      if (monthStartDate && monthEndDate) {
+        if (isTransactionInMonth(t, monthStartDate, monthEndDate)) {
           monthlyIncome += t.amount;
         }
       }
@@ -92,10 +94,9 @@ export const calculateDashboardMetrics = (
       totalCCBills += t.amount;
     }
     
-    // Check if transaction is in selected month
-    if (monthStart && monthEnd) {
-      const transactionDate = new Date(t.date);
-      if (transactionDate >= monthStart && transactionDate <= monthEnd) {
+    // Check if transaction is in selected month using effective date (dueDate for expenses)
+    if (monthStartDate && monthEndDate) {
+      if (isTransactionInMonth(t, monthStartDate, monthEndDate)) {
         monthlyExpenses += t.amount;
         if (t.bucket === 'CCBill') {
           monthlyCCBills += t.amount;
@@ -108,10 +109,9 @@ export const calculateDashboardMetrics = (
     if (t.status === 'Completed') {
       totalSavings += t.amount;
       
-      // Check if transaction is in selected month
-      if (monthStart && monthEnd) {
-        const transactionDate = new Date(t.date);
-        if (transactionDate >= monthStart && transactionDate <= monthEnd) {
+      // Check if transaction is in selected month using effective date
+      if (monthStartDate && monthEndDate) {
+        if (isTransactionInMonth(t, monthStartDate, monthEndDate)) {
           // Separate savings and investments
           if (t.type === 'SIP' || t.type === 'LumpSum') {
             monthlyInvestments += t.amount;
