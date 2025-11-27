@@ -39,6 +39,7 @@ describe('useSavingsInvestmentEMIsStore', () => {
         if (id === 'account-1') return mockAccount;
         return undefined;
       }),
+      updateAccountBalance: vi.fn(),
     } as any);
 
     vi.mocked(useSavingsInvestmentTransactionsStore.getState).mockReturnValue({
@@ -405,6 +406,7 @@ describe('useSavingsInvestmentEMIsStore', () => {
         if (id === 'account-2') return { ...mockAccount, id: 'account-2' };
         return undefined;
       }),
+      updateAccountBalance: vi.fn(),
     } as any);
 
     useSavingsInvestmentEMIsStore.getState().createEMI(emi1);

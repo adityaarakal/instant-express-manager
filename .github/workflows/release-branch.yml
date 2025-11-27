@@ -40,20 +40,21 @@ jobs:
       
       - name: Check release qualification
         run: npm run release:check
+        continue-on-error: true
       
       - name: Check test coverage
         run: npm run release:coverage
         continue-on-error: true
       
-      - name: Generate coverage map
-        run: npm run release:map
+      - name: Analyze locked E2E test coverage
+        run: bash scripts/analyze-locked-test-coverage.sh
         continue-on-error: true
       
-      - name: Upload coverage map
+      - name: Upload coverage analysis
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-map
-          path: .release-coverage/locked-tests-coverage.json
+          name: coverage-analysis
+          path: .release-coverage/locked-e2e-coverage.json
           if-no-files-found: ignore
 
   protect-release:

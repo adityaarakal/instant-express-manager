@@ -50,6 +50,7 @@ describe('useExpenseEMIsStore', () => {
         if (id === 'cc-1') return mockCreditCard;
         return undefined;
       }),
+      updateAccountBalance: vi.fn(),
     } as any);
 
     vi.mocked(useExpenseTransactionsStore.getState).mockReturnValue({
@@ -403,6 +404,7 @@ describe('useExpenseEMIsStore', () => {
         if (id === 'account-2') return { ...mockAccount, id: 'account-2' };
         return undefined;
       }),
+      updateAccountBalance: vi.fn(),
     } as any);
 
     useExpenseEMIsStore.getState().createEMI(emi1);

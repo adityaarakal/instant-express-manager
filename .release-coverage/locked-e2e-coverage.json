@@ -1,0 +1,35 @@
+{
+  "locked_tests": [
+    "frontend/e2e/modules/bank-accounts.spec.ts",
+    "frontend/e2e/modules/banks.spec.ts"
+  ],
+  "pages": [
+    "frontend/src/pages/BankAccounts.tsx",
+    "frontend/src/pages/Banks.tsx"
+  ],
+  "components": [
+    "frontend/src/components/../types/bankAccounts.ts",
+    "frontend/src/components/../types/banks.ts",
+    "frontend/src/components/bankAccounts/BankAccountCard.tsx",
+    "frontend/src/components/banks/BankCard.tsx",
+    "frontend/src/components/common/ButtonWithLoading.tsx",
+    "frontend/src/components/common/ConfirmDialog.tsx",
+    "frontend/src/components/common/EmptyState.tsx",
+    "frontend/src/components/common/TableSkeleton.tsx",
+    "frontend/src/components/common/ViewToggle.tsx"
+  ],
+  "stores": [
+    "frontend/src/store/useBankAccountsStore.ts",
+    "frontend/src/store/useBanksStore.ts"
+  ],
+  "utils": [],
+  "hooks": [
+    "frontend/src/hooks/useViewMode.ts"
+  ],
+  "types": [],
+  "routes": [
+    "/accounts",
+    "/banks"
+  ],
+  "generated_at": "2025-11-27T15:37:54.453Z"
+}

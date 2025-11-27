@@ -39,6 +39,7 @@ describe('useRecurringSavingsInvestmentsStore', () => {
         if (id === 'account-1') return mockAccount;
         return undefined;
       }),
+      updateAccountBalance: vi.fn(),
     } as any);
 
     vi.mocked(useSavingsInvestmentTransactionsStore.getState).mockReturnValue({
@@ -357,6 +358,7 @@ describe('useRecurringSavingsInvestmentsStore', () => {
         if (id === 'account-2') return { ...mockAccount, id: 'account-2' };
         return undefined;
       }),
+      updateAccountBalance: vi.fn(),
     } as any);
 
     useRecurringSavingsInvestmentsStore.getState().createTemplate(template1);

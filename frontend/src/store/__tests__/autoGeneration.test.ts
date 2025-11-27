@@ -60,6 +60,7 @@ describe('Auto-Generation Logic', () => {
         if (id === 'account-1') return mockAccount;
         return undefined;
       }),
+      updateAccountBalance: vi.fn(),
     } as any);
 
     vi.mocked(useExpenseTransactionsStore.getState).mockReturnValue({
