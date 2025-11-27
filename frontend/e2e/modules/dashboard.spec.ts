@@ -101,5 +101,13 @@ test.describe('Dashboard Module - User Flows', () => {
     // Verify dashboard loaded
     await expect(page.locator('body')).toBeVisible();
   });
+
+  test('DEMO: This test passes to demonstrate pre-commit hook', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    
+    // This assertion passes - checking for an element that exists
+    await expect(page.locator('body')).toBeVisible();
+  });
 });
 
