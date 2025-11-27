@@ -46,6 +46,7 @@ describe('useSavingsInvestmentTransactionsStore', () => {
         if (id === 'account-1') return mockAccount;
         return undefined;
       }),
+      updateAccountBalance: vi.fn(),
     } as any);
 
     vi.mocked(useRecurringSavingsInvestmentsStore.getState).mockReturnValue({
@@ -65,6 +66,7 @@ describe('useSavingsInvestmentTransactionsStore', () => {
         }
         return undefined;
       }),
+      updateAccountBalance: vi.fn(),
     } as any);
 
     vi.mocked(useSavingsInvestmentEMIsStore.getState).mockReturnValue({
@@ -85,6 +87,7 @@ describe('useSavingsInvestmentTransactionsStore', () => {
         }
         return undefined;
       }),
+      updateAccountBalance: vi.fn(),
     } as any);
   });
 
@@ -281,6 +284,7 @@ describe('useSavingsInvestmentTransactionsStore', () => {
         if (id === 'account-2') return { ...mockAccount, id: 'account-2' };
         return undefined;
       }),
+      updateAccountBalance: vi.fn(),
     } as any);
 
     useSavingsInvestmentTransactionsStore.getState().createTransaction(transaction1);

@@ -39,6 +39,7 @@ describe('useRecurringIncomesStore', () => {
         if (id === 'account-1') return mockAccount;
         return undefined;
       }),
+      updateAccountBalance: vi.fn(),
     } as any);
 
     vi.mocked(useIncomeTransactionsStore.getState).mockReturnValue({
@@ -342,6 +343,7 @@ describe('useRecurringIncomesStore', () => {
         if (id === 'account-2') return { ...mockAccount, id: 'account-2' };
         return undefined;
       }),
+      updateAccountBalance: vi.fn(),
     } as any);
 
     useRecurringIncomesStore.getState().createTemplate(template1);

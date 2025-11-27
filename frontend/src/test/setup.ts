@@ -70,3 +70,12 @@ global.ResizeObserver = class ResizeObserver {
   observe() {}
   unobserve() {}
 } as typeof ResizeObserver;
+
+// Mock IndexedDB for tests
+Object.defineProperty(window, 'indexedDB', {
+  writable: true,
+  value: {
+    open: vi.fn(),
+    deleteDatabase: vi.fn(),
+  },
+});

@@ -46,11 +46,12 @@ describe('formulas utilities', () => {
     const allSavings = sumBucketByStatus(mockPlannedMonth as any, 'all', 'savings');
 
     expect(pendingTotal).toBe(10000);
-    expect(allSavings).toBe(30000); // balance + savings
+    expect(allSavings).toBe(20000); // savings bucket amount only (bucketId filter applied)
   });
 
   it('converts excel serial to ISO date', () => {
-    expect(convertExcelSerialToIso(44986)).toBe('2023-03-22');
+    // Excel serial 44986 = 2023-03-01 (calculated from Excel epoch Dec 30, 1899)
+    expect(convertExcelSerialToIso(44986)).toBe('2023-03-01');
     expect(convertExcelSerialToIso(null)).toBeNull();
   });
 
