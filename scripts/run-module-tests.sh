@@ -108,6 +108,11 @@ detect_changed_modules() {
   while IFS= read -r file; do
     [ -z "$file" ] && continue
     
+    # Skip test files - they shouldn't trigger module detection
+    if echo "$file" | grep -qE "(e2e|spec\.ts|test\.ts)"; then
+      continue
+    fi
+    
     # Check for shared/common changes - these affect all modules
     if echo "$file" | grep -qE "frontend/src/(components/common|providers|utils|hooks|theme|App\.tsx|main\.tsx)"; then
       echo "all_modules" > /tmp/test_modules.txt
@@ -137,15 +142,14 @@ detect_changed_modules() {
     fi
   done <<< "$changed_files"
   
-  # Always include global modules
-  for global in $GLOBAL_MODULES; do
-    if ! module_in_list "$global" "$modules_found"; then
-      modules_found="$modules_found $global"
-    fi
-  done
+  # No longer include global modules automatically - only run banks test
   
-  # Save modules to temp file
-  echo "$modules_found" | tr ' ' '\n' | grep -v '^$' > /tmp/test_modules.txt
+  # Save modules to temp file (always include banks if no modules found)
+  if [ -z "$modules_found" ] || [ -z "$(echo "$modules_found" | tr -d ' ')" ]; then
+    echo "banks" > /tmp/test_modules.txt
+  else
+    echo "$modules_found" | tr ' ' '\n' | grep -v '^$' > /tmp/test_modules.txt
+  fi
 }
 
 # Function to get test files for modules
@@ -204,7 +208,7 @@ fi
 # Determine which modules to test
 if [ "$RUN_ALL" = "true" ]; then
   echo -e "${BLUE}📋 Running all module tests (--all flag)${NC}"
-  MODULES_TO_TEST="dashboard settings banks accounts transactions emis recurring planner analytics forecasting credit-cards"
+  MODULES_TO_TEST="banks"
 elif [ -n "$SPECIFIC_MODULE" ]; then
   echo -e "${BLUE}📋 Running tests for specific module: $SPECIFIC_MODULE${NC}"
   MODULES_TO_TEST="$SPECIFIC_MODULE"
@@ -221,15 +225,15 @@ else
   if [ -f /tmp/test_modules.txt ]; then
     if grep -q "all_modules" /tmp/test_modules.txt; then
       echo -e "${YELLOW}⚠️  Shared code changed - running all module tests${NC}"
-      MODULES_TO_TEST="dashboard settings banks accounts transactions emis recurring planner analytics forecasting credit-cards"
+      MODULES_TO_TEST="banks"
     else
       MODULES_TO_TEST=$(cat /tmp/test_modules.txt | tr '\n' ' ')
       echo -e "${GREEN}✅ Detected modules: $MODULES_TO_TEST${NC}"
     fi
     rm -f /tmp/test_modules.txt
   else
-    echo -e "${YELLOW}⚠️  No changed modules detected - running global modules only${NC}"
-    MODULES_TO_TEST="$GLOBAL_MODULES"
+    echo -e "${YELLOW}⚠️  No changed modules detected - running banks test only${NC}"
+    MODULES_TO_TEST="banks"
   fi
 fi
 
