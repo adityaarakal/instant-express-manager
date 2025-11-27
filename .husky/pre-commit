@@ -243,7 +243,7 @@ echo ""
 # Run Playwright tests for changed modules + global modules
 # NOTE: This check can be modified, but only by adding NEW checks
 # Modifying existing test execution is FORBIDDEN (enforced by lock)
-echo "📋 Step 6/6: Module-Based Playwright Tests"
+echo "📋 Step 6/7: Module-Based Playwright Tests"
 echo "Running Playwright tests for changed modules..."
 # MANDATORY: Test runner script must exist
 if [ ! -f "scripts/run-module-tests.sh" ]; then
@@ -285,6 +285,31 @@ if [ $TEST_STATUS -ne 0 ]; then
   exit 1
 fi
 echo "✅ Module-based Playwright tests passed!"
+echo ""
+
+# ============================================================================
+# STEP 7: MANDATORY FULL E2E TEST SUITE
+# ============================================================================
+# Run full Playwright test suite (all module tests)
+# NOTE: This check can be modified, but only by adding NEW checks
+# Modifying existing test execution is FORBIDDEN (enforced by lock)
+echo "📋 Step 7/7: Mandatory Full E2E Test Suite"
+echo "Running full Playwright test suite..."
+cd frontend
+# MANDATORY: Run full test suite - they must pass
+echo "🚨 MANDATORY CHECK: Full E2E test suite must pass"
+npm run test:e2e
+TEST_STATUS=$?
+cd ..
+if [ $TEST_STATUS -ne 0 ]; then
+  echo "❌ CRITICAL: Full E2E test suite failed"
+  echo "❌ All E2E tests must pass before commit"
+  echo "🔒 ENFORCEMENT: Commit blocked - Fix failing tests first"
+  echo "📋 REQUIRED: Run 'npm run test:e2e' and fix failing tests"
+  echo "⚠️  This check CANNOT BE BYPASSED - All tests must pass"
+  exit 1
+fi
+echo "✅ Full E2E test suite passed!"
 echo ""
 
 # ============================================================================

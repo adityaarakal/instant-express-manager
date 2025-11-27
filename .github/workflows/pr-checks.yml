@@ -38,13 +38,13 @@ jobs:
       # ============================================================================
       # STEP 1: LINTING VALIDATION
       # ============================================================================
-      - name: 📋 Step 1/4 - ESLint Validation
+      - name: 📋 Step 1/6 - ESLint Validation
         working-directory: ./frontend
         run: |
           echo "🚨 STRICT COMPLIANCE CHECK - ZERO TOLERANCE POLICY"
           echo "⚠️  NO BYPASSING METHODS ALLOWED - ALL CHECKS MUST PASS"
           echo ""
-          echo "📋 Step 1/4: Linting Validation"
+          echo "📋 Step 1/6: Linting Validation"
           echo "Running ESLint validation (excluding test files)..."
           # Run lint on production code only (exclude test files and __tests__ directories)
           npx eslint 'src/**/*.{ts,tsx}' \
@@ -107,7 +107,7 @@ jobs:
       - name: 📋 Step 4/6 - Mandatory Module-Based Playwright Tests
         run: |
           echo ""
-          echo "📋 Step 4/5: Mandatory Module-Based Playwright Tests"
+          echo "📋 Step 4/6: Mandatory Module-Based Playwright Tests"
           echo "🚨 MANDATORY CHECK: Module tests must pass"
           echo "📋 REQUIRED: All module tests must pass before PR can be merged"
           echo ""
